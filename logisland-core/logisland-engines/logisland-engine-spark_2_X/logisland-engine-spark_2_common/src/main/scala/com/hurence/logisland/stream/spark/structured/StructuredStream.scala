@@ -83,7 +83,6 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     this.ssc = ssc
     this.streamContext = streamContext
     this.engineContext = engineContext
-
   }
 
   override def getStreamContext(): StreamingContext = this.ssc
@@ -100,10 +99,11 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       controllerServiceLookupSink = ssc.sparkContext.broadcast(
         ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
       )
+      val spark = SparkSession.builder()
+        .config(this.ssc.sparkContext.getConf)
+        .getOrCreate()
 
-
-      val spark = SparkSession.builder().getOrCreate()
-      spark.sqlContext.setConf("spark.sql.shuffle.partitions", "4")
+      spark.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
 
 
       val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
@@ -114,9 +114,15 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
         .asControllerService()
         .asInstanceOf[StructuredStreamProviderService]
 
-
-      streamContext.getProcessContexts().clear();
-      streamContext.getProcessContexts().addAll(
+      //TODO stange way to update streamcontext, should'nt it be broadcasted ?
+      // moreover the streamcontext should always be the last updated one in this function for me.
+      // If driver wants to change it, it should call setup which would use a broadcast value for example ?
+      // Unfortunately we should not attempt changes before having good unit test so that we do not broke streams
+      // while cleaning streams code... Indeed I am afraid the remote api engines use this strange behaviour here
+      // to change config on the fly when it should use the setup method (maybe using broadcast as well).
+      // In this method start, the config should be considered already up to date in my opinion.
+      streamContext.getProcessContexts.clear()
+      streamContext.getProcessContexts.addAll(
         PipelineConfigurationBroadcastWrapper.getInstance().get(streamContext.getIdentifier))
 
       val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)

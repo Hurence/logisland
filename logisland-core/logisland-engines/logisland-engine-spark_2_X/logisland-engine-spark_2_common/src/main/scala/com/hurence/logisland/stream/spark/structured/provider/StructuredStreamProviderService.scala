@@ -42,7 +42,7 @@ import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, ProcessorMetrics}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.streaming.{DataStreamWriter, GroupState, GroupStateTimeout, OutputMode}
+import org.apache.spark.sql.streaming.{DataStreamWriter, GroupState, GroupStateTimeout, OutputMode, StreamingQuery}
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
@@ -181,7 +181,7 @@ trait StructuredStreamProviderService extends ControllerService {
     * @param streamContext
     * @return DataFrame currently loaded
     */
-  def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext) = {
+  def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): StreamingQuery = {
 
     // make sure controller service lookup won't be serialized !!
     streamContext.setControllerServiceLookup(null)
@@ -199,7 +199,8 @@ trait StructuredStreamProviderService extends ControllerService {
     implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
     val df2 = df.mapPartitions(record => record.map(record => serializeRecords(serializer, keySerializer, record)))
 
-    write(df2, controllerServiceLookupSink, streamContext).queryName(streamContext.getIdentifier)
+    write(df2, controllerServiceLookupSink, streamContext)
+      .queryName(streamContext.getIdentifier)
      // .outputMode("update")
       .start()
      // .processAllAvailable()
