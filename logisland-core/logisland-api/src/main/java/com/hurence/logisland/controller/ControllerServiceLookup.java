@@ -50,7 +50,9 @@ public interface ControllerServiceLookup {
      * <code>false</code> otherwise. If the given Controller Service is not
      * known by this ControllerServiceLookup, returns <code>false</code>
      */
-    boolean isControllerServiceEnabled(ControllerService service);
+    default boolean isControllerServiceEnabled(ControllerService service) {
+        return isControllerServiceEnabled(service.getIdentifier());
+    }
 
     /**
      *

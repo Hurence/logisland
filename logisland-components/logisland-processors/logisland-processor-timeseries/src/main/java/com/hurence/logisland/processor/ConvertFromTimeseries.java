@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class ConvertFromTimeseries extends AbstractProcessor {
 
 
-    private Logger logger = LoggerFactory.getLogger(ConvertToTimeseries.class.getName());
+    private Logger logger = LoggerFactory.getLogger(ConvertFromTimeseries.class.getName());
     private RecordsTimeSeriesConverter converter = new RecordsTimeSeriesConverter();
 
 
