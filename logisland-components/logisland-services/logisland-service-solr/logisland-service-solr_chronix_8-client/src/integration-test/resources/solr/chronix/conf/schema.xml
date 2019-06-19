@@ -68,7 +68,7 @@
     </fields>
 
     <uniqueKey>id</uniqueKey>
-    <solrQueryParser defaultOperator="OR"/>
+    <solrQueryParser/>
 
     <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
         <analyzer type="index">

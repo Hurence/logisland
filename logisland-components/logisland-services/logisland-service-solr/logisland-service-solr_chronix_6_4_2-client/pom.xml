@@ -13,7 +13,7 @@
     <artifactId>logisland-service-solr_chronix_6_4_2-client</artifactId>
     <packaging>jar</packaging>
 
-    <name>Chronix-Solr Service Plugin</name>
+    <name>Chronix-Solr 6.4.2 Service Plugin</name>
     <description>An Implementation of the datastore logisland api for Chronix</description>
 
     <repositories>
