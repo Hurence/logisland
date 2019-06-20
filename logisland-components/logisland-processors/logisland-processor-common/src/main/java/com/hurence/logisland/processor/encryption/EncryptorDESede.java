@@ -27,14 +27,13 @@ public class EncryptorDESede implements Encryptor{
 
     public static EncryptorDESede getInstance(String mode, String padding, byte[] key, byte[] iv)
             throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException {
-        //TODO validate that parameters are correct depending on mode padding etc
-        if (key.length%24 != 0) throw new InvalidKeyException("Invalid DESede key length"+key.length+"bytes");
+        if (key.length%24 != 0) throw new InvalidKeyException("Invalid DESede key length : "+key.length+"bytes");
         if (mode == null) {
             return new EncryptorDESede(null, null, key, null);
         }
         switch (mode) {
             case "CBC":
-                if (iv != null) throw new IllegalArgumentException("iv is required");
+                if (iv == null) throw new IllegalArgumentException("iv is required");
                 if (padding == null) throw new NoSuchAlgorithmException("Invalid transformation format:"+ ALGO_DESede +"/"+mode);
                 break;
             case "ECB":
@@ -46,10 +45,16 @@ public class EncryptorDESede implements Encryptor{
     }
 
     private EncryptorDESede(String mode, String padding, byte[] key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
-        this.mode = mode;
+        if (mode != null) {this.mode = mode;} else {
+            this.mode = "";
+        }
         this.padding = padding;
         this.key = key;
-        this.iv = iv;
+        if (iv.length != 24) {
+            this.iv = "azerty1234567890azerty1234567890".getBytes();
+        } else {
+            this.iv = iv;
+        }
         myKeySpec = new DESKeySpec(key);
         mySecretKeyFactory = SecretKeyFactory.getInstance("DESede");
         secretKey = mySecretKeyFactory.generateSecret(myKeySpec);

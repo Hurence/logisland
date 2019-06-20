@@ -28,14 +28,13 @@ public class EncryptorDES implements Encryptor {
 
     public static EncryptorDES getInstance(String mode, String padding, byte[] key, byte[] iv)
             throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException {
-        //TODO validate that parameters are correct depending on mode padding etc
-        if (key.length%8 != 0) throw new InvalidKeyException("Invalid DES key length"+key.length+"bytes");
+        if (key.length%8 != 0) throw new InvalidKeyException("Invalid DES key length : "+key.length+"bytes");
         if (mode == null) {
             return new EncryptorDES(null, null, key, null);
         }
         switch (mode) {
             case "CBC":
-                if (iv != null) throw new IllegalArgumentException("iv is required");
+                if (iv == null) throw new IllegalArgumentException("iv is required");
                 if (padding == null) throw new NoSuchAlgorithmException("Invalid transformation format:"+ALGO_DES+"/"+mode);
                 break;
             case "ECB":
@@ -47,10 +46,16 @@ public class EncryptorDES implements Encryptor {
     }
 
     private EncryptorDES(String mode, String padding, byte[] key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
-        this.mode = mode;
+        if (mode != null) {this.mode = mode;} else {
+            this.mode = "";
+        }
         this.padding = padding;
         this.key = key;
-        this.iv = iv;
+        if (iv.length != 8) {
+            this.iv = "12345678".getBytes();
+        } else {
+            this.iv = iv;
+        }
         myKeySpec = new DESKeySpec(key);
         mySecretKeyFactory = SecretKeyFactory.getInstance("DES");
         secretKey = mySecretKeyFactory.generateSecret(myKeySpec);
@@ -60,7 +65,6 @@ public class EncryptorDES implements Encryptor {
     }
 
     public byte[] encrypt (Object Data) throws Exception{
-        /*Key key = generateKey();*/
         if (mode.equalsIgnoreCase("CBC")) {
             IvParameterSpec spec = new IvParameterSpec(iv);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
@@ -71,8 +75,7 @@ public class EncryptorDES implements Encryptor {
             try {
                 String DataString = (String) Data;
                 byte[] x = DataString.getBytes();
-                byte[] encVal = cipher.doFinal(x);
-                return encVal;
+                return cipher.doFinal(x);
             } catch (ClassCastException e) {
                 //ToDo how to handel this try!
             }
@@ -98,7 +101,7 @@ public class EncryptorDES implements Encryptor {
         if ("NoPadding".equalsIgnoreCase(padding)){
             try {
                 String decryptedData = new String(decValue);
-                return decryptedData;
+                return new String(decValue);
             } catch (ClassCastException e) {
                 //ToDo how to handel this try!
             }

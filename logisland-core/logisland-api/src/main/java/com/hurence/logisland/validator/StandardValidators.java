@@ -154,6 +154,12 @@ public class StandardValidators {
             return new ValidationResult.Builder().subject(subject).input(value).valid(value != null && !value.isEmpty()).explanation(subject + " cannot be empty").build();
         }
     };
+    public static final Validator BYTES_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            return new ValidationResult.Builder().subject(subject).input(value).valid(value.getBytes().length == 16).explanation(subject + " iv must be byte array of 16 bytes").build();
+        }
+    };
 
     public static final Validator BOOLEAN_VALIDATOR = new Validator() {
         @Override

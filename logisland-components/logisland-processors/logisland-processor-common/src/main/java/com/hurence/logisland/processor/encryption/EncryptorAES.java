@@ -24,14 +24,13 @@ public class EncryptorAES implements Encryptor {
 
     public static EncryptorAES getInstance(String mode, String padding, byte[] key, byte[] iv)
             throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidKeyException, InvalidAlgorithmParameterException {
-        //TODO validate that parameters are correct depending on mode padding etc
-        if (key.length%16 != 0) throw new InvalidKeyException("Invalid AES key length"+key.length+"bytes");
+        if (key.length%16 != 0) throw new InvalidKeyException("Invalid AES key length :" +key.length+"bytes");
         if (mode == null) {
             return new EncryptorAES(null, null, key, null);
         }
         switch (mode) {
             case "CBC":
-                if (iv != null) throw new IllegalArgumentException("iv is required");
+                if (iv == null) throw new IllegalArgumentException("iv is required");
                 if (padding == null) throw new NoSuchAlgorithmException("Invalid transformation format:"+ALGO_AES+"/"+mode);
                 break;
             case "ECB":
@@ -43,10 +42,17 @@ public class EncryptorAES implements Encryptor {
     }
 
     private EncryptorAES(String mode, String padding, byte[] key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException {
-        this.mode = mode;
+        if (mode != null) {this.mode = mode;} else {
+            this.mode = "";
+        }
+
         this.padding = padding;
         this.key = key;
-        this.iv = iv;
+        if (iv.length != 16) {
+            this.iv = "azerty1234567890".getBytes();
+        } else {
+            this.iv = iv;
+        }
         if (mode == null) {
             cipher = Cipher.getInstance(ALGO_AES);
         } else {cipher = Cipher.getInstance(ALGO_AES+"/"+mode+"/"+padding);}

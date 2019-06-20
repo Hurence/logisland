@@ -7,7 +7,6 @@ import com.hurence.logisland.processor.encryption.Encryptor;
 import com.hurence.logisland.processor.encryption.EncryptorAES;
 import com.hurence.logisland.processor.encryption.EncryptorDES;
 import com.hurence.logisland.processor.encryption.EncryptorDESede;
-import com.hurence.logisland.processor.encryption.EncryptorGetInstance;
 
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
@@ -35,9 +34,6 @@ public class EncryptField extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;
 
-//    private static final Logger logger = LoggerFactory.getLogger(ModifyId.class);
-
-
     public static final String ENCRYPT_MODE = "Encrypt";
     public static final String DECRYPT_MODE = "Decrypt";
     public static final String AES = "AES";
@@ -56,7 +52,6 @@ public class EncryptField extends AbstractProcessor {
     public static final String DESede_ECB_NoPAD = "DESede/ECB/NoPadding";
     public static final String DESede_ECB_PKCS5 = "DESede/ECB/PKCS5Padding";
     public static final String RSA_ECB_PKCS5 = "RSA/ECB/PKCS1Padding";
-    public static final byte[] Iv = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
 
     public static final PropertyDescriptor MODE = new PropertyDescriptor.Builder()
@@ -85,44 +80,40 @@ public class EncryptField extends AbstractProcessor {
     public static final PropertyDescriptor IV = new PropertyDescriptor.Builder()
             .name("Iv")
             .description("Specifies the Iv[] to use")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.BYTES_VALIDATOR)
             .required(false)
-            /*.defaultValue(Iv)*/
+            .defaultValue("azerty1234567890")
             .build();
 
 
-    private Collection<String> fieldTypes = null;
     private Encryptor encryptor = null;
 
     @Override
     public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
-        fieldTypes = getFieldsNameMapping(context);
         try {
-            this.encryptor = initEncryptor(new StandardValidationContext(context.getProperties()));
+            String transformation = context.getProperty(ALGO);
+            byte[] iv = context.getPropertyValue(IV).asString().getBytes();
+            byte[] key = context.getPropertyValue(KEY).asString().getBytes();
+            this.encryptor = initEncryptor(transformation , iv , key);
         } catch (Exception ex) {
             throw new InitializationException(ex);
         }
     }
 
-    private Encryptor initEncryptor(ValidationContext context) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidAlgorithmParameterException, InvalidKeyException, InvalidKeySpecException {
-        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+    private Encryptor initEncryptor(String transformation, byte[] iv, byte[] key) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidAlgorithmParameterException, InvalidKeyException, InvalidKeySpecException {
         final String algo;
         final Optional<String> mode;
         final Optional<String> padding;
-        final String[] splittedAlgo = context.getPropertyValue(ALGO).asString().split("/");
+        final String[] splittedAlgo = transformation.split("/");
         if (splittedAlgo.length > 3) {
-            //TODO add error
             throw new NoSuchAlgorithmException();
         } else if (splittedAlgo.length == 3) {
-            //TODO
             algo = splittedAlgo[0];
             mode = Optional.of(splittedAlgo[1]);
             padding = Optional.of(splittedAlgo[2]);
         } else if (splittedAlgo.length == 2) {
-            algo = splittedAlgo[0];
-            mode = Optional.of(splittedAlgo[1]);
-            padding = Optional.empty();
+            throw new NoSuchAlgorithmException(String.format("Invalid transformation format:%s",transformation));
         } else if (splittedAlgo.length == 1) {
             algo = splittedAlgo[0];
             mode = Optional.empty();
@@ -132,71 +123,47 @@ public class EncryptField extends AbstractProcessor {
         }
 
         if (EncryptorAES.ALGO_AES.equalsIgnoreCase(algo)) {
-            try {
+            if (mode.isPresent()){
                 switch (mode.get()) {
                     case "ECB":
-                        return EncryptorAES.getInstance(mode.get(), padding.get(), context.getPropertyValue(KEY).asString().getBytes(), null);
                     case "CBC":
-                        return EncryptorAES.getInstance(mode.get(), padding.get(), context.getPropertyValue(KEY).asString().getBytes(), (byte[]) context.getPropertyValue(IV).getRawValue());
+                        return EncryptorAES.getInstance(mode.get(), padding.get(), key, iv);
                     default:
-                        return EncryptorAES.getInstance(mode.orElse(null), padding.orElse(null), context.getPropertyValue(KEY).asString().getBytes(), null);
-
+                        getLogger().warn("this mode: {} may not be supported yet!", new Object[]{mode.get()});
+                        return EncryptorAES.getInstance(mode.get(), padding.get(), key, iv);
                 }
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalArgumentException | InvalidAlgorithmParameterException | InvalidKeyException ex) {
-                validationResults.add(
-                        new ValidationResult.Builder()
-                                .input(ex.getMessage())
-                                .valid(false)
-                                .build());
+            } else {
+                return EncryptorAES.getInstance(null, padding.orElse(null), key, iv);
             }
         } else if (EncryptorDES.ALGO_DES.equalsIgnoreCase(algo)) {
-            try {
+            if (mode.isPresent()){
                 switch (mode.get()) {
                     case "ECB":
-                        return EncryptorDES.getInstance(mode.get(), padding.get(), context.getPropertyValue(KEY).asString().getBytes(), null);
                     case "CBC":
-                        return EncryptorDES.getInstance(mode.get(), padding.get(), context.getPropertyValue(KEY).asString().getBytes(), (byte[]) context.getPropertyValue(IV).getRawValue());
+                        return EncryptorDES.getInstance(mode.get(), padding.get(), key, iv);
                     default:
-                        return EncryptorDES.getInstance(mode.orElse(null), padding.orElse(null), context.getPropertyValue(KEY).asString().getBytes(), null);
-
+                        getLogger().warn("this mode: {} may not be supported yet!", new Object[]{mode.get()});
+                        return EncryptorDES.getInstance(mode.get(), padding.get(), key, iv);
                 }
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalArgumentException | InvalidAlgorithmParameterException | InvalidKeyException | InvalidKeySpecException  ex) {
-                validationResults.add(
-                        new ValidationResult.Builder()
-                                .input(ex.getMessage())
-                                .valid(false)
-                                .build());
+            } else {
+                return EncryptorDES.getInstance(null, padding.orElse(null), key, iv);
             }
         } else if (EncryptorDESede.ALGO_DESede.equalsIgnoreCase(algo)) {
-            try {
+            if (mode.isPresent()){
                 switch (mode.get()) {
                     case "ECB":
-                        return EncryptorDESede.getInstance(mode.get(), padding.get(), context.getPropertyValue(KEY).asString().getBytes(), null);
                     case "CBC":
-                        return EncryptorDESede.getInstance(mode.get(), padding.get(), context.getPropertyValue(KEY).asString().getBytes(), (byte[]) context.getPropertyValue(IV).getRawValue());
+                        return EncryptorDESede.getInstance(mode.get(), padding.get(), key, iv);
                     default:
-                        return EncryptorDESede.getInstance(mode.orElse(null), padding.orElse(null), context.getPropertyValue(KEY).asString().getBytes(), null);
-
+                        getLogger().warn("this mode: {} may not be supported yet!", new Object[]{mode.get()});
+                        return EncryptorDESede.getInstance(mode.get(), padding.get(), key, iv);
                 }
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalArgumentException | InvalidAlgorithmParameterException | InvalidKeyException | InvalidKeySpecException  ex) {
-                validationResults.add(
-                        new ValidationResult.Builder()
-                                .input(ex.getMessage())
-                                .valid(false)
-                                .build());
+            } else {
+                return EncryptorDESede.getInstance(null, padding.orElse(null), key, iv);
             }
+        }else {
+            throw new IllegalArgumentException(String.format("this algo: %s is not being supported!",algo));
         }
-        /*switch (algo) {
-            case EncryptorAES.ALGO_AES:
-                return EncryptorGetInstance.GetInstAES(algo, mode.orElse(null), padding.orElse(null), context.getPropertyValue(KEY).asString().getBytes(), (byte[]) context.getPropertyValue(IV).getRawValue());
-            case EncryptorDES.ALGO_DES:
-                 return EncryptorGetInstance.GetInstDES(algo, mode.orElse(null), padding.orElse(null), context.getPropertyValue(KEY).asString().getBytes(), (byte[]) context.getPropertyValue(IV).getRawValue());
-            case EncryptorDESede.ALGO_DESede:
-                return EncryptorGetInstance.GetInstDESede(algo, mode.orElse(null), padding.orElse(null), context.getPropertyValue(KEY).asString().getBytes(), (byte[]) context.getPropertyValue(IV).getRawValue());
-            default:
-                throw new  RuntimeException("should not happend");
-        }*/
-        return null;
     }
 
     @Override
@@ -226,16 +193,23 @@ public class EncryptField extends AbstractProcessor {
     protected Collection<ValidationResult> customValidate(final ValidationContext context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
         try {
-            initEncryptor(context);
+            String transformation = context.getPropertyValue(ALGO).asString();
+            byte[] iv = context.getPropertyValue(IV).asString().getBytes();
+            byte[] key = context.getPropertyValue(KEY).asString().getBytes();
+            initEncryptor(transformation, iv, key);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalArgumentException | InvalidAlgorithmParameterException | InvalidKeyException | InvalidKeySpecException ex) {
-            validationResults.add(null);
+            validationResults.add(
+                    new ValidationResult.Builder()
+                            .input(ex.getMessage())
+                            .valid(false)
+                            .build());
         }
         return validationResults;
     }
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        final boolean encrypt = context.getPropertyValue(MODE).toString().equalsIgnoreCase(ENCRYPT_MODE);
+        final boolean encrypt = context.getPropertyValue(MODE).asString().equalsIgnoreCase(ENCRYPT_MODE);
         Collection<String> allfieldsToEncrypt_InString = getFieldsNameMapping(context);
         Map<String, String> fieldsNameMappings = getFieldsNameTypeMapping(context);
 
