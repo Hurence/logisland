@@ -521,7 +521,7 @@ extensions:
     tags: [hadoop, hbase]
   - name: RunPython
     description:  >
-       !!!! WARNING !!!!
+      !!!! WARNING !!!!
       
       The RunPython processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
       
