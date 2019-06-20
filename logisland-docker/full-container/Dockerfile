@@ -11,3 +11,5 @@ RUN cd /opt && ln -s $(eval ls | grep logisland) logisland
 ENV LOGISLAND_HOME /opt/logisland
 ENV PATH $PATH:$LOGISLAND_HOME/bin
 WORKDIR $LOGISLAND_HOME/
+
+ENTRYPOINT ["tail", "-f", "bin/logisland.sh"]
