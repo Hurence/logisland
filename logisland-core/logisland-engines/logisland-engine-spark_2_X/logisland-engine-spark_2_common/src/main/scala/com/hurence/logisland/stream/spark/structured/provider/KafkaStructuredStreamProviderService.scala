@@ -253,7 +253,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       .writeStream
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
-      .option("topic", "logisland_measures")
+      .option("topic", outputTopics.mkString(","))
       .option("checkpointLocation", "checkpoints")
 
   }
