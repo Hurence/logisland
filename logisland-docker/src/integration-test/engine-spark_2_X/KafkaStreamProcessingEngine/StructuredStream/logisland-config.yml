@@ -109,11 +109,9 @@ engine:
       component: com.hurence.logisland.stream.spark.structured.StructuredStream
       documentation: "Takes records from the kafka source and distributes related partitions over a kafka topic. Records are then handed off to the indexing stream"
       configuration:
-        read.topics: /a/in
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.stream.service.provider: kc_source_service
-        write.topics: logisland_raw
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.stream.service.provider: kafka_out_service
