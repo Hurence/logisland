@@ -72,7 +72,7 @@ com.hurence.logisland.processor.ApplyRegexp
 
 Tags
 ____
-parser, regex, log, record
+com/hurence/logisland/processor/parser, regex, log, record
 
 Properties
 __________
@@ -1105,6 +1105,40 @@ __________________
 .. include:: ./details/common-processors/NormalizeFields-Detail.rst
 ----------
 
+.. _com.hurence.logisland.processor.parser.ParseGitlabLog: 
+
+ParseGitlabLog
+--------------
+The Gitlab logs processor is the Logisland entry point to get and process `Gitlab <https://www.gitlab.com>`_ logs. This allows for instance to monitor activities in your Gitlab server. The expected input of this processor are records from the production_json.log log file of Gitlab which contains JSON records. You can for instance use the `kafkacat <https://github.com/edenhill/kafkacat>`_ command to inject those logs into kafka and thus Logisland.
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.1.2
+
+Class
+_____
+com.hurence.logisland.processor.parser.ParseGitlabLog
+
+Tags
+____
+logs, gitlab
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseGitlabLog-Detail.rst
+----------
+
 .. _com.hurence.logisland.processor.ParseProperties: 
 
 ParseProperties
@@ -1122,7 +1156,7 @@ com.hurence.logisland.processor.ParseProperties
 
 Tags
 ____
-record, properties, parser
+record, properties, com/hurence/logisland/processor/parser
 
 Properties
 __________
@@ -1321,7 +1355,7 @@ com.hurence.logisland.processor.SplitField
 
 Tags
 ____
-parser, split, log, record
+com/hurence/logisland/processor/parser, split, log, record
 
 Properties
 __________
@@ -1373,7 +1407,7 @@ com.hurence.logisland.processor.SplitText
 
 Tags
 ____
-parser, regex, log, record
+com/hurence/logisland/processor/parser, regex, log, record
 
 Properties
 __________
@@ -1464,7 +1498,7 @@ com.hurence.logisland.processor.SplitTextWithProperties
 
 Tags
 ____
-parser, regex, log, record
+com/hurence/logisland/processor/parser, regex, log, record
 
 Properties
 __________

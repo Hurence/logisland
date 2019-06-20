@@ -2020,7 +2020,7 @@ com.hurence.logisland:logisland-processor-common-logs:1.1.2
 
 Class
 _____
-com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog
+com.hurence.logisland.processor.parser.ParseGitlabLog
 
 Tags
 ____

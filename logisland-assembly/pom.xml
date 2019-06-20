@@ -244,7 +244,26 @@
             <artifactId>logisland-processor-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-processor-timeseries</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-processor-querymatcher</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-processor-web-analytics</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-processor-xml</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -542,22 +561,7 @@
                 <!--PRCESSORS-->
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-processor-xml</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-processor-web-analytics</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-processor-cyber-security</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-processor-common-logs</artifactId>
                     <version>${project.version}</version>
                 </dependency>
                 <dependency>
@@ -567,17 +571,7 @@
                 </dependency>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-processor-querymatcher</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-processor-outlier-detection</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-processor-sampling</artifactId>
                     <version>${project.version}</version>
                 </dependency>
                 <dependency>
@@ -605,11 +599,7 @@
                     <artifactId>logisland-processor-scripting</artifactId>
                     <version>${project.version}</version>
                 </dependency>
-                <dependency>
-                    <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-processor-timeseries</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+
 
                 <!--CONNECTORS-->
                 <dependency>
