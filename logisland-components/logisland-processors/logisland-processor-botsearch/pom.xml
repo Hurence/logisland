@@ -26,7 +26,7 @@
         <version>1.1.2</version>
     </parent>
 
-    <artifactId>logisland-botsearch-plugin</artifactId>
+    <artifactId>logisland-processor-botsearch</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
