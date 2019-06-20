@@ -76,6 +76,8 @@ verb = ["GET", "POST", "DELETE", "PUT"]
 resources = ["/list", "/wp-content", "/wp-admin", "/explore", "/search/tag/list", "/app/main/posts",
              "/posts/posts/explore", "/apps/cart.jsp?appID="]
 
+frequent_ips = ["12.13.14.15", "123.124.125.126"]
+
 ualist = [faker.firefox, faker.chrome, faker.safari, faker.internet_explorer, faker.opera]
 
 producer = KafkaProducer(bootstrap_servers=args.kafka_brokers, client_id='loggen')
@@ -86,6 +88,10 @@ producer = KafkaProducer(bootstrap_servers=args.kafka_brokers, client_id='loggen
 
 def create_log():
     ip = faker.ipv4()
+    if random.randint(0, 100) < 70:
+        ip = numpy.random.choice(frequent_ips, p=[0.6, 0.4])
+        print(ip)
+
     dt = otime.strftime('%d/%b/%Y:%H:%M:%S')
     tz = datetime.datetime.now(local).strftime('%z')
     vrb = numpy.random.choice(verb, p=[0.6, 0.1, 0.1, 0.2])
