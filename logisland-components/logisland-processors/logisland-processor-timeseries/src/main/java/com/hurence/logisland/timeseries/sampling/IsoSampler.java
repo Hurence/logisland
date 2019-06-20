@@ -13,13 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.sampling;
+package com.hurence.logisland.timeseries.sampling;
 
-public enum SamplingAlgorithm {
-    NONE,
-    FIRST_ITEM,
-    AVERAGE,
-    MODE_MEDIAN,
-    LTTB,
-    MIN_MAX
+import com.hurence.logisland.record.Record;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+
+public class IsoSampler extends AbstractSampler {
+
+    /**
+     * do no sample at all => for test or benchmark purpose
+     *
+     * @param inputRecords
+     * @return the same list as input
+     */
+    @Override
+    public List<Record> sample(List<Record> inputRecords) {
+        return inputRecords
+                .stream()
+                .map(this::getTimeValueRecord)
+                .collect(Collectors.toList());
+    }
 }

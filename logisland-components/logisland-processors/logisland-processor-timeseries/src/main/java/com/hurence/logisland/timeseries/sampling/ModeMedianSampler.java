@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.sampling;
+package com.hurence.logisland.timeseries.sampling;
 
 import com.hurence.logisland.record.Record;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class FirstItemSampler extends AbstractSampler {
+public class ModeMedianSampler extends AbstractSampler {
 
 
     private int numBuckets;
 
-    public FirstItemSampler(String valueFieldName, String timeFieldName, int numBuckets) {
+    public ModeMedianSampler(String valueFieldName, String timeFieldName, int numBuckets) {
         super(valueFieldName,timeFieldName);
         this.numBuckets = numBuckets;
     }
@@ -40,11 +39,6 @@ public class FirstItemSampler extends AbstractSampler {
      */
     @Override
     public List<Record> sample(List<Record> inputRecords) {
-        // simple downsample to numBucket data points
-        final int bucketSize = SamplingUtils.fitBucketSize(inputRecords, numBuckets);
-
-        return SamplingUtils.grouped(inputRecords, bucketSize)
-                .map(record -> getTimeValueRecord(record.get(0)))
-                .collect(Collectors.toList());
+       return null;
     }
 }

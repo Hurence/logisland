@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.sampling;
+package com.hurence.logisland.timeseries.sampling;
 
-import com.hurence.logisland.record.Record;
-
-import java.util.List;
-
-public interface Sampler {
-
-
-    /**
-     * Reduce the number of inputs records accordingly to a sampling strategy
-     *
-     * @param inputRecords the given records
-     * @return the sampled records
-     */
-    List<Record> sample(List<Record> inputRecords);
+public enum SamplingAlgorithm {
+    NONE,
+    FIRST_ITEM,
+    AVERAGE,
+    MODE_MEDIAN,
+    LTTB,
+    MIN_MAX
 }
