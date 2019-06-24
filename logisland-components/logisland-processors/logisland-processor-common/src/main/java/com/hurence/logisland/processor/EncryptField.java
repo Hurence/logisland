@@ -3,15 +3,11 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.encryption.Encryptor;
-import com.hurence.logisland.processor.encryption.EncryptorAES;
-import com.hurence.logisland.processor.encryption.EncryptorDES;
-import com.hurence.logisland.processor.encryption.EncryptorDESede;
+import com.hurence.logisland.processor.encryption.*;
 
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
@@ -52,6 +48,9 @@ public class EncryptField extends AbstractProcessor {
     public static final String DESede_ECB_NoPAD = "DESede/ECB/NoPadding";
     public static final String DESede_ECB_PKCS5 = "DESede/ECB/PKCS5Padding";
     public static final String RSA_ECB_PKCS5 = "RSA/ECB/PKCS1Padding";
+    public static final String RSA_ECB_OAE1 = "RSA/ECB/OAEPWithSHA-1AndMGF1Padding";
+    public static final String RSA_ECB_OAE256 = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
+    public static final String RSA = "RSA";
 
 
     public static final PropertyDescriptor MODE = new PropertyDescriptor.Builder()
@@ -66,24 +65,29 @@ public class EncryptField extends AbstractProcessor {
             .name("Algo")
             .description("Specifies the algorithm that the cipher will use")
             .required(true)
-            .allowableValues(AES, AES_CBC_PKCS5, AES_ECB_PKCS5, AES_ECB_NoPAD, AES_CBC_NoPAD, DES, DES_CBC_PKCS5, DES_ECB_PKCS5, DES_CBC_NoPAD, DES_ECB_NoPAD, DESede, DESede_CBC_PKCS5, DESede_ECB_PKCS5,DESede_CBC_NoPAD,DESede_ECB_NoPAD, RSA_ECB_PKCS5)
+            .allowableValues(AES, AES_CBC_PKCS5, AES_ECB_PKCS5, AES_ECB_NoPAD, AES_CBC_NoPAD, DES, DES_CBC_PKCS5, DES_ECB_PKCS5, DES_CBC_NoPAD, DES_ECB_NoPAD, DESede, DESede_CBC_PKCS5, DESede_ECB_PKCS5,DESede_CBC_NoPAD,DESede_ECB_NoPAD, RSA_ECB_PKCS5, RSA_ECB_OAE1, RSA_ECB_OAE256, RSA)
             .defaultValue(AES)
             .build();
 
     public static final PropertyDescriptor KEY = new PropertyDescriptor.Builder()
             .name("Key")
             .description("Specifies the key to use")
-            .required(true)
+            .required(false)
             .defaultValue("azerty1234567890")
             .build();
 
     public static final PropertyDescriptor IV = new PropertyDescriptor.Builder()
             .name("Iv")
             .description("Specifies the Iv[] to use")
-            .addValidator(StandardValidators.BYTES_VALIDATOR)
             .required(false)
-            .defaultValue("azerty1234567890")
             .build();
+
+    public static final PropertyDescriptor KEYFILE = new PropertyDescriptor.Builder()
+            .name("KeyFile")
+            .description("Specifies the Key file to use as public or privite Key")
+            .required(false)
+            .build();
+
 
 
     private Encryptor encryptor = null;
@@ -93,15 +97,31 @@ public class EncryptField extends AbstractProcessor {
         super.init(context);
         try {
             String transformation = context.getProperty(ALGO);
-            byte[] iv = context.getPropertyValue(IV).asString().getBytes();
-            byte[] key = context.getPropertyValue(KEY).asString().getBytes();
-            this.encryptor = initEncryptor(transformation , iv , key);
+            String keyFile;
+            byte[] iv;
+            byte[] key;
+            if (context.getPropertyValue(IV).isSet()){
+                iv = context.getPropertyValue(IV).asString().getBytes();
+            } else {
+                iv = null;
+            }
+            if (context.getPropertyValue(KEY).isSet()){
+                key = context.getPropertyValue(KEY).asString().getBytes();
+            } else {
+                key = null;
+            }
+            if (context.getPropertyValue(KEYFILE).isSet()){
+                keyFile = context.getPropertyValue(KEYFILE).asString();
+            } else {
+                keyFile = null;
+            }
+            this.encryptor = initEncryptor(transformation , iv , key ,keyFile);
         } catch (Exception ex) {
             throw new InitializationException(ex);
         }
     }
 
-    private Encryptor initEncryptor(String transformation, byte[] iv, byte[] key) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidAlgorithmParameterException, InvalidKeyException, InvalidKeySpecException {
+    private Encryptor initEncryptor(String transformation, byte[] iv, byte[] key, String keyFile) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidAlgorithmParameterException, InvalidKeyException, InvalidKeySpecException {
         final String algo;
         final Optional<String> mode;
         final Optional<String> padding;
@@ -133,7 +153,7 @@ public class EncryptField extends AbstractProcessor {
                         return EncryptorAES.getInstance(mode.get(), padding.get(), key, iv);
                 }
             } else {
-                return EncryptorAES.getInstance(null, padding.orElse(null), key, iv);
+                return EncryptorAES.getInstance(null, null, key, iv);
             }
         } else if (EncryptorDES.ALGO_DES.equalsIgnoreCase(algo)) {
             if (mode.isPresent()){
@@ -146,7 +166,7 @@ public class EncryptField extends AbstractProcessor {
                         return EncryptorDES.getInstance(mode.get(), padding.get(), key, iv);
                 }
             } else {
-                return EncryptorDES.getInstance(null, padding.orElse(null), key, iv);
+                return EncryptorDES.getInstance(null, null, key, iv);
             }
         } else if (EncryptorDESede.ALGO_DESede.equalsIgnoreCase(algo)) {
             if (mode.isPresent()){
@@ -159,7 +179,22 @@ public class EncryptField extends AbstractProcessor {
                         return EncryptorDESede.getInstance(mode.get(), padding.get(), key, iv);
                 }
             } else {
-                return EncryptorDESede.getInstance(null, padding.orElse(null), key, iv);
+                return EncryptorDESede.getInstance(null, null, key, iv);
+            }
+        }else if (EncryptorRSA.ALGO_RSA.equalsIgnoreCase(algo)) {
+            if (null != key) {
+                getLogger().warn("the RSA algo will not use this key {} , RSA use public and private keys !",new Object[]{key});
+            }
+            if (mode.isPresent()){
+                switch (mode.get()) {
+                    case "ECB":
+                        return EncryptorRSA.getInstance(mode.get(), padding.get(), keyFile);
+                    default:
+                        getLogger().warn("this mode: {} may not be supported yet!", new Object[]{mode.get()});
+                        return EncryptorDESede.getInstance(mode.get(), padding.get(), key, iv);
+                }
+            } else {
+                return EncryptorRSA.getInstance(null, null, keyFile);
             }
         }else {
             throw new IllegalArgumentException(String.format("this algo: %s is not being supported!",algo));
@@ -173,6 +208,7 @@ public class EncryptField extends AbstractProcessor {
         properties.add(ALGO);
         properties.add(KEY);
         properties.add(IV);
+        properties.add(KEYFILE);
 
         return Collections.unmodifiableList(properties);
 
@@ -193,10 +229,26 @@ public class EncryptField extends AbstractProcessor {
     protected Collection<ValidationResult> customValidate(final ValidationContext context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
         try {
+            String keyFile;
+            byte[] iv;
+            byte[] key;
             String transformation = context.getPropertyValue(ALGO).asString();
-            byte[] iv = context.getPropertyValue(IV).asString().getBytes();
-            byte[] key = context.getPropertyValue(KEY).asString().getBytes();
-            initEncryptor(transformation, iv, key);
+            if (context.getPropertyValue(IV).isSet()){
+                iv = context.getPropertyValue(IV).asString().getBytes();
+            } else {
+                iv = null;
+            }
+            if (context.getPropertyValue(KEYFILE).isSet()){
+                keyFile = context.getPropertyValue(KEYFILE).asString();
+            } else {
+                keyFile = null;
+            }
+            if (context.getPropertyValue(KEY).isSet()){
+                key = context.getPropertyValue(KEY).asString().getBytes();
+            } else {
+                key = null;
+            }
+            initEncryptor(transformation, iv, key, keyFile);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalArgumentException | InvalidAlgorithmParameterException | InvalidKeyException | InvalidKeySpecException ex) {
             validationResults.add(
                     new ValidationResult.Builder()
@@ -226,9 +278,13 @@ public class EncryptField extends AbstractProcessor {
                         if (!record.hasField(fieldName)) continue;
                         Field field = record.getField(fieldName);
                         try {
-                            record.setCheckedField(fieldName, FieldType.BYTES, encryptor.encrypt(field.getRawValue()));
+                            if (field.getType() == FieldType.STRING) {
+                                record.setCheckedField(fieldName, FieldType.BYTES, encryptor.encrypt(((String) field.getRawValue()).getBytes()));
+                            } else {
+                                record.setCheckedField(fieldName, FieldType.BYTES, encryptor.encrypt(toByteArray(field.getRawValue())));
+                            }
                         } catch (Exception ex) {
-                            getLogger().error("error while processing record field" + fieldName, ex);
+                            getLogger().error("error while processing record field " + fieldName, ex);
                         }
 
                     }
@@ -241,30 +297,34 @@ public class EncryptField extends AbstractProcessor {
                         if (!record.hasField(fieldName)) continue;
                         try {
                             if (!field.getType().equals(FieldType.BYTES)) {
-                                record.addError("Wrong input", getLogger(), "type was instead of");
+                                record.addError("Wrong input ", getLogger(), " type was instead of");
                                 continue;
                             }
                             FieldType type;
                             try{
                                 type = getFieldType(fieldType);
                             } catch (IllegalArgumentException | NullPointerException ex) {
-                                getLogger().error("error while processing record field" + fieldName + " ; ", ex);
+                                getLogger().error("error while processing record field " + fieldName + " ; ", ex);
                                 continue;
                             }
                             try {
-                                record.setCheckedField(fieldName, type, encryptor.decrypt((byte[]) field.getRawValue()));
+                                if (type == FieldType.STRING) {
+                                    record.setCheckedField(fieldName, type, new String(encryptor.decrypt((byte[]) field.getRawValue())) );
+                                } else {
+                                    record.setCheckedField(fieldName, type,toObject(encryptor.decrypt((byte[]) field.getRawValue())));
+                                }
                             } catch (Exception ex) {
-                                getLogger().error("error while setting casting value to byte array", ex);
+                                getLogger().error("error while setting casting value to byte array ", ex);
                             }
                         } catch (Exception ex) {
-                            getLogger().error("error while processing record field" + fieldName, ex);
+                            getLogger().error("error while processing record field " + fieldName, ex);
                         }
                     }
                 }
 
             }
         } catch (Throwable t) {
-            getLogger().error("error while processing records", t);
+            getLogger().error("error while processing records ", t);
         }
         return records;
     }

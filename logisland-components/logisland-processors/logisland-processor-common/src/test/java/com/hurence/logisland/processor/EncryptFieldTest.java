@@ -56,8 +56,10 @@ public class EncryptFieldTest {
 
         TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
         testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
-        testRunner.setProperty(EncryptField.ALGO, "AES/CBC/NoPadding");
-        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+        /*testRunner.setProperty(EncryptField.KEY, "azerty1234567890");*/
+        /*testRunner.setProperty(EncryptField.IV, "1234567812345678");*/
+        testRunner.setProperty(EncryptField.KEYFILE, "/home/ubuntu/public.der");
         testRunner.setProperty("string1", "string");
         testRunner.setProperty("string2", "");
         testRunner.setProperty("string3", "");
@@ -75,8 +77,10 @@ public class EncryptFieldTest {
 
         TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
         testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
-        testRunner2.setProperty(EncryptField.ALGO, "AES/CBC/NoPadding");
-        testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+        /*testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");*/
+        /*testRunner2.setProperty(EncryptField.IV, "1234567812345678");*/
+        testRunner2.setProperty(EncryptField.KEYFILE, "/home/ubuntu/private.der");
         testRunner2.setProperty("string1", "string");
         testRunner2.setProperty("string2", "string");
         testRunner2.assertValid();
@@ -150,7 +154,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
         testRunner2.setProperty(EncryptField.ALGO, "DES/CBC/PKCS5Padding");
         testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
-        testRunner.setProperty(EncryptField.IV, "1234567890123456");
+        testRunner2.setProperty(EncryptField.IV, "1234567890123456");
         testRunner2.setProperty("string1", "int");
         testRunner2.setProperty("string2", "int");
         testRunner2.assertValid();
@@ -170,13 +174,14 @@ public class EncryptFieldTest {
     @Test
     public void testProcessingEncryptionLong() {
         Record record1 = new StandardRecord();
-        record1.setField("string1", FieldType.LONG, 19941944L);
-        record1.setField("string2", FieldType.LONG, 1234567890123L);
+        record1.setField("string1", FieldType.LONG, 1994197917494971264L);
+        record1.setField("string2", FieldType.LONG, 1234567811262490123L);
 
         TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
         testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
-        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty(EncryptField.KEYFILE, "/home/ubuntu/public.der");
         testRunner.setProperty("string1", "long");
         testRunner.setProperty("string2", "");
         testRunner.setProperty("string3", "");
@@ -195,8 +200,9 @@ public class EncryptFieldTest {
 
         TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
         testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
-        testRunner2.setProperty(EncryptField.ALGO, "AES");
+        testRunner2.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty(EncryptField.KEYFILE, "/home/ubuntu/private.der");
         testRunner2.setProperty("string1", "long");
         testRunner2.setProperty("string2", "long");
         testRunner2.assertValid();
@@ -209,8 +215,8 @@ public class EncryptFieldTest {
         out1.assertRecordSizeEquals(2);
         out1.assertFieldTypeEquals("string1", FieldType.LONG);
         out1.assertFieldTypeEquals("string2", FieldType.LONG);
-        out1.assertFieldEquals("string1", 19941944);
-        out1.assertFieldEquals("string2", 1234567890123L);
+        out1.assertFieldEquals("string1", 1994197917494971264L);
+        out1.assertFieldEquals("string2", 1234567811262490123L);
     }
 
     @Test
@@ -246,7 +252,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
         testRunner2.setProperty(EncryptField.ALGO, "AES/CBC/PKCS5Padding");
         testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
-        testRunner.setProperty(EncryptField.IV, "azerty1234567891");
+        testRunner2.setProperty(EncryptField.IV, "azerty1234567891");
         testRunner2.setProperty("string1", "bytes");
         testRunner2.setProperty("string2", "bytes");
         testRunner2.assertValid();
@@ -311,14 +317,6 @@ public class EncryptFieldTest {
         out1.assertRecordSizeEquals(2);
         out1.assertFieldTypeEquals("string1", FieldType.RECORD);
         out1.assertFieldTypeEquals("string2", FieldType.RECORD);
-        /*Record out2 = new StandardRecord(out1);  // this loop works if in the CBC mode we add fields to the record to save the IV used.
-        Set<String> iterator = out2.getAllFieldNames();
-        for(String name : iterator){
-            if (name.startsWith("IV")){
-                out1.removeField(name);
-            }
-        }
-        out1.assertContentEquals(record1Expected);*/
         out1.assertContentEquals(record1Expected);
     }
 
@@ -365,7 +363,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty("string1", "map");
         testRunner2.setProperty("string2", "map");
         testRunner2.assertValid();
-        testRunner2.enqueue(record1);
+        testRunner2.enqueue(out);
         testRunner2.run();
         testRunner2.assertAllInputRecordsProcessed();
         testRunner2.assertOutputRecordsCount(1);
@@ -743,7 +741,7 @@ public class EncryptFieldTest {
         record1.setField("string2", FieldType.STRING, "Nouri2");
         record1.setField("int1", FieldType.INT, 1994);
         record1.setField("int2", FieldType.INT, 987654321);
-        record1.setField("long1", FieldType.LONG, 19941994);
+        record1.setField("long1", FieldType.LONG, 19941994L);
         record1.setField("long2", FieldType.LONG, 1234567890123L);
         byte[] a_byte = {7, 75, 15, 56,-3, -35, 59, -61, -112, -128, -3, -113};
         byte[] b_byte = {5, -58, 64, 12, -3};
@@ -784,8 +782,10 @@ public class EncryptFieldTest {
 
         TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
         testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
-        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty(EncryptField.IV, "azerty1234567891");
+        testRunner.setProperty(EncryptField.KEYFILE, "/home/ubuntu/public.der");
         testRunner.setProperty("string1", "");
         testRunner.setProperty("string2", "");
         testRunner.setProperty("int1", "");
@@ -840,8 +840,10 @@ public class EncryptFieldTest {
 
         TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
         testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
-        testRunner2.setProperty(EncryptField.ALGO, "AES");
+        testRunner2.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty(EncryptField.IV, "azerty1234567891");
+        testRunner2.setProperty(EncryptField.KEYFILE, "/home/ubuntu/private.der");
         testRunner2.setProperty("string1", "string");
         testRunner2.setProperty("string2", "string");
         testRunner2.setProperty("int1", "int");

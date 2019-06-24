@@ -1,7 +1,5 @@
 package com.hurence.logisland.processor.encryption;
 
-import com.hurence.logisland.processor.EncryptField;
-
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -28,13 +26,16 @@ public class EncryptorDES implements Encryptor {
 
     public static EncryptorDES getInstance(String mode, String padding, byte[] key, byte[] iv)
             throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException {
-        if (key.length%8 != 0) throw new InvalidKeyException("Invalid DES key length : "+key.length+"bytes");
+        if (null == key || key.length%8 != 0) throw new InvalidKeyException("Invalid DES key length ");
         if (mode == null) {
             return new EncryptorDES(null, null, key, null);
         }
         switch (mode) {
             case "CBC":
-                if (iv == null) throw new IllegalArgumentException("iv is required");
+                if (iv == null || iv.length != 8) {
+                    System.out.println("Invalid IV! default IV will be used ");
+                    iv = "12345678".getBytes();
+                }
                 if (padding == null) throw new NoSuchAlgorithmException("Invalid transformation format:"+ALGO_DES+"/"+mode);
                 break;
             case "ECB":
@@ -46,16 +47,10 @@ public class EncryptorDES implements Encryptor {
     }
 
     private EncryptorDES(String mode, String padding, byte[] key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
-        if (mode != null) {this.mode = mode;} else {
-            this.mode = "";
-        }
+        this.mode = mode;
         this.padding = padding;
         this.key = key;
-        if (iv.length != 8) {
-            this.iv = "12345678".getBytes();
-        } else {
-            this.iv = iv;
-        }
+        this.iv = iv;
         myKeySpec = new DESKeySpec(key);
         mySecretKeyFactory = SecretKeyFactory.getInstance("DES");
         secretKey = mySecretKeyFactory.generateSecret(myKeySpec);
@@ -64,56 +59,23 @@ public class EncryptorDES implements Encryptor {
         } else {cipher = Cipher.getInstance(ALGO_DES+"/"+mode+"/"+padding);}
     }
 
-    public byte[] encrypt (Object Data) throws Exception{
-        if (mode.equalsIgnoreCase("CBC")) {
+    public byte[] encrypt (byte[] Data) throws Exception{
+        if (null != mode && mode.equalsIgnoreCase("CBC")) {
             IvParameterSpec spec = new IvParameterSpec(iv);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
         } else {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         }
-        if ("NoPadding".equalsIgnoreCase(padding)) {
-            try {
-                String DataString = (String) Data;
-                byte[] x = DataString.getBytes();
-                return cipher.doFinal(x);
-            } catch (ClassCastException e) {
-                //ToDo how to handel this try!
-            }
-        } else {
-            byte[] x = EncryptField.toByteArray(Data);
-            byte[] encVal = cipher.doFinal(x);
-            return  encVal;
-        }
-
-        //TODO handle case of strings, not using ObjectStream just getBytes for example or 64BaseEcncoding
-        return null;
+        return  cipher.doFinal(Data);
     }
 
-    public Object decrypt (byte[] encryptedData) throws  Exception {
-        /*Key key = generateKey();*/
-        if (mode.equalsIgnoreCase("CBC")) {
+    public byte[] decrypt (byte[] encryptedData) throws  Exception {
+        if (null != mode && mode.equalsIgnoreCase("CBC")) {
             IvParameterSpec spec = new IvParameterSpec(iv);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
         } else {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
         }
-        byte[] decValue = cipher.doFinal(encryptedData);
-        if ("NoPadding".equalsIgnoreCase(padding)){
-            try {
-                String decryptedData = new String(decValue);
-                return new String(decValue);
-            } catch (ClassCastException e) {
-                //ToDo how to handel this try!
-            }
-        } else {
-            Object decryptedValue = EncryptField.toObject(decValue);
-            return decryptedValue;
-        }
-        //TODO handle case of strings, not using ObjectStream just getBytes for example or 64BaseEcncoding
-        return decValue;
+        return cipher.doFinal(encryptedData);
     }
-
-    /*private Key generateKey() throws Exception {
-        return new SecretKeySpec(this.key, ALGO_DESede);
-    }*/
 }
