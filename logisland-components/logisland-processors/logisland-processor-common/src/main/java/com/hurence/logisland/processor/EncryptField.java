@@ -8,6 +8,7 @@ import com.hurence.logisland.processor.encryption.*;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
@@ -86,6 +87,14 @@ public class EncryptField extends AbstractProcessor {
             .name("KeyFile")
             .description("Specifies the Key file to use as public or privite Key")
             .required(false)
+            .build();
+
+    public static final PropertyDescriptor CHARSET_TO_USE = new PropertyDescriptor.Builder()
+            .name("charset")
+            .description("the charset to use  id string (e.g. 'UTF-8')")
+            .required(true)
+            .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
+            .defaultValue("UTF-8")
             .build();
 
 
@@ -209,6 +218,7 @@ public class EncryptField extends AbstractProcessor {
         properties.add(KEY);
         properties.add(IV);
         properties.add(KEYFILE);
+        properties.add(CHARSET_TO_USE);
 
         return Collections.unmodifiableList(properties);
 
@@ -279,7 +289,7 @@ public class EncryptField extends AbstractProcessor {
                         Field field = record.getField(fieldName);
                         try {
                             if (field.getType() == FieldType.STRING) {
-                                record.setCheckedField(fieldName, FieldType.BYTES, encryptor.encrypt(((String) field.getRawValue()).getBytes()));
+                                record.setCheckedField(fieldName, FieldType.BYTES, encryptor.encrypt(((String) field.getRawValue()).getBytes(context.getPropertyValue(CHARSET_TO_USE).asString())));
                             } else {
                                 record.setCheckedField(fieldName, FieldType.BYTES, encryptor.encrypt(toByteArray(field.getRawValue())));
                             }
@@ -309,7 +319,7 @@ public class EncryptField extends AbstractProcessor {
                             }
                             try {
                                 if (type == FieldType.STRING) {
-                                    record.setCheckedField(fieldName, type, new String(encryptor.decrypt((byte[]) field.getRawValue())) );
+                                    record.setCheckedField(fieldName, type, new String(encryptor.decrypt((byte[]) field.getRawValue()), context.getPropertyValue(CHARSET_TO_USE).asString()) );
                                 } else {
                                     record.setCheckedField(fieldName, type,toObject(encryptor.decrypt((byte[]) field.getRawValue())));
                                 }

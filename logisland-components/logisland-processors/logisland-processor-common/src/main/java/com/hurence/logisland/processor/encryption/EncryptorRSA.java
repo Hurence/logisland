@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor.encryption;
 
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import java.io.File;
@@ -8,15 +9,15 @@ import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.*;
 // for using encryption/decryption with RSA algo we recommend generating both public and private keys with these commands:
-//               $ openssl genrsa -out keypair.pem 2048
-//               Generating RSA private key, 2048 bit long modulus
+//               $ openssl genrsa -out keypair.pem 4096  // you can use 1024 or 2048 also
+//               Generating RSA private key, 4096 bit long modulus
 //                ............+++
 //                ................................+++
 //                e is 65537 (0x10001)
 //                $ openssl rsa -in keypair.pem -outform DER -pubout -out public.der
 //                writing RSA key
 //                $ openssl pkcs8 -topk8 -nocrypt -in keypair.pem -outform DER -out private.der
-// then provide the path for public.der if encrypting, or the path for private.dem if decrypting.
+// then provide the path for public.der if encrypting, or the path for private.dem if decrypting.cd e
 
 public class EncryptorRSA implements Encryptor {
 

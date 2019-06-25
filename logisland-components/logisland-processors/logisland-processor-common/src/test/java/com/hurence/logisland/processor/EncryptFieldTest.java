@@ -17,8 +17,6 @@ import java.util.*;
 
 public class EncryptFieldTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(ModifyIdTest.class);
-
     private Record getRecord1() {
         Record record1 = new StandardRecord();
         record1.setField("string1", FieldType.STRING, "Logisland");
@@ -35,9 +33,15 @@ public class EncryptFieldTest {
         testRunner.assertNotValid();
         testRunner.setProperty(EncryptField.ALGO, "AES");
         testRunner.assertValid();
-        testRunner.setProperty(EncryptField.KEY, "123");
+        testRunner.setProperty(EncryptField.ALGO, "rsa");
         testRunner.assertNotValid();
+        testRunner.setProperty(EncryptField.ALGO, "RSA");
+        testRunner.assertValid();
+        testRunner.setProperty(EncryptField.KEY, "123");
+        testRunner.assertValid();
         testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.assertValid();
+        testRunner.setProperty(EncryptField.KEYFILE, "/home/ubuntu/public.der");
         testRunner.assertValid();
         testRunner.setProperty(EncryptField.MODE, "azert");
         testRunner.assertNotValid();

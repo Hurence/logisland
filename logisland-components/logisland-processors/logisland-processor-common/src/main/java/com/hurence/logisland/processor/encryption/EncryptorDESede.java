@@ -1,5 +1,8 @@
 package com.hurence.logisland.processor.encryption;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -13,6 +16,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
 public class EncryptorDESede implements Encryptor{
+    private static final Logger logger = LoggerFactory.getLogger(EncryptorDESede.class);
+
     public final static String ALGO_DESede = "DESede";
     private String mode;
     private String padding;
@@ -32,7 +37,7 @@ public class EncryptorDESede implements Encryptor{
         switch (mode) {
             case "CBC":
                 if (iv == null || iv.length != 8) {
-                    System.out.println("Invalid IV! default IV will be used ");
+                    logger.warn("Invalid IV! default IV will be used ");
                     iv = "12345678".getBytes();
                 }
                 if (padding == null) throw new NoSuchAlgorithmException("Invalid transformation format:"+ ALGO_DESede +"/"+mode);

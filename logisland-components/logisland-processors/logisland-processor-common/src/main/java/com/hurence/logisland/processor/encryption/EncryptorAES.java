@@ -1,5 +1,8 @@
 package com.hurence.logisland.processor.encryption;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
@@ -8,6 +11,8 @@ import java.security.*;
 
 // encrpyt or decript data with AES algo (with different transformation available)
 public class EncryptorAES implements Encryptor {
+
+    private static final Logger logger = LoggerFactory.getLogger(EncryptorAES.class);
 
     public final static String ALGO_AES = "AES";
     private String mode;
@@ -25,7 +30,7 @@ public class EncryptorAES implements Encryptor {
         switch (mode) {
             case "CBC":
                 if (null == iv || iv.length != 16) {
-                    System.out.println("Invalid IV! default IV will be used ");
+                    logger.warn("Invalid IV! default IV will be used ");
                     iv = "azerty1234567890".getBytes();
                 }
                 if (padding == null) throw new NoSuchAlgorithmException("Invalid transformation format:"+ALGO_AES+"/"+mode);
