@@ -33,7 +33,9 @@ public interface Processor extends ConfigurableComponent {
 
     /**
      * Process the incoming collection of records to
-     * generate a new collection of records
+     * generate a new collection of records. Input records may be modified depending on implementation !
+     * When implementing a processor it is recommanded to document if it directly modify inputs or not
+     * so that the user may configure or implement its pipeline accordingly.
      *
      * @param context the current process context
      * @param records the collection of records to handle
