@@ -63,21 +63,14 @@ public class PipelineConfigurationBroadcastWrapper {
     }
 
     public void refresh(EngineContext engineContext, SparkContext sparkContext) {
-        logger.info("Refreshing dataflow pipelines!");
-        if (broadcastedPipelineMap != null) {
-            broadcastedPipelineMap.unpersist();
-        }
-        broadcastedPipelineMap = getSparkContext(sparkContext).broadcast(engineContext.getStreamContexts().stream()
-                .collect(Collectors.toMap(StreamContext::getIdentifier, s -> s.getProcessContexts().stream().collect(Collectors.toList()))));
-
-//        Map<String, Collection<ProcessContext>> pipelineMap = engineContext.getStreamContexts().stream()
-//                .collect(
-//                        Collectors.toMap(
-//                                StreamContext::getIdentifier,
-//                                StreamContext::getProcessContexts
-//                        )
-//                );
-//        refresh(pipelineMap, sparkContext);
+        Map<String, Collection<ProcessContext>> pipelineMap = engineContext.getStreamContexts().stream()
+                .collect(
+                        Collectors.toMap(
+                                StreamContext::getIdentifier,
+                                s -> s.getProcessContexts().stream().collect(Collectors.toList())//do not modify this without running integration tests !
+                        )
+                );
+        refresh(pipelineMap, sparkContext);
     }
 
 
