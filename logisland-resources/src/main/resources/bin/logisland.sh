@@ -18,23 +18,6 @@ case "$(uname -s)" in
      ;;
 esac
 
-
-
-app_classpath=""
-for entry in "$lib_dir"/*
-do
-  if [[ ! -d "$lib$entry" ]]
-  then
-      if [[ -z "$app_classpath" ]]
-      then
-        app_classpath="$lib$entry"
-      else
-        app_classpath="$lib$entry,$app_classpath"
-      fi
-  fi
-done
-
-
 app_mainclass="com.hurence.logisland.runner.StreamProcessingRunner"
 
 
@@ -44,6 +27,67 @@ SPARK_MASTER="local[*]"
 VERBOSE_OPTIONS=""
 YARN_CLUSTER_OPTIONS=""
 APP_NAME=""
+
+# update $app_classpath so that it contains all logisland jars except for engines.
+# we look for jars into specified dir recursively.
+# We determine which engine jar to load latter.
+#
+# param 1 the dir where to look for jars.
+initSparkJarsOptRecursively() {
+    local -r dir="${1}"
+    for entry in "$dir"/*
+    do
+      local name=$(basename -- "${entry}")
+      if [[ ! -d "$entry" ]]
+      then
+          echo "add jar ${name}"
+          if [[ -z "$app_classpath" ]]
+          then
+            app_classpath="$entry"
+          else
+            app_classpath="$entry,$app_classpath"
+          fi
+      else
+          if [[ ! ${name} == "engines" ]]
+          then
+            initSparkJarsOptRecursively "${entry}"
+          fi
+      fi
+    done
+    return 0;
+}
+
+
+# update $java_cp so that it contains all logisland jars except for engines.
+# we look for jars into specified dir recursively.
+# We determine which engine jar to load latter.
+#
+# param 1 the dir where to look for jars.
+initJavaCpOptRecursively() {
+    local -r dir="${1}"
+    for entry in "$dir"/*
+    do
+      local name=$(basename -- "${entry}")
+      if [[ ! -d "$entry" ]]
+      then
+          echo "add jar ${name}"
+          if [[ -z "${java_cp}" ]]
+          then
+            java_cp="$entry"
+          else
+            java_cp="$entry:$java_cp"
+          fi
+      else
+          if [[ ! ${name} == "engines" ]]
+          then
+            initJavaCpOptRecursively "${entry}"
+          fi
+      fi
+    done
+    return 0;
+}
+
+
 
 usage() {
   echo "Usage:"
@@ -167,7 +211,10 @@ parse_input() {
 }
 #run logisland job with standalone engine (vanilla)
 run_standalone() {
-    java_cp=$(echo ${lib_dir}/*.jar | tr ' ' ':')
+    java_cp=""
+    initJavaCpOptRecursively "${lib_dir}"
+    echo "java_cp is ${java_cp}"
+
     engine_jar=`ls ${lib_dir}/engines/logisland-engine-vanilla-*.jar`
     MIN_MEM=`awk '{ if( $1 == "jvm.heap.min:" ){ gsub(/[ \t]+$/, "", $2);print $2 } }' ${CONF_FILE}`
     MAX_MEM=`awk '{ if( $1 == "jvm.heap.max:" ){ gsub(/[ \t]+$/, "", $2);print $2 } }' ${CONF_FILE}`
@@ -210,13 +257,19 @@ main() {
     then
       run_standalone
     else
+        echo "build classpath"
+        app_classpath=""
+        initSparkJarsOptRecursively "${lib_dir}"
+        echo "app_classpath is ${app_classpath}"
+
+        # Find version to use for spark
         SPARK_VERSION=`${SPARK_HOME}/bin/spark-submit --version 2>&1 >/dev/null | grep -m 1 -o '[0-9]*\.[0-9]*\.[0-9]*'`
         engine_jar=""
 
-        compare_versions $SPARK_VERSION 2.0.0
+        compare_versions ${SPARK_VERSION} 2.0.0
             case $? in
                 2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_1_6-*.jar` ;;
-                *) compare_versions $SPARK_VERSION 2.3.0
+                *) compare_versions ${SPARK_VERSION} 2.3.0
                     case $? in
                         2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_1-*.jar` ;;
                         *) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_3-*.jar` ;;
@@ -264,7 +317,7 @@ main() {
           echo "Starting with mode \"${MODE}\" on master \"${SPARK_MASTER}\""
         fi
 
-        case $MODE in
+        case ${MODE} in
           local*)
 
             ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \

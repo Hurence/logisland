@@ -758,50 +758,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <!--MUST be the last profile so it is executed in last-->
-            <id>copyDoc</id>
-            <activation>
-                <property>
-                    <name>!skipGenDoc</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
-                        <configuration>
-                            <includeProjectDependencies>true</includeProjectDependencies>
-                            <includePluginDependencies>true</includePluginDependencies>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>copy paste to ressources</id>
-                                <phase>install</phase>
-                                <configuration>
-                                    <executable>java</executable>
-                                    <arguments>
-                                        <argument>-classpath</argument>
-                                        <classpath>
-                                            <dependency>org.slf4j:slf4j-simple</dependency>
-                                            <dependency>org.slf4j:slf4j-api</dependency>
-                                            <dependency>commons-cli:commons-cli</dependency>
-                                            <dependency>commons-io:commons-io</dependency>
-                                        </classpath>
-                                        <argument>com.hurence.logisland.documentation.CopyPasteDoc</argument>
-                                    </arguments>
-                                </configuration>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
 </project>

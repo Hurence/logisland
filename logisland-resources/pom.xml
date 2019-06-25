@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland</artifactId>
+        <version>1.1.2</version>
+    </parent>
+    <artifactId>logisland-resources</artifactId>
+    <packaging>pom</packaging>
+    <description>holds common resources used to build installers</description>
+    <dependencies>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-documentation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+<!-- MAYBE MOVE CODE GENERATION HERE ??? -->
+    <profiles>
+        <profile>
+            <id>copyDoc</id>
+            <activation>
+                <property>
+                    <name>!skipGenDoc</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <configuration>
+                            <includeProjectDependencies>true</includeProjectDependencies>
+                            <includePluginDependencies>true</includePluginDependencies>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>copy paste to ressources</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <executable>java</executable>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <classpath>
+                                            <dependency>org.slf4j:slf4j-simple</dependency>
+                                            <dependency>org.slf4j:slf4j-api</dependency>
+                                            <dependency>commons-cli:commons-cli</dependency>
+                                            <dependency>commons-io:commons-io</dependency>
+                                            <dependency>com.hurence.logisland:logisland-documentation</dependency>
+                                        </classpath>
+                                        <argument>com.hurence.logisland.documentation.CopyPasteDoc</argument>
+                                        <argument>-d</argument>
+                                        <argument>../logisland-documentation</argument>
+                                        <argument>-o</argument>
+                                        <argument>${project.basedir}/src/main/resources/docs</argument>
+                                    </arguments>
+                                </configuration>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

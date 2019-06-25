@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.hadoop;
+package com.hurence.logisland.service.hbase.security;
 
 import com.hurence.logisland.logging.ComponentLog;
 import org.apache.hadoop.security.UserGroupInformation;
