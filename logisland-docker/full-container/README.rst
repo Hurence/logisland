@@ -31,7 +31,7 @@ Building the image
 .. code-block:: sh
 
     # build logisland
-    mvn clean install -Pfull
+    mvn clean package
     cp logisland-assembly/target/logisland-1.1.2-bin.tar.gz logisland-docker/full-container
 
 The archive is generated under dist directory, 
