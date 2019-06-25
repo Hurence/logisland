@@ -72,7 +72,7 @@ com.hurence.logisland.processor.ApplyRegexp
 
 Tags
 ____
-com/hurence/logisland/processor/parser, regex, log, record
+parser, regex, log, record
 
 Properties
 __________
@@ -1156,7 +1156,7 @@ com.hurence.logisland.processor.ParseProperties
 
 Tags
 ____
-record, properties, com/hurence/logisland/processor/parser
+record, properties, parser
 
 Properties
 __________
@@ -1355,7 +1355,7 @@ com.hurence.logisland.processor.SplitField
 
 Tags
 ____
-com/hurence/logisland/processor/parser, split, log, record
+parser, split, log, record
 
 Properties
 __________
@@ -1407,7 +1407,7 @@ com.hurence.logisland.processor.SplitText
 
 Tags
 ____
-com/hurence/logisland/processor/parser, regex, log, record
+parser, regex, log, record
 
 Properties
 __________
@@ -1498,7 +1498,7 @@ com.hurence.logisland.processor.SplitTextWithProperties
 
 Tags
 ____
-com/hurence/logisland/processor/parser, regex, log, record
+parser, regex, log, record
 
 Properties
 __________
