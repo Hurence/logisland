@@ -34,6 +34,7 @@ import java.io.{File, FileReader}
 import java.util
 import java.util.Collections
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
@@ -52,6 +53,10 @@ import scala.collection.JavaConversions._
   *
   * @author bailett
   */
+
+@CapabilityDescription("Generates data at the specified number of rows per second, each output row contains a timestamp and value. " +
+  "Where timestamp is a Timestamp type containing the time of message dispatch, and value is of Long type containing the message count, " +
+  "starting from 0 as the first row. This source is intended for testing and benchmarking. Used in StructuredStream streams.")
 class RateStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
 
 
@@ -179,11 +184,6 @@ class RateStructuredStreamProviderService extends AbstractControllerService with
     * @return DataFrame currently loaded
     */
   override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
-
-    //  implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-
-    df
-      .writeStream
-      .format("console")
+    throw new IllegalArgumentException("RateStructuredStreamProviderService class does not support write operation");
   }
 }
