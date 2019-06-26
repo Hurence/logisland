@@ -47,27 +47,24 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
 
   val MAX_FILES_PER_TRIGGER: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("max.files.header")
-    .description("Is this a csv file with the first line as a header")//TODO
+    .description("Is this a csv file with the first line as a header")//TODO use spark default otherwise
     .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
     .required(false)
     .build
 
   val LATEST_FIRST: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("csv.delimiter")
-    .description("the delimiter")//TODO
+    .description("the delimiter")//TODO use spark default otherwise
     .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
     .required(false)
     .build
 
   val FILENAME_ONLY: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("local.file.output.path")
-    .description("the location of the file to be writen")//TODO
+    .description("the location of the file to be writen")//TODO use spark default otherwise
     .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
     .required(false)
     .build
-
-
-//  var recordSeq: Seq[Record] = _
 
   var path: String = _
   var maxFilesPerTrigger: Option[Long] = _
@@ -77,6 +74,7 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
   @OnEnabled
   @throws[InitializationException]
   override def init(context: ControllerServiceInitializationContext): Unit = {
+    super.init(context)
     path = context.getPropertyValue(LOCAL_INPUT_PATH).asString()
     if (context.getPropertyValue(MAX_FILES_PER_TRIGGER).isSet) {
       maxFilesPerTrigger = Some(context.getPropertyValue(MAX_FILES_PER_TRIGGER).asLong())
@@ -123,9 +121,14 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
 
     val dataStreamReader =  spark.readStream
       .format("text")
-
     if (maxFilesPerTrigger.isDefined) {
       dataStreamReader.option("maxFilesPerTrigger", maxFilesPerTrigger.get)
+    }
+    if (latestFirst.isDefined) {
+      dataStreamReader.option("latestFirst", latestFirst.get)
+    }
+    if (fileNameOnly.isDefined) {
+      dataStreamReader.option("fileNameOnly", fileNameOnly.get)
     }
     dataStreamReader.load(path)
       .as[String]
@@ -142,7 +145,6 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     * @return DataFrame currently loaded
     */
   override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
-
-    throw new IllegalArgumentException("LocalFileStructuredStreamProviderService class does not support write operation yet");
+    throw new IllegalArgumentException("LocalFileStructuredStreamProviderService class does not support write operation yet")
   }
 }

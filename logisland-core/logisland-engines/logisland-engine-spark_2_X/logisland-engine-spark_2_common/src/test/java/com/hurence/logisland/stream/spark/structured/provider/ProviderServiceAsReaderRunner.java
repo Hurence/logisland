@@ -59,7 +59,10 @@ public class ProviderServiceAsReaderRunner {
         propsFileProvider.put("local.input.path", getClass().getResource("/input").getFile());
         List<ControllerServiceConfiguration> services = new ArrayList<>();
         services.add(testLocalFileProvider(propsFileProvider));
-        services.add(testConsoleProvider(Collections.emptyMap()));
+
+        Map<String, String> propsConsoleProvider = new HashMap<>();
+        propsConsoleProvider.put("truncate", "false");
+        services.add(testConsoleProvider(propsConsoleProvider));
         engineConfiguration.setControllerServiceConfigurations(services);
         return engineConfiguration;
     }
