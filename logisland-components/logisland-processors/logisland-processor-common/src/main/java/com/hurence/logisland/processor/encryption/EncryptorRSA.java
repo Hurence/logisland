@@ -18,6 +18,10 @@ import java.security.spec.*;
 //                writing RSA key
 //                $ openssl pkcs8 -topk8 -nocrypt -in keypair.pem -outform DER -out private.der
 // then provide the path for public.der if encrypting, or the path for private.dem if decrypting.cd e
+//
+// or you can use ssh-keygen but you need to add option -m PEM into your ssh-keygen command. ex: $ ssh-keygen -m PEM -t rsa -b 4096 -C "your_email@example.com" to force ssh-keygen to export as PEM format.
+// then you need Convert private Key to PKCS#8 format (so Java can read it) : $ openssl pkcs8 -topk8 -inform PEM -outform DER -in private_key.pem -out private_key.der -nocrypt
+// Output public key portion in DER format (so Java can read it) : $ openssl rsa -in private_key.pem -pubout -outform DER -out public_key.der
 
 public class EncryptorRSA implements Encryptor {
 

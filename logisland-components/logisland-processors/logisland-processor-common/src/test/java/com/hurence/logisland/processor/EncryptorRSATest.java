@@ -66,7 +66,7 @@ public class EncryptorRSATest {
         testRunner.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
         testRunner.setProperty(EncryptField.IV, "azerty1234567891");
-        testRunner.setProperty(EncryptField.KEYFILE, "/home/ubuntu/public.der");
+        testRunner.setProperty(EncryptField.KEYFILE, getClass().getResource("/Keys/public.der").getFile());
         testRunner.setProperty("string1", "");
         testRunner.setProperty("string2", "");
         testRunner.setProperty("int1", "");
@@ -124,7 +124,7 @@ public class EncryptorRSATest {
         testRunner2.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
         testRunner2.setProperty(EncryptField.IV, "azerty1234567891");
-        testRunner2.setProperty(EncryptField.KEYFILE, "/home/ubuntu/private.der");
+        testRunner2.setProperty(EncryptField.KEYFILE, getClass().getResource("/Keys/private.der").getFile());
         testRunner2.setProperty("string1", "string");
         testRunner2.setProperty("string2", "string");
         testRunner2.setProperty("int1", "int");

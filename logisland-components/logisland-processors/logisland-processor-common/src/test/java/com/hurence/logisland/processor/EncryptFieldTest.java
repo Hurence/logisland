@@ -789,7 +789,7 @@ public class EncryptFieldTest {
         testRunner.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
         testRunner.setProperty(EncryptField.IV, "azerty1234567891");
-        testRunner.setProperty(EncryptField.KEYFILE, "/home/ubuntu/public.der");
+        testRunner.setProperty(EncryptField.KEYFILE, "/home/ubuntu/keys/public_ssh.der");
         testRunner.setProperty("string1", "");
         testRunner.setProperty("string2", "");
         testRunner.setProperty("int1", "");
@@ -847,7 +847,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty(EncryptField.ALGO, "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
         testRunner2.setProperty(EncryptField.IV, "azerty1234567891");
-        testRunner2.setProperty(EncryptField.KEYFILE, "/home/ubuntu/private.der");
+        testRunner2.setProperty(EncryptField.KEYFILE, "/home/ubuntu/keys/private_ssh.der");
         testRunner2.setProperty("string1", "string");
         testRunner2.setProperty("string2", "string");
         testRunner2.setProperty("int1", "int");
