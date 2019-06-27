@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.encryption.*;
@@ -21,7 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
-
+@CapabilityDescription("This is a processor that is used to encrypt or decrypt one or many fields of any type of a given Record mapping")
 @DynamicProperty(name = "field to encrypt",
         supportsExpressionLanguage = true,
         value = "a default value",
@@ -91,7 +92,7 @@ public class EncryptField extends AbstractProcessor {
 
     public static final PropertyDescriptor CHARSET_TO_USE = new PropertyDescriptor.Builder()
             .name("charset")
-            .description("the charset to use  id string (e.g. 'UTF-8')")
+            .description("the charset encoding to use (e.g. 'UTF-8')")
             .required(true)
             .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
             .defaultValue("UTF-8")
