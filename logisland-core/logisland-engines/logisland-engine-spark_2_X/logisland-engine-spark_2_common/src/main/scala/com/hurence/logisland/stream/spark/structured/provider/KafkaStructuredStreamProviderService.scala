@@ -68,6 +68,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
   @OnEnabled
   @throws[InitializationException]
   override def init(context: ControllerServiceInitializationContext): Unit = {
+    super.init(context)
     this.synchronized {
       try {
 
