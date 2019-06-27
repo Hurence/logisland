@@ -2,6 +2,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.encryption.*;
@@ -21,7 +22,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
-
+@ExtraDetailFile("./details/common-processors/EncryptField-Detail.rst")
 @CapabilityDescription("This is a processor that is used to encrypt or decrypt one or many fields of any type of a given Record mapping")
 @DynamicProperty(name = "field to encrypt",
         supportsExpressionLanguage = true,
