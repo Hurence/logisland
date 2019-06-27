@@ -723,6 +723,56 @@ __________________
 .. include:: ./details/common-processors/DebugStream-Detail.rst
 ----------
 
+.. _com.hurence.logisland.processor.EncryptField: 
+
+EncryptField
+------------
+This is a processor that is used to encrypt or decrypt one or many fields of any type of a given Record mapping
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.1.2
+
+Class
+_____
+com.hurence.logisland.processor.EncryptField
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**Mode**", "Specifies whether the content should be encrypted or decrypted", "Encrypt, Decrypt", "Encrypt", "false", "false"
+   "**Algo**", "Specifies the algorithm that the cipher will use", "AES, AES/CBC/PKCS5Padding, AES/ECB/PKCS5Padding, AES/ECB/NoPadding, AES/CBC/NoPadding, DES, DES/CBC/PKCS5Padding, DES/ECB/PKCS5Padding, DES/CBC/NoPadding, DES/ECB/NoPadding, DESede, DESede/CBC/PKCS5Padding, DESede/ECB/PKCS5Padding, DESede/CBC/NoPadding, DESede/ECB/NoPadding, RSA/ECB/PKCS1Padding, RSA/ECB/OAEPWithSHA-1AndMGF1Padding, RSA/ECB/OAEPWithSHA-256AndMGF1Padding, RSA", "AES", "false", "false"
+   "Key", "Specifies the key to use", "", "azerty1234567890", "false", "false"
+   "Iv", "Specifies the Iv[] to use", "", "null", "false", "false"
+   "KeyFile", "Specifies the Key file to use as public or privite Key", "", "null", "false", "false"
+   "**charset**", "the charset encoding to use (e.g. 'UTF-8')", "", "UTF-8", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "field to encrypt", "a default value", "encrypt the field value", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/EncryptField-Detail.rst
+----------
+
 .. _com.hurence.logisland.processor.datastore.EnrichRecords: 
 
 EnrichRecords
