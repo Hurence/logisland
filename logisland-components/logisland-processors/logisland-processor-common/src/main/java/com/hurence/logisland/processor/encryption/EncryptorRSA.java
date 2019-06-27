@@ -1,27 +1,18 @@
 package com.hurence.logisland.processor.encryption;
 
 
+import org.apache.commons.codec.binary.Base64;
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.*;
-// for using encryption/decryption with RSA algo we recommend generating both public and private keys with these commands:
-//               $ openssl genrsa -out keypair.pem 4096  // you can use 1024 or 2048 also
-//               Generating RSA private key, 4096 bit long modulus
-//                ............+++
-//                ................................+++
-//                e is 65537 (0x10001)
-//                $ openssl rsa -in keypair.pem -outform DER -pubout -out public.der
-//                writing RSA key
-//                $ openssl pkcs8 -topk8 -nocrypt -in keypair.pem -outform DER -out private.der
-// then provide the path for public.der if encrypting, or the path for private.dem if decrypting.cd e
-//
-// or you can use ssh-keygen but you need to add option -m PEM into your ssh-keygen command. ex: $ ssh-keygen -m PEM -t rsa -b 4096 -C "your_email@example.com" to force ssh-keygen to export as PEM format.
-// then you need Convert private Key to PKCS#8 format (so Java can read it) : $ openssl pkcs8 -topk8 -inform PEM -outform DER -in private_key.pem -out private_key.der -nocrypt
-// Output public key portion in DER format (so Java can read it) : $ openssl rsa -in private_key.pem -pubout -outform DER -out public_key.der
+import scala.io.Source;
+
 
 public class EncryptorRSA implements Encryptor {
 
@@ -62,15 +53,57 @@ public class EncryptorRSA implements Encryptor {
     }
 
     public PublicKey readPublicKeyFromFile (String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] keyBytes = Files.readAllBytes(new File(filename).toPath());
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePublic(spec);
+        if (filename.endsWith("pem")) {
+            return getPublicKey(filename);
+        } else {
+            byte[] keyBytes = Files.readAllBytes(new File(filename).toPath());
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePublic(spec);
+        }
     }
     public PrivateKey readPrivateKeyFromFile (String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] keyBytes = Files.readAllBytes(new File(filename).toPath());
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePrivate(spec);
+        if (filename.endsWith("pem")) {
+            return getPrivateKey(filename);
+        } else {
+            byte[] keyBytes = Files.readAllBytes(new File(filename).toPath());
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePrivate(spec);
+        }
     }
+
+    public PublicKey getPublicKey (String filename) throws NoSuchAlgorithmException, InvalidKeySpecException{
+        String publicKeyPEM = Source.fromFile(filename, StandardCharsets.UTF_8.toString()).getLines().mkString("\n");
+        return getPublicKeyFROMString(publicKeyPEM);
+
+    }
+
+    public PublicKey getPublicKeyFROMString (String key) throws NoSuchAlgorithmException, InvalidKeySpecException{
+        String publicKeyPEM = key;
+        publicKeyPEM = publicKeyPEM.replace("-----BEGIN PUBLIC KEY-----\n", "");
+        publicKeyPEM = publicKeyPEM.replace("-----END PUBLIC KEY-----", "");
+        byte[] encoded = Base64.decodeBase64(publicKeyPEM.trim());
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PublicKey pubKey = kf.generatePublic(new X509EncodedKeySpec(encoded));
+        return pubKey;
+    }
+    public PrivateKey getPrivateKey (String filename) throws NoSuchAlgorithmException, InvalidKeySpecException{
+        String privateKeyPEM = Source.fromFile(filename, StandardCharsets.UTF_8.toString()).getLines().mkString("\n");
+        return getPrivateKeyFROMString(privateKeyPEM);
+
+    }
+
+    public PrivateKey getPrivateKeyFROMString (String key) throws NoSuchAlgorithmException, InvalidKeySpecException{
+        String privateKeyPEM = key;
+        privateKeyPEM = privateKeyPEM.replace("-----BEGIN PRIVATE KEY-----\n", "");
+        privateKeyPEM = privateKeyPEM.replace("-----END PRIVATE KEY-----", "");
+        byte[] encoded = Base64.decodeBase64(privateKeyPEM.trim());
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(encoded);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PrivateKey privateKey = kf.generatePrivate(spec);
+        return privateKey;
+    }
+
+
 }
