@@ -18,7 +18,18 @@ public class RecordsTimeSeriesConverter implements Serializable {
 
 
     private Logger logger = LoggerFactory.getLogger(RecordsTimeSeriesConverter.class.getName());
-    MetricTimeSeriesConverter converter = new MetricTimeSeriesConverter();
+    private MetricTimeSeriesConverter converter = new MetricTimeSeriesConverter();
+    private boolean saxEncoding;
+
+
+
+    public RecordsTimeSeriesConverter(boolean saxEncoding) {
+        this.saxEncoding = saxEncoding;
+    }
+
+    public RecordsTimeSeriesConverter() {
+        this(false);
+    }
 
     /**
      * Compact a related list of records a single chunked one
@@ -27,14 +38,13 @@ public class RecordsTimeSeriesConverter implements Serializable {
      * @return
      * @throws ProcessException
      */
-    public Record chunk(List<Record> records) throws ProcessException {
+    public ChunkRecord chunk(List<Record> records) throws ProcessException {
 
         Record first = records.get(0);
         String batchUID = UUID.randomUUID().toString();
         final long firstTS = records.get(0).getTime().getTime();
         long tmp = records.get(records.size() - 1).getTime().getTime();
         final long lastTS = tmp == firstTS ? firstTS + 1 : tmp;
-
 
         //extract meta
         String metricType = records.stream().filter(record -> record.hasField(FieldDictionary.RECORD_TYPE) &&
@@ -53,8 +63,8 @@ public class RecordsTimeSeriesConverter implements Serializable {
                         !field.getName().equals(FieldDictionary.RECORD_VALUE) &&
                         !field.getName().equals(FieldDictionary.RECORD_ID) &&
                         !field.getName().equals(FieldDictionary.RECORD_TYPE) &&
-                        !field.getName().equals(FieldDictionary.RECORD_START) &&
-                        !field.getName().equals(FieldDictionary.RECORD_END))
+                        !field.getName().equals(FieldDictionary.RECORD_CHUNK_START) &&
+                        !field.getName().equals(FieldDictionary.RECORD_CHUNK_END))
                 .collect(Collectors.toMap(field -> field.getName().replaceAll("\\.", "_"),
                         field -> {
                             try {
@@ -96,16 +106,11 @@ public class RecordsTimeSeriesConverter implements Serializable {
         MetricTimeSeries metricTimeSeries = ret.build();
         BinaryTimeSeries binaryTimeSeries = converter.to(metricTimeSeries);
 
-
-        Record chunkrecord = new StandardRecord(RecordDictionary.METRIC)
-                .setField(FieldDictionary.RECORD_START, FieldType.LONG, binaryTimeSeries.getStart())
-                .setField(FieldDictionary.RECORD_END, FieldType.LONG, binaryTimeSeries.getEnd())
-                .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, binaryTimeSeries.getPoints())
-                .setField(FieldDictionary.RECORD_NAME, FieldType.STRING, binaryTimeSeries.getName());
-
-        attributes.keySet().forEach(key -> {
-            chunkrecord.setField(key, FieldType.STRING, binaryTimeSeries.getFields().get(key));
-        });
+        ChunkRecord chunkrecord = new ChunkRecord(metricType, metricName);
+        chunkrecord.setStart(binaryTimeSeries.getStart());
+        chunkrecord.setEnd(binaryTimeSeries.getEnd());
+        chunkrecord.setPoints(binaryTimeSeries.getPoints());
+        chunkrecord.setAttributes(attributes);
 
         return chunkrecord;
 
@@ -122,8 +127,8 @@ public class RecordsTimeSeriesConverter implements Serializable {
     public List<Record> unchunk(Record record) throws ProcessException {
 
         String name = record.getField(FieldDictionary.RECORD_NAME).asString();
-        long start = record.getField(FieldDictionary.RECORD_START).asLong();
-        long end = record.getField(FieldDictionary.RECORD_END).asLong();
+        long start = record.getField(FieldDictionary.RECORD_CHUNK_START).asLong();
+        long end = record.getField(FieldDictionary.RECORD_CHUNK_END).asLong();
         String type = record.getField(FieldDictionary.RECORD_TYPE).asString();
 
         BinaryTimeSeries.Builder ret = new BinaryTimeSeries.Builder()

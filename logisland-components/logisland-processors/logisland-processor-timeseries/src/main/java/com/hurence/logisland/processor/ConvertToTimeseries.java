@@ -21,12 +21,10 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.record.*;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.timeseries.converter.RecordsTimeSeriesConverter;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,11 +34,6 @@ import java.util.stream.Collectors;
 @ExtraDetailFile("./details/common-processors/EncodeSAX-Detail.rst")
 public class ConvertToTimeseries extends AbstractProcessor {
 
-
-    private Logger logger = LoggerFactory.getLogger(ConvertToTimeseries.class.getName());
-    private RecordsTimeSeriesConverter converter = new RecordsTimeSeriesConverter();
-
-
     public static final PropertyDescriptor GROUP_BY_FIELD = new PropertyDescriptor.Builder()
             .name("group.by.field")
             .description("The field the chunk should be grouped by")
@@ -49,34 +42,64 @@ public class ConvertToTimeseries extends AbstractProcessor {
             .defaultValue("")
             .build();
 
+    public static final PropertyDescriptor AGGS = new PropertyDescriptor.Builder()
+            .name("aggs")
+            .description("The agregations to calculates for the chunk")
+            .required(false)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)//TODO use validator with enum
+//            .defaultValue("")//TODO all ? include ALL and NONE in enum
+            .build();
+
+    public static final PropertyDescriptor SAX_ENCODING = new PropertyDescriptor.Builder()
+            .name("sax.encoding")
+            .description("whether to add a sax encoding version of the chunk")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .build();
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(GROUP_BY_FIELD);
-
+        descriptors.add(AGGS);
+        descriptors.add(SAX_ENCODING);
         return descriptors;
     }
 
+    private RecordsTimeSeriesConverter converter;
+    private List<String> groupBy;
+
+
+    @Override
+    public void init(final ProcessContext context) {
+        super.init(context);
+        final String[] groupByArray = context.getPropertyValue(GROUP_BY_FIELD).asString().split(",");
+        groupBy = Arrays.stream(groupByArray)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toList());
+        boolean saxEncoding = context.getPropertyValue(SAX_ENCODING).asBoolean();
+        converter = new RecordsTimeSeriesConverter(saxEncoding);
+
+    }
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        String[] groupBy = context.getPropertyValue(GROUP_BY_FIELD).asString().split(",");
-
         List<Record> outputRecords = Collections.emptyList();
 
-        Map<String, List<Record>> groups = records.stream().collect(Collectors.groupingBy(r ->
-                Arrays.stream(groupBy).filter(StringUtils::isNotBlank).collect(Collectors.toList())
+        Map<String, List<Record>> groups = records.stream().collect(
+                Collectors.groupingBy(r ->
+                        groupBy
                         .stream().map(f -> r.hasField(f) ? r.getField(f).asString() : null)
-                        .collect(Collectors.joining("|"))));
+                        .collect(Collectors.joining("|"))
+                ));
 
         if (!groups.isEmpty()) {
             outputRecords = groups.values().stream()
                     .filter(l -> !l.isEmpty())
-                    .map(recs -> {
-                        Collections.sort(recs, Comparator.comparing(Record::getTime));
-                        return recs;
+                    .peek(recs -> {
+                        recs.sort(Comparator.comparing(Record::getTime));
                     })
                     .map(converter::chunk)
                     .collect(Collectors.toList());

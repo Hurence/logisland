@@ -18,10 +18,6 @@ package com.hurence.logisland.timeseries.converter
 import com.hurence.logisland.record.FieldDictionary
 import com.hurence.logisland.record.FieldType
 import com.hurence.logisland.record.StandardRecord
-import com.hurence.logisland.timeseries.GenericTimeSeries
-import com.hurence.logisland.timeseries.MetricTimeSeries
-import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer
-import com.hurence.logisland.timeseries.dts.Pair
 import spock.lang.Specification
 
 import java.time.Instant
@@ -64,11 +60,11 @@ class RecordsTimeSeriesConverterTest extends Specification {
 
         then:
         chunkRecord != null
-        chunkRecord.getAllFields().size() == 9
-        chunkRecord.getField(FieldDictionary.RECORD_START).asLong() == start
-        chunkRecord.getField(FieldDictionary.RECORD_END).asLong() == end
+        chunkRecord.getAllFields().size() == 8
+        chunkRecord.getField(FieldDictionary.RECORD_CHUNK_START).asLong() == start
+        chunkRecord.getField(FieldDictionary.RECORD_CHUNK_END).asLong() == end
         chunkRecord.getField(FieldDictionary.RECORD_NAME).asString() == name
-        chunkRecord.getField("host").asString() == host
+        chunkRecord.getAttributes().get("host") == host
 
         revertedRecords.size() == 3
         revertedRecords*.every {

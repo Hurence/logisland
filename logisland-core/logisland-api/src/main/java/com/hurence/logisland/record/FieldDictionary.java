@@ -36,8 +36,14 @@ public class FieldDictionary {
     public static final String RECORD_BODY = "record_body";
     public static final String RECORD_COUNT = "record_count";
     public static final String RECORD_LAST_UPDATE_TIME = "record_last_update_time";
-    public static final String RECORD_START = "record_start";
-    public static final String RECORD_END = "record_end";
+
+    public static final String RECORD_CHUNK_START = "record_chunk_start";
+    public static final String RECORD_CHUNK_END = "record_chunk_end";
+    public static final String RECORD_CHUNK_META = "record_chunk_attribute";
+    public static final String RECORD_CHUNK_MAX = "record_chunk_max";
+    public static final String RECORD_CHUNK_MIN = "record_chunk_min";
+    public static final String RECORD_CHUNK_AVG = "record_chunk_avg";
+    public static final String RECORD_CHUNK_SAX = "record_chunk_sax";
 
 
     public static final String RECORD_POSITION = "record_position";
@@ -91,6 +97,15 @@ public class FieldDictionary {
             RECORD_POSITION_TIMESTAMP
     );
 
+    public static final List<String> CHUNK_FIELDS = Arrays.asList(
+            RECORD_CHUNK_START,
+            RECORD_CHUNK_END,
+            RECORD_CHUNK_META,
+            RECORD_CHUNK_MAX,
+            RECORD_CHUNK_MIN,
+            RECORD_CHUNK_AVG,
+            RECORD_CHUNK_SAX
+    );
     /**
      * All fields. If accessed, do not modify!
      * Kept accessible for performance purpose (no duplicate on usage like when using asList())
