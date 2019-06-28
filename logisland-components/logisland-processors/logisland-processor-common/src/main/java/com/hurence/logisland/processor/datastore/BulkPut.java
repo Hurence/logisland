@@ -118,14 +118,6 @@ public class BulkPut extends AbstractDatastoreProcessor
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
-        // check if we need initialization
-        if(datastoreClientService == null) {
-            try {
-                init(context);
-            } catch (com.hurence.logisland.component.InitializationException e) {
-                e.printStackTrace();
-            }
-        }
 
         // bail out if init has failed
         if(datastoreClientService == null) {

@@ -492,12 +492,6 @@ public class RunPython extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records)
     {
-        if(pythonInterpreter == null)
-            try {
-                init(context);
-            } catch (InitializationException e) {
-                e.printStackTrace();
-            }
 
         Collection<Record> outputRecords = null;
         

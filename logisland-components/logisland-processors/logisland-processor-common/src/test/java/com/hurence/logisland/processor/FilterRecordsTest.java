@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.processor.util.BaseSyslogTest;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -34,7 +35,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
 
 
     @Test
-    public void testNothingRemaining() {
+    public void testNothingRemaining() throws InitializationException {
 
         Collection<Record> records = new ArrayList<>();
 
@@ -67,7 +68,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testRemoveOneRecord() {
+    public void testRemoveOneRecord() throws InitializationException {
 
         Collection<Record> records = new ArrayList<>();
 
@@ -106,7 +107,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
 
 
     @Test
-    public void testRemoveTwoRecord() {
+    public void testRemoveTwoRecord() throws InitializationException {
 
         Collection<Record> records = new ArrayList<>();
 
@@ -145,7 +146,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testRemoveOneLongRecord() {
+    public void testRemoveOneLongRecord() throws InitializationException {
 
         Collection<Record> records = new ArrayList<>();
 
@@ -184,7 +185,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testRemoveNoRecordNonExistingField() {
+    public void testRemoveNoRecordNonExistingField() throws InitializationException {
 
         Collection<Record> records = new ArrayList<>();
 

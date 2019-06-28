@@ -24,6 +24,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,7 @@ public class ConvertFieldsType extends AbstractProcessor {
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
                 .expressionLanguageSupported(false)
-//                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                 .required(false)
                 .dynamic(true)
                 .build();
@@ -60,18 +61,13 @@ public class ConvertFieldsType extends AbstractProcessor {
 
     @Override
     public void init(ProcessContext context) throws InitializationException {
+        super.init(context);
         fieldTypes = getStringFieldTypes(context);
     }
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        if(fieldTypes == null)
-            try {
-                init(context);
-            } catch (InitializationException e) {
-                e.printStackTrace();
-            }
 
         for (Record record : records) {
             fieldTypes.keySet().forEach(fieldName -> {

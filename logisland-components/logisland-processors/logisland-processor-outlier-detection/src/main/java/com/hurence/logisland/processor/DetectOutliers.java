@@ -582,13 +582,6 @@ public class DetectOutliers extends AbstractProcessor {
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
-        // context may not have been initialized
-        if(outlierConfig == null)
-            try {
-                init(context);
-            } catch (InitializationException e) {
-                e.printStackTrace();
-            }
 
         Collection<Record> list = new ArrayList<>();
 

@@ -1,12 +1,12 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.processor.encryption.EncryptionMethod;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import com.hurence.logisland.processor.encryption.EncryptionMethod;
 import org.junit.Assert;
 import org.junit.Test;
 

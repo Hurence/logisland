@@ -125,14 +125,6 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        // check if we need initialization
-        if (datastoreClientService == null) {
-            try {
-                init(context);
-            } catch (com.hurence.logisland.component.InitializationException e) {
-                e.printStackTrace();
-            }
-        }
 
         List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {

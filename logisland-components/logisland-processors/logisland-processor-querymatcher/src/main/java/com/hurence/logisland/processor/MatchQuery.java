@@ -230,13 +230,7 @@ public class MatchQuery extends AbstractProcessor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        // may have not been initialized
-        if (monitor == null)
-            try {
-                init(context);
-            } catch (InitializationException e) {
-                e.printStackTrace();
-            }
+
         try {
             return internalProcess(context, records);
         } finally {
