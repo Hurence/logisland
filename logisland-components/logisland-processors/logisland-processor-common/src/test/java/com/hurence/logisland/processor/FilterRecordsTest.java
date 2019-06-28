@@ -35,7 +35,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
 
 
     @Test
-    public void testNothingRemaining() throws InitializationException {
+    public void testNothingRemaining() {
 
         Collection<Record> records = new ArrayList<>();
 
@@ -68,7 +68,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testRemoveOneRecord() throws InitializationException {
+    public void testRemoveOneRecord() {
 
         Collection<Record> records = new ArrayList<>();
 
@@ -107,7 +107,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
 
 
     @Test
-    public void testRemoveTwoRecord() throws InitializationException {
+    public void testRemoveTwoRecord() {
 
         Collection<Record> records = new ArrayList<>();
 
@@ -146,7 +146,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testRemoveOneLongRecord() throws InitializationException {
+    public void testRemoveOneLongRecord() {
 
         Collection<Record> records = new ArrayList<>();
 
@@ -185,7 +185,7 @@ public class FilterRecordsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testRemoveNoRecordNonExistingField() throws InitializationException {
+    public void testRemoveNoRecordNonExistingField() {
 
         Collection<Record> records = new ArrayList<>();
 

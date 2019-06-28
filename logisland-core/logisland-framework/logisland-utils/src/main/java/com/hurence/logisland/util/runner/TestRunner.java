@@ -46,7 +46,7 @@ public interface TestRunner {
     /**
      * Performs the operation.
      */
-    void run() throws InitializationException;
+    void run() ;
 
     /**
      * Updates the identifier of the tested processor

@@ -81,8 +81,12 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
-    public void run() throws InitializationException{
-        this.processor.init(context);
+    public void run() {
+        try {
+            this.processor.init(context);
+        } catch (InitializationException e) {
+            throw new RuntimeException(e);
+        }
         Collection<Record> outputRecords = processor.process(context, inputRecordsQueue);
         outputRecordsList.addAll(outputRecords);
         inputRecordsQueue.clear();
