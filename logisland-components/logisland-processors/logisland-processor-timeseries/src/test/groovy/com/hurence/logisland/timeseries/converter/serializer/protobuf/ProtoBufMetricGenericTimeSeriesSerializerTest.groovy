@@ -17,7 +17,7 @@ package com.hurence.logisland.timeseries.converter.serializer.protobuf
 
 import com.hurence.logisland.timeseries.converter.common.Compression
 import com.hurence.logisland.timeseries.MetricTimeSeries
-import com.hurence.logisland.timeseries.dts.Point
+import com.hurence.logisland.record.Point
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll

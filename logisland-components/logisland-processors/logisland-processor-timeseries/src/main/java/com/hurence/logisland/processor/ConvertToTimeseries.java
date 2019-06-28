@@ -42,6 +42,8 @@ public class ConvertToTimeseries extends AbstractProcessor {
             .defaultValue("")
             .build();
 
+    //TODO add possibility to choose a ddcThreshold (needs to add possibility in code before)
+
     public static final PropertyDescriptor AGGS = new PropertyDescriptor.Builder()
             .name("aggs")
             .description("The agregations to calculates for the chunk")

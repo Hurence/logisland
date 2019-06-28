@@ -16,7 +16,7 @@
 package com.hurence.logisland.timeseries.converter
 
 import com.hurence.logisland.timeseries.MetricTimeSeries
-import com.hurence.logisland.timeseries.dts.Point
+import com.hurence.logisland.record.Point
 import spock.lang.Specification
 
 import java.util.stream.Collectors

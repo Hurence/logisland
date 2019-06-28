@@ -37,6 +37,8 @@ public class FieldDictionary {
     public static final String RECORD_COUNT = "record_count";
     public static final String RECORD_LAST_UPDATE_TIME = "record_last_update_time";
 
+    public static final String RECORD_CHUNK_COMPRESSED_POINTS = "record_chunk_compressed_points";
+    public static final String RECORD_CHUNK_UNCOMPRESSED_POINTS = "record_chunk_uncompressed_points";
     public static final String RECORD_CHUNK_START = "record_chunk_start";
     public static final String RECORD_CHUNK_END = "record_chunk_end";
     public static final String RECORD_CHUNK_META = "record_chunk_attribute";
@@ -45,6 +47,8 @@ public class FieldDictionary {
     public static final String RECORD_CHUNK_AVG = "record_chunk_avg";
     public static final String RECORD_CHUNK_SAX = "record_chunk_sax";
 
+    public static final String RECORD_TIMESERIE_POINT_TIMESTAMP = "record_timeserie_time";
+    public static final String RECORD_TIMESERIE_POINT_VALUE = "record_timeserie_value";
 
     public static final String RECORD_POSITION = "record_position";
     public static final String RECORD_POSITION_LATITUDE = "record_position_latitude";
@@ -105,6 +109,11 @@ public class FieldDictionary {
             RECORD_CHUNK_MIN,
             RECORD_CHUNK_AVG,
             RECORD_CHUNK_SAX
+    );
+
+    public static final List<String> TIMESERIE_POINT_FIELDS = Arrays.asList(
+            RECORD_TIMESERIE_POINT_TIMESTAMP,
+            RECORD_TIMESERIE_POINT_VALUE
     );
     /**
      * All fields. If accessed, do not modify!

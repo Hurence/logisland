@@ -51,6 +51,10 @@ public interface Record extends Serializable {
 
     boolean hasField(String fieldName);
 
+    boolean isInternField(String fieldName);
+
+    boolean isInternField(Field field);
+
     Record setField(Field field);
 
     Record setField(String fieldName, FieldType fieldType, Object value);

@@ -26,8 +26,10 @@ import com.hurence.logisland.timeseries.converter.RecordsTimeSeriesConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Tags({"record", "fields", "timeseries", "chronix", "convert"})
@@ -54,7 +56,16 @@ public class ConvertFromTimeseries extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         return records.stream()
-                .flatMap(r -> converter.unchunk(r).stream())
+                .filter(TimeSerieChunkRecord.class::isInstance)
+                .map(TimeSerieChunkRecord.class::cast)
+                .flatMap(r -> {
+                    try {
+                        return converter.unchunk(r).stream();
+                    } catch (IOException e) {
+                        r.addError(ProcessError.RECORD_CONVERSION_ERROR.toString(), getLogger(), e.getMessage());
+                        return Stream.of(r);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 

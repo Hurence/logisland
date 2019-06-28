@@ -18,7 +18,7 @@ package com.hurence.logisland.timeseries.converter;
 import com.hurence.logisland.timeseries.GenericTimeSeries;
 import com.hurence.logisland.timeseries.MetricTimeSeries;
 import com.hurence.logisland.timeseries.dts.Pair;
-import com.hurence.logisland.timeseries.dts.Point;
+import com.hurence.logisland.record.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

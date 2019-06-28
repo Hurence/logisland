@@ -15,58 +15,48 @@
  */
 package com.hurence.logisland.record;
 
-/*******************************************************************************
- * Copyright (C) 2015 - Amit Kumar Mondal <admin@amitinside.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *******************************************************************************/
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
- * EdcPosition is a data structure to capture a geo location. It can be
- * associated to an EdcPayload to geotag an EdcMessage before sending to the
- * Everyware Cloud. Refer to the description of each of the fields for more
- * information on the model of EdcPosition.
+ *
  */
-public class ChunkRecord extends StandardRecord {//TODO change name to MetricTimeSeriesRecord ???
+public class TimeSerieChunkRecord extends TimeSerieRecord {
 
-    private static Logger logger = LoggerFactory.getLogger(ChunkRecord.class);
+    private static Logger logger = LoggerFactory.getLogger(TimeSerieChunkRecord.class);
     public static String DEFAULT_CHUNK_RECORD_TYPE = RecordDictionary.METRIC;
 
-    private List<Long> timestamps;
-    private List<Double> values;
-
-    public ChunkRecord() {
+    public TimeSerieChunkRecord() {
         super(DEFAULT_CHUNK_RECORD_TYPE);
     }
 
-    public ChunkRecord(String metricName) {
+    public TimeSerieChunkRecord(String metricName) {
         this(DEFAULT_CHUNK_RECORD_TYPE, metricName);
     }
 
-    public ChunkRecord(String metricType, String metricName) {
+    public TimeSerieChunkRecord(String metricType, String metricName) {
         super(metricType);
         setMetricName(metricName);
     }
 
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    @Override
+    public boolean isInternField(String fieldName) {
+        return super.isInternField(fieldName) ||
+                FieldDictionary.CHUNK_FIELDS.contains(fieldName);
+    }
+
     public Map<String, Object> getAttributes() {
-        Object rawValue = getField(FieldDictionary.RECORD_CHUNK_META).getRawValue();
-        if (rawValue != null && rawValue instanceof Map)
+        if (hasField(FieldDictionary.RECORD_CHUNK_META))
             return (Map<String, Object>) getField(FieldDictionary.RECORD_CHUNK_META).getRawValue();
         return null;
     }
@@ -75,23 +65,15 @@ public class ChunkRecord extends StandardRecord {//TODO change name to MetricTim
         setField(FieldDictionary.RECORD_CHUNK_META, FieldType.MAP, attributes);
     }
 
-    public String getMetricName() {
-        return getField(FieldDictionary.RECORD_NAME).asString();
+    public void addAttributes(String key, Object attribute) {
+        if (!hasField(FieldDictionary.RECORD_CHUNK_META)) {
+            setAttributes(new HashMap<String, Object>());
+        }
+        getAttributes().put(key,attribute);
     }
 
-    public void setMetricName(String metricName) {
-        setStringField(FieldDictionary.RECORD_NAME, metricName);
-    }
-
-    public String getMetricType() {
-        return getType();
-    }
-
-    public void setMetricType(String metricType) {
-        setType(metricType);
-    }
-
-//    public List<Long> getTimestamps() {
+    //TODO needed ?
+//    public Stream<Long> getTimestamps() {
 //        return timestamps;
 //    }
 //
@@ -99,7 +81,7 @@ public class ChunkRecord extends StandardRecord {//TODO change name to MetricTim
 //        this.timestamps = timestamps;
 //    }
 //
-//    public List<Double> getValues() {
+//    public Stream<Double> getValues() {
 //        return values;
 //    }
 //
@@ -107,12 +89,21 @@ public class ChunkRecord extends StandardRecord {//TODO change name to MetricTim
 //        this.values = values;
 //    }
 
-    public byte[] getPoints() {
-        return getField(FieldDictionary.RECORD_VALUE).asBytes();
+    public Stream<Point> getUnCompressedPoints() {
+        Object rawValue = getField(FieldDictionary.RECORD_CHUNK_UNCOMPRESSED_POINTS).getRawValue();
+        return ((List<Point>) rawValue).stream();
     }
 
-    public void setPoints(byte[] points) {
-        setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, points);
+    public void setUnCompressedPoints(List<Point> points) {
+        setField(FieldDictionary.RECORD_CHUNK_UNCOMPRESSED_POINTS, FieldType.ARRAY, points);
+    }
+
+    public byte[] getCompressedPoints() {
+        return getField(FieldDictionary.RECORD_CHUNK_COMPRESSED_POINTS).asBytes();
+    }
+
+    public void setCompressedPoints(byte[] points) {
+        setField(FieldDictionary.RECORD_CHUNK_COMPRESSED_POINTS, FieldType.BYTES, points);
     }
 
     public long getEnd() {
