@@ -60,10 +60,11 @@ class RecordsTimeSeriesConverterTest extends Specification {
 
         then:
         chunkRecord != null
-        chunkRecord.getAllFields().size() == 8
+        chunkRecord.getAllFields().size() == 9
         chunkRecord.getField(FieldDictionary.RECORD_CHUNK_START).asLong() == start
         chunkRecord.getField(FieldDictionary.RECORD_CHUNK_END).asLong() == end
         chunkRecord.getField(FieldDictionary.RECORD_NAME).asString() == name
+        chunkRecord.getField(FieldDictionary.RECORD_CHUNK_SAX_POINTS).asString() == "aac"
         chunkRecord.getAttributes().get("host") == host
 
         revertedRecords.size() == 3
