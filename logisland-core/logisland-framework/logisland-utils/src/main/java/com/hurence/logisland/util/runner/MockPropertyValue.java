@@ -29,13 +29,10 @@ import com.hurence.logisland.util.FormatUtils;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class MockPropertyValue implements PropertyValue {
-    private final String rawValue;
+public class MockPropertyValue extends AbstractPropertyValue implements PropertyValue {
     private final Boolean expectExpressions;
-    private final ControllerServiceLookup serviceLookup;
     private final PropertyDescriptor propertyDescriptor;
     private final PropertyValue stdPropValue;
-    private final VariableRegistry variableRegistry;
     private boolean expressionsEvaluated = false;
 
     public MockPropertyValue(final String rawValue) {
@@ -76,61 +73,6 @@ public class MockPropertyValue implements PropertyValue {
         }
     }
 
-    @Override
-    public Object getRawValue() {
-        return rawValue;
-    }
-
-    @Override
-    public String asString() {
-        return rawValue;
-    }
-
-    @Override
-    public Integer asInteger() {
-        ensureExpressionsEvaluated();
-        return stdPropValue.asInteger();
-    }
-
-    @Override
-    public Record asRecord() {
-        return (getRawValue() == null) ? null : new StandardRecord()
-                .setStringField(FieldDictionary.RECORD_VALUE,rawValue);
-    }
-    @Override
-    public Long asLong() {
-        ensureExpressionsEvaluated();
-        return stdPropValue.asLong();
-    }
-
-    @Override
-    public byte[] asBytes() {
-        return (rawValue == null) ? null : rawValue.getBytes();
-    }
-
-    @Override
-    public Boolean asBoolean() {
-        ensureExpressionsEvaluated();
-        return stdPropValue.asBoolean();
-    }
-
-    @Override
-    public Float asFloat() {
-        ensureExpressionsEvaluated();
-        return stdPropValue.asFloat();
-    }
-
-    @Override
-    public Double asDouble() {
-        ensureExpressionsEvaluated();
-        return stdPropValue.asDouble();
-    }
-
-    @Override
-    public Long asTimePeriod(final TimeUnit timeUnit) {
-        return (rawValue == null) ? null : FormatUtils.getTimeDuration(rawValue.trim(), timeUnit);
-    }
-
     private void markEvaluated() {
         if (Boolean.FALSE.equals(expectExpressions)) {
             throw new IllegalStateException("Attempting to Evaluate Expressions but " + propertyDescriptor
@@ -140,10 +82,6 @@ public class MockPropertyValue implements PropertyValue {
         expressionsEvaluated = true;
     }
 
-
-
-
-
     @Override
     public ControllerService asControllerService() {
         ensureExpressionsEvaluated();
@@ -151,20 +89,9 @@ public class MockPropertyValue implements PropertyValue {
             return null;
         }
 
-        return serviceLookup.getControllerService(rawValue);
+        return serviceLookup.getControllerService(asString());
     }
 
-
-
-    @Override
-    public boolean isSet() {
-        return rawValue != null;
-    }
-
-    @Override
-    public String toString() {
-        return asString();
-    }
 
     @Override
     public PropertyValue evaluate(Record record) {

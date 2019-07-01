@@ -106,6 +106,14 @@ public class TimeSerieChunkRecord extends TimeSerieRecord {
         setField(FieldDictionary.RECORD_CHUNK_COMPRESSED_POINTS, FieldType.BYTES, points);
     }
 
+    public char[] getSaxPoints() {
+        return getField(FieldDictionary.RECORD_CHUNK_SAX_POINTS).asChars();
+    }
+
+    public void setSaxPoints(char[] points) {
+        setField(FieldDictionary.RECORD_CHUNK_SAX_POINTS, FieldType.ARRAY, points);
+    }
+
     public long getEnd() {
         return getField(FieldDictionary.RECORD_CHUNK_END).asLong();
     }
