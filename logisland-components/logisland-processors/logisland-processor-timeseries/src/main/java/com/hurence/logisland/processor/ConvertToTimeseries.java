@@ -21,8 +21,9 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.SaxEncodingValidators;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.timeseries.converter.RecordsTimeSeriesConverter;
+import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 @CapabilityDescription("Converts a given field records into a chronix timeseries record")
 @ExtraDetailFile("./details/common-processors/EncodeSAX-Detail.rst")
 public class ConvertToTimeseries extends AbstractProcessor {
+    //TODO delete use others processor instead
 
     public static final PropertyDescriptor GROUP_BY_FIELD = new PropertyDescriptor.Builder()
             .name("group.by.field")
@@ -60,6 +62,47 @@ public class ConvertToTimeseries extends AbstractProcessor {
             .defaultValue("false")
             .build();
 
+    public static final PropertyDescriptor SAX_ENCODING_PAA_SIZE = new PropertyDescriptor.Builder()
+            .name("sax.encoding.paa.size")
+            .description("the size of resulting sax string")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .defaultValue("3")
+            .build();
+
+    public static final PropertyDescriptor SAX_ENCODING_N_THRESHOLD = new PropertyDescriptor.Builder()
+            .name("sax.encoding.threshold")
+            .description("Used to normalize values before encoding into sax string")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_DOUBLE_VALIDATOR)
+            .defaultValue("0")
+            .build();
+
+    public static final PropertyDescriptor SAX_ENCODING_ALPHABET_SIZE = new PropertyDescriptor.Builder()
+            .name("sax.encoding.alphabet.size")
+            .description("The number of different letter of the alphabet to use")
+            .required(false)
+            .addValidator(SaxEncodingValidators.ALPHABET_SIZE_VALIDATOR)
+            .defaultValue("3")
+            .build();
+
+    public static final PropertyDescriptor BINARY_COMPACTION = new PropertyDescriptor.Builder()
+            .name("sax.encoding")
+            .description("whether to compact time series into binary format")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("true")
+            .build();
+
+    public static final PropertyDescriptor BINARY_COMPACTION_THRESHOLD = new PropertyDescriptor.Builder()
+            .name("sax.encoding.threshold")
+            .description("Used to normalize values before encoding into binaries format")//TODO check in detail
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_DOUBLE_VALIDATOR)
+            .defaultValue("0")
+            .build();
+
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
@@ -69,9 +112,8 @@ public class ConvertToTimeseries extends AbstractProcessor {
         return descriptors;
     }
 
-    private RecordsTimeSeriesConverter converter;
+    private BinaryCompactionConverter converter;
     private List<String> groupBy;
-
 
     @Override
     public void init(final ProcessContext context) {
@@ -80,9 +122,24 @@ public class ConvertToTimeseries extends AbstractProcessor {
         groupBy = Arrays.stream(groupByArray)
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.toList());
+        BinaryCompactionConverter.Builder builder = new BinaryCompactionConverter.Builder();
         boolean saxEncoding = context.getPropertyValue(SAX_ENCODING).asBoolean();
-        converter = new RecordsTimeSeriesConverter(saxEncoding);
-
+//        builder.saxEncoding(saxEncoding);
+//        if (saxEncoding) {
+//            final int paaSize = context.getPropertyValue(SAX_ENCODING_PAA_SIZE).asInteger();
+//            final double threshold = context.getPropertyValue(SAX_ENCODING_N_THRESHOLD).asDouble();
+//            final int alphabetSize = context.getPropertyValue(SAX_ENCODING_ALPHABET_SIZE).asInteger();
+//            builder.alphabetSize(alphabetSize)
+//                    .nThreshold(threshold)
+//                    .paaSize(paaSize);
+//        }
+//        boolean binaryCompaction = context.getPropertyValue(BINARY_COMPACTION).asBoolean();
+//        builder.binaryCompaction(binaryCompaction);
+//        if (binaryCompaction) {
+//            final int threshold = context.getPropertyValue(BINARY_COMPACTION_THRESHOLD).asInteger();
+//            builder.ddcThreshold(threshold);
+//        }
+        converter = builder.build();
     }
 
     @Override

@@ -31,7 +31,7 @@ import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**
-  *
+  *  You can look at spark documentation for detail on some options :
   * @author bailett
   */
 @CapabilityDescription("Provide a way to read a local file as input in StructuredStream streams")
@@ -46,22 +46,24 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     .build
 
   val MAX_FILES_PER_TRIGGER: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("max.files.header")
-    .description("Is this a csv file with the first line as a header")//TODO use spark default otherwise
+    .name("max.files.per.trigger")
+    .description(" maximum number of new files to be considered in every trigger (default: no max) ")
     .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
     .required(false)
     .build
 
   val LATEST_FIRST: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("csv.delimiter")
-    .description("the delimiter")//TODO use spark default otherwise
+    .name("latest.first")
+    .description("whether to processs the latest new files first, useful when there is a large backlog of files (default: false)")
     .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
     .required(false)
     .build
 
   val FILENAME_ONLY: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("local.file.output.path")
-    .description("the location of the file to be writen")//TODO use spark default otherwise
+    .name("filename.only")
+    .description("whether to check new files based on only the filename instead of on the full path (default: false). " +
+      "With this set to `true`, the following files would be considered as the same file, because their filenames, \"dataset.txt\", " +
+      "are the same:\n\"file:///dataset.txt\"\n\"s3://a/dataset.txt\"\n\"s3n://a/b/dataset.txt\"\n\"s3a://a/b/c/dataset.txt\"")
     .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
     .required(false)
     .build

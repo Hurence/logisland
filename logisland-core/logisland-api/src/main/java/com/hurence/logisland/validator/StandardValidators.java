@@ -70,7 +70,7 @@ public class StandardValidators {
         public ValidationResult validate(final String subject, final String value) {
             String reason = null;
             try {
-                final double intVal = Double.parseDouble(value);
+                final double val = Double.parseDouble(value);
 
             } catch (final NumberFormatException e) {
                 reason = "not a valid double";
@@ -87,7 +87,7 @@ public class StandardValidators {
         public ValidationResult validate(final String subject, final String value) {
             String reason = null;
             try {
-                final float intVal = Float.parseFloat(value);
+                final float val = Float.parseFloat(value);
 
             } catch (final NumberFormatException e) {
                 reason = "not a valid double";
@@ -116,6 +116,27 @@ public class StandardValidators {
                 }
             } catch (final NumberFormatException e) {
                 reason = "not a valid integer";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+    public static final Validator POSITIVE_DOUBLE_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                if (value == null) {
+                    reason = "null is not a valid double";
+                } else {
+                    final double doubleVal = Double.parseDouble(value);
+                    if (doubleVal <= 0) {
+                        reason = "not a positive value";
+                    }
+                }
+            } catch (final NumberFormatException e) {
+                reason = "not a valid double";
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();

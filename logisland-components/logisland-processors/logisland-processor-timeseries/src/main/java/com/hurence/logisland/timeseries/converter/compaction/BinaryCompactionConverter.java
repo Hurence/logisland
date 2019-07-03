@@ -1,16 +1,12 @@
-package com.hurence.logisland.timeseries.converter;
+package com.hurence.logisland.timeseries.converter.compaction;
 
-import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.timeseries.converter.common.Compression;
+import com.hurence.logisland.timeseries.converter.sax.SAXOptionsImpl;
+import com.hurence.logisland.timeseries.converter.sax.SaxConverter;
 import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
 import com.hurence.logisland.timeseries.dts.Pair;
-import net.seninp.jmotif.sax.SAXException;
-import net.seninp.jmotif.sax.SAXProcessor;
-import net.seninp.jmotif.sax.alphabet.NormalAlphabet;
-import net.seninp.jmotif.sax.datastructure.SAXRecord;
-import net.seninp.jmotif.sax.datastructure.SAXRecords;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,31 +14,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class RecordsTimeSeriesConverter implements Serializable {
+public class BinaryCompactionConverter implements Serializable {
 
 
-    private Logger logger = LoggerFactory.getLogger(RecordsTimeSeriesConverter.class.getName());
-    private MetricTimeSeriesConverter converter = new MetricTimeSeriesConverter();
-    private int ddcThreshold = 0;
-    private NormalAlphabet normalAlphabet = new NormalAlphabet();
-    private boolean saxEncoding;
-    private SAXProcessor saxProcessor = new SAXProcessor();
-    int paaSize = 3;
-    double nThreshold = 0;
-    int alphabetSize = 3;
+    private static Logger logger = LoggerFactory.getLogger(BinaryCompactionConverter.class.getName());
 
-    public RecordsTimeSeriesConverter(boolean saxEncoding) {
-        this.saxEncoding = saxEncoding;
+    private int ddcThreshold = 0;//Try to vary this
+
+    private BinaryCompactionConverter(int ddcThreshold) {
+        this.ddcThreshold = ddcThreshold;
     }
 
-    public RecordsTimeSeriesConverter() {
-        this(true);
-    }
+    private BinaryCompactionConverter() {}
 
+    //TODO reduce to compaction only
     /**
      * Compact a related list of records a single chunked one
      *
@@ -69,23 +57,15 @@ public class RecordsTimeSeriesConverter implements Serializable {
         long tmp = getLastTS(records);
         final long lastTS = tmp == firstTS ? firstTS + 1 : tmp;
         chunkrecord.setEnd(lastTS);
-        //compress chunk
-        List<Point> points = extractPoints(records.stream()).collect(Collectors.toList());
-        chunkrecord.setCompressedPoints(compressPoints(points.stream()));
         //set attributes
         Record first = records.get(0);
         first.getAllFieldsSorted().forEach(field -> {
-                    chunkrecord.addAttributes(field.getName(), field.getRawValue());
-                });
-        double[] valuePoints = points.stream().map(Point::getValue).mapToDouble(x -> x).toArray();
-        try {
-            char[] saxString = saxProcessor
-                    .ts2string(valuePoints, paaSize, normalAlphabet.getCuts(alphabetSize), nThreshold);
-            chunkrecord.setSaxPoints(saxString);
-        } catch (SAXException e) {
-            logger.error("error while trying to calculate sax string for chunk", e);
-            chunkrecord.addError(ProcessError.RECORD_CONVERSION_ERROR.toString(), e.getMessage());
-        }
+            chunkrecord.addAttributes(field.getName(), field.getRawValue());
+        });
+        //find points
+        List<Point> points = extractPoints(records.stream()).collect(Collectors.toList());
+        //compress chunk into binaries
+        chunkrecord.setCompressedPoints(compressPoints(points.stream()));
         return chunkrecord;
     }
 
@@ -124,7 +104,6 @@ public class RecordsTimeSeriesConverter implements Serializable {
         final long start = record.getStart();
         final long end = record.getEnd();
         final String type = record.getMetricType();
-
         return unCompressPoints(record.getCompressedPoints(), start, end).stream()
                 .map(m -> {
                     long recordTime = m.getTimestamp();
@@ -142,4 +121,22 @@ public class RecordsTimeSeriesConverter implements Serializable {
         }
     }
 
+
+
+    public static final class Builder {
+
+        private int ddcThreshold = 0;
+
+        public Builder ddcThreshold(final int ddcThreshold) {
+            this.ddcThreshold = ddcThreshold;
+            return this;
+        }
+        /**
+         * @return a BinaryCompactionConverter as configured
+         *
+         */
+        public BinaryCompactionConverter build() {
+           return new BinaryCompactionConverter(ddcThreshold);
+        }
+    }
 }
