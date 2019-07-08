@@ -19,7 +19,7 @@ The following commands must be run from the top-level directory.
 
 .. code-block:: sh
 
-    mvn clean install -pFull
+    mvn clean package
 
 If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line.
 
@@ -31,7 +31,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 .. code-block:: sh
 
     mvn license:format
-    mvn -DperformRelease=true clean deploy -Pfull
+    mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
 

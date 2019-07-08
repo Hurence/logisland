@@ -59,6 +59,16 @@ class ElasticsearchRecordConverter {
 
             // add all other records
             record.getAllFieldsSorted().forEach(field -> {
+
+                if (field.getName().equals("@timestamp"))
+                {
+                    // #489
+                    // Ignore potentially already existing @timestamp field in the record.
+                    // We have already written it here above with the record_time value in the document and both fields
+                    // must be aligned. So forget about an already existing value.
+                    return;
+                }
+
                 try {
                     // cleanup invalid es fields characters like '.'
                     String fieldName = field.getName().replaceAll("\\.", "_");

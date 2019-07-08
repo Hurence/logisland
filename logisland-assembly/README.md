@@ -1,8 +1,8 @@
 Logisland Assembly
 ==================
 
-Build assemblys for logisland 
------------------------------
+Build assemblies for logisland
+------------------------------
 
 Run this command at **logisland ROOT project**, not in this sub module otherwise assemblies will miss jars :
 
@@ -76,8 +76,8 @@ the lib/core folder should contains (currently):
 ```
  
 
-Different Type of assemblys
----------------------------
+Different Type of assemblies
+----------------------------
 
 The descriptors are located in src/assembly.
 
