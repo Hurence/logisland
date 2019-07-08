@@ -12,4 +12,5 @@ ENV LOGISLAND_HOME /opt/logisland
 ENV PATH $PATH:$LOGISLAND_HOME/bin
 WORKDIR $LOGISLAND_HOME/
 
-ENTRYPOINT ["tail", "-f", "bin/logisland.sh"]
+# If you set this entry point integration test can not execute properly (never ending...)
+#ENTRYPOINT ["tail", "-f", "bin/logisland.sh"]

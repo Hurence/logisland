@@ -20,16 +20,13 @@ import com.hurence.logisland.timeseries.converter.common.DoubleList;
 import com.hurence.logisland.timeseries.converter.common.LongList;
 import com.hurence.logisland.timeseries.converter.serializer.gen.MetricProtocolBuffers;
 import com.hurence.logisland.timeseries.MetricTimeSeries;
-import com.hurence.logisland.timeseries.dts.Point;
+import com.hurence.logisland.record.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class to easily convert the protocol buffer into Point<Long,Double>
@@ -128,12 +125,60 @@ public final class ProtoBufMetricTimeSeriesSerializer {
                     lastPointIndex++;
                 }
             }
+            //TODO return points
             builder.points(new LongList(timestamps, lastPointIndex), new DoubleList(values, lastPointIndex));
 
         } catch (IOException e) {
             LOGGER.info("Could not decode protocol buffers points");
         }
 
+    }
+
+    /**
+     * return the points (decompressed byte array)
+     *
+     * @param decompressedBytes the compressed bytes holding the data points
+     * @param timeSeriesStart   the start of the time series
+     * @param timeSeriesEnd     the end of the time series
+     */
+    public static List<Point> from(final InputStream decompressedBytes, long timeSeriesStart, long timeSeriesEnd) throws IOException {
+        try {
+            //TODO add possibility to choose ddcThreshold
+            MetricProtocolBuffers.Points protocolBufferPoints = MetricProtocolBuffers.Points.parseFrom(decompressedBytes);
+
+            List<MetricProtocolBuffers.Point> pList = protocolBufferPoints.getPList();
+            List<Point> pointsToReturn = new ArrayList<>();
+
+            int size = pList.size();
+
+            long lastDelta = protocolBufferPoints.getDdc();
+            long calculatedPointDate = timeSeriesStart;
+
+            double value;
+
+            for (int i = 0; i < size; i++) {
+                MetricProtocolBuffers.Point p = pList.get(i);
+
+                //Decode the time
+                if (i > 0) {
+                    lastDelta = getTimestamp(p, lastDelta);
+                    calculatedPointDate += lastDelta;
+                }
+
+                //Check if the point refers to an index
+                if (p.hasVIndex()) {
+                    value = pList.get(p.getVIndex()).getV();
+                } else {
+                    value = p.getV();
+                }
+
+                pointsToReturn.add(new Point(i, calculatedPointDate, value));
+            }
+            return pointsToReturn;
+        } catch (IOException e) {
+            LOGGER.info("Could not decode protocol buffers points");
+            throw e;
+        }
     }
 
     /**

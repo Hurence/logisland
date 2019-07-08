@@ -20,6 +20,7 @@ public class RecordDictionary {
 
     public static String LOG = "log";
     public static String METRIC = "metric";
+    public static String TIMESERIES = "timeseries";
     public static String EVENT = "event";
     public static String MESSAGE = "message";
     public static String ERROR = "error";

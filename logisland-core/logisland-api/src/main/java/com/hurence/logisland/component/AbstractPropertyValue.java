@@ -17,12 +17,17 @@ package com.hurence.logisland.component;
 
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.util.FormatUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +40,8 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     protected ControllerServiceLookup serviceLookup;
     protected VariableRegistry variableRegistry;
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractPropertyValue.class);
+
     @Override
     public Object getRawValue() {
         return rawValue;
@@ -44,19 +51,48 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     public String asString() {
         if (getRawValue() == null) {
             return null;
+        } else  if (getRawValue() instanceof char[]) {
+            return new String(asChars());
         }
         return getRawValue().toString();
     }
 
     @Override
     public Integer asInteger() {
-        return (getRawValue() == null) ? null : Integer.parseInt(asString().trim());
+        if (getRawValue() == null) {
+            return null;
+        } else if (getRawValue() instanceof Number) {
+            return ((Number) rawValue).intValue();
+        } else {
+            try {
+                return Integer.parseInt(asString().trim());
+            } catch (NumberFormatException ex) {
+                logger.error(" : unable to convert " + rawValue.toString() + " as a int", ex);
+                throw ex;
+            }
+        }
     }
 
     @Override
     public Long asLong() {
-        return (getRawValue() == null) ? null : Long.parseLong(asString().trim());
+        if (getRawValue() == null) {
+            return null;
+        } else {
+            if (getRawValue() instanceof Number) {
+                return ((Number) getRawValue()).longValue();
+            } else if (getRawValue() instanceof Date) {
+                return ((Date) getRawValue()).getTime();
+            } else {
+                try {
+                    return Long.parseLong(asString().trim());
+                } catch (Exception ex) {
+                    logger.error(" : unable to convert " + rawValue.toString() + " as a long", ex);
+                    throw ex;
+                }
+            }
+        }
     }
+
 
     @Override
     public Boolean asBoolean() {
@@ -65,12 +101,42 @@ public abstract class AbstractPropertyValue implements PropertyValue {
 
     @Override
     public Float asFloat() {
-        return (getRawValue() == null) ? null : Float.parseFloat(asString().trim());
+        if (getRawValue() == null) {
+            return null;
+        } else if (getRawValue() instanceof Number) {
+            return ((Number) getRawValue()).floatValue();
+        } else {
+            try {
+                return Float.parseFloat(asString().trim());
+            } catch (Exception ex) {
+                try {
+                    return Float.parseFloat(getRawValue().toString().replaceAll(",", "."));
+                } catch (Exception ex2) {
+                    logger.error(" : unable to convert " + rawValue.toString() + " as a float", ex2);
+                    throw ex2;
+                }
+            }
+        }
     }
 
     @Override
     public Double asDouble() {
-        return (getRawValue() == null) ? null : Double.parseDouble(asString().trim());
+        if (getRawValue() == null) {
+            return null;
+        } else if (getRawValue() instanceof Number) {
+            return ((Number) getRawValue()).doubleValue();
+        } else {
+            try {
+                return Double.parseDouble(asString().trim());
+            } catch (Exception ex) {
+                try {
+                    return Double.parseDouble(asString().trim().replaceAll(",", "."));
+                } catch (Exception ex2) {
+                    logger.error(" : unable to convert " + rawValue.toString() + " as a double", ex2);
+                    throw ex2;
+                }
+            }
+        }
     }
 
     @Override
@@ -80,18 +146,50 @@ public abstract class AbstractPropertyValue implements PropertyValue {
 
     @Override
     public byte[] asBytes() {
-        return (rawValue == null) ? null : (byte[]) rawValue;
+        if (getRawValue() == null) {
+            return null;
+        } else if (getRawValue() instanceof byte[]) {
+            return (byte[]) getRawValue();
+        } else {
+            logger.error(" : unable to convert " + rawValue.toString() + " as a byte[]");
+            throw new IllegalArgumentException("not an array of bytes");
+        }
     }
+
+    @Override
+    public char[] asChars() {
+        if (getRawValue() == null) {
+            return null;
+        } else if (getRawValue() instanceof char[]) {
+            return (char[]) getRawValue();
+        } else {
+            logger.error(" : unable to convert " + rawValue.toString() + " as a char[]");
+            throw new IllegalArgumentException("not an array of chars");
+        }
+    }
+
 
     @Override
     public boolean isSet() {
         return getRawValue() != null;
     }
 
+//    @Override
+//    public Record asRecord() {
+//        return (getRawValue() == null) ? null : new StandardRecord()
+//                .setStringField(FieldDictionary.RECORD_VALUE, asString().trim());
+//    }
+//TODO verify if ok ? otherwise override in child Field
     @Override
     public Record asRecord() {
-        return (getRawValue() == null) ? null : new StandardRecord()
-                .setStringField(FieldDictionary.RECORD_VALUE, asString().trim());
+        if (getRawValue() == null) {
+            return null;
+        } else if (getRawValue() instanceof Record) {
+            return ((Record) rawValue);
+        } else {
+            logger.error(" : unable to convert " + rawValue.toString() + " as a Record[]");
+            throw new IllegalArgumentException("not a Record");
+        }
     }
 
     @Override
@@ -109,4 +207,7 @@ public abstract class AbstractPropertyValue implements PropertyValue {
         // does nothing
         return this;
     }
+
+
+
 }

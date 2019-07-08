@@ -62,8 +62,9 @@ main() {
 #    "engine-spark_1_6/KafkaStreamProcessingEngine/KafkaRecordStreamHDFSBurner" \
 #    )
     declare -a -r test_to_run_paths=(\
-    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamParallelProcessing" \
     "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamHDFSBurner" \
+    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamParallelProcessing" \
+    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamSQLAggregator" \
     "engine-spark_2_X/KafkaStreamProcessingEngine/StructuredStream" \
     )
 #    Uncomment beneath line to test a unique test

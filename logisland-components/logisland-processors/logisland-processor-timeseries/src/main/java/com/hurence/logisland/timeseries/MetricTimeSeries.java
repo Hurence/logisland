@@ -19,7 +19,7 @@ package com.hurence.logisland.timeseries;
 
 import com.hurence.logisland.timeseries.converter.common.DoubleList;
 import com.hurence.logisland.timeseries.converter.common.LongList;
-import com.hurence.logisland.timeseries.dts.Point;
+import com.hurence.logisland.record.Point;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;

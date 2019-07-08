@@ -13,28 +13,12 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-/**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
 package com.hurence.logisland.stream.spark.structured.provider
 
-import java.io.{File, FileReader}
-import java.sql.Timestamp
 import java.util
 import java.util.Collections
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
@@ -45,107 +29,70 @@ import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
-import org.apache.commons.csv.{CSVFormat, CSVParser}
-
-import scala.collection.JavaConversions._
 
 /**
-  *
+  *  You can look at spark documentation for detail on some options :
   * @author bailett
   */
+@CapabilityDescription("Provide a way to read a local file as input in StructuredStream streams")
 class LocalFileStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
 
 
-  val LOCAL_FILE_INPUT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("local.file.input.path")
-    .description("the location of the file to be loaded")
-    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+  val LOCAL_INPUT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("local.input.path")
+    .description("the location of the directory of files to be loaded. All files inside the directory will be taked as input")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)//TODO directory validator
     .required(true)
     .build
 
-  val HAS_CSV_HEADER: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("has.csv.header")
-    .description("Is this a csv file with the first line as a header")
+  val MAX_FILES_PER_TRIGGER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("max.files.per.trigger")
+    .description(" maximum number of new files to be considered in every trigger (default: no max) ")
+    .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+    .required(false)
+    .build
+
+  val LATEST_FIRST: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("latest.first")
+    .description("whether to processs the latest new files first, useful when there is a large backlog of files (default: false)")
     .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
     .required(false)
-    .defaultValue("true")
     .build
 
-  val CSV_DELIMITER: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("csv.delimiter")
-    .description("the delimiter")
-    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-    .required(false)
-    .defaultValue(",")
-    .build
-
-  val LOCAL_FILE_OUTPUT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("local.file.output.path")
-    .description("the location of the file to be writen")
-    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+  val FILENAME_ONLY: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("filename.only")
+    .description("whether to check new files based on only the filename instead of on the full path (default: false). " +
+      "With this set to `true`, the following files would be considered as the same file, because their filenames, \"dataset.txt\", " +
+      "are the same:\n\"file:///dataset.txt\"\n\"s3://a/dataset.txt\"\n\"s3n://a/b/dataset.txt\"\n\"s3a://a/b/c/dataset.txt\"")
+    .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
     .required(false)
     .build
-
-
-  var recordSeq: Seq[Record] = _
 
   var path: String = _
-  var delimiter:String = _
+  var maxFilesPerTrigger: Option[Long] = _
+  var latestFirst: Option[Boolean] = _
+  var fileNameOnly: Option[Boolean] = _
 
   @OnEnabled
   @throws[InitializationException]
   override def init(context: ControllerServiceInitializationContext): Unit = {
-
-    delimiter = context.getPropertyValue(CSV_DELIMITER).asString()
-    val localPath = context.getPropertyValue(LOCAL_FILE_INPUT_PATH).asString()
-    val f = new File(localPath)
-    if (f.exists && !f.isDirectory) {
-      path = localPath
-    }else {
-      path = classOf[LocalFileStructuredStreamProviderService].getResource(localPath).getPath
+    super.init(context)
+    path = context.getPropertyValue(LOCAL_INPUT_PATH).asString()
+    if (context.getPropertyValue(MAX_FILES_PER_TRIGGER).isSet) {
+      maxFilesPerTrigger = Some(context.getPropertyValue(MAX_FILES_PER_TRIGGER).asLong())
+    } else {
+      maxFilesPerTrigger = None
     }
-    /*  this.synchronized {
-      {
-
-        val delimiter = context.getPropertyValue(CSV_DELIMITER).asString()
-        val path = context.getPropertyValue(LOCAL_FILE_INPUT_PATH).asString()
-        val f = new File(path)
-
-        if (f.exists && !f.isDirectory) {
-          val in = new FileReader(path)
-          val csv = CSVFormat.DEFAULT.withDelimiter(delimiter.charAt(0)).withFirstRecordAsHeader
-          val records = csv.withHeader().withSkipHeaderRecord(false).parse(in)
-          recordSeq = records.map(record => {
-            val logislandRecord:Record = new StandardRecord()
-              .setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, record.toString)
-            for (columnName <- record.toMap) {
-              logislandRecord.setField(columnName._1, FieldType.STRING, columnName._2)
-            }
-            logislandRecord
-          }).toSeq
-        }else{
-          val resourcePath = classOf[LocalFileStructuredStreamProviderService].getResource(path).getPath
-          val in = new FileReader(resourcePath)
-          val csv = CSVFormat.DEFAULT.withDelimiter(delimiter.charAt(0)).withFirstRecordAsHeader
-          val records = csv.withHeader().withSkipHeaderRecord(false).parse(in).getRecords
-
-          recordSeq = records.map(record => {
-            val logislandRecord:Record = new StandardRecord()
-              .setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, record.toString)
-            for (columnName <- record.toMap) {
-              logislandRecord.setField(columnName._1, FieldType.STRING, columnName._2)
-            }
-            logislandRecord
-          }).toSeq
-        }
-
-
-
-      } catch {
-        case e: Exception =>
-          throw new InitializationException(e)
-      }
-    }*/
+    if (context.getPropertyValue(LATEST_FIRST).isSet) {
+      latestFirst = Some(context.getPropertyValue(LATEST_FIRST).asBoolean())
+    } else {
+      latestFirst = None
+    }
+    if (context.getPropertyValue(FILENAME_ONLY).isSet) {
+      fileNameOnly = Some(context.getPropertyValue(FILENAME_ONLY).asBoolean())
+    } else {
+      fileNameOnly = None
+    }
   }
 
   /**
@@ -156,11 +103,10 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     */
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-
-    descriptors.add(LOCAL_FILE_INPUT_PATH)
-    descriptors.add(LOCAL_FILE_OUTPUT_PATH)
-    descriptors.add(HAS_CSV_HEADER)
-    descriptors.add(CSV_DELIMITER)
+    descriptors.add(LOCAL_INPUT_PATH)
+    descriptors.add(MAX_FILES_PER_TRIGGER)
+    descriptors.add(LATEST_FIRST)
+    descriptors.add(FILENAME_ONLY)
     Collections.unmodifiableList(descriptors)
   }
 
@@ -175,25 +121,23 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     import spark.implicits._
     implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
-
-
-    spark.readStream
+    val dataStreamReader =  spark.readStream
       .format("text")
-  //    .option("sep", delimiter)
-  //    .option("header", "true") // Use first line of all files as header
-  //    .option("inferSchema", "true") // Automatically infer data types
-      .load(path)
+    if (maxFilesPerTrigger.isDefined) {
+      dataStreamReader.option("maxFilesPerTrigger", maxFilesPerTrigger.get)
+    }
+    if (latestFirst.isDefined) {
+      dataStreamReader.option("latestFirst", latestFirst.get)
+    }
+    if (fileNameOnly.isDefined) {
+      dataStreamReader.option("fileNameOnly", fileNameOnly.get)
+    }
+    dataStreamReader.load(path)
       .as[String]
       .map(r => {
         new StandardRecord("line")
           .setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, r)
       })
-
-
-    // val headers = records.iterator.next.toMap.keySet
-
-
-   // recordSeq.toDS()
   }
 
   /**
@@ -203,11 +147,6 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     * @return DataFrame currently loaded
     */
   override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
-
-    //  implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-
-    df
-      .writeStream
-      .format("console")
+    throw new IllegalArgumentException("LocalFileStructuredStreamProviderService class does not support write operation yet")
   }
 }

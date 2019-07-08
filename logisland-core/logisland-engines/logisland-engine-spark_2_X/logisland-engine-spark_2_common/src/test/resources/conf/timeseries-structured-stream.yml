@@ -13,10 +13,12 @@ engine:
     - controllerService: local_file_service
       component: com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService
       configuration:
-        local.file.input.path: /data
+        local.input.path: /tmp/logisland/data
 
     - controllerService: console_service
       component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+      configuration:
+        truncate: false
 
     - controllerService: kafka_out_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
@@ -89,8 +91,13 @@ engine:
 
       processorConfigurations:
 
+#        - processor: debug_1
+#          component: com.hurence.logisland.processor.DebugStream
         # Make one chronix chunk from all records
         - processor: timeseries_converter
           component: com.hurence.logisland.processor.ConvertToTimeseries
           configuration:
             group.by.field: tagname
+            sax.encoding: true
+#        - processor: debug_2
+#          component: com.hurence.logisland.processor.DebugStream

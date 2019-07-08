@@ -22,12 +22,14 @@ import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.*;
-import com.hurence.logisland.timeseries.converter.RecordsTimeSeriesConverter;
+import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Tags({"record", "fields", "timeseries", "chronix", "convert"})
@@ -35,9 +37,10 @@ import java.util.stream.Collectors;
 @ExtraDetailFile("./details/common-processors/EncodeSAX-Detail.rst")
 public class ConvertFromTimeseries extends AbstractProcessor {
 
-
-    private Logger logger = LoggerFactory.getLogger(ConvertFromTimeseries.class.getName());
-    private RecordsTimeSeriesConverter converter = new RecordsTimeSeriesConverter();
+    //TODO delete use others processor instead
+    private final static Logger logger = LoggerFactory.getLogger(ConvertFromTimeseries.class.getName());
+    private BinaryCompactionConverter converter;
+    private List<String> groupBy;
 
 
 
@@ -54,7 +57,16 @@ public class ConvertFromTimeseries extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         return records.stream()
-                .flatMap(r -> converter.unchunk(r).stream())
+                .filter(TimeSerieChunkRecord.class::isInstance)
+                .map(TimeSerieChunkRecord.class::cast)
+                .flatMap(r -> {
+                    try {
+                        return converter.unchunk(r).stream();
+                    } catch (IOException e) {
+                        r.addError(ProcessError.RECORD_CONVERSION_ERROR.toString(), getLogger(), e.getMessage());
+                        return Stream.of(r);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 

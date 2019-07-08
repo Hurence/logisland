@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.record;
 
+import com.hurence.logisland.component.AbstractPropertyValue;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.util.FormatUtils;
@@ -40,14 +41,13 @@ import java.util.concurrent.TimeUnit;
  * bytes: sequence of 8-bit unsigned bytes
  * string: unicode character sequence
  */
-public class Field implements PropertyValue, Serializable {
+public class Field extends AbstractPropertyValue implements PropertyValue, Serializable {
 
 
     private static final Logger logger = LoggerFactory.getLogger(Field.class);
 
     private final String name;
     private final FieldType type;
-    private final Object rawValue;
 
     public Field() {
         this("", FieldType.STRING, null);
@@ -80,7 +80,6 @@ public class Field implements PropertyValue, Serializable {
                     '}';
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -104,144 +103,12 @@ public class Field implements PropertyValue, Serializable {
         return result;
     }
 
-
     public FieldType getType() {
         return type;
     }
 
-
     public String getName() {
         return name;
-    }
-
-
-    @Override
-    public Object getRawValue() {
-        return rawValue;
-    }
-
-    @Override
-    public String asString() {
-        return (rawValue == null) ? null : rawValue.toString();
-    }
-
-    @Override
-    public Integer asInteger() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof Number) {
-            return ((Number) rawValue).intValue();
-        } else {
-            try {
-                return Integer.parseInt(rawValue.toString());
-            } catch (Exception ex) {
-                logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a int, returning 0");
-                return 0;
-            }
-        }
-    }
-
-    @Override
-    public byte[] asBytes() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof byte[]) {
-            return (byte[]) rawValue;
-        } else {
-
-            logger.error(" : unable to convert " + rawValue.toString() + " as a byte[], returning null");
-            return null;
-        }
-    }
-
-
-    @Override
-    public Record asRecord() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof Record) {
-            return ((Record) rawValue);
-        } else return null;
-    }
-
-    @Override
-    public Long asLong() {
-        if (rawValue == null) {
-            return null;
-        } else {
-            if (rawValue instanceof Number) {
-                return ((Number) rawValue).longValue();
-            } else if (rawValue instanceof Date) {
-                return ((Date) rawValue).getTime();
-            } else {
-                try {
-                    return Long.parseLong(rawValue.toString());
-                } catch (Exception ex) {
-                    logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a long, returning 0");
-                    return 0L;
-                }
-            }
-        }
-    }
-
-    @Override
-    public Boolean asBoolean() {
-        if (rawValue == null)
-            return null;
-
-        return BooleanUtils.toBoolean(rawValue.toString());
-
-    }
-
-    @Override
-    public Float asFloat() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof Number) {
-            return ((Number) rawValue).floatValue();
-        } else {
-            try {
-                return Float.parseFloat(rawValue.toString());
-            } catch (Exception ex) {
-                try {
-                    return Float.parseFloat(rawValue.toString().replaceAll(",", "."));
-                } catch (Exception ex2) {
-                    logger.error(ex2.toString() + " : unable to convert " + rawValue.toString() + " as a float, returning 0");
-                    return 0.0f;
-                }
-            }
-        }
-    }
-
-    @Override
-    public Double asDouble() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof Number) {
-            return ((Number) rawValue).doubleValue();
-        } else {
-            try {
-                return Double.parseDouble(rawValue.toString());
-            } catch (Exception ex) {
-
-                try {
-                    return Double.parseDouble(rawValue.toString().replaceAll(",", "."));
-                } catch (Exception ex2) {
-                    logger.error(ex2.toString() + " : unable to convert " + rawValue.toString() + " as a double, returning 0");
-                    return 0.0;
-                }
-            }
-        }
-    }
-
-    @Override
-    public Long asTimePeriod(final TimeUnit timeUnit) {
-        return (rawValue == null) ? null : FormatUtils.getTimeDuration(rawValue.toString().trim(), timeUnit);
-    }
-
-    @Override
-    public boolean isSet() {
-        return rawValue != null;
     }
 
     @Override
