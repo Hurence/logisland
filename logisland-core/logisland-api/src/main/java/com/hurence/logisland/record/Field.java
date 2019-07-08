@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * bytes: sequence of 8-bit unsigned bytes
  * string: unicode character sequence
  */
-public class Field extends AbstractPropertyValue implements PropertyValue, Serializable {
+public class Field extends AbstractPropertyValue implements PropertyValue, Serializable, Comparable<Field> {
 
 
     private static final Logger logger = LoggerFactory.getLogger(Field.class);
@@ -124,5 +124,39 @@ public class Field extends AbstractPropertyValue implements PropertyValue, Seria
     @Override
     public PropertyValue evaluate(Record record) {
         throw new UnsupportedOperationException("The evaluate(record) method is not available for this type of PropertyValue");
+    }
+
+    @Override
+    public int compareTo(Field o) {
+        if (this == o) return 0;
+        if (o == null) return 1;
+        switch (getType()) {
+            case STRING:
+                return asString().compareTo(o.asString());
+            case INT:
+                return asInteger().compareTo(o.asInteger());
+            case LONG:
+                return asLong().compareTo(o.asLong());
+            case FLOAT:
+                return asFloat().compareTo(o.asFloat());
+            case DOUBLE:
+                return asDouble().compareTo(o.asDouble());
+            case BOOLEAN:
+                return asBoolean().compareTo(o.asBoolean());
+            case DATETIME:
+                logger.warn("date not yet handled ! Ignored");
+                return 0;
+            case NULL:
+            case ARRAY:
+            case BYTES:
+            case RECORD:
+            case MAP:
+            case ENUM:
+            case UNION:
+                return 0;
+            default:
+                logger.warn("unknown field type ! '{}'", getType());
+                return 0;
+        }
     }
 }
