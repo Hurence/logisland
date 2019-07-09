@@ -144,6 +144,12 @@
             <artifactId>jmotif-sax</artifactId>
             <version>1.1.4</version>
         </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+            <scope>compile</scope>
+        </dependency>
 
 
     </dependencies>

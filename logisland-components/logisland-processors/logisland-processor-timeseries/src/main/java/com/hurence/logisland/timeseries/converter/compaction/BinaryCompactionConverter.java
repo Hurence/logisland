@@ -3,8 +3,6 @@ package com.hurence.logisland.timeseries.converter.compaction;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.timeseries.converter.common.Compression;
-import com.hurence.logisland.timeseries.converter.sax.SAXOptionsImpl;
-import com.hurence.logisland.timeseries.converter.sax.SaxConverter;
 import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
 import com.hurence.logisland.timeseries.dts.Pair;
 import org.slf4j.Logger;
