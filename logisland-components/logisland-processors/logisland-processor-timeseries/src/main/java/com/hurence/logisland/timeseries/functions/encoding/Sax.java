@@ -46,7 +46,6 @@ public final class Sax implements ChronixEncoding<MetricTimeSeries> {
 
 
     private final int alphabetSize;
-    private final int numThreads;
     private final float nThreshold;
     private final int paaSize;
 
@@ -54,15 +53,12 @@ public final class Sax implements ChronixEncoding<MetricTimeSeries> {
     /**
      * Constructs a Sax transformation without sliding windows
      *
-     * @param args the first value is the alphabet size, the second is the NumerosityReductionStrategy,
-     *             the third is numThreads, the fourth nThreshold, the fifth slidingWindowSize and
-     *             the sixth is paaSize
+     * @param args the first value is the alphabet size, the second is the nThreshold, the third is paaSize
      */
     public Sax(String[] args) {
         alphabetSize = Integer.parseInt(args[0]);
-        numThreads = Integer.parseInt(args[1]);
-        nThreshold = Float.parseFloat(args[2]);
-        paaSize = Integer.parseInt(args[3]);
+        nThreshold = Float.parseFloat(args[1]);
+        paaSize = Integer.parseInt(args[2]);
     }
 
 
@@ -71,7 +67,6 @@ public final class Sax implements ChronixEncoding<MetricTimeSeries> {
      */
     public Sax() {
         alphabetSize = 3;
-        numThreads = 1;
         nThreshold = 0.01f;
         paaSize = 4;
     }
@@ -116,7 +111,6 @@ public final class Sax implements ChronixEncoding<MetricTimeSeries> {
     @Override
     public String[] getArguments() {
         return new String[]{"alphabetSize=" + alphabetSize,
-                "numThreads=" + numThreads,
                 "nThreshold=" + nThreshold,
                 "paaSize=" + paaSize};
     }

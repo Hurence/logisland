@@ -59,9 +59,9 @@ class SaxTest extends Specification {
         def analysisResult = new FunctionValueMap(0, 0, 0, 3)
 
         when:
-        new Sax(["11", "1", "0.01", "10"] as String[]).execute(ts, analysisResult)
-        new Sax(["10", "1", "0.01", "14"] as String[]).execute(ts, analysisResult)
-        new Sax(["7", "1", "0.01", "9"] as String[]).execute(ts, analysisResult)
+        new Sax(["11", "0.01", "10"] as String[]).execute(ts, analysisResult)
+        new Sax(["10", "0.01", "14"] as String[]).execute(ts, analysisResult)
+        new Sax(["7", "0.01", "9"] as String[]).execute(ts, analysisResult)
 
         then:
         analysisResult.getEncodingValue(0) == "bcjkiheebb"
@@ -83,7 +83,7 @@ class SaxTest extends Specification {
 
     def "test arguments"() {
         expect:
-        new Sax().getArguments().length == 4
+        new Sax().getArguments().length == 3
     }
 
     def "test type"() {

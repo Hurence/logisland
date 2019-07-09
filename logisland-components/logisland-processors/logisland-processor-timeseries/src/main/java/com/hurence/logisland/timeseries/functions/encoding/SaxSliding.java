@@ -44,7 +44,6 @@ public final class SaxSliding implements ChronixEncoding<MetricTimeSeries> {
 
     private final int alphabetSize;
     private final NumerosityReductionStrategy nrStrategy;
-    private final int numThreads;
     private final float nThreshold;
     private final int slidingWindowSize;
     private final int paaSize;
@@ -53,16 +52,14 @@ public final class SaxSliding implements ChronixEncoding<MetricTimeSeries> {
      * Constructs a Sax transformation with sliding windows
      *
      * @param args the first value is the alphabet size, the second is the NumerosityReductionStrategy,
-     *             the third is numThreads, the fourth nThreshold, the fifth slidingWindowSize and
-     *             the sixth is paaSize
+     *             the third is nThreshold, the fourth slidingWindowSize, the fifth paaSize
      */
     public SaxSliding(String[] args) {
         alphabetSize = Integer.parseInt(args[0]);
         nrStrategy = NumerosityReductionStrategy.valueOf(args[1]);
-        numThreads = Integer.parseInt(args[2]);
-        nThreshold = Float.parseFloat(args[3]);
-        slidingWindowSize = Integer.parseInt(args[4]);
-        paaSize = Integer.parseInt(args[5]);
+        nThreshold = Float.parseFloat(args[2]);
+        slidingWindowSize = Integer.parseInt(args[3]);
+        paaSize = Integer.parseInt(args[4]);
     }
 
 
@@ -73,7 +70,6 @@ public final class SaxSliding implements ChronixEncoding<MetricTimeSeries> {
     public SaxSliding() {
         alphabetSize = 3;
         nrStrategy = NumerosityReductionStrategy.EXACT;
-        numThreads = 1;
         nThreshold = 0.01f;
         slidingWindowSize = 30;
         paaSize = 4;
@@ -123,7 +119,6 @@ public final class SaxSliding implements ChronixEncoding<MetricTimeSeries> {
     public String[] getArguments() {
         return new String[]{"alphabetSize=" + alphabetSize,
                 "nrStrategy=" + nrStrategy.name().toUpperCase(),
-                "numThreads=" + numThreads,
                 "nThreshold=" + nThreshold,
                 "slidingWindowSize=" + slidingWindowSize,
                 "paaSize=" + paaSize};
