@@ -48,7 +48,7 @@ public class ConvertFromTimeseries extends AbstractProcessor {
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
 
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-       // descriptors.add(GROUP_BY_FIELD);
+       // descriptors.add(GROUPBY);
 
         return descriptors;
     }

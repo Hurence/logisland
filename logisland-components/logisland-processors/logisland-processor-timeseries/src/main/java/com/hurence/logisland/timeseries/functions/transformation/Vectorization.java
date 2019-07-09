@@ -56,11 +56,11 @@ public final class Vectorization implements ChronixTransformation<MetricTimeSeri
     @Override
     public void execute(MetricTimeSeries timeSeries, FunctionValueMap functionValueMap) {
 
-        //we need a sorted time series
+        // we need a sorted time series
         timeSeries.sort();
 
         int size = timeSeries.size();
-        //do not simplify if there are insufficient data points
+        // do not simplify if there are insufficient data points
         if (size <= 3) {
             return;
         }
@@ -71,7 +71,7 @@ public final class Vectorization implements ChronixTransformation<MetricTimeSeri
         long[] rawTimeStamps = timeSeries.getTimestampsAsArray();
         double[] rawValues = timeSeries.getValuesAsArray();
 
-        //Clear the original time series
+        // Clear the original time series
         timeSeries.clear();
 
         compute(rawTimeStamps, rawValues, usePoint, tolerance);

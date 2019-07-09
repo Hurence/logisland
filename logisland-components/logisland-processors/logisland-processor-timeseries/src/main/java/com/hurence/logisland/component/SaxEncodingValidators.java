@@ -1,6 +1,6 @@
 package com.hurence.logisland.component;
 
-import com.hurence.logisland.timeseries.converter.sax.SaxConverter;
+import com.hurence.logisland.timeseries.sax.SaxConverter;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import net.seninp.jmotif.sax.SAXException;

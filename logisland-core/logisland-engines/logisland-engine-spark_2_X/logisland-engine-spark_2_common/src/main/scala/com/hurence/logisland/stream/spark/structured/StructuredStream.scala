@@ -73,7 +73,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     descriptors.add(WRITE_STREAM_SERVICE_PROVIDER)
     descriptors.add(WRITE_TOPICS_SERIALIZER)
     descriptors.add(WRITE_TOPICS_KEY_SERIALIZER)
-    descriptors.add(GROUPBY_KEYS)
+    descriptors.add(GROUPBY)
 
     Collections.unmodifiableList(descriptors)
   }
