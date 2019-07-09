@@ -70,8 +70,8 @@ public class MergeRecordProcessor extends AbstractProcessor {
             .build();
 
     public static final PropertyDescriptor DEFAULT_STRATEGY = new PropertyDescriptor.Builder()
-            .name("group.by.field")
-            .description("The field to use to group records to aggregate into one. There will be one record in output by different value of the field")
+            .name("default.strategy")
+            .description("The default strategy to use for merging records")
             .required(false)
             .allowableValues(TAKE_FIRST_STRATEGY, ARRAY_STRATEGY)
             .defaultValue(TAKE_FIRST_STRATEGY.getValue())
@@ -98,18 +98,18 @@ public class MergeRecordProcessor extends AbstractProcessor {
         if (propertyDescriptorName.endsWith(DYNAMIC_PROPS_STRATEGY_SUFFIX)) {
             return new PropertyDescriptor.Builder()
                     .name(propertyDescriptorName)
-                    .expressionLanguageSupported(true)
+                    .expressionLanguageSupported(false)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .required(false)
-                    .dynamic(false)
+                    .dynamic(true)
                     .build();
         }
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
-                .expressionLanguageSupported(true)
+                .expressionLanguageSupported(false)
                 .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                 .required(false)
-                .dynamic(false)
+                .dynamic(true)
                 .build();
     }
 

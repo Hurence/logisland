@@ -120,6 +120,16 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
 
     @Override
     public boolean removeProperty(String name) {
+        final PropertyDescriptor fullyPopulatedDescriptor = component.getPropertyDescriptor(name);
+        String value = null;
+
+        if ((value = properties.remove(fullyPopulatedDescriptor)) != null) {
+            if (!value.equals(fullyPopulatedDescriptor.getDefaultValue())) {
+                component.onPropertyModified(fullyPopulatedDescriptor, value, null);
+            }
+
+            return true;
+        }
         return false;
     }
 
@@ -153,17 +163,7 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
 
     public boolean removeProperty(final PropertyDescriptor descriptor) {
         Objects.requireNonNull(descriptor);
-        final PropertyDescriptor fullyPopulatedDescriptor = component.getPropertyDescriptor(descriptor.getName());
-        String value = null;
-
-        if ((value = properties.remove(fullyPopulatedDescriptor)) != null) {
-            if (!value.equals(fullyPopulatedDescriptor.getDefaultValue())) {
-                component.onPropertyModified(fullyPopulatedDescriptor, value, null);
-            }
-
-            return true;
-        }
-        return false;
+        return removeProperty(descriptor.getName());
     }
 
 

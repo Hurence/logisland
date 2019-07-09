@@ -231,6 +231,15 @@ public interface TestRunner {
     boolean removeProperty(PropertyDescriptor descriptor);
 
     /**
+     * Removes the {@link PropertyDescriptor} from the {@link ProcessContext},
+     * effectively setting its value to null, or the property's default value, if it has one.
+     *
+     * @param propertyName of property to remove
+     * @return <code>true</code> if removed, <code>false</code> if the property was not set
+     */
+    boolean removeProperty(String propertyName);
+
+    /**
      * @param identifier of controller service
      * @return the {@link ControllerService} that is registered with the given
      *         identifier, or <code>null</code> if no Controller Service exists with the
