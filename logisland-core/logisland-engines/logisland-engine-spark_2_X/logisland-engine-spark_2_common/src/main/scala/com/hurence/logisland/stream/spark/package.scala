@@ -271,8 +271,8 @@ object StreamProperties {
     .required(false)
     .build
 
-  val GROUPBY_KEYS: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("groupby.keys")
+  val GROUPBY: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("groupby")
     .description("comma separated list of fields to group the partition by")
     .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
     .required(false)

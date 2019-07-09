@@ -36,8 +36,8 @@ import java.util.stream.Collectors;
 public class ConvertToTimeseries extends AbstractProcessor {
     //TODO delete use others processor instead
 
-    public static final PropertyDescriptor GROUP_BY_FIELD = new PropertyDescriptor.Builder()
-            .name("group.by.field")
+    public static final PropertyDescriptor GROUPBY = new PropertyDescriptor.Builder()
+            .name("groupby")
             .description("The field the chunk should be grouped by")
             .required(false)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
@@ -106,7 +106,7 @@ public class ConvertToTimeseries extends AbstractProcessor {
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(GROUP_BY_FIELD);
+        descriptors.add(GROUPBY);
         descriptors.add(AGGS);
         descriptors.add(SAX_ENCODING);
         return descriptors;
@@ -118,7 +118,7 @@ public class ConvertToTimeseries extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context) {
         super.init(context);
-        final String[] groupByArray = context.getPropertyValue(GROUP_BY_FIELD).asString().split(",");
+        final String[] groupByArray = context.getPropertyValue(GROUPBY).asString().split(",");
         groupBy = Arrays.stream(groupByArray)
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.toList());

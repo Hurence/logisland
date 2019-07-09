@@ -91,9 +91,9 @@ trait StructuredStreamProviderService extends ControllerService {
     })
 
 
-    if (streamContext.getPropertyValue(GROUPBY_KEYS).isSet) {
+    if (streamContext.getPropertyValue(GROUPBY).isSet) {
 
-      val keys = streamContext.getPropertyValue(GROUPBY_KEYS).asString()
+      val keys = streamContext.getPropertyValue(GROUPBY).asString()
 
 
       processingRecords
