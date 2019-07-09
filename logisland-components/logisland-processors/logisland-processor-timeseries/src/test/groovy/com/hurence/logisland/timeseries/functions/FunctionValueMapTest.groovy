@@ -18,6 +18,7 @@ package com.hurence.logisland.timeseries.functions
 import com.hurence.logisland.timeseries.functions.aggregation.Max
 import com.hurence.logisland.timeseries.functions.analyse.Trend
 import com.hurence.logisland.timeseries.functions.transformation.Vectorization
+import org.junit.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -70,7 +71,8 @@ class FunctionValueMapTest extends Specification {
     @Shared
     def functionValueMap = new FunctionValueMap(0, 0, 0)
 
-    @Unroll
+
+  /*  @Unroll
     def "test exception case for #function"() {
         when:
         function()
@@ -84,5 +86,5 @@ class FunctionValueMapTest extends Specification {
                      { -> functionValueMap.add(new Trend(), true, "") },
                      { -> functionValueMap.add(new Vectorization(["0.1"] as String[])) }]
 
-    }
+    }*/
 }

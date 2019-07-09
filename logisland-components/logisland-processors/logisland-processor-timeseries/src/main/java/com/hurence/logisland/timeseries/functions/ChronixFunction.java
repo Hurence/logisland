@@ -55,6 +55,7 @@ public interface ChronixFunction<T> {
     enum FunctionType {
         AGGREGATION,
         TRANSFORMATION,
-        ANALYSIS
+        ANALYSIS,
+        ENCODING
     }
 }

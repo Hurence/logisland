@@ -37,6 +37,9 @@ public final class Median implements ChronixAggregation<MetricTimeSeries> {
     @Override
     public void execute(MetricTimeSeries timeSeries, FunctionValueMap functionValueMap) {
 
+        // we need a sorted time series
+        timeSeries.sort();
+
         // If it is empty, we return NaN
         if (timeSeries.size() <= 0) {
             functionValueMap.add(this, Double.NaN);

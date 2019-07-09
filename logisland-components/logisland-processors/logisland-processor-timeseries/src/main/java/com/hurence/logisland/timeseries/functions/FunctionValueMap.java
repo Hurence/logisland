@@ -27,15 +27,18 @@ public class FunctionValueMap {
     private final ChronixAnalysis[] analyses;
     private final ChronixTransformation[] transformations;
     private final ChronixAggregation[] aggregations;
+    private final ChronixEncoding[] encodings;
 
     private final boolean[] analysisValues;
     private final double[] aggregationValues;
+    private final String[] encodingValues;
 
     private final String[] identifiers;
 
     private int analysisSize;
     private int aggregationSize;
     private int transformationSize;
+    private int encodingSize;
 
 
     /**
@@ -49,9 +52,33 @@ public class FunctionValueMap {
         this.aggregations = new ChronixAggregation[amountOfAggregations];
         this.analyses = new ChronixAnalysis[amountOfAnalyses];
         this.transformations = new ChronixTransformation[amountOfTransformations];
+        this.encodings = new ChronixEncoding[0];
 
         this.analysisValues = new boolean[amountOfAnalyses];
         this.aggregationValues = new double[amountOfAggregations];
+        this.encodingValues  = new String[0];
+
+        this.identifiers = new String[amountOfAggregations + amountOfAnalyses];
+    }
+
+
+    /**
+     * A container for analyses and its results
+     *
+     * @param amountOfAggregations    the number of aggregations
+     * @param amountOfAnalyses        the number of analyses
+     * @param amountOfTransformations the number of transformations
+     * @param amountOfEncodings       the number of encodings
+     */
+    public FunctionValueMap(int amountOfAggregations, int amountOfAnalyses, int amountOfTransformations, int amountOfEncodings) {
+        this.aggregations = new ChronixAggregation[amountOfAggregations];
+        this.analyses = new ChronixAnalysis[amountOfAnalyses];
+        this.transformations = new ChronixTransformation[amountOfTransformations];
+        this.encodings = new ChronixEncoding[amountOfEncodings];
+
+        this.analysisValues = new boolean[amountOfAnalyses];
+        this.aggregationValues = new double[amountOfAggregations];
+        this.encodingValues  = new String[amountOfEncodings];
 
         this.identifiers = new String[amountOfAggregations + amountOfAnalyses];
     }
@@ -86,6 +113,22 @@ public class FunctionValueMap {
             aggregationSize++;
         } else {
             throw new IndexOutOfBoundsException("Try to put aggregation to map with max size " + aggregations.length + " but index " + aggregationSize + " is out of range.");
+        }
+    }
+
+    /**
+     * Append the encoding to the result
+     *
+     * @param encoding the chronix encoding
+     * @param value    the value of the encoding
+     */
+    public void add(ChronixEncoding encoding, String value) {
+        if (encodingSize < encodings.length) {
+            encodings[encodingSize] = encoding;
+            encodingValues[encodingSize] = value;
+            encodingSize++;
+        } else {
+            throw new IndexOutOfBoundsException("Try to put encoding to map with max size " + encodings.length + " but index " + encodingSize + " is out of range.");
         }
     }
 
@@ -152,6 +195,16 @@ public class FunctionValueMap {
      */
     public double getAggregationValue(int i) {
         return aggregationValues[i];
+    }
+
+    /**
+     * Gets the encoding value at the index position
+     *
+     * @param i the index
+     * @return the value at index i
+     */
+    public String getEncodingValue(int i) {
+        return encodingValues[i];
     }
 
     /**
