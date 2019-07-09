@@ -16,10 +16,10 @@ package com.hurence.logisland.processor;
  * limitations under the License.
  */
 
+import com.hurence.logisland.agg.Agg;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
@@ -29,7 +29,6 @@ import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.management.Descriptor;
 import java.util.*;
 import java.util.stream.*;
 
