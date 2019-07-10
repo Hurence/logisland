@@ -44,71 +44,19 @@ public class ConvertToTimeseries extends AbstractProcessor {
             .defaultValue("")
             .build();
 
-    //TODO add possibility to choose a ddcThreshold (needs to add possibility in code before)
 
-    public static final PropertyDescriptor AGGS = new PropertyDescriptor.Builder()
-            .name("aggs")
-            .description("The agregations to calculates for the chunk")
+    public static final PropertyDescriptor METRIC = new PropertyDescriptor.Builder()
+            .name("metric")
+            .description("The chronix metric to calculate for the chunk")
             .required(false)
-            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)//TODO use validator with enum
-//            .defaultValue("")//TODO all ? include ALL and NONE in enum
+            .addValidator(StandardValidators.SEMICOLON_SEPARATED_LIST_VALIDATOR)
             .build();
-
-    public static final PropertyDescriptor SAX_ENCODING = new PropertyDescriptor.Builder()
-            .name("sax.encoding")
-            .description("whether to add a sax encoding version of the chunk")
-            .required(false)
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            .defaultValue("false")
-            .build();
-
-    public static final PropertyDescriptor SAX_ENCODING_PAA_SIZE = new PropertyDescriptor.Builder()
-            .name("sax.encoding.paa.size")
-            .description("the size of resulting sax string")
-            .required(false)
-            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("3")
-            .build();
-
-    public static final PropertyDescriptor SAX_ENCODING_N_THRESHOLD = new PropertyDescriptor.Builder()
-            .name("sax.encoding.threshold")
-            .description("Used to normalize values before encoding into sax string")
-            .required(false)
-            .addValidator(StandardValidators.POSITIVE_DOUBLE_VALIDATOR)
-            .defaultValue("0")
-            .build();
-
-    public static final PropertyDescriptor SAX_ENCODING_ALPHABET_SIZE = new PropertyDescriptor.Builder()
-            .name("sax.encoding.alphabet.size")
-            .description("The number of different letter of the alphabet to use")
-            .required(false)
-            .addValidator(SaxEncodingValidators.ALPHABET_SIZE_VALIDATOR)
-            .defaultValue("3")
-            .build();
-
-    public static final PropertyDescriptor BINARY_COMPACTION = new PropertyDescriptor.Builder()
-            .name("sax.encoding")
-            .description("whether to compact time series into binary format")
-            .required(false)
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            .defaultValue("true")
-            .build();
-
-    public static final PropertyDescriptor BINARY_COMPACTION_THRESHOLD = new PropertyDescriptor.Builder()
-            .name("sax.encoding.threshold")
-            .description("Used to normalize values before encoding into binaries format")//TODO check in detail
-            .required(false)
-            .addValidator(StandardValidators.POSITIVE_DOUBLE_VALIDATOR)
-            .defaultValue("0")
-            .build();
-
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(GROUPBY);
-        descriptors.add(AGGS);
-        descriptors.add(SAX_ENCODING);
+        descriptors.add(METRIC);
         return descriptors;
     }
 
@@ -123,7 +71,15 @@ public class ConvertToTimeseries extends AbstractProcessor {
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.toList());
         BinaryCompactionConverter.Builder builder = new BinaryCompactionConverter.Builder();
-        boolean saxEncoding = context.getPropertyValue(SAX_ENCODING).asBoolean();
+
+
+        if(context.getPropertyValue(METRIC).isSet()) {
+            String metric = context.getPropertyValue(METRIC).asString();
+
+
+        }
+
+
 //        builder.saxEncoding(saxEncoding);
 //        if (saxEncoding) {
 //            final int paaSize = context.getPropertyValue(SAX_ENCODING_PAA_SIZE).asInteger();

@@ -120,7 +120,18 @@
             <version>19.0</version>
             <optional>true</optional>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>4.1.0</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-multibindings</artifactId>
+            <version>4.1.0</version>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>org.spockframework</groupId>
