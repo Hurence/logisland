@@ -22,7 +22,10 @@ import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.SaxEncodingValidators;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.TimeSeriesRecord;
+import com.hurence.logisland.timeseries.MetricTimeSeries;
 import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
 import com.hurence.logisland.timeseries.functions.*;
 import com.hurence.logisland.timeseries.metric.MetricType;
@@ -115,8 +118,35 @@ public class ConvertToTimeseries extends AbstractProcessor {
             outputRecords = groups.values().stream()
                     .filter(l -> !l.isEmpty())                                      // remove empty groups
                     .peek(recs -> recs.sort(Comparator.comparing(Record::getTime))) // sort by time asc
-                    //     transformations.forEach(transformation -> transformation.execute(ts, functionValueMap));
-                    .map(converter::chunk)
+                    .map(groupedRecords -> {
+                        TimeSeriesRecord tsRecord = converter.chunk(groupedRecords);
+                        MetricTimeSeries timeSeries = tsRecord.getTimeSeries();
+
+                        transformations.forEach(transfo -> transfo.execute(timeSeries, functionValueMap));
+                        analyses.forEach(analyse -> analyse.execute(timeSeries, functionValueMap));
+                        aggregations.forEach(aggregation -> aggregation.execute(timeSeries, functionValueMap));
+                        encodings.forEach(encoding -> encoding.execute(timeSeries, functionValueMap));
+
+                        for (int i = 0; i < functionValueMap.sizeOfAggregations(); i++) {
+                            String name = functionValueMap.getAggregation(i).getType().name();
+                            double value = functionValueMap.getAggregationValue(i);
+                            tsRecord.setField(name, FieldType.DOUBLE, value);
+                        }
+
+                        for (int i = 0; i < functionValueMap.sizeOfAnalyses(); i++) {
+                            String name = functionValueMap.getAnalysis(i).getType().name();
+                            boolean value = functionValueMap.getAnalysisValue(i);
+                            tsRecord.setField(name, FieldType.BOOLEAN, value);
+                        }
+
+                        for (int i = 0; i < functionValueMap.sizeOfEncodings(); i++) {
+                            String name = functionValueMap.getEncoding(i).getType().name();
+                            String value = functionValueMap.getEncodingValue(i);
+                            tsRecord.setField(name, FieldType.STRING, value);
+                        }
+
+                        return tsRecord;
+                    })
                     .collect(Collectors.toList());
         }
 

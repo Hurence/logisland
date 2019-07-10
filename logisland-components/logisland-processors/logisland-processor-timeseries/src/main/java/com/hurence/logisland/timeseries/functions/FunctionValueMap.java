@@ -187,6 +187,17 @@ public class FunctionValueMap {
         return aggregations[i];
     }
 
+
+    /**
+     * Gets the encoding at the index position
+     *
+     * @param i the index
+     * @return the encoding at index i
+     */
+    public ChronixEncoding getEncoding(int i) {
+        return encodings[i];
+    }
+
     /**
      * Gets the aggregation value at the index position
      *
@@ -222,6 +233,13 @@ public class FunctionValueMap {
      */
     public int sizeOfAnalyses() {
         return analysisSize;
+    }
+
+    /**
+     * @return the size of the encodings
+     */
+    public int sizeOfEncodings() {
+        return encodingSize;
     }
 
     /**
