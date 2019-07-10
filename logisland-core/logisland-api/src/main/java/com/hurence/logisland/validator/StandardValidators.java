@@ -250,6 +250,23 @@ public class StandardValidators {
         }
     };
 
+
+    public static final Validator SEMICOLON_SEPARATED_LIST_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+
+
+            String reason = null;
+            try {
+                value.split(";");
+            } catch (final Exception e) {
+                reason = "not a SEMICOLON separated list";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
     public static final Validator COMMA_SEPARATED_LIST_VALIDATOR = new Validator() {
         @Override
         public ValidationResult validate(final String subject, final String value) {

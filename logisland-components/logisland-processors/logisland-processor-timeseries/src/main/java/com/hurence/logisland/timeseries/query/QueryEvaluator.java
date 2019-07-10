@@ -43,7 +43,7 @@ public final class QueryEvaluator {
      * @param chronixFunctions the filter queries (solr api)
      * @return a set of chronix analyses asked in the filter queries
      */
-    public static TypeFunctions extractFunctions(String[] chronixFunctions, ChronixTypes plugInTypes, ChronixFunctions plugInFunctions) {
+    public static TypeFunctions extractFunctions(String[] chronixFunctions) {
 
         //The result that contains the asked analyses
         final TypeFunctions result = new TypeFunctions();
@@ -89,16 +89,12 @@ public final class QueryEvaluator {
                     ChronixFunction chronixFunction = chronixType.getFunction(queryFunction, arguments);
 
                     //No function found.
-                    if (chronixFunction == null) {
-                        //check the plugins for this type
-                        LOGGER.debug("Try to find plugin for type {} and function {}", typeName, queryFunction);
-                        chronixFunction = plugInFunctions.getFunctionForQueryName(typeName, queryFunction);
 
-                        if (chronixFunction == null) {
-                            LOGGER.debug("Could not find custom function {} for type {}", queryFunction, typeName);
-                            continue;
-                        }
+                    if (chronixFunction == null) {
+                        LOGGER.debug("Could not find custom function {} for type {}", queryFunction, typeName);
+                        continue;
                     }
+
 
                     switch (chronixFunction.getType()) {
                         case AGGREGATION:

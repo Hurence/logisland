@@ -15,51 +15,25 @@
  */
 package com.hurence.logisland.timeseries.query
 
-import com.google.inject.Guice
-import com.hurence.logisland.timeseries.functions.ChronixFunctions
-import com.hurence.logisland.timeseries.metric.ChronixTypes
+
 import com.hurence.logisland.timeseries.metric.MetricType
 import spock.lang.Ignore
-import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 /**
  * Unit test for the query QUERY_EVALUATOR class.
  * @author f.lautenschlager
+ * @author bailett
  */
 class QueryEvaluatorTest extends Specification {
 
-    @Shared
-    ChronixTypes TYPES
-    @Shared
-    ChronixFunctions FUNCTIONS
 
-   /* def setup() {
-        def injector = Guice.createInjector(
-                ChronixPluginLoader.of(ChronixTypePlugin.class),
-                ChronixPluginLoader.of(ChronixFunctionPlugin.class))
 
-        TYPES = injector.getInstance(ChronixTypes.class)
-        FUNCTIONS = injector.getInstance(ChronixFunctions.class)
-    }*/
-/*
-    def "test plugins"() {
-        when:
-        def queryFunctions = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
-        then:
-        queryFunctions.getTypeFunctions(new MetricType()).size() == size
-
-        where:
-        fqs << [["metric{nothing}"] as String[]]
-
-        size << [0]
-    }
-*/
 
     def "test multiple queries"() {
         when:
-        def queryFunctions = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
+        def queryFunctions = QueryEvaluator.extractFunctions(fqs)
         then:
         queryFunctions.getTypeFunctions(new MetricType()).size() == size
 
@@ -72,7 +46,7 @@ class QueryEvaluatorTest extends Specification {
 
     def "test aggregation query"() {
         when:
-        def functions = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
+        def functions = QueryEvaluator.extractFunctions(fqs)
 
         then:
         def aggregation = functions.getTypeFunctions(new MetricType()).getAggregations()[0]
@@ -104,7 +78,7 @@ class QueryEvaluatorTest extends Specification {
 
     def "test encoding query"() {
         when:
-        def functions = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
+        def functions = QueryEvaluator.extractFunctions(fqs)
         then:
         def encoding = functions.getTypeFunctions(new MetricType()).getEncodings()[0]
         encoding.getQueryName() == expectedQueryName
@@ -120,7 +94,7 @@ class QueryEvaluatorTest extends Specification {
 
     def "test analysis query"() {
         when:
-        def functions = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
+        def functions = QueryEvaluator.extractFunctions(fqs)
         then:
         def analysis = functions.getTypeFunctions(new MetricType()).getAnalyses()[0]
         analysis.getQueryName() == expectedQueryName
@@ -150,7 +124,7 @@ class QueryEvaluatorTest extends Specification {
     @Unroll
     def "test transformation query #fqs"() {
         when:
-        def functions = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
+        def functions = QueryEvaluator.extractFunctions(fqs)
         then:
         def transformation = functions.getTypeFunctions(new MetricType()).getTransformations()[0]
         transformation.getQueryName() == expectedQueryName
@@ -180,7 +154,7 @@ class QueryEvaluatorTest extends Specification {
     @Unroll
     def "test transformation query without args #fqs"() {
         when:
-        def functions = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
+        def functions = QueryEvaluator.extractFunctions(fqs)
         then:
         def transformation = functions.getTypeFunctions(new MetricType()).getTransformations()[0]
         transformation.getQueryName() == expectedQueryName
@@ -211,7 +185,7 @@ class QueryEvaluatorTest extends Specification {
 
     def "test empty or null filter query"() {
         when:
-        def result = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
+        def result = QueryEvaluator.extractFunctions(fqs)
 
         then:
         noExceptionThrown()
@@ -230,20 +204,5 @@ class QueryEvaluatorTest extends Specification {
         noExceptionThrown()
     }
 
-    /*
-    def "test metric type extension"() {
-        when:
-        def functions = QueryEvaluator.extractFunctions(fqs, TYPES, FUNCTIONS)
-        then:
-        def aggregation = functions.getTypeFunctions(new MetricType()).getTransformations()[0]
-        aggregation.getQueryName() == queryName
-        aggregation.getArguments() == expectedArguments
 
-        where:
-        fqs << [["metric{noop}"] as String[]]
-
-        queryName << ["noop"]
-        expectedArguments << [new String[0]]
-    }
-*/
 }

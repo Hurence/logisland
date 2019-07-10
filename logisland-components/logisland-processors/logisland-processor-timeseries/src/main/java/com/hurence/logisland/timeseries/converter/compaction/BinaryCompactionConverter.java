@@ -2,6 +2,7 @@ package com.hurence.logisland.timeseries.converter.compaction;
 
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.*;
+import com.hurence.logisland.timeseries.MetricTimeSeries;
 import com.hurence.logisland.timeseries.converter.common.Compression;
 import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
 import com.hurence.logisland.timeseries.dts.Pair;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,15 +22,14 @@ public class BinaryCompactionConverter implements Serializable {
 
     private static Logger logger = LoggerFactory.getLogger(BinaryCompactionConverter.class.getName());
 
-    private int ddcThreshold = 0;//Try to vary this
+    private int ddcThreshold = 0;
 
     private BinaryCompactionConverter(int ddcThreshold) {
         this.ddcThreshold = ddcThreshold;
     }
 
-    private BinaryCompactionConverter() {}
 
-    //TODO reduce to compaction only
+
     /**
      * Compact a related list of records a single chunked one
      *
@@ -36,57 +37,53 @@ public class BinaryCompactionConverter implements Serializable {
      * @return
      * @throws ProcessException
      */
-    public TimeSerieChunkRecord chunk(List<Record> records) throws ProcessException {
-        //extract metricType
-        String metricType = records.stream().filter(record -> record.hasField(FieldDictionary.RECORD_TYPE) &&
-                record.getField(FieldDictionary.RECORD_TYPE).getRawValue() != null)
-                .map(record -> record.getField(FieldDictionary.RECORD_TYPE).asString())
-                .findFirst().orElse(RecordDictionary.METRIC);
-        //extract metricName
-        String metricName = records.stream().filter(record -> record.hasField(FieldDictionary.RECORD_NAME) &&
-                record.getField(FieldDictionary.RECORD_NAME).getRawValue() != null)
-                .map(record -> record.getField(FieldDictionary.RECORD_NAME).asString())
-                .findFirst().orElse("unknown");
-        final TimeSerieChunkRecord chunkrecord = new TimeSerieChunkRecord(metricType, metricName);
-        //first TS
-        final long firstTS = getFirstTS(records);
-        chunkrecord.setStart(firstTS);
-        //last TS
-        long tmp = getLastTS(records);
-        final long lastTS = tmp == firstTS ? firstTS + 1 : tmp;
-        chunkrecord.setEnd(lastTS);
-        //set attributes
-        Record first = records.get(0);
-        first.getAllFieldsSorted().forEach(field -> {
-            chunkrecord.addAttributes(field.getName(), field.getRawValue());
-        });
-        //find points
-        List<Point> points = extractPoints(records.stream()).collect(Collectors.toList());
-        //compress chunk into binaries
-        chunkrecord.setCompressedPoints(compressPoints(points.stream()));
+    public TimeSeriesRecord chunk(List<Record> records) throws ProcessException {
+
+        if (records.isEmpty())
+            throw new ProcessException("not enough records to build a timeseries, should contain at least 1 records ");
+
+        final MetricTimeSeries timeSeries = buildTimeSeries(records);
+        final TimeSeriesRecord chunkrecord = new TimeSeriesRecord(timeSeries);
+
+        // compress chunk into binaries
+        chunkrecord.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, serializeTimeseries(timeSeries));
+
         return chunkrecord;
     }
 
-    private long getLastTS(List<Record> records) {
-        return records.get(records.size() - 1).getTime().getTime();
-
-    }
-
-    private long getFirstTS(List<Record> records) {
-        return records.get(0).getTime().getTime();
-    }
-
-    private byte[] compressPoints(Stream<Point> points) {
-        byte[] serializedPoints = ProtoBufMetricTimeSeriesSerializer.to(points.iterator(), ddcThreshold);
+    private byte[] serializeTimeseries(final MetricTimeSeries timeSeries) {
+        byte[] serializedPoints = ProtoBufMetricTimeSeriesSerializer.to(timeSeries.points().iterator(), ddcThreshold);
         return Compression.compress(serializedPoints);
     }
 
-    private Stream<Point> extractPoints(Stream<Record> records) {
-        return records
-                .filter(record -> record.getField(FieldDictionary.RECORD_VALUE) != null && record.getField(FieldDictionary.RECORD_VALUE).getRawValue() != null)
-                .map(record -> new Pair<>(record.getTime().getTime(), record.getField(FieldDictionary.RECORD_VALUE).asDouble()))
-                .filter(longDoublePair -> longDoublePair.getSecond() != null && Double.isFinite(longDoublePair.getSecond()))
-                .map(pair -> new Point(0 ,pair.getFirst(), pair.getSecond()));
+
+    private MetricTimeSeries buildTimeSeries(final List<Record> records) {
+        final Record first = records.get(0);
+        final Record last = records.get(records.size() - 1);
+        final String metricType = first.getType();
+        final String metricName = first.getField(FieldDictionary.RECORD_NAME).asString();
+        final long start = first.getTime().getTime();
+        final long end = (last.getTime().getTime() == start) ? start + 1 : start;
+
+        MetricTimeSeries.Builder tsBuilder = new MetricTimeSeries.Builder(metricName, metricType);
+        tsBuilder.start(start);
+        tsBuilder.end(end);
+
+        // set attributes
+        first.getAllFieldsSorted().forEach(field -> {
+            if (!field.getName().startsWith("record_"))
+                tsBuilder.attribute(field.getName(), field.getRawValue());
+        });
+
+        records.forEach(record -> {
+            if (record.getField(FieldDictionary.RECORD_VALUE) != null && record.getField(FieldDictionary.RECORD_VALUE).getRawValue() != null) {
+                final long timestamp = record.getTime().getTime();
+                final double value = record.getField(FieldDictionary.RECORD_VALUE).asDouble();
+                tsBuilder.point(timestamp, value);
+            }
+        });
+
+        return tsBuilder.build();
     }
 
     /**
@@ -96,19 +93,26 @@ public class BinaryCompactionConverter implements Serializable {
      * @return
      * @throws ProcessException
      */
-    public List<Record> unchunk(final TimeSerieChunkRecord record) throws IOException {
+    public List<Record> unchunk(final TimeSeriesRecord record) throws IOException {
 
-        final String name = record.getMetricName();
-        final long start = record.getStart();
-        final long end = record.getEnd();
-        final String type = record.getMetricType();
-        return unCompressPoints(record.getCompressedPoints(), start, end).stream()
+        final long start = record.getTimeSeries().getStart();
+        final long end = record.getTimeSeries().getEnd();
+        return unCompressPoints(record.getField(FieldDictionary.RECORD_VALUE).asBytes(), start, end).stream()
                 .map(m -> {
-                    long recordTime = m.getTimestamp();
-                    double recordValue = m.getValue();
-                    TimeSeriePointRecord pointRecord = new TimeSeriePointRecord(type, name);
-                    pointRecord.setTimestamp(recordTime);
-                    pointRecord.setValue(recordValue);
+
+                    long timestamp = m.getTimestamp();
+                    double value = m.getValue();
+
+                    Record pointRecord = new StandardRecord(record.getType())
+                            .setStringField(FieldDictionary.RECORD_NAME, record.getTimeSeries().getName())
+                            .setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp)
+                            .setField(FieldDictionary.RECORD_VALUE, FieldType.DOUBLE, value);
+
+                    record.getTimeSeries().attributes().keySet().forEach(key -> {
+                        pointRecord.setStringField(key, String.valueOf(record.getTimeSeries().attribute(key)));
+                    });
+
+
                     return pointRecord;
                 }).collect(Collectors.toList());
     }
@@ -120,7 +124,6 @@ public class BinaryCompactionConverter implements Serializable {
     }
 
 
-
     public static final class Builder {
 
         private int ddcThreshold = 0;
@@ -129,12 +132,12 @@ public class BinaryCompactionConverter implements Serializable {
             this.ddcThreshold = ddcThreshold;
             return this;
         }
+
         /**
          * @return a BinaryCompactionConverter as configured
-         *
          */
         public BinaryCompactionConverter build() {
-           return new BinaryCompactionConverter(ddcThreshold);
+            return new BinaryCompactionConverter(ddcThreshold);
         }
     }
 }

@@ -24,6 +24,10 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.SaxEncodingValidators;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
+import com.hurence.logisland.timeseries.functions.*;
+import com.hurence.logisland.timeseries.metric.MetricType;
+import com.hurence.logisland.timeseries.query.QueryEvaluator;
+import com.hurence.logisland.timeseries.query.TypeFunctions;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,42 +64,39 @@ public class ConvertToTimeseries extends AbstractProcessor {
         return descriptors;
     }
 
+    private List<ChronixTransformation> transformations;
+    private List<ChronixAggregation> aggregations;
+    private List<ChronixAnalysis> analyses;
+    private List<ChronixEncoding> encodings;
+    private FunctionValueMap functionValueMap;
+
     private BinaryCompactionConverter converter;
     private List<String> groupBy;
 
     @Override
     public void init(final ProcessContext context) {
         super.init(context);
+
+        // init binary converter
         final String[] groupByArray = context.getPropertyValue(GROUPBY).asString().split(",");
         groupBy = Arrays.stream(groupByArray)
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.toList());
         BinaryCompactionConverter.Builder builder = new BinaryCompactionConverter.Builder();
-
-
-        if(context.getPropertyValue(METRIC).isSet()) {
-            String metric = context.getPropertyValue(METRIC).asString();
-
-
-        }
-
-
-//        builder.saxEncoding(saxEncoding);
-//        if (saxEncoding) {
-//            final int paaSize = context.getPropertyValue(SAX_ENCODING_PAA_SIZE).asInteger();
-//            final double threshold = context.getPropertyValue(SAX_ENCODING_N_THRESHOLD).asDouble();
-//            final int alphabetSize = context.getPropertyValue(SAX_ENCODING_ALPHABET_SIZE).asInteger();
-//            builder.alphabetSize(alphabetSize)
-//                    .nThreshold(threshold)
-//                    .paaSize(paaSize);
-//        }
-//        boolean binaryCompaction = context.getPropertyValue(BINARY_COMPACTION).asBoolean();
-//        builder.binaryCompaction(binaryCompaction);
-//        if (binaryCompaction) {
-//            final int threshold = context.getPropertyValue(BINARY_COMPACTION_THRESHOLD).asInteger();
-//            builder.ddcThreshold(threshold);
-//        }
         converter = builder.build();
+
+        // init metric functions
+        if (context.getPropertyValue(METRIC).isSet()) {
+            String[] metric = {context.getPropertyValue(METRIC).asString()};
+
+            TypeFunctions functions = QueryEvaluator.extractFunctions(metric);
+
+            analyses = functions.getTypeFunctions(new MetricType()).getAnalyses();
+            aggregations = functions.getTypeFunctions(new MetricType()).getAggregations();
+            transformations = functions.getTypeFunctions(new MetricType()).getTransformations();
+            encodings = functions.getTypeFunctions(new MetricType()).getEncodings();
+            functionValueMap = new FunctionValueMap(aggregations.size(), analyses.size(), transformations.size(), encodings.size());
+        }
     }
 
     @Override
@@ -104,18 +105,17 @@ public class ConvertToTimeseries extends AbstractProcessor {
         List<Record> outputRecords = Collections.emptyList();
 
         Map<String, List<Record>> groups = records.stream().collect(
-                Collectors.groupingBy(r ->
-                        groupBy
-                        .stream().map(f -> r.hasField(f) ? r.getField(f).asString() : null)
+                Collectors.groupingBy(r -> groupBy.stream()
+                        .map(f -> r.hasField(f) ? r.getField(f).asString() : null)
                         .collect(Collectors.joining("|"))
-                ));
+                )
+        );
 
         if (!groups.isEmpty()) {
             outputRecords = groups.values().stream()
-                    .filter(l -> !l.isEmpty())
-                    .peek(recs -> {
-                        recs.sort(Comparator.comparing(Record::getTime));
-                    })
+                    .filter(l -> !l.isEmpty())                                      // remove empty groups
+                    .peek(recs -> recs.sort(Comparator.comparing(Record::getTime))) // sort by time asc
+                    //     transformations.forEach(transformation -> transformation.execute(ts, functionValueMap));
                     .map(converter::chunk)
                     .collect(Collectors.toList());
         }

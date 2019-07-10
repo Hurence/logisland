@@ -34,14 +34,14 @@ import java.util.Set;
  *
  * @author f.lautenschlager
  */
-class QueryFunctions {
+public class QueryFunctions {
 
     private List<ChronixAnalysis> analyses;
     private List<ChronixAggregation> aggregations;
     private List<ChronixTransformation> transformations;
     private List<ChronixEncoding> encodings;
 
-    QueryFunctions() {
+    public QueryFunctions() {
         analyses = new ArrayList<>();
         aggregations = new ArrayList<>();
         transformations = new ArrayList<>();
