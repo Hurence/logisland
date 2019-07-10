@@ -450,6 +450,33 @@ __________________
 .. include:: ./details/common-processors/CheckThresholds-Detail.rst
 ----------
 
+.. _com.hurence.logisland.processor.ComputeAggsProcessor: 
+
+ComputeAggsProcessor
+--------------------
+Enable to compute some common aggregations on all records or on array fields of records
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.1.2
+
+Class
+_____
+com.hurence.logisland.processor.ComputeAggsProcessor
+
+Tags
+____
+record, fields, agg, aggregation, metric, stat
+
+Properties
+__________
+This component has no required or optional properties.
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/ComputeAggsProcessor-Detail.rst
+----------
+
 .. _com.hurence.logisland.processor.alerting.ComputeTags: 
 
 ComputeTags
@@ -658,7 +685,7 @@ com.hurence.logisland.processor.ConvertSimpleDateFormatFields
 
 Tags
 ____
-record, fields, Add
+record, fields, add, date, conversion, convert
 
 Properties
 __________
@@ -963,6 +990,43 @@ In the list below, the names of required properties appear in **bold**. Any othe
 Extra informations
 __________________
 .. include:: ./details/common-processors/GenerateRandomRecord-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MergeRecordProcessor: 
+
+MergeRecordProcessor
+--------------------
+Merge contents of several records into less records.
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.1.2
+
+Class
+_____
+com.hurence.logisland.processor.MergeRecordProcessor
+
+Tags
+____
+record, fields, merge, content, reduce
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "group.by.field", "The fields to use to group records to aggregate into one. There will be one record in output by different value of the field", "", "", "false", "false"
+   "sort.by.field", "The fields to use to sort records before before aggregating into one. For example if you want to order time series value points.", "", "", "false", "false"
+   "sort.reverse", "If records should be reverse sorted (if they are sorted)", "", "false", "false", "false"
+   "default.strategy", "The default strategy to use for merging records", "take_first (will take value of first record), array (will aggregate values into one array)", "take_first", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/MergeRecordProcessor-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.ModifyId: 

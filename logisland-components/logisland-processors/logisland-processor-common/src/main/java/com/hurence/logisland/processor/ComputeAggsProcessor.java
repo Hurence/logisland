@@ -16,7 +16,7 @@ package com.hurence.logisland.processor;
  * limitations under the License.
  */
 
-import com.hurence.logisland.agg.Agg;
+import com.hurence.logisland.processor.agg.Agg;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -30,7 +30,10 @@ import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 
 @Tags({"record", "fields", "agg", "aggregation", "metric", "stat"})

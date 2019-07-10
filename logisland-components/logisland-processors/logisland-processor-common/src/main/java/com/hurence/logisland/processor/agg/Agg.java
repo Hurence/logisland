@@ -1,4 +1,4 @@
-package com.hurence.logisland.agg;
+package com.hurence.logisland.processor.agg;
 
 /**
  * Set of allowed values for aggregations
