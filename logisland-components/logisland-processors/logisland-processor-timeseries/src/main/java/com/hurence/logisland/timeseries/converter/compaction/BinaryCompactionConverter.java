@@ -117,7 +117,7 @@ public class BinaryCompactionConverter implements Serializable {
                 }).collect(Collectors.toList());
     }
 
-    private List<Point> unCompressPoints(byte[] chunkOfPoints, long start, long end) throws IOException {
+    public List<Point> unCompressPoints(byte[] chunkOfPoints, long start, long end) throws IOException {
         try (InputStream decompressed = Compression.decompressToStream(chunkOfPoints)) {
             return ProtoBufMetricTimeSeriesSerializer.from(decompressed, start, end);
         }

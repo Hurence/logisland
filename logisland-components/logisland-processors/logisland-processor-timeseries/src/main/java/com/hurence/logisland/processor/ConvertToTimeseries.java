@@ -67,11 +67,11 @@ public class ConvertToTimeseries extends AbstractProcessor {
         return descriptors;
     }
 
-    private List<ChronixTransformation> transformations;
-    private List<ChronixAggregation> aggregations;
-    private List<ChronixAnalysis> analyses;
-    private List<ChronixEncoding> encodings;
-    private FunctionValueMap functionValueMap;
+    private List<ChronixTransformation> transformations = Collections.emptyList();
+    private List<ChronixAggregation> aggregations = Collections.emptyList();
+    private List<ChronixAnalysis> analyses = Collections.emptyList();
+    private List<ChronixEncoding> encodings = Collections.emptyList();
+    private FunctionValueMap functionValueMap = new FunctionValueMap(0, 0, 0, 0);
 
     private BinaryCompactionConverter converter;
     private List<String> groupBy;
@@ -90,7 +90,7 @@ public class ConvertToTimeseries extends AbstractProcessor {
 
         // init metric functions
         if (context.getPropertyValue(METRIC).isSet()) {
-            String[] metric = {context.getPropertyValue(METRIC).asString()};
+            String[] metric = {"metric{" + context.getPropertyValue(METRIC).asString() + "}"};
 
             TypeFunctions functions = QueryEvaluator.extractFunctions(metric);
 
@@ -128,19 +128,19 @@ public class ConvertToTimeseries extends AbstractProcessor {
                         encodings.forEach(encoding -> encoding.execute(timeSeries, functionValueMap));
 
                         for (int i = 0; i < functionValueMap.sizeOfAggregations(); i++) {
-                            String name = functionValueMap.getAggregation(i).getType().name();
+                            String name = functionValueMap.getAggregation(i).getQueryName();
                             double value = functionValueMap.getAggregationValue(i);
                             tsRecord.setField(name, FieldType.DOUBLE, value);
                         }
 
                         for (int i = 0; i < functionValueMap.sizeOfAnalyses(); i++) {
-                            String name = functionValueMap.getAnalysis(i).getType().name();
+                            String name = functionValueMap.getAnalysis(i).getQueryName();
                             boolean value = functionValueMap.getAnalysisValue(i);
                             tsRecord.setField(name, FieldType.BOOLEAN, value);
                         }
 
                         for (int i = 0; i < functionValueMap.sizeOfEncodings(); i++) {
-                            String name = functionValueMap.getEncoding(i).getType().name();
+                            String name = functionValueMap.getEncoding(i).getQueryName();
                             String value = functionValueMap.getEncodingValue(i);
                             tsRecord.setField(name, FieldType.STRING, value);
                         }

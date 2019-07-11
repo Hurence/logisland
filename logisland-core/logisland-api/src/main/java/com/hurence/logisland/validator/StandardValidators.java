@@ -65,38 +65,32 @@ public class StandardValidators {
         return new TypeValidator(clz);
     }
 
-    public static final Validator DOUBLE_VALIDATOR = new Validator() {
-        @Override
-        public ValidationResult validate(final String subject, final String value) {
-            String reason = null;
-            try {
-                final double val = Double.parseDouble(value);
+    public static final Validator DOUBLE_VALIDATOR = (Validator) (subject, value) -> {
+        String reason = null;
+        try {
+            final double val = Double.parseDouble(value);
 
-            } catch (final NumberFormatException e) {
-                reason = "not a valid double";
-            } catch (final NullPointerException e) {
-                reason = "null is not a valid double";
-            }
-
-            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        } catch (final NumberFormatException e) {
+            reason = "not a valid double";
+        } catch (final NullPointerException e) {
+            reason = "null is not a valid double";
         }
+
+        return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
     };
 
-    public static final Validator FLOAT_VALIDATOR = new Validator() {
-        @Override
-        public ValidationResult validate(final String subject, final String value) {
-            String reason = null;
-            try {
-                final float val = Float.parseFloat(value);
+    public static final Validator FLOAT_VALIDATOR = (Validator) (subject, value) -> {
+        String reason = null;
+        try {
+            final float val = Float.parseFloat(value);
 
-            } catch (final NumberFormatException e) {
-                reason = "not a valid double";
-            } catch (final NullPointerException e) {
-                reason = "null is not a valid double";
-            }
-
-            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        } catch (final NumberFormatException e) {
+            reason = "not a valid double";
+        } catch (final NullPointerException e) {
+            reason = "null is not a valid double";
         }
+
+        return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
     };
 
     public static final Validator POSITIVE_INTEGER_VALIDATOR = new Validator() {
