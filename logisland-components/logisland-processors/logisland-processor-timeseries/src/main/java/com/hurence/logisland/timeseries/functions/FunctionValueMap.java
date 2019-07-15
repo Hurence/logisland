@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.timeseries.functions;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Arrays;
  *
  * @author f.lautenschlager
  */
-public class FunctionValueMap {
+public class FunctionValueMap implements Serializable {
 
     private final ChronixAnalysis[] analyses;
     private final ChronixTransformation[] transformations;

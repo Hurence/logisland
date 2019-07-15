@@ -17,18 +17,18 @@ package com.hurence.logisland.timeseries.functions.encoding;
 
 
 import com.hurence.logisland.timeseries.MetricTimeSeries;
-import com.hurence.logisland.timeseries.functions.ChronixAggregation;
 import com.hurence.logisland.timeseries.functions.ChronixEncoding;
 import com.hurence.logisland.timeseries.functions.FunctionValueMap;
-import net.seninp.jmotif.sax.NumerosityReductionStrategy;
 import net.seninp.jmotif.sax.SAXException;
 import net.seninp.jmotif.sax.SAXProcessor;
 import net.seninp.jmotif.sax.alphabet.NormalAlphabet;
 import net.seninp.jmotif.sax.datastructure.SAXRecords;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+
 
 /**
  * @author bailett
@@ -48,6 +48,8 @@ public final class Sax implements ChronixEncoding<MetricTimeSeries> {
     private final int alphabetSize;
     private final float nThreshold;
     private final int paaSize;
+
+    private static Logger logger = LoggerFactory.getLogger(Sax.class);
 
 
     /**
@@ -92,7 +94,7 @@ public final class Sax implements ChronixEncoding<MetricTimeSeries> {
             SAXRecords res = sp.ts2saxByChunking(ts, paaSize, na.getCuts(alphabetSize), nThreshold);
             functionValueMap.add(this, res.getSAXString(""));
         } catch (SAXException e) {
-            e.printStackTrace();
+            logger.debug("unable to encode sax string due to : " + e.getMessage());
         }
 
 

@@ -66,7 +66,7 @@ or
 
 .. code-block::
 
-    docker run -d -h sandbox hurence/logisland:1.1.2 -d
+    docker run -d hurence/logisland:1.1.2 -d
 
 if you want to mount a directory from your host, add the following option :
 
