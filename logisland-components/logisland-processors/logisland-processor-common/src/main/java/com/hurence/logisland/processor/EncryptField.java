@@ -57,7 +57,7 @@ public class EncryptField extends AbstractProcessor {
 
 
     public static final PropertyDescriptor MODE = new PropertyDescriptor.Builder()
-            .name("Mode")
+            .name("mode")
             .description("Specifies whether the content should be encrypted or decrypted")
             .required(true)
             .allowableValues(ENCRYPT_MODE, DECRYPT_MODE)
@@ -65,35 +65,35 @@ public class EncryptField extends AbstractProcessor {
             .build();
 
     public static final PropertyDescriptor ALGO = new PropertyDescriptor.Builder()
-            .name("Algo")
-            .description("Specifies the algorithm that the cipher will use")
+            .name("algorithm")
+            .description("Specifies the algorithm that the cipher will use to encrypt/decrypt")
             .required(true)
             .allowableValues(AES, AES_CBC_PKCS5, AES_ECB_PKCS5, AES_ECB_NoPAD, AES_CBC_NoPAD, DES, DES_CBC_PKCS5, DES_ECB_PKCS5, DES_CBC_NoPAD, DES_ECB_NoPAD, DESede, DESede_CBC_PKCS5, DESede_ECB_PKCS5,DESede_CBC_NoPAD,DESede_ECB_NoPAD, RSA_ECB_PKCS5, RSA_ECB_OAE1, RSA_ECB_OAE256, RSA)
             .defaultValue(AES)
             .build();
 
     public static final PropertyDescriptor KEY = new PropertyDescriptor.Builder()
-            .name("Key")
-            .description("Specifies the key to use")
+            .name("key")
+            .description("Specifies the key to use (getByte on string will be used) by the Cipher (If the algorithm use one). See javadoc for more info")
             .required(false)
             .defaultValue("azerty1234567890")
             .build();
 
     public static final PropertyDescriptor IV = new PropertyDescriptor.Builder()
-            .name("Iv")
-            .description("Specifies the Iv[] to use")
+            .name("iv")
+            .description("Specifies the byte array to use as iv (getByte on string will be used) by the Cipher (If the algorithm use one). See javadoc for more info")
             .required(false)
             .build();
 
     public static final PropertyDescriptor KEYFILE = new PropertyDescriptor.Builder()
-            .name("KeyFile")
-            .description("Specifies the Key file to use as public or privite Key")
+            .name("key.file")
+            .description("Specifies the key file to use as public or private key by the Cipher (If the algorithm use one). See javadoc for more info\"")
             .required(false)
             .build();
 
     public static final PropertyDescriptor CHARSET_TO_USE = new PropertyDescriptor.Builder()
             .name("charset")
-            .description("the charset encoding to use (e.g. 'UTF-8')")
+            .description("the charset encoding to use (e.g. 'UTF-8'). It is used for encryption/decryption on type String to convert to or from bytes.")
             .required(true)
             .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
             .defaultValue("UTF-8")
