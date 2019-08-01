@@ -46,6 +46,7 @@ run_test() {
 
 main() {
     my_dir="$(dirname "$0")"
+    rm ${my_dir}/../../full-container/logisland-*bin.tar.gz
     cp ${my_dir}/../../../logisland-assembly/target/logisland-*-full-bin.tar.gz ${my_dir}/../../full-container/
     declare -i FINAL_EXIT_CODE=0
     # catch unexpected failures, do cleanup and output an error message
