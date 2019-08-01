@@ -777,12 +777,12 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
    :escape: \
 
-   "**Mode**", "Specifies whether the content should be encrypted or decrypted", "Encrypt, Decrypt", "Encrypt", "false", "false"
-   "**Algo**", "Specifies the algorithm that the cipher will use", "AES, AES/CBC/PKCS5Padding, AES/ECB/PKCS5Padding, AES/ECB/NoPadding, AES/CBC/NoPadding, DES, DES/CBC/PKCS5Padding, DES/ECB/PKCS5Padding, DES/CBC/NoPadding, DES/ECB/NoPadding, DESede, DESede/CBC/PKCS5Padding, DESede/ECB/PKCS5Padding, DESede/CBC/NoPadding, DESede/ECB/NoPadding, RSA/ECB/PKCS1Padding, RSA/ECB/OAEPWithSHA-1AndMGF1Padding, RSA/ECB/OAEPWithSHA-256AndMGF1Padding, RSA", "AES", "false", "false"
-   "Key", "Specifies the key to use", "", "azerty1234567890", "false", "false"
-   "Iv", "Specifies the Iv[] to use", "", "null", "false", "false"
-   "KeyFile", "Specifies the Key file to use as public or privite Key", "", "null", "false", "false"
-   "**charset**", "the charset encoding to use (e.g. 'UTF-8')", "", "UTF-8", "false", "false"
+   "**mode**", "Specifies whether the content should be encrypted or decrypted", "Encrypt, Decrypt", "Encrypt", "false", "false"
+   "**algorithm**", "Specifies the algorithm that the cipher will use to encrypt/decrypt", "AES, AES/CBC/PKCS5Padding, AES/ECB/PKCS5Padding, AES/ECB/NoPadding, AES/CBC/NoPadding, DES, DES/CBC/PKCS5Padding, DES/ECB/PKCS5Padding, DES/CBC/NoPadding, DES/ECB/NoPadding, DESede, DESede/CBC/PKCS5Padding, DESede/ECB/PKCS5Padding, DESede/CBC/NoPadding, DESede/ECB/NoPadding, RSA/ECB/PKCS1Padding, RSA/ECB/OAEPWithSHA-1AndMGF1Padding, RSA/ECB/OAEPWithSHA-256AndMGF1Padding, RSA", "AES", "false", "false"
+   "key", "Specifies the key to use (getByte on string will be used) by the Cipher (If the algorithm use one). See javadoc for more info", "", "azerty1234567890", "false", "false"
+   "iv", "Specifies the byte array to use as iv (getByte on string will be used) by the Cipher (If the algorithm use one). See javadoc for more info", "", "null", "false", "false"
+   "key.file", "Specifies the key file to use as public or private key by the Cipher (If the algorithm use one). See javadoc for more info\"", "", "null", "false", "false"
+   "**charset**", "the charset encoding to use (e.g. 'UTF-8'). It is used for encryption/decryption on type String to convert to or from bytes.", "", "UTF-8", "false", "false"
 
 Dynamic Properties
 __________________

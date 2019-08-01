@@ -20,6 +20,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
@@ -114,7 +115,7 @@ public class MergeRecordProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         final String[] groupByArray = context.getPropertyValue(GROUP_BY_FIELD).asString().split(",");
         groupBy = Arrays.stream(groupByArray)

@@ -16,6 +16,7 @@ package com.hurence.logisland.processor;
  * limitations under the License.
  */
 
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.processor.agg.Agg;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
@@ -170,7 +171,7 @@ public class ComputeAggsProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException{
         super.init(context);
         initDynamicProperties(context);
     }

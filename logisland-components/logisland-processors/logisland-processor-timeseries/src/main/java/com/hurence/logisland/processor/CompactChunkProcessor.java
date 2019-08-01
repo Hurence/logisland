@@ -16,6 +16,7 @@ package com.hurence.logisland.processor;
  * limitations under the License.
  */
 
+import com.hurence.logisland.component.InitializationException;
 
     import com.hurence.logisland.annotation.documentation.CapabilityDescription;
     import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
@@ -87,7 +88,7 @@ public class CompactChunkProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException{
         super.init(context);
         final String[] groupByArray = context.getPropertyValue(GROUP_BY_FIELD).asString().split(",");
         groupBy = Arrays.stream(groupByArray)

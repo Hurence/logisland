@@ -13,7 +13,7 @@ Find below the list.
 
 ConsoleStructuredStreamProviderService
 --------------------------------------
-No description provided.
+Provide a ways to print output in console in a StructuredStream streams
 
 Class
 _____
@@ -561,7 +561,7 @@ No additional information is provided
 
 KafkaStructuredStreamProviderService
 ------------------------------------
-No description provided.
+Provide a ways to use kafka as input or output in StructuredStream streams
 
 Class
 _____
@@ -634,11 +634,53 @@ No additional information is provided
 
 ----------
 
+.. _com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService: 
+
+LocalFileStructuredStreamProviderService
+----------------------------------------
+Provide a way to read a local file as input in StructuredStream streams
+
+Class
+_____
+com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**local.input.path**", "the location of the directory of files to be loaded. All files inside the directory will be taked as input", "", "null", "false", "false"
+   "max.files.per.trigger", " maximum number of new files to be considered in every trigger (default: no max) ", "", "null", "false", "false"
+   "latest.first", "whether to processs the latest new files first, useful when there is a large backlog of files (default: false)", "", "null", "false", "false"
+   "filename.only", "whether to check new files based on only the filename instead of on the full path (default: false). With this set to `true`, the following files would be considered as the same file, because their filenames, \"dataset.txt\", are the same:
+
+   \"file:///dataset.txt\"
+
+   \"s3://a/dataset.txt\"
+
+   \"s3n://a/b/dataset.txt\"
+
+   \"s3a://a/b/c/dataset.txt\"", "", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
 .. _com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService: 
 
 MQTTStructuredStreamProviderService
 -----------------------------------
-No description provided.
+Provide a ways to use Mqtt a input or output in StructuredStream streams
 
 Class
 _____
@@ -668,6 +710,40 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "mqtt.username", " username Sets the user name to use for the connection to Mqtt Server. Do not set it, if server does not need this. Setting it empty will lead to errors.", "", "null", "false", "false"
    "mqtt.qos", " QoS The maximum quality of service to subscribe each topic at.Messages published at a lower quality of service will be received at the published QoS.Messages published at a higher quality of service will be received using the QoS specified on the subscribe", "", "0", "false", "false"
    "**mqtt.topic**", "Topic MqttClient subscribes to.", "", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.stream.spark.structured.provider.RateStructuredStreamProviderService: 
+
+RateStructuredStreamProviderService
+-----------------------------------
+Generates data at the specified number of rows per second, each output row contains a timestamp and value. Where timestamp is a Timestamp type containing the time of message dispatch, and value is of Long type containing the message count, starting from 0 as the first row. This source is intended for testing and benchmarking. Used in StructuredStream streams.
+
+Class
+_____
+com.hurence.logisland.stream.spark.structured.provider.RateStructuredStreamProviderService
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**local.file.input.path**", "the location of the file to be loaded", "", "null", "false", "false"
+   "local.file.output.path", "the location of the file to be writen", "", "null", "false", "false"
+   "has.csv.header", "Is this a csv file with the first line as a header", "", "true", "false", "false"
+   "csv.delimiter", "the delimiter", "", ",", "false", "false"
 
 Extra informations
 __________________
@@ -767,14 +843,13 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
    :escape: \
 
-   "**read.topics**", "the input path for any topic to be read from", "", "null", "false", "false"
    "**read.stream.service.provider**", "the controller service that gives connection information", "", "null", "false", "false"
    "**read.topics.serializer**", "the serializer to use", "com.hurence.logisland.serializer.KryoSerializer (serialize events as binary blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.ExtendedJsonSerializer (serialize events as json blocs supporting nested objects/arrays), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.StringSerializer (serialize events as string), none (send events as bytes), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer)", "none", "false", "false"
    "**read.topics.key.serializer**", "The key serializer to use", "com.hurence.logisland.serializer.KryoSerializer (serialize events as binary blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.ExtendedJsonSerializer (serialize events as json blocs supporting nested objects/arrays), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), com.hurence.logisland.serializer.StringSerializer (serialize events as string), none (send events as bytes)", "none", "false", "false"
-   "**write.topics**", "the input path for any topic to be written to", "", "null", "false", "false"
    "**write.stream.service.provider**", "the controller service that gives connection information", "", "null", "false", "false"
    "**write.topics.serializer**", "the serializer to use", "com.hurence.logisland.serializer.KryoSerializer (serialize events as binary blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.ExtendedJsonSerializer (serialize events as json blocs supporting nested objects/arrays), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.StringSerializer (serialize events as string), none (send events as bytes), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer)", "none", "false", "false"
    "**write.topics.key.serializer**", "The key serializer to use", "com.hurence.logisland.serializer.KryoSerializer (serialize events as binary blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.ExtendedJsonSerializer (serialize events as json blocs supporting nested objects/arrays), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.StringSerializer (serialize events as string), none (send events as bytes), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer)", "none", "false", "false"
+   "groupby", "comma separated list of fields to group the partition by", "", "null", "false", "false"
 
 Extra informations
 __________________

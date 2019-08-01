@@ -16,7 +16,7 @@ package com.hurence.logisland.processor;
  * limitations under the License.
  */
 
-
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -77,7 +77,7 @@ public class ConvertToTimeseries extends AbstractProcessor {
     private List<String> groupBy;
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException{
         super.init(context);
 
         // init binary converter

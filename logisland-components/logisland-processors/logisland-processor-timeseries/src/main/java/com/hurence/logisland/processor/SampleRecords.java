@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.processor;
 
+
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
