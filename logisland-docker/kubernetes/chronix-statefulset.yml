@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: chronix
+  name: chronix
+  namespace: logisland
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 2
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: chronix
+  serviceName: chronix-headless
+  template:
+    metadata:
+      labels:
+        app: chronix
+    spec:
+      containers:
+        - image: hurence/chronix:0.6
+          env:
+            - name: ZK_HOST
+              value: kafka-zookeeper:2181
+          imagePullPolicy: IfNotPresent
+          name: chronix-core
+          ports:
+            - containerPort: 8983
+              name: chronix
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: chronix
+            timeoutSeconds: 5
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        #  volumeMounts:
+         #   - mountPath: /var/solr/data
+         #     name: datadir-claim
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 60
+  updateStrategy:
+    type: OnDelete
+  volumeClaimTemplates:
+    - metadata:
+        name: datadir-claim
+      spec:
+        #storageClassName: "standard"
+        # storageClassName: rook-block
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

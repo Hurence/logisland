@@ -13,7 +13,7 @@ it build a logisland image based on logisland-assembly/target/logisland-*.tar.gz
 
 .. code-block:: sh
 
-    mvn clean install -Pfull
+    mvn clean package
 
 Now just run the script with sudo (for using docker).
 

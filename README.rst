@@ -51,7 +51,7 @@ to build from the source just clone source and package with maven (logisland req
 
     git clone https://github.com/Hurence/logisland.git
     cd logisland
-    mvn clean install -Pfull
+    mvn clean package
 
 the final package is available at `logisland-assembly/target/logisland-1.1.2-bin.tar.gz`
 

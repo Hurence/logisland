@@ -23,6 +23,7 @@ Contents:
    :maxdepth: 2
 
    prerequisites
+   kubernetes1
    index-apache-logs
    index-apache-logs-es
    index-apache-logs-mongo

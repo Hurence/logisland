@@ -11,7 +11,8 @@ There are two main ways to launch a logisland job :
 Logisland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
 
 To facilitate integration testing and to easily run tutorials, you can use `docker-compose` with the followings :
-* `docker-compose.yml <https://raw.githubusercontent.com/Hurence/logisland/master/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml>`_.
+
+* `docker-compose.yml <https://raw.githubusercontent.com/Hurence/logisland/master/logisland-core/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml>`_.
 
 Once you have these file you can run a `docker-compose` command to launch all the needed services (zookeeper, kafka, es, kibana, redis and logisland).
 (You can remove the services that you do not need depending on tutorial).
