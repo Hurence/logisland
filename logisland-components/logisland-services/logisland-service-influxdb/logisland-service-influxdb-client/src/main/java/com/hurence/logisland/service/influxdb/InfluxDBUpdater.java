@@ -157,7 +157,7 @@ public class InfluxDBUpdater implements Runnable {
                     batchValues.clear();
                 }
             } catch (Throwable t) {
-                logger.error("Error in influxdb updater: " + t.getMessage());
+                logger.error("Error in influxdb updater: ", t);
             }
         }
     }

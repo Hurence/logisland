@@ -29,6 +29,9 @@ import com.hurence.logisland.record.StandardRecord;
 public class MockRecord extends StandardRecord {
 
 	private static final long serialVersionUID = 7750544989597574120L;
+    private static final float floatDelta = 0.000001f;
+    private static final double doubleDelta = 0.000001d;
+
 
 	//private final Set<String> assertedFields;
 	
@@ -76,12 +79,12 @@ public class MockRecord extends StandardRecord {
     }
 
     public void assertFieldEquals(final String fieldName, final float expectedValue) {
-        Assert.assertEquals(expectedValue, getField(fieldName).asFloat(), 0.000001);
+        Assert.assertEquals(expectedValue, getField(fieldName).asFloat(), floatDelta);
 		//assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final double expectedValue) {
-        Assert.assertEquals(expectedValue, getField(fieldName).asDouble(), 0.000001);
+        Assert.assertEquals(expectedValue, getField(fieldName).asDouble(), doubleDelta);
 		//assertedFields.add(fieldName);
     }
 

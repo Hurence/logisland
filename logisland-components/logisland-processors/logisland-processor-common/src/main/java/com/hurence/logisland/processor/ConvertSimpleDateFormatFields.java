@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Tags({"record", "fields", "Add"})
+@Tags({"record", "fields", "add", "date", "conversion", "convert"})
 @CapabilityDescription("Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)...")
 @DynamicProperty(name = "field name to add",
         supportsExpressionLanguage = true,

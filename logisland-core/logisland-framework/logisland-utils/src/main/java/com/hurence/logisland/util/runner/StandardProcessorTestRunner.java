@@ -171,6 +171,11 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
+    public boolean removeProperty(String propertyName) {
+        return context.removeProperty(propertyName);
+    }
+
+    @Override
     public ValidationResult setProperty(final String propertyName, final String propertyValue) {
         return context.setProperty(propertyName, propertyValue);
     }

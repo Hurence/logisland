@@ -472,8 +472,8 @@ Structured Streaming is a scalable and fault-tolerant stream processing engine b
 stream: parsing_stream_source
     component: com.hurence.logisland.stream.spark.structured.StructuredStream
     configuration:
-        read.topics.client.service: kc_source_service
-        write.topics.client.service: kafka_out_service
+        read.stream.service.provider: kc_source_service
+        write.stream.service.provider: kafka_out_service
         processorConfigurations:
         - processor: flatten
             component: com.hurence.logisland.processor.FlatMap

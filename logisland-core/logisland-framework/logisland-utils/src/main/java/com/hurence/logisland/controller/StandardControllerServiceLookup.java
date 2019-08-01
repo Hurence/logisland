@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 
 /**
@@ -57,35 +58,32 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
         if (!controllerServiceMap.containsKey(serviceIdentifier)) {
 
             // lazy load the controller service
-            configurations.forEach(conf -> {
-
-                if (serviceIdentifier.equals(conf.getControllerService())) {
-                    try {
-
-
-                        ControllerService service = ComponentFactory.loadComponent(conf.getComponent());
-                        logger.info("loading controller service {}", new Object[]{conf.getComponent()});
-                        ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, conf.getControllerService());
-                        Map<String, String> properties = conf.getConfiguration();
-                        properties.keySet().forEach(name -> context.setProperty(name, properties.get(name)));
-
-                        service.initialize(context);
-                        controllerServiceMap.put(conf.getControllerService(), service);
-                        logger.info("service initialization complete {}", new Object[]{service});
-                    } catch (IllegalArgumentException | ClassNotFoundException e) {
-                        logger.error("unable to load class {} : {} ", new Object[]{conf, e.toString()});
-                    } catch (InitializationException e) {
-                        logger.error("unable to initialize class {} : {} ", new Object[]{conf, e.toString()});
-                    }
-                }
+            configurations.stream()
+                    .filter(conf -> serviceIdentifier.equals(conf.getControllerService()))
+                    .forEach(conf -> {
+                        try {
 
 
-            });
+                            ControllerService service = ComponentFactory.loadComponent(conf.getComponent());
+                            logger.info("loading controller service {}", new Object[]{conf.getComponent()});
+                            ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, conf.getControllerService());
+                            Map<String, String> properties = conf.getConfiguration();
+                            properties.keySet().forEach(name -> context.setProperty(name, properties.get(name)));
+
+                            service.initialize(context);
+                            controllerServiceMap.put(conf.getControllerService(), service);
+                            logger.info("service initialization complete {}", new Object[]{service});
+                        } catch (IllegalArgumentException | ClassNotFoundException e) {
+                            logger.error("unable to load class {} : {} ", new Object[]{conf, e.toString()});
+                        } catch (InitializationException e) {
+                            logger.error("unable to initialize class {} : {} ", new Object[]{conf, e.toString()});
+                        }
+                    });
 
             // now retry finding the service
             if (!controllerServiceMap.containsKey(serviceIdentifier)) {
-                logger.error("service {} is not available", new Object[]{serviceIdentifier});
-                return null;
+                logger.error("service {} is not available, exiting", new Object[]{serviceIdentifier});
+                System.exit(-1);
             }
         }
 
@@ -94,7 +92,7 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
 
     @Override
     public boolean isControllerServiceEnabled(String serviceIdentifier) {
-        return false;
+        return controllerServiceMap.containsKey(serviceIdentifier);
     }
 
     @Override
@@ -103,13 +101,11 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
     }
 
     @Override
-    public boolean isControllerServiceEnabled(ControllerService service) {
-        return false;
-    }
-
-    @Override
     public Set<String> getControllerServiceIdentifiers(Class<? extends ControllerService> serviceType) throws
             IllegalArgumentException {
-        return null;
+        return controllerServiceMap.values().stream()
+                .filter(serviceType::isInstance)
+                .map(ControllerService::getIdentifier)
+                .collect(Collectors.toSet());
     }
 }

@@ -361,6 +361,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     private var running = false
 
 
+    var batchDurationMs:Int = 1000
+
     /**
       * Provides subclasses the ability to perform initialization logic
       */
@@ -369,7 +371,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val engineContext = context.asInstanceOf[EngineContext]
         val sparkMaster = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_MASTER).asString
         val appName = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_APP_NAME).asString
-        val batchDuration = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
+        batchDurationMs = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
 
         /**
           * job configuration
@@ -476,7 +478,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
-            s"batchDuration:$batchDuration ")
+            s"batchDuration:$batchDurationMs ")
         logger.info(s"conf : ${conf.toDebugString}")
     }
 
@@ -535,9 +537,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
     protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {
         return StreamingContext.getActiveOrCreate(() =>
-            return new StreamingContext(sparkContext,
-                Milliseconds(sparkContext.getConf.get(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION.getName,
-                    KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION.getDefaultValue).toInt))
+            return new StreamingContext(sparkContext, Milliseconds(batchDurationMs))
         )
     }
 

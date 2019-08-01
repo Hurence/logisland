@@ -59,10 +59,8 @@ engine:
     - stream: indexing_stream
       component: com.hurence.logisland.stream.spark.structured.StructuredStream
       configuration:
-        read.topics: /a/in
         read.topics.serializer: com.hurence.logisland.serializer.KuraProtobufSerializer
         read.topics.client.service: mqtt_service
-        write.topics: /a/out
         write.topics.serializer: none
         write.topics.client.service: console_service
       processorConfigurations:

@@ -27,7 +27,7 @@ engine:
     spark.yarn.executor.failuresValidityInterval: 1h
     spark.task.maxFailures: 2
     spark.serializer: org.apache.spark.serializer.KryoSerializer
-    spark.streaming.batchDuration: 600000
+    spark.streaming.batchDuration: 8000
     spark.streaming.backpressure.enabled: true
     spark.streaming.unpersist: false
     spark.streaming.blockInterval: 500

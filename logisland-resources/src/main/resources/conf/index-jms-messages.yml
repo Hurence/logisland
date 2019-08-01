@@ -78,11 +78,11 @@ engine:
         read.topics: none
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        read.topics.client.service: kc_source_service
+        read.stream.service.provider: kc_source_service
         write.topics: none
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        write.topics.client.service: kc_null
+        write.stream.service.provider: kc_null
       processorConfigurations:
         - processor: flatten
           component: com.hurence.logisland.processor.FlatMap
