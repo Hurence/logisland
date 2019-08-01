@@ -16,13 +16,11 @@
 package com.hurence.logisland.rest.service.proxy;
 
 import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.service.proxy.ProxyConfiguration;
 import com.hurence.logisland.service.proxy.ProxyConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +58,7 @@ public class TestProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         proxyConfService = PluginProxy.rewrap(context.getPropertyValue(PROXY_CONFIGURATION_SERVICE).asControllerService());
         if (proxyConfService == null) {
             logger.error("ProxyConf service is not initialized!");

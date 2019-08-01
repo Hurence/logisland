@@ -18,6 +18,7 @@ package com.hurence.logisland.processor.bro;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
@@ -119,7 +120,7 @@ public class ParseBroEvent extends AbstractProcessor {
     private static final String FIELD_VERSION = "version";
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
 
         super.init(context);

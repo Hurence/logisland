@@ -86,9 +86,10 @@ public class StandardRecord implements Record {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
+        if (!(o instanceof Record)) return false;
 
-        StandardRecord record = (StandardRecord) o;
+        Record record = (Record) o;
 
         if (getAllFields() == null || record.getAllFields() == null ||
                 !CollectionUtils.isEqualCollection(this.getAllFields(), record.getAllFields()))

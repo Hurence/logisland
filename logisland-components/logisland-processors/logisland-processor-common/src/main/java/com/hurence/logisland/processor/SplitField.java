@@ -21,6 +21,7 @@ import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -111,7 +112,7 @@ public class SplitField extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         this.fieldsNameMapping = getFieldsNameMapping(context);
         this.nbSplitLimit = context.getPropertyValue(NB_SPLIT_LIMIT).asInteger();

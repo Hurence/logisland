@@ -155,6 +155,7 @@ public class StandardValidators {
         }
     };
 
+
     public static final Validator BOOLEAN_VALIDATOR = new Validator() {
         @Override
         public ValidationResult validate(final String subject, final String value) {

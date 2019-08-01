@@ -16,12 +16,13 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
+import com.hurence.logisland.component.InitializationException;
 
 
 public abstract class AbstractProcessor extends AbstractConfigurableComponent implements Processor {
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
     }
 

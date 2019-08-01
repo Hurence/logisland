@@ -18,6 +18,7 @@ package com.hurence.logisland.processor.netflow;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -26,7 +27,6 @@ import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -93,7 +93,7 @@ public class ParseNetflowEvent extends AbstractProcessor {
             .build();
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         logger.debug("Initializing Netflow Processor");

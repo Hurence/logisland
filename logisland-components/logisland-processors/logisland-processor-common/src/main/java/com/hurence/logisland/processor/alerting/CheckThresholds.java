@@ -125,10 +125,6 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        // check if we need initialization
-        if (datastoreClientService == null) {
-            init(context);
-        }
 
         List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {

@@ -18,6 +18,7 @@ package com.hurence.logisland.processor.excel;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -59,7 +60,7 @@ public class ExcelExtract extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         configuration = new ExcelExtractProperties.Configuration(context);
         LOGGER.info("ExcelExtract successfully initialized");

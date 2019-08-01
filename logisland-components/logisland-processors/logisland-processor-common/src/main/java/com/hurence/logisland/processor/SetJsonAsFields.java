@@ -18,6 +18,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldDictionary;
@@ -124,7 +125,7 @@ public class SetJsonAsFields extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         logger.debug("Initializing SetJsonAsFields Processor");

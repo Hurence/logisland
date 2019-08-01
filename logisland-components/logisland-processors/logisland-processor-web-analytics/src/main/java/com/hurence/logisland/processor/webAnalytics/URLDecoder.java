@@ -19,6 +19,7 @@ import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -82,7 +83,7 @@ public class URLDecoder extends AbstractProcessor {
                 .build();
     }
 
-    public void init(ProcessContext context){
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         String commaSeparatedFields = context.getPropertyValue(FIELDS_TO_DECODE_PROP).asString();
         String charset = context.getPropertyValue(CHARSET_PROP).asString();

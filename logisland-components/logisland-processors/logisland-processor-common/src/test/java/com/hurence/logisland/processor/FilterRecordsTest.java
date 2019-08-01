@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.processor.util.BaseSyslogTest;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
