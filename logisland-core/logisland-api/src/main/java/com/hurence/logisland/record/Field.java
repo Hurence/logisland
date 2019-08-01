@@ -50,7 +50,6 @@ public class Field extends AbstractPropertyValue implements PropertyValue, Seria
 
     protected final String name;
     protected final FieldType type;
-    protected final Object rawValue;
 
     //TODO can we get rid of that ? May be needed for serialization ?
     public Field() {
