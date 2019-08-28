@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -32,8 +33,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Tags({"record", "fields", "remove", "delete"})
-@CapabilityDescription("Keep only records based on a given field value")
+@CapabilityDescription("Keep only records based on a given field value or/and based on custom methods returning a boolean " +
+        "(or something that can be casted into a boolean).")
 @ExtraDetailFile("./details/common-processors/FilterRecords-Detail.rst")
+@DynamicProperty(name = "Name of the method to add (the name is just for documentation purpose)",
+        supportsExpressionLanguage = true,
+        value = "an expression returning a boolean or an object that can be cast into a boolean that will be used to filter out records",
+        description = "an expression returning a boolean or an object that can be cast into a boolean that will be used to filter out records",
+        nameForDoc = "fakeMethod")
 public class FilterRecords extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;
