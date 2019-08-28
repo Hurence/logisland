@@ -20,6 +20,7 @@ import com.hurence.logisland.processor.util.BaseSyslogTest;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
@@ -224,4 +225,114 @@ public class FilterRecordsTest extends BaseSyslogTest {
     }
 
 
+    @Test
+    public void testComplexMethodsWithExpressionLanguage() {
+        Record record1 = new StandardRecord();
+        record1.setField("alphabet", FieldType.STRING, "abcdefg");
+        record1.setField("age", FieldType.INT, 18);
+        record1.setField("hello", FieldType.STRING, "Hello World !!!");
+        Record record2 = new MockRecord(record1);
+        record2.setField("age", FieldType.INT, 25);
+        Record record3 = new MockRecord(record1);
+        record3.setField("age", FieldType.INT, 8);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty("age_older_than_18",
+                "${return age > 18}");
+        testRunner.assertValid();
+        testRunner.enqueue(record1, record2, record3);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("age", 25);
+    }
+
+
+    @Test
+    public void testComplexMethodsWithExpressionLanguage_2() {
+        Record record1 = new StandardRecord();
+        record1.setField("alphabet", FieldType.STRING, "abcdefg");
+        record1.setField("age", FieldType.INT, 18);
+        record1.setField("hello", FieldType.STRING, "Hello World !!!");
+        Record record2 = new MockRecord(record1);
+        record2.setField("age", FieldType.INT, 25);
+        Record record3 = new MockRecord(record1);
+        record3.setField("age", FieldType.INT, 8);
+        Record record4 = new MockRecord(record2);
+        record4.setField("alphabet", FieldType.STRING, "zrop");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.FIELD_NAME, "alphabet");
+        testRunner.setProperty(FilterRecords.FIELD_VALUE, "abcdefg");
+        testRunner.setProperty("age_older_than_18",
+                "${return age > 18}");
+        testRunner.assertValid();
+        testRunner.enqueue(record1, record2, record3, record4);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("age", 25);
+    }
+
+    @Test
+    public void testComplexMethodsWithExpressionLanguageAndLogicOR() {
+        Record record1 = new StandardRecord();
+        record1.setField("alphabet", FieldType.STRING, "abcdefg");
+        record1.setField("age", FieldType.INT, 18);
+        record1.setField("hello", FieldType.STRING, "Hello World !!!");
+        Record record2 = new MockRecord(record1);
+        record2.setField("age", FieldType.INT, 25);
+        Record record3 = new MockRecord(record1);
+        record3.setField("age", FieldType.INT, 8);
+        Record record4 = new MockRecord(record3);
+        record4.setField("alphabet", FieldType.STRING, "zrop");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.LOGIC, "OR");
+        testRunner.setProperty("age_older_than_18",
+                "${return age > 18}");
+        testRunner.setProperty("start_with_zr",
+                "${return alphabet.startsWith(\"zr\")}");
+        testRunner.assertValid();
+        testRunner.enqueue(record1, record2, record3, record4);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(2);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("age", 25);
+
+        MockRecord out2 = testRunner.getOutputRecords().get(1);
+        out2.assertFieldEquals("alphabet", "zrop");
+    }
+
+    @Test
+    public void testComplexMethodsWithExpressionLanguageAndLogicAND() {
+        Record record1 = new StandardRecord();
+        record1.setField("alphabet", FieldType.STRING, "abcdefg");
+        record1.setField("age", FieldType.INT, 18);
+        record1.setField("hello", FieldType.STRING, "Hello World !!!");
+        Record record2 = new MockRecord(record1);
+        record2.setField("age", FieldType.INT, 25);
+        Record record3 = new MockRecord(record1);
+        record3.setField("age", FieldType.INT, 8);
+        Record record4 = new MockRecord(record3);
+        record4.setField("alphabet", FieldType.STRING, "zrop");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.LOGIC, "AND");
+        testRunner.setProperty("age_older_than_18",
+                "${return age > 18}");
+        testRunner.setProperty("start_with_zr",
+                "${return alphabet.startsWith(\"zr\")}");
+        testRunner.assertValid();
+        testRunner.enqueue(record1, record2, record3, record4);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(0);
+    }
 }
