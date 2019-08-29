@@ -253,6 +253,86 @@ public class FilterRecordsTest extends BaseSyslogTest {
     }
 
     @Test
+    public void testOrLogicAll() {
+
+        Collection<Record> records = new ArrayList<>();
+
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a1")
+                .setField("b", FieldType.STRING, "b1")
+                .setField("c", FieldType.LONG, 1));
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a1")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a2")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a2")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.LOGIC, "OR");
+        testRunner.setProperty(FilterRecords.FIELD_NAME, "c");
+        testRunner.setProperty(FilterRecords.FIELD_VALUE, "2");
+        testRunner.setProperty("accept_all", "true");
+        testRunner.assertValid();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(4);
+        testRunner.assertOutputErrorCount(0);
+    }
+
+    @Test
+    public void testOrLogicNone() {
+
+        Collection<Record> records = new ArrayList<>();
+
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a1")
+                .setField("b", FieldType.STRING, "b1")
+                .setField("c", FieldType.LONG, 1));
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a1")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a2")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a2")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.LOGIC, "OR");
+        testRunner.setProperty(FilterRecords.FIELD_NAME, "c");
+        testRunner.setProperty(FilterRecords.FIELD_VALUE, "4");
+        testRunner.setProperty("accept_all", "false");
+        testRunner.assertValid();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(0);
+        testRunner.assertOutputErrorCount(0);
+    }
+
+    @Test
     public void testRemoveNoRecordNonExistingField() {
 
         Collection<Record> records = new ArrayList<>();
@@ -331,6 +411,33 @@ public class FilterRecordsTest extends BaseSyslogTest {
         record4.setField("alphabet", FieldType.STRING, "zrop");
 
         TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.FIELD_NAME, "alphabet");
+        testRunner.setProperty(FilterRecords.FIELD_VALUE, "abcdefg");
+        testRunner.setProperty("age_older_than_18",
+                "${return age > 18}");
+        testRunner.assertValid();
+        testRunner.enqueue(record1, record2, record3, record4);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(4);
+    }
+
+
+    @Test
+    public void testComplexMethodsWithExpressionLanguage_3() {
+        Record record1 = new StandardRecord();
+        record1.setField("alphabet", FieldType.STRING, "abcdefg");
+        record1.setField("age", FieldType.INT, 18);
+        record1.setField("hello", FieldType.STRING, "Hello World !!!");
+        Record record2 = new MockRecord(record1);
+        record2.setField("age", FieldType.INT, 25);
+        Record record3 = new MockRecord(record1);
+        record3.setField("age", FieldType.INT, 8);
+        Record record4 = new MockRecord(record2);
+        record4.setField("alphabet", FieldType.STRING, "zrop");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.LOGIC, "AND");
         testRunner.setProperty(FilterRecords.FIELD_NAME, "alphabet");
         testRunner.setProperty(FilterRecords.FIELD_VALUE, "abcdefg");
         testRunner.setProperty("age_older_than_18",

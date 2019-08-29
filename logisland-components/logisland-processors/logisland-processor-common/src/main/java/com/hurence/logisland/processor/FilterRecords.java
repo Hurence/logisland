@@ -137,21 +137,31 @@ public class FilterRecords extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         Stream<Record> filtringRecords = records.stream();
-        if (fieldName != null && fieldValue != null) {
-            filtringRecords = filtringRecords.filter(record -> record.hasField(fieldName) && record.getField(fieldName).asString().equals(fieldValue));
+        if (dynamicMethodProperties.isEmpty()) {//only test the field if set
+            if (fieldName != null && fieldValue != null) {
+                return filtringRecords
+                        .filter(record -> record.hasField(fieldName) && record.getField(fieldName).asString().equals(fieldValue))
+                        .collect(Collectors.toList());
+            }
         }
-        if (dynamicMethodProperties.isEmpty()) return filtringRecords.collect(Collectors.toList());
         switch (logic) {
             case AND:
+                if (fieldName != null && fieldValue != null) {
+                    filtringRecords = filtringRecords
+                            .filter(record -> record.hasField(fieldName) && record.getField(fieldName).asString().equals(fieldValue));
+                }
                 for (PropertyDescriptor filterMethodDescriptor: dynamicMethodProperties) {
                     filtringRecords = filtringRecords
                             .filter(r -> evaluateMethodDescriptor(context, r, filterMethodDescriptor));
                 }
                 break;
             case OR:
-                filtringRecords = filtringRecords.filter(r -> {
+                filtringRecords = filtringRecords.filter(record -> {
+                    if (fieldName != null && fieldValue != null) {
+                        if (record.hasField(fieldName) && record.getField(fieldName).asString().equals(fieldValue)) return true;
+                    }
                     for (PropertyDescriptor filterMethodDescriptor: dynamicMethodProperties) {
-                        if (evaluateMethodDescriptor(context, r, filterMethodDescriptor)) return true;
+                        if (evaluateMethodDescriptor(context, record, filterMethodDescriptor)) return true;
                     }
                     return false;
                 });
