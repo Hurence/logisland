@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.processor.util.BaseSyslogTest;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -34,6 +33,31 @@ public class FilterRecordsTest extends BaseSyslogTest {
 
     private static final Logger logger = LoggerFactory.getLogger(FilterRecordsTest.class);
 
+    @Test
+    public void testValidity() {
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.assertNotValid();
+        testRunner.setProperty(FilterRecords.FIELD_NAME, "a");
+        testRunner.assertNotValid();
+        testRunner.setProperty(FilterRecords.FIELD_VALUE, "a4");
+        testRunner.assertValid();
+        testRunner.removeProperty(FilterRecords.FIELD_NAME);
+        testRunner.assertNotValid();
+        testRunner.removeProperty(FilterRecords.FIELD_VALUE);
+        testRunner.setProperty("dynamicprop", "Hi there !");
+        testRunner.assertValid();
+        testRunner.setProperty(FilterRecords.FIELD_NAME, "a");
+        testRunner.setProperty(FilterRecords.FIELD_VALUE, "a4");
+        testRunner.assertValid();
+        testRunner.setProperty(FilterRecords.LOGIC, "or");
+        testRunner.assertNotValid();
+        testRunner.setProperty(FilterRecords.LOGIC, "OR");
+        testRunner.assertValid();
+        testRunner.setProperty(FilterRecords.LOGIC, "Or");
+        testRunner.assertNotValid();
+        testRunner.setProperty(FilterRecords.LOGIC, "Ore");
+        testRunner.assertNotValid();
+    }
 
     @Test
     public void testNothingRemaining() {
@@ -334,5 +358,56 @@ public class FilterRecordsTest extends BaseSyslogTest {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(0);
+    }
+
+    @Test
+    public void testHandleOfRuntimeError() {
+        Record record1 = new StandardRecord();
+        record1.setField("alphabet", FieldType.STRING, "abcdefg");
+        record1.setField("age", FieldType.INT, 18);
+        record1.setField("hello", FieldType.STRING, "Hello World !!!");
+        Record record2 = new MockRecord(record1);
+        record2.setField("age", FieldType.INT, 25);
+        Record record3 = new MockRecord(record1);
+        record3.setField("age", FieldType.INT, 8);
+        Record record4 = new MockRecord(record3);
+        record4.setField("alphabet", FieldType.STRING, "zrop");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty("npe_at_runtime",
+                "${return age.contains(\"a\")}");
+        testRunner.assertValid();
+        testRunner.enqueue(record1, record2, record3, record4);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsIncludingErrorsCount(4);
+        testRunner.assertOutputRecordsCount(0);
+        testRunner.assertOutputErrorCount(4);
+    }
+
+    @Test
+    public void testHandleOfRuntimeError_2() {
+        Record record1 = new StandardRecord();
+        record1.setField("alphabet", FieldType.STRING, "abcdefg");
+        record1.setField("age", FieldType.INT, 18);
+        record1.setField("hello", FieldType.STRING, "Hello World !!!");
+        Record record2 = new MockRecord(record1);
+        record2.setField("age", FieldType.INT, 25);
+        Record record3 = new MockRecord(record1);
+        record3.setField("age", FieldType.INT, 8);
+        Record record4 = new MockRecord(record3);
+        record4.setField("alphabet", FieldType.STRING, "zrop");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.KEEP_ERRORS, "false");
+        testRunner.setProperty("npe_at_runtime",
+                "${return age.contains(\"a\")}");
+        testRunner.assertValid();
+        testRunner.enqueue(record1, record2, record3, record4);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsIncludingErrorsCount(0);
+        testRunner.assertOutputRecordsCount(0);
+        testRunner.assertOutputErrorCount(0);
     }
 }

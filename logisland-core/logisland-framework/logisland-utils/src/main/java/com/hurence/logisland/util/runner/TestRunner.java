@@ -102,6 +102,11 @@ public interface TestRunner {
      */
     void assertOutputRecordsCount(int count);
 
+    /**
+     * Asserts that output Records size is equal
+     * to <code>count</code>
+     */
+    void assertOutputRecordsIncludingErrorsCount(int count);
 
     /**
      * Asserts that the size of output Records in error is equal

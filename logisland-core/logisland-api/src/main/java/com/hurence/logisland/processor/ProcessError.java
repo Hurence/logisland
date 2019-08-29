@@ -29,7 +29,8 @@ public enum ProcessError {
     INVALID_FILE_FORMAT_ERROR,
     NOT_IMPLEMENTED_ERROR,
     RUNTIME_ERROR,
-    UNKNOWN_ERROR;
+    UNKNOWN_ERROR,
+    EXPRESSION_LANGUAGE_EXECUTION_ERROR;
 
     private String name;
 

@@ -204,6 +204,12 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
+    public void assertOutputRecordsIncludingErrorsCount(int count) {
+        long recordsCount = outputRecordsList.stream().count();
+        assertTrue("expected total output record (including errors) count was " + count + " but is currently " +recordsCount, recordsCount == count);
+    }
+
+    @Override
     public void assertOutputErrorCount(int count) {
         long errorCount = outputRecordsList.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS)).count();
         assertTrue("expected output error record count was " + count + " but is currently " +

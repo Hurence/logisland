@@ -71,9 +71,19 @@ public class FilterRecords extends AbstractProcessor {
             .defaultValue(Logic.AND.getName().toUpperCase())
             .build();
 
+    public static final PropertyDescriptor KEEP_ERRORS = new PropertyDescriptor.Builder()
+            .name("keep.errors")
+            .description("If you want to keep records that got exception while evaluating a custom method or not.")
+            .required(false)
+            .expressionLanguageSupported(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("true")
+            .build();
+
     private String fieldName;
     private String fieldValue;
     private Logic logic;
+    private boolean keepErrors;
     private final Set<PropertyDescriptor> dynamicMethodProperties = new HashSet<>();
 
     @Override
@@ -117,6 +127,7 @@ public class FilterRecords extends AbstractProcessor {
             fieldName = context.getPropertyValue(FIELD_NAME).asString();
             fieldValue = context.getPropertyValue(FIELD_VALUE).asString();
             logic = Logic.valueOf(context.getPropertyValue(LOGIC).asString());
+            keepErrors = context.getPropertyValue(KEEP_ERRORS).asBoolean();
             initDynamicProperties(context);
         } catch (Exception ex) {
             throw new InitializationException(ex);
@@ -149,7 +160,12 @@ public class FilterRecords extends AbstractProcessor {
     }
 
     private boolean evaluateMethodDescriptor(ProcessContext context, Record record, PropertyDescriptor methodDescriptor) {
-        return context.getPropertyValue(methodDescriptor).evaluate(record).asBoolean();
+        try {
+            return context.getPropertyValue(methodDescriptor).evaluate(record).asBoolean();
+        } catch (Exception ex) {
+            record.addError(ProcessError.EXPRESSION_LANGUAGE_EXECUTION_ERROR.getName(), ex.getMessage());
+            return keepErrors;
+        }
     }
 
 
@@ -159,6 +175,7 @@ public class FilterRecords extends AbstractProcessor {
         descriptors.add(FIELD_NAME);
         descriptors.add(FIELD_VALUE);
         descriptors.add(LOGIC);
+        descriptors.add(KEEP_ERRORS);
         return Collections.unmodifiableList(descriptors);
     }
 
