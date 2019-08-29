@@ -209,6 +209,49 @@ public class FilterRecordsTest extends BaseSyslogTest {
 
     }
 
+    /*
+    Added to ensure this works with OR logic (had a bug about that)
+     */
+    @Test
+    public void testRemoveOneLongRecord_2() {
+
+        Collection<Record> records = new ArrayList<>();
+
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a1")
+                .setField("b", FieldType.STRING, "b1")
+                .setField("c", FieldType.LONG, 1));
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a1")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a2")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+
+        records.add(new StandardRecord()
+                .setField("a", FieldType.STRING, "a2")
+                .setField("b", FieldType.STRING, "b2")
+                .setField("c", FieldType.LONG, 2));
+
+        TestRunner testRunner = TestRunners.newTestRunner(new FilterRecords());
+        testRunner.setProperty(FilterRecords.LOGIC, "OR");
+        testRunner.setProperty(FilterRecords.FIELD_NAME, "c");
+        testRunner.setProperty(FilterRecords.FIELD_VALUE, "2");
+        testRunner.assertValid();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(3);
+        testRunner.assertOutputErrorCount(0);
+
+    }
+
     @Test
     public void testRemoveNoRecordNonExistingField() {
 

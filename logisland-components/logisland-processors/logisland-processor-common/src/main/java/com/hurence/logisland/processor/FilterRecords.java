@@ -68,7 +68,7 @@ public class FilterRecords extends AbstractProcessor {
             .expressionLanguageSupported(false)
             .addValidator(new StandardValidators.EnumValidator(Logic.class))
             .allowableValues(Logic.values())
-            .defaultValue(Logic.AND.getName().toUpperCase())
+            .defaultValue(Logic.OR.getName().toUpperCase())
             .build();
 
     public static final PropertyDescriptor KEEP_ERRORS = new PropertyDescriptor.Builder()
@@ -140,6 +140,7 @@ public class FilterRecords extends AbstractProcessor {
         if (fieldName != null && fieldValue != null) {
             filtringRecords = filtringRecords.filter(record -> record.hasField(fieldName) && record.getField(fieldName).asString().equals(fieldValue));
         }
+        if (dynamicMethodProperties.isEmpty()) return filtringRecords.collect(Collectors.toList());
         switch (logic) {
             case AND:
                 for (PropertyDescriptor filterMethodDescriptor: dynamicMethodProperties) {
