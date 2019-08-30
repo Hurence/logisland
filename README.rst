@@ -18,6 +18,8 @@ chat with us on `gitter <https://gitter.im/logisland/logisland>`_
 
 It is highly inspired from DataFlow programming tools such as Apache Nifi, but with a highly scalable architecture.
 
+LogIsland is completely open source and free even for commercial use. Hurence provides support if required.
+
 
 Event mining Workflow
 ---------------------
