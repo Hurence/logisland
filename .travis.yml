@@ -40,7 +40,7 @@ script:
   - sudo logisland-docker/src/integration-test/run-all-test.sh
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 install:
   - sudo sysctl -w vm.max_map_count=262144

@@ -15,12 +15,13 @@
  */
 package com.hurence.logisland.processor.enrichment;
 
+import org.apache.commons.validator.routines.InetAddressValidator;
+
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import sun.net.util.IPAddressUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,7 +72,7 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
                 getLogger().debug("record has an empty IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
                 continue;
             }
-            if (!IPAddressUtil.isIPv4LiteralAddress(ip) && !IPAddressUtil.isIPv6LiteralAddress(ip)) {
+            if (!InetAddressValidator.getInstance().isValidInet4Address(ip) && !InetAddressValidator.getInstance().isValidInet6Address(ip)) {
                 getLogger().debug("record has an invalid ip '{}'. So it is ignored.  record : '{}'", new Object[]{ip, record});
                 continue;
             }

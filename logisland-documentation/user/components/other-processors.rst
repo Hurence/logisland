@@ -890,7 +890,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 Extra informations
 __________________
-.. include:: ./details/ParseGitlabLog-Detail.rst
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
@@ -1112,7 +1113,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 Extra informations
 __________________
-.. include:: ./details/SampleRecords-Detail.rst
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.processor.webAnalytics.URLDecoder: 

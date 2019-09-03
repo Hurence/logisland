@@ -83,7 +83,7 @@ class JsonMetricTimeSeriesSerializerTest extends Specification {
         size << [0, 1, 3, 6]
     }
 
-    def "test serialize to json with empty timestamps / values"() {
+    def "test serialize to json with empty timestamps, values"() {
         given:
         def serializer = new JsonMetricTimeSeriesSerializer()
         def ts = new MetricTimeSeries.Builder("test", "metric").points(times, values).build()

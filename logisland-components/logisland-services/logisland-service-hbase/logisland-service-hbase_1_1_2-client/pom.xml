@@ -34,6 +34,13 @@
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
             <version>1.1.2.2.4.0.0-169</version>
+            <!-- exlusion needed for jdk version > 8  where tools.jar disappeared-->
+            <exclusions>
+                <exclusion>
+                    <artifactId>jdk.tools</artifactId>
+                    <groupId>jdk.tools</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.stephenc.findbugs</groupId>
