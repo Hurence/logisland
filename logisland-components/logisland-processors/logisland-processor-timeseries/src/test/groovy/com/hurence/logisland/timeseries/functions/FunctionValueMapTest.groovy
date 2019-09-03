@@ -18,10 +18,8 @@ package com.hurence.logisland.timeseries.functions
 import com.hurence.logisland.timeseries.functions.aggregation.Max
 import com.hurence.logisland.timeseries.functions.analyse.Trend
 import com.hurence.logisland.timeseries.functions.transformation.Vectorization
-import org.junit.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
-import spock.lang.Unroll
 
 /**
  * Unit test for the analysis value map

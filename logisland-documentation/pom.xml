@@ -395,6 +395,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>commons-cli:commons-cli</dependency>
                                     <dependency>commons-io:commons-io</dependency>
                                     <dependency>org.apache.commons:commons-lang3</dependency>
+                                    <dependency>commons-collections:commons-collections</dependency>
                                     <dependency>org.slf4j:slf4j-simple</dependency>
                                     <dependency>org.slf4j:slf4j-api</dependency>
                                     <dependency>com.hurence.logisland:logisland-api</dependency>
@@ -418,6 +419,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>com.hurence.logisland:logisland-processor-cyber-security</dependency>
                                     <dependency>com.hurence.logisland:logisland-processor-enrichment</dependency>
                                     <dependency>com.hurence.logisland:logisland-processor-outlier-detection</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-timeseries</dependency>
                                 </classpath>
                                 <argument>com.hurence.logisland.documentation.DocGenerator</argument>
                                 <argument>-d</argument>
