@@ -43,7 +43,9 @@
                 <include>com.hurence.logisland:logisland-service-elasticsearch_7_x-client</include>
                 <include>com.hurence.logisland:logisland-service-solr_5_5_5-client</include>
                 <include>com.hurence.logisland:logisland-service-solr_6_6_2-client</include>
+                <include>com.hurence.logisland:logisland-service-solr_8-client</include>
                 <include>com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client</include>
+                <include>com.hurence.logisland:logisland-service-solr_chronix_8-client</include>
                 <include>com.hurence.logisland:logisland-service-mongodb-client</include>
                 <include>com.hurence.logisland:logisland-service-cassandra-client</include>
                 <include>com.hurence.logisland:logisland-service-influxdb-client</include>
@@ -53,11 +55,10 @@
                 <include>com.hurence.logisland:logisland-processor-xml</include>
                 <include>com.hurence.logisland:logisland-processor-web-analytics</include>
                 <include>com.hurence.logisland:logisland-processor-cyber-security</include>
-                <include>com.hurence.logisland:logisland-processor-common-logs</include>
                 <include>com.hurence.logisland:logisland-processor-useragent</include>
                 <include>com.hurence.logisland:logisland-processor-querymatcher</include>
                 <include>com.hurence.logisland:logisland-processor-outlier-detection</include>
-                <include>com.hurence.logisland:logisland-processor-sampling</include>
+                <include>com.hurence.logisland:logisland-processor-timeseries</include>
                 <include>com.hurence.logisland:logisland-processor-enrichment</include>
                 <include>com.hurence.logisland:logisland-processor-hbase</include>
                 <include>com.hurence.logisland:logisland-processor-elasticsearch</include>

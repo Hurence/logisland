@@ -32,7 +32,7 @@ Building the image
 
     # build logisland
     mvn clean package
-    cp logisland-assembly/target/logisland-1.2.0-bin.tar.gz logisland-docker/full-container
+    cp logisland-assembly/target/logisland-1.2.0-full-bin.tar.gz logisland-docker/full-container
 
 The archive is generated under dist directory, 
 you have to copy this file into your Dockerfile directory you can now issue
