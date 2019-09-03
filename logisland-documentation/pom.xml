@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
     <artifactId>logisland-documentation</artifactId>
 
@@ -164,7 +164,13 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-solr_5_5_5-client</artifactId>
+            <artifactId>logisland-service-solr_8-client</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-solr_chronix_8-client</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
@@ -176,7 +182,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-solr_chronix_6.4.2-client</artifactId>
+            <artifactId>logisland-service-solr_chronix_6_4_2-client</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
@@ -220,19 +226,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-common</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-processor-common-logs</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-processor-sampling</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
@@ -467,9 +460,10 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>com.hurence.logisland:logisland-service-mongodb-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-cassandra-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-influxdb-client</dependency>
-                                    <dependency>com.hurence.logisland:logisland-service-solr_5_5_5-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-solr_6_6_2-client</dependency>
-                                    <dependency>com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-solr_8-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-solr_chronix_6_4_2-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-solr_chronix_8-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-inmemory-cache</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-ip-to-geo-maxmind</dependency>
                                 </classpath>
