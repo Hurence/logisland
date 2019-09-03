@@ -384,4 +384,50 @@ public class TestInterpretedPropertyValueWithMvelEngine {
         PropertyValue pv = ipv.evaluate(Collections.emptyMap());
         Assert.assertEquals("o", pv.asString());
     }
+
+    @Test
+    public void validate_MVEL_string_contains_is_true() throws IOException {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${return 'zrop'.contains(\"zr\")}";
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
+        Assert.assertTrue(pv.asBoolean());
+    }
+    @Test
+    public void validate_MVEL_string_contains_is_false() throws IOException {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${return 'opzaar'.contains(\"zr\")}";
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
+        Assert.assertFalse(pv.asBoolean());
+    }
+
+    @Test
+    public void validate_MVEL_string_start_with_is_true() throws IOException {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${return 'zrop'.startsWith(\"zr\")}";
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
+        Assert.assertTrue(pv.asBoolean());
+    }
+    @Test
+    public void validate_MVEL_string_start_with_is_false() throws IOException {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${return 'opzr'.startsWith(\"zr\")}";
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
+        Assert.assertFalse(pv.asBoolean());
+    }
 }
