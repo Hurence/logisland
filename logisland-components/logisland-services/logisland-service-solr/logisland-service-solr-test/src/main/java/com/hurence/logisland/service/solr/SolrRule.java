@@ -22,15 +22,12 @@ package com.hurence.logisland.service.solr;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.core.CoreContainer;
-import org.apache.solr.core.NodeConfig;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import java.io.File;
-
 /**
- * A JUnit rule which starts an embedded elastic-search instance.
+ * A JUnit rule which starts an embedded solr instance.
  * <p>
  * Tests which use this rule will run relatively slowly, and should only be used when more conventional unit tests are
  * not sufficient - eg when testing DAO-specific code.
@@ -51,7 +48,7 @@ public class SolrRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                CoreContainer coreContainer = new CoreContainer("src/test/resources/solr");
+                CoreContainer coreContainer = new CoreContainer("src/integration-test/resources/solr");
                 coreContainer.load();
                 solrServer = new EmbeddedSolrServer(coreContainer, "default");
 

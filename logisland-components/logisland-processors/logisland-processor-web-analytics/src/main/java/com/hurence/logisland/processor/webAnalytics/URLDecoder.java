@@ -17,7 +17,9 @@ package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -37,6 +39,7 @@ import java.util.*;
         supportsExpressionLanguage = false,
         value = "a default value",
         description = "Decode one or more fields from the record ")
+@ExtraDetailFile("./details/URLDecoder-Detail.rst")
 public class URLDecoder extends AbstractProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(URLDecoder.class);
@@ -80,7 +83,7 @@ public class URLDecoder extends AbstractProcessor {
                 .build();
     }
 
-    public void init(ProcessContext context){
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         String commaSeparatedFields = context.getPropertyValue(FIELDS_TO_DECODE_PROP).asString();
         String charset = context.getPropertyValue(CHARSET_PROP).asString();

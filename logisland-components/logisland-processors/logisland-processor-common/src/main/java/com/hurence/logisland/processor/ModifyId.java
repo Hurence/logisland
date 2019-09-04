@@ -17,8 +17,10 @@ package com.hurence.logisland.processor;
 
 import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
@@ -26,7 +28,6 @@ import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ import java.util.*;
 
 @Tags({"record", "id", "idempotent", "generate", "modify"})
 @CapabilityDescription("modify id of records or generate it following defined rules")
-//TODO add others tags see others processor
+@ExtraDetailFile("./details/common-processors/ModifyId-Detail.rst")
 public class ModifyId extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;
@@ -160,7 +161,7 @@ public class ModifyId extends AbstractProcessor {
     private IdBuilder idBuilder = null;
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         if (context.getPropertyValue(STRATEGY).isSet()) {
             if (context.getPropertyValue(STRATEGY).getRawValue().equals(RANDOM_UUID_STRATEGY.getValue())) {

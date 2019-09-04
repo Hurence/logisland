@@ -136,11 +136,11 @@ Inside this engine you will run a spark structured stream, taking records from t
         read.topics: /a/in
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        read.topics.client.service: kc_source_service
+        read.stream.service.provider: kc_source_service
         write.topics: /a/out
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        write.topics.client.service: console_service
+        write.stream.service.provider: console_service
 
 
 And now it's time to describe the parsing pipeline.

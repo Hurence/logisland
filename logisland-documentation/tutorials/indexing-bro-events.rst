@@ -275,7 +275,7 @@ The ``default.index: bro`` configuration parameter tells the processor to index 
 The ``timebased.index: today`` configuration parameter tells the processor to use the current date after the index prefix. Thus the index name
 is of the form ``/bro.2017.02.23``.
 
-Finally, the ``es.type.field: record_type`` configuration parameter tells the processor to use the 
+Finally, the ``es.type.field: record_type`` configuration parameter tells the processor to use the
 record field ``record_type`` of the incoming record to determine the ElasticSearch type to use within the index.
 
 We will come back to these settings and what they do in the section where we see examples of events to illustrate the workflow.

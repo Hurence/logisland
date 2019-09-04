@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -45,6 +46,7 @@ import java.util.regex.Pattern;
         value = "another regex that could match",
         description = "this regex will be tried if the main one has not matched. " +
                 "It must be in the form alt.value.regex.1 and alt.value.fields.1")
+@ExtraDetailFile("./details/common-processors/SplitText-Detail.rst")
 public class SplitText extends AbstractProcessor {
 
     static final long serialVersionUID = 1413578915552852739L;
@@ -208,38 +210,45 @@ public class SplitText extends AbstractProcessor {
         List<Record> outputRecords = new ArrayList<>();
         records.forEach(record -> {
             try {
-                final String key = record.getField(FieldDictionary.RECORD_KEY).asString();
-                final String value = record.getField(FieldDictionary.RECORD_VALUE).asString();
-
                 StandardRecord outputRecord = new StandardRecord(eventType);
 
-                // match the key
-                if (key != null && !key.isEmpty()) {
-                    try {
-                        Matcher keyMatcher = keyRegex.matcher(key);
-                        if (keyMatcher.matches()) {
+                if(record.hasField(FieldDictionary.RECORD_KEY)){
+                    final String key = record.getField(FieldDictionary.RECORD_KEY).asString();
+                    // match the key
+                    if (key != null && !key.isEmpty()) {
+                        try {
+                            Matcher keyMatcher = keyRegex.matcher(key);
+                            if (keyMatcher.matches()) {
 
-                            if (keepRawContent) {
-                                outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, keyMatcher.group(0));
-                            }
-                            for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
-                                String content = keyMatcher.group(i);
-                                if (content != null) {
-                                    outputRecord.setField(keyFields[i], FieldType.STRING, keyMatcher.group(i + 1).replaceAll("\"", ""));
+                                if (keepRawContent) {
+                                    outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, keyMatcher.group(0));
                                 }
+                                for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
+                                    String content = keyMatcher.group(i);
+                                    if (content != null) {
+                                        outputRecord.setField(keyFields[i], FieldType.STRING, keyMatcher.group(i + 1).replaceAll("\"", ""));
+                                    }
+                                }
+                            } else {
+                                outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, key);
                             }
-                        } else {
-                            outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, key);
+                        } catch (Exception e) {
+                            String errorMessage = "error while matching key " + key +
+                                    " with regex " + keyRegexString +
+                                    " : " + e.getMessage();
+                            logger.warn(errorMessage);
+                            outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
+                            // outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, value);
                         }
-                    } catch (Exception e) {
-                        String errorMessage = "error while matching key " + key +
-                                " with regex " + keyRegexString +
-                                " : " + e.getMessage();
-                        getLogger().warn(errorMessage);
-                        outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
-                        outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, value);
                     }
                 }
+
+
+
+
+
+
+
                 /**
                  * initializing timezone
                  */
@@ -250,52 +259,57 @@ public class SplitText extends AbstractProcessor {
                     timezone = TimeZone.getTimeZone("UTC");
                 }
 
-                // match the value
-                if (value != null && !value.isEmpty()) {
-                    try {
-                        Matcher valueMatcher = valueRegex.matcher(value);
-                        if (valueMatcher.lookingAt()) {
-                            extractValueFields(valueFields, keepRawContent, outputRecord, valueMatcher, timezone);
-                        } else {
-                            // try the other Regex
-                            List<AlternativeMappingPattern> alternativeRegexList =
-                                    getAlternativePatterns(context, valueRegexString);
-                            boolean hasMatched = false;
-                            for (AlternativeMappingPattern alternativeMatchingRegex : alternativeRegexList) {
-                                Matcher alternativeValueMatcher = alternativeMatchingRegex.getPattern().matcher(value);
-                                if (alternativeValueMatcher.lookingAt()) {
-                                    extractValueFields(
-                                            alternativeMatchingRegex.getMapping(),
-                                            keepRawContent,
-                                            outputRecord,
-                                            alternativeValueMatcher, timezone);
-                                    hasMatched = true;
-                                    break;
+
+                if(record.hasField(FieldDictionary.RECORD_VALUE)){
+                    final String value = record.getField(FieldDictionary.RECORD_VALUE).asString();
+                    // match the value
+                    if (value != null && !value.isEmpty()) {
+                        try {
+                            Matcher valueMatcher = valueRegex.matcher(value);
+                            if (valueMatcher.lookingAt()) {
+                                extractValueFields(valueFields, keepRawContent, outputRecord, valueMatcher, timezone);
+                            } else {
+                                // try the other Regex
+                                List<AlternativeMappingPattern> alternativeRegexList =
+                                        getAlternativePatterns(context, valueRegexString);
+                                boolean hasMatched = false;
+                                for (AlternativeMappingPattern alternativeMatchingRegex : alternativeRegexList) {
+                                    Matcher alternativeValueMatcher = alternativeMatchingRegex.getPattern().matcher(value);
+                                    if (alternativeValueMatcher.lookingAt()) {
+                                        extractValueFields(
+                                                alternativeMatchingRegex.getMapping(),
+                                                keepRawContent,
+                                                outputRecord,
+                                                alternativeValueMatcher, timezone);
+                                        hasMatched = true;
+                                        break;
+                                    }
                                 }
-                            }
-                            // if we don't have any matches output an error
-                            if (!hasMatched) {
-                                outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "check your conf");
-                                outputRecord.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, value);
+                                // if we don't have any matches output an error
+                                if (!hasMatched) {
+                                    outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "check your conf");
+                                    outputRecord.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, value);
+                                }
+
                             }
 
+                        } catch (Exception e) {
+                            String errorMessage = "error while matching value " + value +
+                                    " with regex " + valueRegexString +
+                                    " : " + e.getMessage();
+                            logger.warn(errorMessage);
+                            outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
+                            outputRecord.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, value);
+                        } finally {
+                            outputRecords.add(outputRecord);
                         }
-
-                    } catch (Exception e) {
-                        String errorMessage = "error while matching value " + value +
-                                " with regex " + valueRegexString +
-                                " : " + e.getMessage();
-                        getLogger().warn(errorMessage);
-                        outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
-                        outputRecord.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, value);
-                    } finally {
-                        outputRecords.add(outputRecord);
                     }
                 }
+
             } catch (Exception e) {
                 // nothing to do here
 
-                getLogger().warn("issue while matching getting K/V on record {}, exception {}", new Object[]{
+               logger.warn("issue while matching getting K/V on record {}, exception {}", new Object[]{
                         record, e.getMessage()
                 });
             }
@@ -354,7 +368,7 @@ public class SplitText extends AbstractProcessor {
                 try {
                     eventDate = DateUtil.parse(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString(), timezone);
                 } catch (ParseException e) {
-                    getLogger().info("issue while parsing date : {} ", new Object[]{e.toString()} );
+                   logger.info("issue while parsing date : {} ", new Object[]{e.toString()} );
                 }
                 if (eventDate != null) {
                     outputRecord.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, eventDate.getTime());

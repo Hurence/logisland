@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.datastore;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -31,6 +32,7 @@ import java.util.*;
 
 @Tags({"datastore", "record", "put", "bulk"})
 @CapabilityDescription("Indexes the content of a Record in a Datastore using bulk processor")
+@ExtraDetailFile("./details/common-processors/BulkPut-Detail.rst")
 public class BulkPut extends AbstractDatastoreProcessor
 {
 
@@ -48,6 +50,20 @@ public class BulkPut extends AbstractDatastoreProcessor
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
+            .build();
+
+    public static final PropertyDescriptor DEFAULT_TYPE = new PropertyDescriptor.Builder()
+            .name("default.type")
+            .description("The type of this document (required by Elasticsearch for indexing and searching)")
+            .required(false)
+            .expressionLanguageSupported(true)
+            .build();
+
+    public static final PropertyDescriptor TYPE_FIELD = new PropertyDescriptor.Builder()
+            .name("type.field")
+            .description("the name of the event field containing es doc type => will override type value if set")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
 
@@ -83,9 +99,11 @@ public class BulkPut extends AbstractDatastoreProcessor
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(DATASTORE_CLIENT_SERVICE);
         props.add(DEFAULT_COLLECTION);
+        props.add(DEFAULT_TYPE);
         props.add(TIMEBASED_INDEX);
         props.add(DATE_FORMAT);
         props.add(COLLECTION_FIELD);
+        props.add(TYPE_FIELD);
 
         return Collections.unmodifiableList(props);
     }
@@ -100,10 +118,6 @@ public class BulkPut extends AbstractDatastoreProcessor
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
-        // check if we need initialization
-        if(datastoreClientService == null) {
-            init(context);
-        }
 
         // bail out if init has failed
         if(datastoreClientService == null) {
@@ -137,7 +151,21 @@ public class BulkPut extends AbstractDatastoreProcessor
                         collection = eventIndexField.getRawValue().toString();
                     }
                 }
-                datastoreClientService.bulkPut(collection, record);
+
+                if (context.getPropertyValue(DEFAULT_TYPE).isSet()) {
+                    // compute type from event if any
+                    String docType = context.getPropertyValue(DEFAULT_TYPE).asString();
+                    if (context.getPropertyValue(TYPE_FIELD).isSet()) {
+                        Field eventTypeField = record.getField(context.getPropertyValue(TYPE_FIELD).asString());
+                        if (eventTypeField != null && eventTypeField.getRawValue() != null) {
+                            docType = eventTypeField.getRawValue().toString();
+                        }
+                    }
+                    datastoreClientService.bulkPut(collection.concat(","+docType), record);
+                }
+                else {
+                    datastoreClientService.bulkPut(collection, record);
+                }
             }
 
             datastoreClientService.bulkFlush();

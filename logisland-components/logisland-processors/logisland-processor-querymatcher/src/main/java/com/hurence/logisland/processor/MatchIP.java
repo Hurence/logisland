@@ -17,18 +17,14 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.core.StopAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.co.flax.luwak.*;
 import uk.co.flax.luwak.matchers.SimpleMatcher;
-import uk.co.flax.luwak.presearcher.TermFilteredPresearcher;
 
 import java.io.IOException;
 import java.util.*;
@@ -54,6 +50,7 @@ import org.apache.commons.lang3.tuple.Pair;
         ".. warning::\n\n" +
         "\tdon't forget to set numeric fields property to handle correctly numeric ranges queries")
 @DynamicProperty(name = "query", supportsExpressionLanguage = true, value = "some Lucene query", description = "generate a new record when this query is matched")
+@ExtraDetailFile("./details/MatchIP-Detail.rst")
 public class MatchIP extends MatchQuery {
 
     private HashMap<String, HashSet<Pair<String, Pattern>>> ipRegexps;
@@ -76,7 +73,7 @@ public class MatchIP extends MatchQuery {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         regexpMatchingRules = new HashMap<>();
         luceneAttrsToQuery = new HashSet<String>();
         super.init(context);

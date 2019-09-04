@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-services</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>logisland-service-redis</artifactId>
@@ -28,7 +28,6 @@
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
 
         <dependency>

@@ -17,17 +17,18 @@ package com.hurence.logisland.processor.elasticsearch;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
         "Each incoming record must be possibly enriched with information stored in elasticsearch. \n" +
         "Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document."
 )
+@ExtraDetailFile("./details/EnrichRecordsElasticsearch-Detail.rst")
 public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()
@@ -108,7 +110,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         String excludesFieldName = context.getPropertyValue(ES_EXCLUDES_FIELD).asString();
         if ((excludesFieldName != null) && (!excludesFieldName.isEmpty())) {
@@ -238,7 +240,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
     }
 
     private static String asUniqueKey(MultiGetResponseRecord mgrr) {
-        return asUniqueKey(mgrr.getIndexName(), mgrr.getTypeName(), mgrr.getDocumentId());
+        return asUniqueKey(mgrr.getCollectionName(), mgrr.getTypeName(), mgrr.getDocumentId());
     }
 
     private static String asUniqueKey(String indexName, String typeName, String documentId) {

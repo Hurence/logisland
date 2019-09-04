@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@ExtraDetailFile("./details/common-processors/SplitTextMultiline-Detail.rst")
 public class SplitTextMultiline extends AbstractProcessor {
 
     static final long serialVersionUID = -1L;

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<schema name="Chronix" version="1.5">
+
+    <types>
+        <fieldType name="int" class="solr.TrieIntField" precisionStep="0" positionIncrementGap="0"/>
+        <fieldType name="long" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0"/>
+        <fieldType name="double" class="solr.TrieDoubleField" precisionStep="0" positionIncrementGap="0"/>
+        <fieldType name="float" class="solr.TrieFloatField" precisionStep="0" positionIncrementGap="0"/>
+
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
+        <fieldType name="strings" class="solr.StrField" sortMissingLast="true" multiValued="true"/>
+        <fieldType name="binary" class="solr.BinaryField"/>
+        <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
+        <fieldType name="booleans" class="solr.BoolField" sortMissingLast="true" multiValued="true"/>
+        <fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0"/>
+        <fieldType name="dates" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0" multiValued="true"/>
+    </types>
+
+    <fields>
+
+        <!-- Solr -->
+        <field name="id" type="string" indexed="true" stored="true" required="true"/>
+        <field name="_version_" type="long" indexed="true" stored="true"/>
+
+        <!-- API: The required fields -->
+        <field name="name" type="string" indexed="true" stored="true" required="true"/>
+        <field name="type" type="string" indexed="true" stored="true" required="true"/>
+        <field name="start" type="long" indexed="true" stored="true" required="true"/>
+        <field name="end" type="long" indexed="true" stored="true" required="true"/>
+        <field name="data" type="binary" indexed="true" stored="true" required="false"/>
+
+        <!-- Some fields used within the integration test  -->
+        <field name="host" type="string" indexed="true" stored="true" required="false"/>
+        <field name="source" type="string" indexed="true" stored="true" required="false"/>
+        <field name="group" type="string" indexed="true" stored="true" required="false"/>
+        <field name="date" type="string" indexed="true" stored="true" required="false"/>
+
+
+        <field name="tagname" type="string" indexed="true" stored="true" required="false"/>
+        <field name="quality" type="double" indexed="true" stored="true" required="false"/>
+        <field name="description" type="text_general" indexed="true" stored="true" required="false"/>
+        <field name="engunits" type="string" indexed="true" stored="true" required="false"/>
+        <field name="lastmodified" type="string" indexed="true" stored="true" required="false"/>
+        <field name="numeric_type" type="string" stored="true" indexed="true" multiValued="false" />
+        <field name="code_install" type="string" stored="true" indexed="true" multiValued="false" />
+        <field name="sensor" type="string" stored="true" indexed="true" multiValued="false" />
+
+
+        <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/>
+        <copyField source="*" dest="_text_"/>
+        <defaultSearchField>_text_</defaultSearchField>
+
+        <!-- Dynamic field -->
+        <dynamicField name="*_s" type="string" indexed="true" stored="true"/>
+        <!-- Dynamic logisland field -->
+        <dynamicField name="record_*" type="string" indexed="true" stored="true"/>
+
+        <field name="myIntField" type="int" indexed="true" stored="true" required="false"/>
+        <field name="myLongField" type="long" indexed="true" stored="true" required="false"/>
+        <field name="myDoubleField" type="double" indexed="true" stored="true" required="false"/>
+        <field name="myByteField" type="binary" indexed="true" stored="true" required="false"/>
+        <field name="myStringList" type="string" indexed="true" multiValued="true" stored="true" required="false"/>
+        <field name="myIntList" type="int" indexed="true" multiValued="true" stored="true" required="false"/>
+        <field name="myLongList" type="long" indexed="true" multiValued="true" stored="true" required="false"/>
+        <field name="myDoubleList" type="double" indexed="true" multiValued="true" stored="true" required="false"/>
+
+    </fields>
+
+    <uniqueKey>id</uniqueKey>
+    <solrQueryParser/>
+
+    <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <tokenizer class="solr.StandardTokenizerFactory"/>
+            <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />
+            <filter class="solr.LowerCaseFilterFactory"/>
+            <filter class="solr.ReversedWildcardFilterFactory" withOriginal="true"
+                    maxPosAsterisk="3" maxPosQuestion="2" maxFractionAsterisk="0.33"/>
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer class="solr.StandardTokenizerFactory"/>
+            <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+            <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />
+            <filter class="solr.LowerCaseFilterFactory"/>
+        </analyzer>
+    </fieldType>
+
+</schema>

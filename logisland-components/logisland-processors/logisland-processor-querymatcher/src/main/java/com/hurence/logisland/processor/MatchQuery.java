@@ -17,7 +17,9 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
@@ -26,8 +28,6 @@ import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LegacyDoubleField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.co.flax.luwak.*;
 import uk.co.flax.luwak.matchers.SimpleMatcher;
 import uk.co.flax.luwak.presearcher.TermFilteredPresearcher;
@@ -51,6 +51,7 @@ import java.util.*;
         ".. warning::\n\n" +
         "\tdon't forget to set numeric fields property to handle correctly numeric ranges queries")
 @DynamicProperty(name = "query", supportsExpressionLanguage = true, value = "some Lucene query", description = "generate a new record when this query is matched")
+@ExtraDetailFile("./details/MatchQuery-Detail.rst")
 public class MatchQuery extends AbstractProcessor {
 
     public final static String ALERT_MATCH_NAME = "alert_match_name";
@@ -119,8 +120,6 @@ public class MatchQuery extends AbstractProcessor {
         descriptors.add(RECORD_TYPE_UPDATE_POLICY);
         descriptors.add(ON_MATCH_POLICY);
         descriptors.add(ON_MISS_POLICY);
-        descriptors.add(AbstractProcessor.INCLUDE_INPUT_RECORDS);
-
         return Collections.unmodifiableList(descriptors);
     }
 
@@ -180,7 +179,7 @@ public class MatchQuery extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
 
         super.init(context);
         keywordAnalyzer = new KeywordAnalyzer();
@@ -231,9 +230,7 @@ public class MatchQuery extends AbstractProcessor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        // may have not been initialized
-        if (monitor == null)
-            init(context);
+
         try {
             return internalProcess(context, records);
         } finally {

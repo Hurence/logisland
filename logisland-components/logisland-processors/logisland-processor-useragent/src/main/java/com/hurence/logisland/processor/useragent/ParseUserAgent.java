@@ -16,8 +16,10 @@
 package com.hurence.logisland.processor.useragent;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginLoader;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
@@ -31,8 +33,6 @@ import com.hurence.logisland.validator.Validator;
 import nl.basjes.parse.useragent.UserAgent;
 import nl.basjes.parse.useragent.UserAgentAnalyzer;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
         "The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest."
                 + " There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them."
                 + " This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.")
+@ExtraDetailFile("./details/ParseUserAgent-Detail.rst")
 public class ParseUserAgent extends AbstractProcessor {
 
     private static final Object sync = new Object();
@@ -220,7 +221,7 @@ public class ParseUserAgent extends AbstractProcessor {
 
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         getLogger().debug("Initializing User-Agent Processor");
 

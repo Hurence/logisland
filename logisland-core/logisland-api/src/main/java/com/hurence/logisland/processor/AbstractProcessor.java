@@ -16,44 +16,15 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.logging.StandardComponentLogger;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.StandardValidators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.Collections;
+import com.hurence.logisland.component.InitializationException;
 
 
 public abstract class AbstractProcessor extends AbstractConfigurableComponent implements Processor {
 
-    public static final PropertyDescriptor INCLUDE_INPUT_RECORDS = new PropertyDescriptor.Builder()
-            .name("include.input.records")
-            .description("if set to true all the input records are copied to output")
-            .required(false)
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            .defaultValue("true")
-            .build();
-
-    private static Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
-
     @Override
-    public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
-        if (getLogger() != null) {
-            getLogger().debug("property {} value changed from {} to {}", new Object[]{descriptor.getName(), oldValue, newValue});
-        } else {
-            logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
-        }
-    }
-
-    @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
     }
-
 
     @Override
     public boolean hasControllerService() {

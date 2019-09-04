@@ -350,11 +350,11 @@ public class CassandraUpdater implements Runnable {
     {
         for (DataToInsert dataToInsert : batchValues)
         {
-            // Special tets for unit test
+            // Special test for unit test
             if (dataToInsert.collectionName.equals(END_OF_TEST))
             {
                 // Signal end of test stream
-                service.stillSomeRecords = false; // We suppose the unit test code is mono-threaded and never writes more that a batch can handle
+                service.stillSomeRecords = false; // We suppose the unit test code is mono-threaded and never writes more than a batch can handle
                 continue;
             }
 

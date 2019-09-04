@@ -16,7 +16,9 @@
 package com.hurence.logisland.processor.scripting.python;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Record;
@@ -66,6 +68,7 @@ import static java.util.stream.Collectors.joining;
         + " python code may depend on some python dependencies. If the set of python dependencies already delivered with"
         + " the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to"
         + " give their location. Currently only the nltk python library is delivered with Logisland.")
+@ExtraDetailFile("./details/RunPython-Detail.rst")
 public class RunPython extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(RunPython.class);
@@ -209,7 +212,7 @@ public class RunPython extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         pythonInterpreter = new PythonInterpreter();
@@ -489,8 +492,6 @@ public class RunPython extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records)
     {
-        if(pythonInterpreter == null)
-            init(context);
 
         Collection<Record> outputRecords = null;
         

@@ -22,7 +22,7 @@ import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.validator.ValidationContext;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,12 +50,12 @@ public class StandardValidationContext implements ValidationContext {
 
     @Override
     public ControllerServiceLookup getControllerServiceLookup() {
-        throw new NotImplementedException();
+        throw new NotImplementedException("todo");
     }
 
     @Override
     public ValidationContext getControllerServiceValidationContext(ControllerService controllerService) {
-        throw new NotImplementedException();
+        throw new NotImplementedException("todo");
     }
 
     @Override

@@ -236,7 +236,7 @@ You can then use this service in a custom processor :
 
 .. code-block:: java
 
-    public class TestProcessor extends AbstractProcessor {
+    public class com.hurence.logisland.service.elasticsearch.TestProcessor extends AbstractProcessor {
 
         static final PropertyDescriptor CACHE_SERVICE = new PropertyDescriptor.Builder()
                 .name("cache.service")
@@ -288,7 +288,7 @@ The injection is done through yaml config files by injecting the instance of `lr
           processorConfigurations:
 
             - processor: mock_processor
-              component: com.hurence.logisland.processor.TestProcessor
+              component: com.hurence.logisland.processor.com.hurence.logisland.service.elasticsearch.TestProcessor
               type: parser
               documentation: a parser that produce events for nothing
               configuration:

@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<component xmlns="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0 http://maven.apache.org/xsd/assembly-component-2.0.0.xsd">
+    <moduleSets>
+        <moduleSet>
+            <!-- Enable access to all projects in the current multimodule build! -->
+            <useAllReactorProjects>true</useAllReactorProjects>
+
+            <!-- Now, select which projects to include in this module-set. -->
+            <includes>
+                <!-- ENGINES -->
+                <include>com.hurence.logisland:logisland-engine-spark_2_1</include>
+                <include>com.hurence.logisland:logisland-engine-spark_2_3</include>
+                <include>com.hurence.logisland:logisland-engine-spark_1_6</include>
+                <include>com.hurence.logisland:logisland-engine-vanilla</include>
+            </includes>
+
+            <binaries>
+                <directoryMode>0770</directoryMode>
+                <fileMode>0660</fileMode>
+                <outputDirectory>lib/engines</outputDirectory>
+                <includeDependencies>false</includeDependencies>
+                <unpack>false</unpack>
+            </binaries>
+        </moduleSet>
+        <moduleSet>
+            <!-- Enable access to all projects in the current multimodule build! -->
+            <useAllReactorProjects>true</useAllReactorProjects>
+
+            <!-- Now, select which projects to include in this module-set. -->
+            <includes>
+                <!--  CORE  -->
+                <include>com.hurence.logisland:logisland-api</include>
+                <include>com.hurence.logisland:logisland-utils</include>
+                <include>com.hurence.logisland:logisland-bootstrap</include>
+                <include>com.hurence.logisland:logisland-plugin-support</include>
+                <include>com.hurence.logisland:logisland-scripting-base</include>
+                <include>com.hurence.logisland:logisland-scripting-mvel</include>
+            </includes>
+            <binaries>
+                <directoryMode>0770</directoryMode>
+                <fileMode>0660</fileMode>
+                <outputDirectory>lib/cores</outputDirectory>
+                <includeDependencies>true</includeDependencies>
+                <unpack>false</unpack>
+            </binaries>
+        </moduleSet>
+    </moduleSets>
+
+
+    <fileSets>
+<!--   Embed all resources in logisland-resources module  -->
+        <fileSet>
+            <directory>../logisland-resources/src/main/resources</directory>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0770</fileMode>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+<!-- Add extra jars for redirecting log4j logging into slf4j api. (This may reduce performance)
+    See https://logging.apache.org/log4j/2.x/log4j-to-slf4j/index.html
+ -->
+        <fileSet>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0660</fileMode>
+            <directory>./src/extra-jars</directory>
+            <outputDirectory>./lib/cores</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+    <files>
+    </files>
+</component>

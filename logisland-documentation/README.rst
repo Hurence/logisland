@@ -37,15 +37,6 @@ Then you can generate the HTML version of the docs:
 
     make html
 
-If you got "ImportError: No module named 'recommonmark'" error, you can try commenting this part of conf.py file:
-"
-from recommonmark.parser import CommonMarkParser
-
-source_parsers = {
-    '.md': CommonMarkParser,
-}
-"
-
 The root of the documentation will be at `_build/html/index.html`
 
 While editing the documentation, you can get a live preview using python-livepreview. Install the Python library:

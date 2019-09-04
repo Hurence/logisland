@@ -16,7 +16,9 @@
 package com.hurence.logisland.processor.excel;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -46,6 +48,7 @@ import java.util.stream.Stream;
 @Tags({"excel", "processor", "poi"})
 @CapabilityDescription("Consumes a Microsoft Excel document and converts each worksheet's line to a structured " +
         "record. The processor is assuming to receive raw excel file as input record.")
+@ExtraDetailFile("./details/ExcelExtract-Detail.rst")
 public class ExcelExtract extends AbstractProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExcelExtractProperties.class);
@@ -57,7 +60,7 @@ public class ExcelExtract extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         configuration = new ExcelExtractProperties.Configuration(context);
         LOGGER.info("ExcelExtract successfully initialized");

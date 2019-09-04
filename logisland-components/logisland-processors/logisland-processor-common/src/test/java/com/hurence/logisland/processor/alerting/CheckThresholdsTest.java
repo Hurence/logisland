@@ -45,7 +45,7 @@ public class CheckThresholdsTest {
         runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
         runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
         runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(ComputeTags.ALLOw_NO_BRACE, "false");
+        runner.setProperty(ComputeTags.ALLOW_NO_BRACE, "false");
         runner.setProperty("tvib1","cache(\"cached_id1\").value > 10.0");
         runner.setProperty("tvib2", "cache(\"cached_id2\").value >= 0");
         runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());

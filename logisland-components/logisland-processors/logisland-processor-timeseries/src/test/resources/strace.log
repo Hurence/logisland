@@ -1,0 +1,1000 @@
+Process 8864 attached with 240 threads - interrupt to quit
+[pid 19731] 17:59:06.676123 epoll_wait(499,  <unfinished ...>
+[pid 19717] 17:59:06.677969 open("/etc/hosts", O_RDONLY|O_CLOEXEC <unfinished ...>
+[pid 19069] 17:59:06.678045 epoll_wait(429,  <unfinished ...>
+[pid 19717] 17:59:06.678088 <... open resumed> ) = 22
+[pid 19717] 17:59:06.678120 fstat(22, {st_mode=S_IFREG|0644, st_size=702, ...}) = 0
+[pid 19717] 17:59:06.678257 read(22, "#\n# hosts         This file desc"..., 4096) = 702
+[pid 19717] 17:59:06.678365 read(22, "", 4096) = 0
+[pid 19717] 17:59:06.678419 close(22)   = 0
+[pid 19067] 17:59:06.678489 epoll_wait(425,  <unfinished ...>
+[pid 19717] 17:59:06.678571 open("/etc/hosts", O_RDONLY|O_CLOEXEC) = 22
+[pid 19717] 17:59:06.678625 fstat(22, {st_mode=S_IFREG|0644, st_size=702, ...}) = 0
+[pid 19717] 17:59:06.678723 read(22, "#\n# hosts         This file desc"..., 4096) = 702
+[pid 19717] 17:59:06.678828 close(22 <unfinished ...>
+[pid 19042] 17:59:06.678867 epoll_wait(421,  <unfinished ...>
+[pid 19717] 17:59:06.679567 <... close resumed> ) = 0
+[pid 18963] 17:59:06.679666 epoll_wait(416,  <unfinished ...>
+[pid 18650] 17:59:06.680498 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:07.291609 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:07.291749 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:07.292263 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=16991766933743338459}} <unfinished ...>
+[pid 22209] 17:59:07.292311 read(987, "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:07.292403 <... epoll_ctl resumed> ) = 0
+[pid 18650] 17:59:07.292486 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:07.292624 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:07.293362 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:07.296220 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:07.296324 read(1894, "2.80 2.44 5.03 5/13976 18993\n", 64) = 29
+[pid 22209] 17:59:07.296394 close(1894) = 0
+[pid 22209] 17:59:07.297429 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:07.297573 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:07.297766 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:07.297974 close(1894) = 0
+[pid 22209] 17:59:07.298486 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:07.298621 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:07.302946 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:07.305433 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:07.305518 close(1894) = 0
+[pid 22209] 17:59:07.306539 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:07.306642 read(1894, "cpu  131065580 55347 14299720 31"..., 8192) = 5170
+[pid 22209] 17:59:07.307281 close(1894) = 0
+[pid 22209] 17:59:07.307629 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:07.307794 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:07.307998 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:07.308201 read(1894, "", 1024) = 0
+[pid 22209] 17:59:07.308247 close(1894) = 0
+[pid 22209] 17:59:07.308664 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:07.308946 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:07.309049 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:07.309196 read(1894, "", 1024) = 0
+[pid 22209] 17:59:07.309258 close(1894) = 0
+[pid 22209] 17:59:07.309412 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:07.309488 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:07.309592 read(1894, "cpu  131065580 55347 14299720 31"..., 1024) = 1024
+[pid 22209] 17:59:07.310232 close(1894) = 0
+[pid 22209] 17:59:07.310856 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:07.310935 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:07.311079 read(1894, "cpu  131065581 55347 14299721 31"..., 1024) = 1024
+[pid 22209] 17:59:07.311687 close(1894) = 0
+[pid 22209] 17:59:07.312311 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:07.312412 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:07.312530 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:07.312652 close(1894) = 0
+[pid 22209] 17:59:07.313036 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:07.313115 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:07.313227 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:07.313305 read(1894, "", 1024) = 0
+[pid 22209] 17:59:07.313351 close(1894) = 0
+[pid 22209] 17:59:07.315672 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:07.316008 write(987, "[{\"timestamp\":1439395147,\"status"..., 19644) = 19644
+[pid 22209] 17:59:07.316236 write(31, "\1", 1 <unfinished ...>
+[pid 18650] 17:59:07.316325 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 22209] 17:59:07.316452 <... write resumed> ) = 1
+[pid 18650] 17:59:07.316799 read(30, "\1", 128) = 1
+[pid 18650] 17:59:07.317534 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:07.317643 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:07.317742 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:07.317895 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:07.318004 epoll_wait(32,  <unfinished ...>
+[pid 18646] 17:59:07.492323 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:07.492493 read(1894, "cpu  131065612 55347 14299727 31"..., 8192) = 5170
+[pid 18646] 17:59:07.493181 close(1894) = 0
+[pid 19069] 17:59:07.679107 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:07.679301 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:07.679437 epoll_wait(429,  <unfinished ...>
+[pid 19042] 17:59:07.679479 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:07.679596 epoll_wait(425,  <unfinished ...>
+[pid 19042] 17:59:07.679640 epoll_wait(421,  <unfinished ...>
+[pid 18963] 17:59:07.680736 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:07.680832 epoll_wait(416,  <unfinished ...>
+[pid 18650] 17:59:08.318404 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:08.318548 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:08.318678 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:08.322431 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:08.322512 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 22209] 17:59:08.323025 read(987,  <unfinished ...>
+[pid 18650] 17:59:08.323075 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=16991769991760053211}} <unfinished ...>
+[pid 22209] 17:59:08.323114 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:08.323155 <... epoll_ctl resumed> ) = 0
+[pid 18650] 17:59:08.323225 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:08.323328 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:08.324094 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:08.326954 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:08.327058 read(1894, "2.80 2.44 5.03 4/13975 19079\n", 64) = 29
+[pid 22209] 17:59:08.327128 close(1894) = 0
+[pid 22209] 17:59:08.328086 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:08.328194 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:08.328321 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:08.328467 close(1894) = 0
+[pid 22209] 17:59:08.328938 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:08.329049 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:08.333298 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:08.335778 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:08.335840 close(1894) = 0
+[pid 22209] 17:59:08.336990 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:08.337094 read(1894, "cpu  131065820 55347 14299757 31"..., 8192) = 5170
+[pid 22209] 17:59:08.337743 close(1894) = 0
+[pid 22209] 17:59:08.338112 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:08.338216 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:08.338325 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:08.338618 read(1894, "", 1024) = 0
+[pid 22209] 17:59:08.338718 close(1894) = 0
+[pid 22209] 17:59:08.339208 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:08.339335 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:08.339684 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:08.339916 read(1894, "", 1024) = 0
+[pid 22209] 17:59:08.340014 close(1894) = 0
+[pid 22209] 17:59:08.340157 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:08.340274 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:08.340424 read(1894, "cpu  131065820 55347 14299757 31"..., 1024) = 1024
+[pid 22209] 17:59:08.341115 close(1894) = 0
+[pid 22209] 17:59:08.342188 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:08.342432 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:08.342619 read(1894, "cpu  131065821 55347 14299757 31"..., 1024) = 1024
+[pid 22209] 17:59:08.343354 close(1894) = 0
+[pid 22209] 17:59:08.344156 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:08.344267 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:08.344411 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:08.344558 close(1894) = 0
+[pid 22209] 17:59:08.344964 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:08.345084 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:08.345243 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:08.345401 read(1894, "", 1024) = 0
+[pid 22209] 17:59:08.345471 close(1894) = 0
+[pid 22209] 17:59:08.348029 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:08.348253 write(987, "[{\"timestamp\":1439395148,\"status"..., 19657) = 19657
+[pid 22209] 17:59:08.348465 write(31, "\1", 1) = 1
+[pid 18650] 17:59:08.348553 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:08.348654 read(30, "\1", 128) = 1
+[pid 18650] 17:59:08.348792 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:08.348875 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:08.348939 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:08.349066 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:08.349131 epoll_wait(32,  <unfinished ...>
+[pid 18646] 17:59:08.493860 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:08.494006 read(1894, "cpu  131065843 55347 14299761 31"..., 8192) = 5170
+[pid 18646] 17:59:08.494664 close(1894) = 0
+[pid 19067] 17:59:08.680088 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:08.680158 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:08.680278 epoll_wait(425,  <unfinished ...>
+[pid 19042] 17:59:08.680319 epoll_wait(421,  <unfinished ...>
+[pid 19069] 17:59:08.680522 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:08.680618 epoll_wait(429,  <unfinished ...>
+[pid 18963] 17:59:08.681882 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:08.681969 epoll_wait(416,  <unfinished ...>
+[pid 18650] 17:59:09.350055 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:09.350215 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:09.350355 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:09.354791 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:09.354880 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:09.355150 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=16991773496453366747}}) = 0
+[pid 18650] 17:59:09.355345 epoll_wait(32, {}, 4096, 0) = 0
+[pid 22209] 17:59:09.355455 read(987,  <unfinished ...>
+[pid 18650] 17:59:09.355509 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:09.355539 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 22209] 17:59:09.356552 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:09.359421 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:09.359583 read(1894, "2.80 2.44 5.03 7/13975 19116\n", 64) = 29
+[pid 22209] 17:59:09.359681 close(1894) = 0
+[pid 22209] 17:59:09.360833 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:09.360942 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:09.361065 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:09.361241 close(1894) = 0
+[pid 22209] 17:59:09.361690 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:09.361795 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:09.366053 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:09.368538 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:09.368607 close(1894) = 0
+[pid 22209] 17:59:09.369629 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:09.369740 read(1894, "cpu  131065980 55347 14299786 31"..., 8192) = 5170
+[pid 22209] 17:59:09.370390 close(1894) = 0
+[pid 22209] 17:59:09.370739 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:09.370834 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:09.370942 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:09.371208 read(1894, "", 1024) = 0
+[pid 22209] 17:59:09.371277 close(1894) = 0
+[pid 22209] 17:59:09.371667 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:09.371745 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:09.371850 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:09.371987 read(1894, "", 1024) = 0
+[pid 22209] 17:59:09.372057 close(1894) = 0
+[pid 22209] 17:59:09.372155 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:09.372219 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:09.372306 read(1894, "cpu  131065981 55347 14299786 31"..., 1024) = 1024
+[pid 22209] 17:59:09.372898 close(1894) = 0
+[pid 22209] 17:59:09.373445 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:09.373519 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:09.373624 read(1894, "cpu  131065981 55347 14299786 31"..., 1024) = 1024
+[pid 22209] 17:59:09.374295 close(1894) = 0
+[pid 22209] 17:59:09.374873 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:09.374978 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:09.375083 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:09.375201 close(1894) = 0
+[pid 22209] 17:59:09.378275 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:09.378372 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:09.378476 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:09.378559 read(1894, "", 1024) = 0
+[pid 22209] 17:59:09.378605 close(1894) = 0
+[pid 22209] 17:59:09.380928 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:09.381160 write(987, "[{\"timestamp\":1439395149,\"status"..., 19658) = 19658
+[pid 22209] 17:59:09.381377 write(31, "\1", 1) = 1
+[pid 18650] 17:59:09.381559 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:09.382208 read(30, "\1", 128) = 1
+[pid 18650] 17:59:09.382882 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:09.382982 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:09.383061 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:09.383196 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:09.383293 epoll_wait(32,  <unfinished ...>
+[pid 18646] 17:59:09.495424 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:09.495575 read(1894, "cpu  131066009 55347 14299790 31"..., 8192) = 5170
+[pid 18646] 17:59:09.496300 close(1894) = 0
+[pid 19069] 17:59:09.680858 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:09.680925 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:09.681020 epoll_wait(429,  <unfinished ...>
+[pid 19042] 17:59:09.681064 epoll_wait(421,  <unfinished ...>
+[pid 19067] 17:59:09.681353 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:09.681578 epoll_wait(425,  <unfinished ...>
+[pid 18963] 17:59:09.683044 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:09.683138 epoll_wait(416,  <unfinished ...>
+[pid 32551] 17:59:10.257184 open("/lfs/wwwmnt/cdp-skaa65ma-i-app1/nodes/lib2vapp01.muc-clusterDomain/i0_lib2vapp01/autodeploy/bundles", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid 18650] 17:59:10.383840 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:10.383994 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:10.384092 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:10.387716 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:10.387818 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 22209] 17:59:10.388250 read(987, "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:10.389041 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17021158528821232603}}) = 0
+[pid 18650] 17:59:10.389263 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:10.389316 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 18650] 17:59:10.390917 <... epoll_wait resumed> {}, 4096, 0) = 0
+[pid 18650] 17:59:10.391012 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:10.392625 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:10.392740 read(1894, "2.73 2.43 5.01 4/13974 19117\n", 64) = 29
+[pid 22209] 17:59:10.392821 close(1894) = 0
+[pid 22209] 17:59:10.393851 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:10.393958 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:10.394074 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:10.394210 close(1894) = 0
+[pid 22209] 17:59:10.394661 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:10.394759 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:10.399023 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:10.401494 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:10.401558 close(1894) = 0
+[pid 22209] 17:59:10.402500 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:10.402579 read(1894, "cpu  131066237 55347 14299813 31"..., 8192) = 5170
+[pid 22209] 17:59:10.403217 close(1894) = 0
+[pid 22209] 17:59:10.403578 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:10.403676 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:10.403781 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:10.403962 read(1894, "", 1024) = 0
+[pid 22209] 17:59:10.404008 close(1894) = 0
+[pid 22209] 17:59:10.404400 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:10.404474 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:10.404577 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:10.404712 read(1894, "", 1024) = 0
+[pid 22209] 17:59:10.404773 close(1894) = 0
+[pid 22209] 17:59:10.404867 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:10.404929 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:10.405015 read(1894, "cpu  131066237 55347 14299813 31"..., 1024) = 1024
+[pid 22209] 17:59:10.405610 close(1894) = 0
+[pid 22209] 17:59:10.406260 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:10.406341 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:10.406443 read(1894, "cpu  131066239 55347 14299813 31"..., 1024) = 1024
+[pid 22209] 17:59:10.407059 close(1894) = 0
+[pid 22209] 17:59:10.407649 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:10.407725 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:10.407828 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:10.407945 close(1894) = 0
+[pid 22209] 17:59:10.408340 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:10.408421 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:10.408524 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:10.408601 read(1894, "", 1024) = 0
+[pid 22209] 17:59:10.408647 close(1894) = 0
+[pid 22209] 17:59:10.410924 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:10.411141 write(987, "[{\"timestamp\":1439395150,\"status"..., 19659) = 19659
+[pid 22209] 17:59:10.411368 write(31, "\1", 1) = 1
+[pid 18650] 17:59:10.411467 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:10.411557 read(30, "\1", 128) = 1
+[pid 18650] 17:59:10.411738 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:10.411842 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:10.412000 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:10.412137 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:10.412234 epoll_wait(32,  <unfinished ...>
+[pid 18646] 17:59:10.496957 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:10.497093 read(1894, "cpu  131066260 55347 14299815 31"..., 8192) = 5170
+[pid 18646] 17:59:10.497773 close(1894) = 0
+[pid 19069] 17:59:10.682027 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:10.682098 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:10.682134 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:10.682224 epoll_wait(429,  <unfinished ...>
+[pid 19067] 17:59:10.682268 epoll_wait(425,  <unfinished ...>
+[pid 19042] 17:59:10.682302 epoll_wait(421,  <unfinished ...>
+[pid 18963] 17:59:10.683417 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:10.683503 epoll_wait(416,  <unfinished ...>
+[pid 18650] 17:59:11.413341 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:11.413497 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:11.413604 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:11.417605 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:11.417692 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:11.418025 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17021162033514546139}}) = 0
+[pid 18650] 17:59:11.418211 epoll_wait(32, {}, 4096, 0) = 0
+[pid 22209] 17:59:11.418334 read(987,  <unfinished ...>
+[pid 18650] 17:59:11.418373 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:11.418405 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 22209] 17:59:11.419448 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:11.422412 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:11.422541 read(1894, "2.73 2.43 5.01 3/13975 19158\n", 64) = 29
+[pid 22209] 17:59:11.422655 close(1894) = 0
+[pid 22209] 17:59:11.423761 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:11.423871 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:11.424034 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:11.424195 close(1894) = 0
+[pid 22209] 17:59:11.424664 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:11.424782 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:11.429150 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:11.431684 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:11.431761 close(1894) = 0
+[pid 22209] 17:59:11.432890 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:11.432999 read(1894, "cpu  131066433 55347 14299848 31"..., 8192) = 5170
+[pid 22209] 17:59:11.433679 close(1894) = 0
+[pid 22209] 17:59:11.434070 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:11.434168 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:11.434311 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:11.434593 read(1894, "", 1024) = 0
+[pid 22209] 17:59:11.434657 close(1894) = 0
+[pid 22209] 17:59:11.435230 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:11.435326 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:11.435429 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:11.435566 read(1894, "", 1024) = 0
+[pid 22209] 17:59:11.435634 close(1894) = 0
+[pid 22209] 17:59:11.435768 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:11.435887 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:11.435997 read(1894, "cpu  131066433 55347 14299848 31"..., 1024) = 1024
+[pid 22209] 17:59:11.436651 close(1894) = 0
+[pid 22209] 17:59:11.437484 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:11.437571 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:11.437678 read(1894, "cpu  131066433 55347 14299848 31"..., 1024) = 1024
+[pid 22209] 17:59:11.438285 close(1894) = 0
+[pid 22209] 17:59:11.438879 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:11.438958 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:11.439062 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:11.439215 close(1894) = 0
+[pid 22209] 17:59:11.439743 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:11.439890 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:11.440000 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:11.440078 read(1894, "", 1024) = 0
+[pid 22209] 17:59:11.440125 close(1894) = 0
+[pid 22209] 17:59:11.442530 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:11.442703 write(987, "[{\"timestamp\":1439395151,\"status"..., 19658) = 19658
+[pid 22209] 17:59:11.442870 write(31, "\1", 1) = 1
+[pid 18650] 17:59:11.442953 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:11.443050 read(30, "\1", 128) = 1
+[pid 18650] 17:59:11.443181 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:11.443283 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:11.443349 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:11.443481 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:11.443548 epoll_wait(32,  <unfinished ...>
+[pid 18646] 17:59:11.498376 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:11.498514 read(1894, "cpu  131066455 55347 14299850 31"..., 8192) = 5170
+[pid 18646] 17:59:11.499163 close(1894) = 0
+[pid 19069] 17:59:11.683306 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:11.683384 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:11.683421 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:11.683517 epoll_wait(429,  <unfinished ...>
+[pid 19067] 17:59:11.683563 epoll_wait(425,  <unfinished ...>
+[pid 19042] 17:59:11.683597 epoll_wait(421,  <unfinished ...>
+[pid 18963] 17:59:11.684001 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:11.684100 epoll_wait(416,  <unfinished ...>
+[pid 18650] 17:59:12.444634 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:12.444777 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:12.444871 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:12.449298 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:12.449377 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:12.449757 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17041223379077563355}}) = 0
+[pid 18650] 17:59:12.449898 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:12.450032 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:12.450103 read(987, "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 22209] 17:59:12.451134 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:12.453940 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:12.454054 read(1894, "2.73 2.43 5.01 2/13974 19203\n", 64) = 29
+[pid 22209] 17:59:12.454128 close(1894) = 0
+[pid 22209] 17:59:12.455303 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:12.455421 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:12.455541 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:12.455676 close(1894) = 0
+[pid 22209] 17:59:12.456121 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:12.456256 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:12.460772 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:12.463275 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:12.463328 close(1894) = 0
+[pid 22209] 17:59:12.464338 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:12.464443 read(1894, "cpu  131066676 55347 14299888 31"..., 8192) = 5170
+[pid 22209] 17:59:12.465114 close(1894) = 0
+[pid 22209] 17:59:12.465510 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:12.465615 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:12.465723 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:12.466044 read(1894, "", 1024) = 0
+[pid 22209] 17:59:12.466111 close(1894) = 0
+[pid 22209] 17:59:12.466527 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:12.466620 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:12.466728 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:12.466930 read(1894, "", 1024) = 0
+[pid 22209] 17:59:12.467050 close(1894) = 0
+[pid 22209] 17:59:12.467160 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:12.467244 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:12.467377 read(1894, "cpu  131066677 55347 14299888 31"..., 1024) = 1024
+[pid 22209] 17:59:12.468014 close(1894) = 0
+[pid 22209] 17:59:12.468573 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:12.468664 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:12.468769 read(1894, "cpu  131066677 55347 14299888 31"..., 1024) = 1024
+[pid 22209] 17:59:12.469386 close(1894) = 0
+[pid 22209] 17:59:12.470065 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:12.470220 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:12.470375 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:12.470525 close(1894) = 0
+[pid 22209] 17:59:12.470948 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:12.471102 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:12.471236 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:12.471461 read(1894, "", 1024) = 0
+[pid 22209] 17:59:12.471514 close(1894) = 0
+[pid 22209] 17:59:12.473779 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:12.473960 write(987, "[{\"timestamp\":1439395152,\"status"..., 19658) = 19658
+[pid 22209] 17:59:12.474132 write(31, "\1", 1) = 1
+[pid 18650] 17:59:12.474232 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:12.474333 read(30, "\1", 128) = 1
+[pid 18650] 17:59:12.474462 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:12.474547 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:12.474610 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:12.474724 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:12.474790 epoll_wait(32,  <unfinished ...>
+[pid 18646] 17:59:12.499718 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:12.499831 read(1894, "cpu  131066678 55347 14299889 31"..., 8192) = 5170
+[pid 18646] 17:59:12.500478 close(1894) = 0
+[pid 19069] 17:59:12.684354 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:12.684436 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:12.684535 epoll_wait(429,  <unfinished ...>
+[pid 19042] 17:59:12.684575 epoll_wait(421,  <unfinished ...>
+[pid 19067] 17:59:12.684611 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:12.684714 epoll_wait(425,  <unfinished ...>
+[pid 18963] 17:59:12.685166 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:12.685260 epoll_wait(416,  <unfinished ...>
+[pid 18650] 17:59:13.475604 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:13.475777 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:13.475886 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:13.480597 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:13.480677 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:13.481025 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17041226883770876891}}) = 0
+[pid 22209] 17:59:13.481091 read(987,  <unfinished ...>
+[pid 18650] 17:59:13.481129 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:13.481158 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:13.481199 <... epoll_wait resumed> {}, 4096, 0) = 0
+[pid 18650] 17:59:13.481262 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:13.482159 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:13.485063 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:13.485167 read(1894, "2.73 2.43 5.01 5/13974 19238\n", 64) = 29
+[pid 22209] 17:59:13.485237 close(1894) = 0
+[pid 22209] 17:59:13.486348 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:13.486496 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:13.486624 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:13.486767 close(1894) = 0
+[pid 22209] 17:59:13.487211 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:13.487307 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:13.491564 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:13.494021 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:13.494077 close(1894) = 0
+[pid 22209] 17:59:13.495026 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:13.495111 read(1894, "cpu  131066880 55347 14299920 31"..., 8192) = 5170
+[pid 22209] 17:59:13.495739 close(1894) = 0
+[pid 22209] 17:59:13.496079 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:13.496170 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:13.496278 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:13.496466 read(1894, "", 1024) = 0
+[pid 22209] 17:59:13.496521 close(1894) = 0
+[pid 22209] 17:59:13.496980 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:13.497146 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:13.497254 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:13.497394 read(1894, "", 1024) = 0
+[pid 22209] 17:59:13.497458 close(1894) = 0
+[pid 22209] 17:59:13.497541 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:13.497604 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:13.497691 read(1894, "cpu  131066880 55347 14299920 31"..., 1024) = 1024
+[pid 22209] 17:59:13.498322 close(1894) = 0
+[pid 22209] 17:59:13.498874 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:13.498968 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:13.499077 read(1894, "cpu  131066880 55347 14299921 31"..., 1024) = 1024
+[pid 22209] 17:59:13.499666 close(1894) = 0
+[pid 22209] 17:59:13.500250 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:13.500354 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:13.500466 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:13.500587 close(1894) = 0
+[pid 18646] 17:59:13.500969 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:13.501058 open("/proc/self/task/22209/stat", O_RDONLY <unfinished ...>
+[pid 18646] 17:59:13.501102 read(1894,  <unfinished ...>
+[pid 22209] 17:59:13.501131 <... open resumed> ) = 1895
+[pid 22209] 17:59:13.501157 fstat(1895, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:13.501259 read(1895, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:13.501337 read(1895, "", 1024) = 0
+[pid 22209] 17:59:13.501383 close(1895) = 0
+[pid 18646] 17:59:13.501668 <... read resumed> "cpu  131066880 55347 14299921 31"..., 8192) = 5170
+[pid 18646] 17:59:13.501722 close(1894) = 0
+[pid 22209] 17:59:13.503783 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:13.504022 write(987, "[{\"timestamp\":1439395153,\"status"..., 19657) = 19657
+[pid 22209] 17:59:13.504245 write(31, "\1", 1 <unfinished ...>
+[pid 18650] 17:59:13.504334 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 22209] 17:59:13.504465 <... write resumed> ) = 1
+[pid 18650] 17:59:13.504789 read(30, "\1", 128) = 1
+[pid 18650] 17:59:13.505606 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:13.505719 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:13.505801 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:13.505937 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:13.506033 epoll_wait(32,  <unfinished ...>
+[pid 19042] 17:59:13.684789 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:13.684917 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:13.684956 epoll_wait(421,  <unfinished ...>
+[pid 19067] 17:59:13.685094 epoll_wait(425,  <unfinished ...>
+[pid 19069] 17:59:13.685293 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:13.685384 epoll_wait(429,  <unfinished ...>
+[pid 18963] 17:59:13.685819 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:13.685899 epoll_wait(416,  <unfinished ...>
+[pid 18646] 17:59:14.502305 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:14.502437 read(1894, "cpu  131066997 55347 14299944 31"..., 8192) = 5170
+[pid 18646] 17:59:14.503086 close(1894) = 0
+[pid 18650] 17:59:14.506137 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:14.506246 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:14.506338 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:14.510500 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:14.510595 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:14.510978 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17041230388464190427}} <unfinished ...>
+[pid 22209] 17:59:14.511029 read(987,  <unfinished ...>
+[pid 18650] 17:59:14.511063 <... epoll_ctl resumed> ) = 0
+[pid 22209] 17:59:14.511089 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:14.511136 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:14.511318 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:14.512075 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:14.515032 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:14.515135 read(1894, "2.60 2.41 4.99 3/13974 19241\n", 64) = 29
+[pid 22209] 17:59:14.515207 close(1894) = 0
+[pid 22209] 17:59:14.516184 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:14.516279 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:14.516388 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:14.516523 close(1894) = 0
+[pid 22209] 17:59:14.516952 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:14.517100 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:14.521529 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:14.524091 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:14.524150 close(1894) = 0
+[pid 22209] 17:59:14.525133 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:14.525217 read(1894, "cpu  131066999 55347 14299945 31"..., 8192) = 5170
+[pid 22209] 17:59:14.525909 close(1894) = 0
+[pid 22209] 17:59:14.526319 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:14.526446 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:14.526567 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:14.526729 read(1894, "", 1024) = 0
+[pid 22209] 17:59:14.526789 close(1894) = 0
+[pid 22209] 17:59:14.527233 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:14.527355 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:14.527511 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:14.527675 read(1894, "", 1024) = 0
+[pid 22209] 17:59:14.527748 close(1894) = 0
+[pid 22209] 17:59:14.527849 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:14.527935 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:14.528088 read(1894, "cpu  131066999 55347 14299946 31"..., 1024) = 1024
+[pid 22209] 17:59:14.528702 close(1894) = 0
+[pid 22209] 17:59:14.529257 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:14.529364 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:14.529473 read(1894, "cpu  131066999 55347 14299946 31"..., 1024) = 1024
+[pid 22209] 17:59:14.530097 close(1894) = 0
+[pid 22209] 17:59:14.530707 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:14.530788 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:14.530892 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:14.531007 close(1894) = 0
+[pid 22209] 17:59:14.531380 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:14.531458 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:14.531562 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:14.531638 read(1894, "", 1024) = 0
+[pid 22209] 17:59:14.531770 close(1894) = 0
+[pid 22209] 17:59:14.534215 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:14.534407 write(987, "[{\"timestamp\":1439395154,\"status"..., 19657) = 19657
+[pid 22209] 17:59:14.534584 write(31, "\1", 1) = 1
+[pid 18650] 17:59:14.534688 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:14.534769 read(30, "\1", 128) = 1
+[pid 18650] 17:59:14.534904 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:14.534988 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:14.535051 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:14.535172 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:14.535238 epoll_wait(32,  <unfinished ...>
+[pid 19042] 17:59:14.685919 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:14.685981 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:14.686097 epoll_wait(425,  <unfinished ...>
+[pid 19042] 17:59:14.686165 epoll_wait(421,  <unfinished ...>
+[pid 19069] 17:59:14.686228 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:14.686312 epoll_wait(429,  <unfinished ...>
+[pid 18963] 17:59:14.686958 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:14.687035 epoll_wait(416,  <unfinished ...>
+[pid 32551] 17:59:15.257657 open("/lfs/wwwmnt/cdp-skaa65ma-i-app1/nodes/lib2vapp01.muc-clusterDomain/i0_lib2vapp01/autodeploy/bundles", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid 18646] 17:59:15.503616 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:15.503761 read(1894, "cpu  131067188 55347 14299974 31"..., 8192) = 5170
+[pid 18646] 17:59:15.504412 close(1894) = 0
+[pid 18650] 17:59:15.536299 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:15.536426 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:15.536522 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:15.540887 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:15.540982 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:15.541412 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17061133026395685851}} <unfinished ...>
+[pid 22209] 17:59:15.541474 read(987,  <unfinished ...>
+[pid 18650] 17:59:15.541511 <... epoll_ctl resumed> ) = 0
+[pid 22209] 17:59:15.541538 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:15.541583 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:15.541687 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:15.542532 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:15.545676 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:15.545858 read(1894, "2.60 2.41 4.99 2/13976 19277\n", 64) = 29
+[pid 22209] 17:59:15.545946 close(1894) = 0
+[pid 22209] 17:59:15.547039 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:15.547157 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:15.547267 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:15.547416 close(1894) = 0
+[pid 22209] 17:59:15.547846 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:15.547949 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:15.552121 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:15.554552 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:15.554608 close(1894) = 0
+[pid 22209] 17:59:15.555521 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:15.555609 read(1894, "cpu  131067191 55347 14299975 31"..., 8192) = 5170
+[pid 22209] 17:59:15.556234 close(1894) = 0
+[pid 22209] 17:59:15.556570 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:15.556701 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:15.556823 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:15.557031 read(1894, "", 1024) = 0
+[pid 22209] 17:59:15.557081 close(1894) = 0
+[pid 22209] 17:59:15.557509 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:15.557589 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:15.557695 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:15.557840 read(1894, "", 1024) = 0
+[pid 22209] 17:59:15.557911 close(1894) = 0
+[pid 22209] 17:59:15.558046 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:15.558122 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:15.558225 read(1894, "cpu  131067191 55347 14299976 31"..., 1024) = 1024
+[pid 22209] 17:59:15.558811 close(1894) = 0
+[pid 22209] 17:59:15.559333 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:15.559410 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:15.559512 read(1894, "cpu  131067191 55347 14299976 31"..., 1024) = 1024
+[pid 22209] 17:59:15.560090 close(1894) = 0
+[pid 22209] 17:59:15.560644 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:15.560721 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:15.560823 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:15.560930 close(1894) = 0
+[pid 22209] 17:59:15.561339 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:15.561419 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:15.561522 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:15.561599 read(1894, "", 1024) = 0
+[pid 22209] 17:59:15.561645 close(1894) = 0
+[pid 22209] 17:59:15.563912 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:15.564089 write(987, "[{\"timestamp\":1439395155,\"status"..., 19658) = 19658
+[pid 22209] 17:59:15.564256 write(31, "\1", 1) = 1
+[pid 18650] 17:59:15.564330 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:15.564405 read(30, "\1", 128) = 1
+[pid 18650] 17:59:15.564527 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:15.564623 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:15.564687 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:15.564805 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:15.564871 epoll_wait(32,  <unfinished ...>
+[pid 19067] 17:59:15.687117 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:15.687337 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:15.687380 epoll_wait(425,  <unfinished ...>
+[pid 19069] 17:59:15.687439 epoll_wait(429,  <unfinished ...>
+[pid 19042] 17:59:15.687474 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:15.687508 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:15.687604 epoll_wait(421,  <unfinished ...>
+[pid 18963] 17:59:15.687646 epoll_wait(416,  <unfinished ...>
+[pid 18646] 17:59:16.504974 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:16.505115 read(1894, "cpu  131067448 55347 14300003 31"..., 8192) = 5170
+[pid 18646] 17:59:16.505922 close(1894) = 0
+[pid 18650] 17:59:16.565404 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:16.565554 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:16.565673 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:16.570781 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:16.570881 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 22209] 17:59:16.571286 read(987, "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 22209] 17:59:16.572396 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 18650] 17:59:16.574087 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17061136531088999387}}) = 0
+[pid 18650] 17:59:16.574208 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:16.574336 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:16.575383 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:16.575484 read(1894, "2.60 2.41 4.99 4/13978 19318\n", 64) = 29
+[pid 22209] 17:59:16.575558 close(1894) = 0
+[pid 22209] 17:59:16.576559 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:16.576681 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:16.576801 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:16.576937 close(1894) = 0
+[pid 22209] 17:59:16.577408 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:16.577512 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:16.581718 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:16.584175 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:16.584227 close(1894) = 0
+[pid 22209] 17:59:16.585202 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:16.585339 read(1894, "cpu  131067463 55347 14300008 31"..., 8192) = 5170
+[pid 22209] 17:59:16.586003 close(1894) = 0
+[pid 22209] 17:59:16.586361 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:16.586454 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:16.586558 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:16.586798 read(1894, "", 1024) = 0
+[pid 22209] 17:59:16.586865 close(1894) = 0
+[pid 22209] 17:59:16.587372 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:16.587459 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:16.587654 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:16.587823 read(1894, "", 1024) = 0
+[pid 22209] 17:59:16.587893 close(1894) = 0
+[pid 22209] 17:59:16.587995 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:16.588069 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:16.588175 read(1894, "cpu  131067464 55347 14300009 31"..., 1024) = 1024
+[pid 22209] 17:59:16.588789 close(1894) = 0
+[pid 22209] 17:59:16.589362 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:16.589487 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:16.589669 read(1894, "cpu  131067464 55347 14300009 31"..., 1024) = 1024
+[pid 22209] 17:59:16.590301 close(1894) = 0
+[pid 22209] 17:59:16.590892 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:16.590973 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:16.591195 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:16.591311 close(1894) = 0
+[pid 22209] 17:59:16.591722 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:16.591805 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:16.591981 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:16.592062 read(1894, "", 1024) = 0
+[pid 22209] 17:59:16.592109 close(1894) = 0
+[pid 22209] 17:59:16.594367 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:16.594903 write(987, "[{\"timestamp\":1439395156,\"status"..., 19657) = 19657
+[pid 22209] 17:59:16.597683 write(31, "\1", 1) = 1
+[pid 18650] 17:59:16.597859 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:16.597974 read(30, "\1", 128) = 1
+[pid 18650] 17:59:16.598153 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:16.598280 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:16.598386 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:16.598545 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:16.598614 epoll_wait(32,  <unfinished ...>
+[pid 19069] 17:59:16.687720 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:16.687877 epoll_wait(429,  <unfinished ...>
+[pid 19042] 17:59:16.687920 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:16.688013 epoll_wait(421,  <unfinished ...>
+[pid 19067] 17:59:16.688437 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:16.688535 epoll_wait(425,  <unfinished ...>
+[pid 18963] 17:59:16.688720 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:16.688815 epoll_wait(416,  <unfinished ...>
+[pid 18646] 17:59:17.506468 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:17.506603 read(1894, "cpu  131067604 55347 14300032 31"..., 8192) = 5170
+[pid 18646] 17:59:17.507334 close(1894) = 0
+[pid 18650] 17:59:17.599030 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:17.599173 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:17.599286 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:17.601311 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:17.601393 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:17.602049 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17100076044624331739}} <unfinished ...>
+[pid 22209] 17:59:17.602138 read(987,  <unfinished ...>
+[pid 18650] 17:59:17.602177 <... epoll_ctl resumed> ) = 0
+[pid 22209] 17:59:17.602204 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:17.602253 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:17.602353 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:17.603208 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:17.606104 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:17.606232 read(1894, "2.60 2.41 4.99 3/13979 19354\n", 64) = 29
+[pid 22209] 17:59:17.606322 close(1894) = 0
+[pid 22209] 17:59:17.607309 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:17.607409 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:17.607570 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:17.607726 close(1894) = 0
+[pid 22209] 17:59:17.608186 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:17.608306 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:17.612541 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:17.615014 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:17.615091 close(1894) = 0
+[pid 22209] 17:59:17.616055 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:17.616172 read(1894, "cpu  131067621 55347 14300038 31"..., 8192) = 5170
+[pid 22209] 17:59:17.616828 close(1894) = 0
+[pid 22209] 17:59:17.617168 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:17.617268 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:17.617411 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:17.617623 read(1894, "", 1024) = 0
+[pid 22209] 17:59:17.617700 close(1894) = 0
+[pid 22209] 17:59:17.618115 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:17.618214 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:17.618355 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:17.618517 read(1894, "", 1024) = 0
+[pid 22209] 17:59:17.618594 close(1894) = 0
+[pid 22209] 17:59:17.618731 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:17.618812 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:17.618950 read(1894, "cpu  131067622 55347 14300039 31"..., 1024) = 1024
+[pid 22209] 17:59:17.619541 close(1894) = 0
+[pid 22209] 17:59:17.620119 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:17.620216 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:17.620357 read(1894, "cpu  131067622 55347 14300039 31"..., 1024) = 1024
+[pid 22209] 17:59:17.620941 close(1894) = 0
+[pid 22209] 17:59:17.621551 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:17.621648 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:17.621783 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:17.621909 close(1894) = 0
+[pid 22209] 17:59:17.622307 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:17.622409 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:17.622548 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:17.622654 read(1894, "", 1024) = 0
+[pid 22209] 17:59:17.622739 close(1894) = 0
+[pid 22209] 17:59:17.625268 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:17.625447 write(987, "[{\"timestamp\":1439395157,\"status"..., 19658) = 19658
+[pid 22209] 17:59:17.625634 write(31, "\1", 1) = 1
+[pid 18650] 17:59:17.625715 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:17.625786 read(30, "\1", 128) = 1
+[pid 18650] 17:59:17.625906 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:17.625970 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:17.626030 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:17.626149 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:17.626215 epoll_wait(32,  <unfinished ...>
+[pid 19069] 17:59:17.688709 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:17.688770 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:17.688872 epoll_wait(429,  <unfinished ...>
+[pid 19042] 17:59:17.688916 epoll_wait(421,  <unfinished ...>
+[pid 19067] 17:59:17.689625 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:17.689850 epoll_wait(425,  <unfinished ...>
+[pid 18963] 17:59:17.689894 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:17.689974 epoll_wait(416,  <unfinished ...>
+[pid 18646] 17:59:18.508034 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:18.508187 read(1894, "cpu  131067847 55347 14300063 31"..., 8192) = 5170
+[pid 18646] 17:59:18.508847 close(1894) = 0
+[pid 18650] 17:59:18.627278 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:18.627413 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:18.627514 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:18.632045 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:18.632147 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:18.632536 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17100079549317645275}} <unfinished ...>
+[pid 22209] 17:59:18.632598 read(987,  <unfinished ...>
+[pid 18650] 17:59:18.632647 <... epoll_ctl resumed> ) = 0
+[pid 22209] 17:59:18.632675 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:18.632722 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:18.632827 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:18.633670 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:18.636759 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:18.637050 read(1894, "2.60 2.41 4.99 5/13978 19395\n", 64) = 29
+[pid 22209] 17:59:18.637176 close(1894) = 0
+[pid 22209] 17:59:18.638413 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:18.638546 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:18.638742 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:18.638920 close(1894) = 0
+[pid 22209] 17:59:18.639426 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:18.639567 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:18.644054 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:18.646589 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:18.646659 close(1894) = 0
+[pid 22209] 17:59:18.647648 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:18.647746 read(1894, "cpu  131067875 55347 14300066 31"..., 8192) = 5170
+[pid 22209] 17:59:18.648382 close(1894) = 0
+[pid 22209] 17:59:18.648738 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:18.648961 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:18.649239 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:18.649463 read(1894, "", 1024) = 0
+[pid 22209] 17:59:18.649563 close(1894) = 0
+[pid 22209] 17:59:18.650060 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:18.650186 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:18.650389 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:18.650566 read(1894, "", 1024) = 0
+[pid 22209] 17:59:18.650672 close(1894) = 0
+[pid 22209] 17:59:18.650858 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:18.650977 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:18.651164 read(1894, "cpu  131067877 55347 14300066 31"..., 1024) = 1024
+[pid 22209] 17:59:18.651815 close(1894) = 0
+[pid 22209] 17:59:18.652517 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:18.652644 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:18.652826 read(1894, "cpu  131067877 55347 14300066 31"..., 1024) = 1024
+[pid 22209] 17:59:18.653486 close(1894) = 0
+[pid 22209] 17:59:18.654198 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:18.654284 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:18.654390 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:18.654514 close(1894) = 0
+[pid 22209] 17:59:18.654892 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:18.654997 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:18.655099 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:18.655179 read(1894, "", 1024) = 0
+[pid 22209] 17:59:18.655224 close(1894) = 0
+[pid 22209] 17:59:18.657607 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:18.657847 write(987, "[{\"timestamp\":1439395158,\"status"..., 19631) = 19631
+[pid 22209] 17:59:18.658080 write(31, "\1", 1) = 1
+[pid 18650] 17:59:18.658187 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:18.658606 read(30, "\1", 128) = 1
+[pid 18650] 17:59:18.659500 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:18.659603 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:18.659685 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:18.659830 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:18.659957 epoll_wait(32,  <unfinished ...>
+[pid 19069] 17:59:18.689908 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:18.689968 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:18.690070 epoll_wait(429,  <unfinished ...>
+[pid 19042] 17:59:18.690112 epoll_wait(421,  <unfinished ...>
+[pid 19067] 17:59:18.690940 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:18.690980 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:18.691061 epoll_wait(416,  <unfinished ...>
+[pid 19067] 17:59:18.691102 epoll_wait(425,  <unfinished ...>
+[pid 18646] 17:59:19.509470 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 18646] 17:59:19.509578 read(1894, "cpu  131068060 55347 14300092 31"..., 8192) = 5170
+[pid 18646] 17:59:19.510209 close(1894) = 0
+[pid 18650] 17:59:19.661039 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18650] 17:59:19.661205 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:19.661320 epoll_wait(32, {{EPOLLIN, {u32=987, u64=7695303126265365467}}}, 4096, 1000) = 1
+[pid 18650] 17:59:19.664652 fcntl(987, F_GETFL) = 0x802 (flags O_RDWR|O_NONBLOCK)
+[pid 18650] 17:59:19.664786 fcntl(987, F_SETFL, O_RDWR) = 0
+[pid 18650] 17:59:19.665132 epoll_ctl(32, EPOLL_CTL_DEL, 987, {0, {u32=987, u64=17100083054010958811}}) = 0
+[pid 22209] 17:59:19.665229 read(987,  <unfinished ...>
+[pid 18650] 17:59:19.665271 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:19.665300 <... read resumed> "POST /jolokia/?ignoreErrors=true"..., 8192) = 8192
+[pid 18650] 17:59:19.665341 <... epoll_wait resumed> {}, 4096, 0) = 0
+[pid 18650] 17:59:19.665410 epoll_wait(32,  <unfinished ...>
+[pid 22209] 17:59:19.666348 read(987, "shold\",\"type\":\"READ\"},{\"mbean\":\""..., 8192) = 4650
+[pid 22209] 17:59:19.669242 open("/proc/loadavg", O_RDONLY) = 1894
+[pid 22209] 17:59:19.669431 read(1894, "2.47 2.38 4.97 6/13978 19431\n", 64) = 29
+[pid 22209] 17:59:19.669553 close(1894) = 0
+[pid 22209] 17:59:19.670650 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:19.670782 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:19.670981 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:19.671162 close(1894) = 0
+[pid 22209] 17:59:19.671676 open("/proc/self/fd", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:19.671814 getdents64(1894, /* 1365 entries */, 32768) = 32760
+[pid 22209] 17:59:19.676196 getdents64(1894, /* 750 entries */, 32768) = 18000
+[pid 22209] 17:59:19.678749 getdents64(1894, /* 0 entries */, 32768) = 0
+[pid 22209] 17:59:19.678837 close(1894) = 0
+[pid 22209] 17:59:19.679905 open("/proc/stat", O_RDONLY|O_CLOEXEC) = 1894
+[pid 22209] 17:59:19.680026 read(1894, "cpu  131068094 55347 14300097 31"..., 8192) = 5170
+[pid 22209] 17:59:19.680705 close(1894) = 0
+[pid 22209] 17:59:19.681079 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:19.681184 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:19.681353 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 1024) = 244
+[pid 22209] 17:59:19.681547 read(1894, "", 1024) = 0
+[pid 22209] 17:59:19.681613 close(1894) = 0
+[pid 22209] 17:59:19.682071 open("/proc/self/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:19.682171 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:19.682312 read(1894, "18616 (java) S 1 18534 33528 0 -"..., 2048) = 244
+[pid 22209] 17:59:19.682472 read(1894, "", 1024) = 0
+[pid 22209] 17:59:19.682548 close(1894) = 0
+[pid 22209] 17:59:19.682684 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:19.682777 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:19.682919 read(1894, "cpu  131068095 55347 14300097 31"..., 1024) = 1024
+[pid 22209] 17:59:19.683569 close(1894) = 0
+[pid 22209] 17:59:19.684188 open("/proc/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:19.684289 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:19.684436 read(1894, "cpu  131068095 55347 14300097 31"..., 1024) = 1024
+[pid 22209] 17:59:19.685034 close(1894) = 0
+[pid 22209] 17:59:19.685664 open("/proc/meminfo", O_RDONLY) = 1894
+[pid 22209] 17:59:19.685776 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:19.685930 read(1894, "MemTotal:       65749608 kB\nMemF"..., 1024) = 1024
+[pid 22209] 17:59:19.686080 close(1894) = 0
+[pid 22209] 17:59:19.686480 open("/proc/self/task/22209/stat", O_RDONLY) = 1894
+[pid 22209] 17:59:19.686583 fstat(1894, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+[pid 22209] 17:59:19.686737 read(1894, "22209 (java) R 1 18534 33528 0 -"..., 1024) = 221
+[pid 22209] 17:59:19.686838 read(1894, "", 1024) = 0
+[pid 22209] 17:59:19.686903 close(1894) = 0
+[pid 22209] 17:59:19.689275 write(987, "HTTP/1.1 200 OK\r\nCache-control: "..., 203) = 203
+[pid 22209] 17:59:19.689972 write(987, "[{\"timestamp\":1439395159,\"status"..., 19659 <unfinished ...>
+[pid 19067] 17:59:19.691221 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19069] 17:59:19.691383 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19067] 17:59:19.691425 epoll_wait(425,  <unfinished ...>
+[pid 19069] 17:59:19.691493 epoll_wait(429,  <unfinished ...>
+[pid 19042] 17:59:19.691541 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 19042] 17:59:19.691633 epoll_wait(421,  <unfinished ...>
+[pid 18963] 17:59:19.691811 <... epoll_wait resumed> {}, 4096, 1000) = 0
+[pid 18963] 17:59:19.691905 epoll_wait(416,  <unfinished ...>
+[pid 22209] 17:59:19.692934 <... write resumed> ) = 19659
+[pid 22209] 17:59:19.693037 write(31, "\1", 1) = 1
+[pid 18650] 17:59:19.693131 <... epoll_wait resumed> {{EPOLLIN, {u32=30, u64=8184420925421125662}}}, 4096, 1000) = 1
+[pid 18650] 17:59:19.693229 read(30, "\1", 128) = 1
+[pid 18650] 17:59:19.693367 epoll_wait(32, {}, 4096, 0) = 0
+[pid 18650] 17:59:19.693451 fcntl(987, F_GETFL) = 0x2 (flags O_RDWR)
+[pid 18650] 17:59:19.693513 fcntl(987, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+[pid 18650] 17:59:19.693708 epoll_ctl(32, EPOLL_CTL_ADD, 987, {EPOLLIN, {u32=987, u64=7695303126265365467}}) = 0
+[pid 18650] 17:59:19.693837 epoll_wait(32,  <unfinished ...>
+[pid 48160] 17:59:19.826413 open("/etc/hosts", O_RDONLY|O_CLOEXEC) = 1894
+[pid 48160] 17:59:19.826549 fstat(1894, {st_mode=S_IFREG|0644, st_size=702, ...}) = 0
+[pid 48160] 17:59:19.826733 read(1894, "#\n# hosts         This file desc"..., 4096) = 702
+[pid 48160] 17:59:19.826860 read(1894, "", 4096) = 0
+[pid 48160] 17:59:19.826951 close(1894) = 0
+[pid 48160] 17:59:19.827138 open("/etc/hosts", O_RDONLY|O_CLOEXEC) = 1894
+[pid 48160] 17:59:19.827240 fstat(1894, {st_mode=S_IFREG|0644, st_size=702, ...}) = 0
+[pid 48160] 17:59:19.827410 read(1894, "#\n# hosts         This file desc"..., 4096) = 702
+[pid 48160] 17:59:19.827522 close(1894) = 0
+[pid 48160] 17:59:19.827734 open("/etc/hosts", O_RDONLY|O_CLOEXEC) = 1894
+[pid 48160] 17:59:19.827839 fstat(1894, {st_mode=S_IFREG|0644, st_size=702, ...}) = 0

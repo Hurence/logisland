@@ -4,12 +4,12 @@ Releasing guide
 This guide will help you to perform the full release process for Logisland framework.
 
 
-    git hf release start v1.1.2
+    git hf release start v1.2.0
 
     # update the version (you should run a dry run first)
     # you should double escapte dots so it is correctly parsed, otherwise it will be considered as the any character
-    ./update-version.sh -o 0\\.14\\.0 -n 1.1.2 -d
-    ./update-version.sh -o 0\\.14\\.0 -n 1.1.2
+    ./update-version.sh -o 0\\.14\\.0 -n 1.2.0 -d
+    ./update-version.sh -o 0\\.14\\.0 -n 1.2.0
 
 Build the code and run the tests
 --------------------------------
@@ -19,7 +19,7 @@ The following commands must be run from the top-level directory.
 
 .. code-block:: sh
 
-    mvn clean install -pFull
+    mvn clean package
 
 If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line.
 
@@ -31,7 +31,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 .. code-block:: sh
 
     mvn license:format
-    mvn -DperformRelease=true clean deploy -Pfull
+    mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
 
@@ -46,7 +46,7 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.2/assets?name=logisland-1.1.2-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.2.0/assets?name=logisland-1.1.2-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
 
 
 

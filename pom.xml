@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -78,17 +78,21 @@
         <module>logisland-components</module>
         <module>logisland-core</module>
         <module>logisland-documentation</module>
+        <module>logisland-resources</module>
         <module>logisland-assembly</module>
     </modules>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.min-version>3.1.0</maven.min-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2014</inceptionYear>
         <org.slf4j.version>1.7.16</org.slf4j.version>
+        <org.log4j.version>1.2.16</org.log4j.version>
+
         <logisland.version>${project.version}</logisland.version>
 
         <hadoop.version>2.7.1</hadoop.version>
@@ -102,8 +106,8 @@
         <swagger-core-version>1.5.9</swagger-core-version>
         <jackson.version>2.4.4</jackson.version>
 
-        <scala.version>2.10.6</scala.version>
-        <scala.binary.version>2.10</scala.binary.version>
+        <scala.version>2.12.9</scala.version>
+        <scala.binary.version>2.12</scala.binary.version>
 
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
@@ -113,7 +117,13 @@
         <shade-plugin.version>2.4.3</shade-plugin.version>
     </properties>
 
-
+    <pluginRepositories>
+        <pluginRepository>
+            <id>scala-tools.org</id>
+            <name>Scala-tools Maven2 Repository</name>
+            <url>http://scala-tools.org/repo-releases</url>
+        </pluginRepository>
+    </pluginRepositories>
     <repositories>
 
         <repository>
@@ -183,34 +193,69 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
+
+            <repository>
+                <id>scala-tools.org</id>
+                <name>Scala-tools Maven2 Repository</name>
+                <url>http://scala-tools.org/repo-releases</url>
+            </repository>
+
+
     </repositories>
 
 
     <dependencyManagement>
         <dependencies>
+            <!--log dependencies-->
             <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>1.1.3</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${org.slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${org.log4j.version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-to-slf4j</artifactId>
+                <version>2.10.0</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${org.slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- Test libraries -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>5.5.0-M1</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.12</version>
+                <scope>test</scope>
             </dependency>
-            <!-- Provides data-provider for junit 4 -->
             <dependency>
                 <groupId>com.tngtech.java</groupId>
                 <artifactId>junit-dataprovider</artifactId>
                 <version>1.12.0</version>
+                <scope>test</scope>
             </dependency>
-
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>1.10.19</version>
+                <version>2.15.0</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -218,51 +263,29 @@
                 <version>1.10.19</version>
                 <scope>test</scope>
             </dependency>
-
-            <!--log dependencies-->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${org.slf4j.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>${org.slf4j.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.16</version>
-                <scope>provided</scope>
-            </dependency>
-
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
                 <version>6.8.8</version>
                 <scope>test</scope>
             </dependency>
-
-
         </dependencies>
     </dependencyManagement>
 
 
     <dependencies>
+        <!-- test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>2.15.0</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.5.0-M1</version>
             <scope>test</scope>
         </dependency>
 
@@ -270,14 +293,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${org.slf4j.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -347,10 +367,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.5.5</version>
-                    <configuration>
-                        <tarLongFileMode>gnu</tarLongFileMode>
-                    </configuration>
+                    <version>3.1.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -499,14 +516,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.18.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.5.5</version>
-                <configuration>
-                    <tarLongFileMode>gnu</tarLongFileMode>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -691,8 +700,6 @@
 
 
     <profiles>
-
-
         <!--    mvn -DperformRelease=true  clean deploy           -->
         <profile>
 
@@ -768,29 +775,6 @@
                 </plugins>
             </build>
         </profile>
-
-        <profile>
-            <!-- Performs execution of Integration Tests using the Maven FailSafe Plugin. The view of integration tests in this context
-            are those tests interfacing with external sources and services requiring additional resources or credentials that cannot
-            be explicitly provided. -->
-            <id>integration-tests</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <!-- Checks style and licensing requirements. This is a good idea to run
             for contributions and for the release process. While it would be nice to
@@ -828,6 +812,58 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <!-- Profile for Integration tests run mechanism and separation from unit tests. Inspired from this page:
+            https://www.baeldung.com/maven-integration-test
+            If you need additional stuff like resources for the integration tests, please this page to know how to do it.
+            To run integration tests, run: mvn -Pintegration-tests clean verify -->
+            <id>integration-tests</id>
+            <build>
+                <plugins>
+                    <plugin> <!-- Failsafe plugin is maven plugin for integration tests -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <!-- Force *IT.java naming pattern. Otherwise it would allow to have someone create a
+                            *Test.java test in the integration tests and it would also be executed by the surefire plugin
+                            in unit tests phase (test phase) and this would fail as by definition integration tests
+                            require additional resources (for instance docker container) that would not be launched.
+                             The surefire plugin de facto ignores *IT.java files as they are integration tests. We just
+                             want here to also use a separate folder from unit tests for integration tests using the
+                             build-helper-maven-plugin plugin -->
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin> <!-- Declare a separate source directory from unit tests one for integration tests -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-integration-test-source</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/integration-test/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
-
 </project>

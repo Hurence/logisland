@@ -16,7 +16,9 @@
 package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.*;
@@ -86,6 +88,7 @@ import java.util.stream.Collectors;
                 + " - visitedpage.field:        Property name containing the page visited by the customer (default: location)."
                 + " - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)"
 )
+@ExtraDetailFile("./details/ConsolidateSession-Detail.rst")
 public class ConsolidateSession extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(ConsolidateSession.class);
@@ -215,7 +218,7 @@ public class ConsolidateSession extends AbstractProcessor {
             .build();
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         logger.debug("Initializing Consolidate Session Processor");

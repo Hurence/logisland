@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -34,11 +35,12 @@ import java.util.List;
 import java.util.Map;
 
 @Tags({"record", "fields", "Add"})
-@CapabilityDescription("Compute tag cross from given formulas.\n" +
+@CapabilityDescription("Compute tag cross from given formulas.\n\n" +
         "- each dynamic property will return a new record according to the formula definition\n" +
         "- the record name will be set to the property name\n" +
         "- the record time will be set to the current timestamp\n\n" +
         "a threshold_cross has the following properties : count, sum, avg, time, duration, value")
+@ExtraDetailFile("./details/common-processors/ComputeTags-Detail.rst")
 @DynamicProperty(name = "field to add",
         supportsExpressionLanguage = false,
         value = "a default value",
@@ -101,10 +103,6 @@ public class ComputeTags extends AbstractNashornSandboxProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        // check if we need initialization
-        if (datastoreClientService == null) {
-            init(context);
-        }
 
         List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {

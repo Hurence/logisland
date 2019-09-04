@@ -50,6 +50,8 @@
     <logger name="org.apache.spark.repl.SparkILoop$SparkILoopInterpreter" level="INFO"/>
     <logger name="org.apache.spark.repl.Main" level="WARN"/>
     <logger name="org.apache.hadoop.hive.ql.exec.FunctionRegistry" level="ERROR"/>
+    <logger name="org.apache.spark.sql.execution.streaming.state.StateStore" level="WARN"/>
+    <logger name="org.apache.spark.ContextCleaner" level="WARN"/>
     <root level="INFO">
         <appender-ref ref="console"/>
     </root>

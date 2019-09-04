@@ -17,6 +17,7 @@ package com.hurence.logisland.util.runner;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.hurence.logisland.record.FieldType;
@@ -28,6 +29,9 @@ import com.hurence.logisland.record.StandardRecord;
 public class MockRecord extends StandardRecord {
 
 	private static final long serialVersionUID = 7750544989597574120L;
+    private static final float floatDelta = 0.000001f;
+    private static final double doubleDelta = 0.000001d;
+
 
 	//private final Set<String> assertedFields;
 	
@@ -75,18 +79,26 @@ public class MockRecord extends StandardRecord {
     }
 
     public void assertFieldEquals(final String fieldName, final float expectedValue) {
-        Assert.assertEquals(expectedValue, getField(fieldName).asFloat(), 0.000001);
+        Assert.assertEquals(expectedValue, getField(fieldName).asFloat(), floatDelta);
 		//assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final double expectedValue) {
-        Assert.assertEquals(expectedValue, getField(fieldName).asDouble(), 0.000001);
+        Assert.assertEquals(expectedValue, getField(fieldName).asDouble(), doubleDelta);
 		//assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final byte[] expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
        // assertedFields.add(fieldName);
+    }
+
+    public <K,V> void assertFieldEquals(final String fieldName, final Map<K, V> expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
+    }
+
+    public <E> void assertFieldEquals(final String fieldName, final List<E> expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
     }
 
     public void assertNullField(final String fieldName) {

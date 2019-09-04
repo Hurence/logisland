@@ -46,7 +46,8 @@ run_test() {
 
 main() {
     my_dir="$(dirname "$0")"
-    cp ${my_dir}/../../../logisland-assembly/target/logisland-*.tar.gz ${my_dir}/../../full-container/
+    rm ${my_dir}/../../full-container/logisland-*bin.tar.gz
+    cp ${my_dir}/../../../logisland-assembly/target/logisland-*-full-bin.tar.gz ${my_dir}/../../full-container/
     declare -i FINAL_EXIT_CODE=0
     # catch unexpected failures, do cleanup and output an error message
     trap 'cleanup ; printf "${RED}Tests Failed For Unexpected Reasons${NC}\n"'\
@@ -54,7 +55,7 @@ main() {
 
 #    declare -a -r test_to_run_paths=(\
 #    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamParallelProcessing" \
-#    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamSQLAggregator" \
+#    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamSQLAggregator" \ -> this one randomly fails -> to be fixed
 #    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamHDFSBurner" \
 #    "engine-spark_2_X/KafkaStreamProcessingEngine/StructuredStream" \
 #    "engine-spark_1_6/KafkaStreamProcessingEngine/KafkaRecordStreamParallelProcessing" \
@@ -62,9 +63,9 @@ main() {
 #    "engine-spark_1_6/KafkaStreamProcessingEngine/KafkaRecordStreamHDFSBurner" \
 #    )
     declare -a -r test_to_run_paths=(\
+    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamHDFSBurner" \
     "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamParallelProcessing" \
     "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamSQLAggregator" \
-    "engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamHDFSBurner" \
     "engine-spark_2_X/KafkaStreamProcessingEngine/StructuredStream" \
     )
 #    Uncomment beneath line to test a unique test

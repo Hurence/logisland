@@ -18,11 +18,10 @@ package com.hurence.logisland.processor.hbase;
 
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.service.hbase.HBaseClientService;
 import com.hurence.logisland.service.hbase.put.PutRecord;
-import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
@@ -191,7 +190,7 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         clientService = PluginProxy.rewrap(context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService());
         if(clientService == null)

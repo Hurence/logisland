@@ -23,10 +23,10 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-processors</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
 
-    <artifactId>logisland-botsearch-plugin</artifactId>
+    <artifactId>logisland-processor-botsearch</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>

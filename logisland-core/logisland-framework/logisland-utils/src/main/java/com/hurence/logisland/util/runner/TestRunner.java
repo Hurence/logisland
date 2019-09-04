@@ -102,6 +102,11 @@ public interface TestRunner {
      */
     void assertOutputRecordsCount(int count);
 
+    /**
+     * Asserts that output Records size is equal
+     * to <code>count</code>
+     */
+    void assertOutputRecordsIncludingErrorsCount(int count);
 
     /**
      * Asserts that the size of output Records in error is equal
@@ -229,6 +234,15 @@ public interface TestRunner {
      * @return <code>true</code> if removed, <code>false</code> if the property was not set
      */
     boolean removeProperty(PropertyDescriptor descriptor);
+
+    /**
+     * Removes the {@link PropertyDescriptor} from the {@link ProcessContext},
+     * effectively setting its value to null, or the property's default value, if it has one.
+     *
+     * @param propertyName of property to remove
+     * @return <code>true</code> if removed, <code>false</code> if the property was not set
+     */
+    boolean removeProperty(String propertyName);
 
     /**
      * @param identifier of controller service

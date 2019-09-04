@@ -34,7 +34,7 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
     private CompiledScript compiledScript;
 
 
-    public InterpretedPropertyValue(final PropertyDescriptor descriptor, final String rawValue, final ControllerServiceLookup serviceLookup,
+    public InterpretedPropertyValue(final String rawValue, final ControllerServiceLookup serviceLookup,
                                     final VariableRegistry variableRegistry) {
 
         this.rawValue = rawValue;
@@ -46,7 +46,6 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
             try {
                 this.compiledScript = ie.compile(InterpreterEngine.extractExpressionLanguage(rawValue));
                 this.script = null;
-
             } catch (InterpreterEngineException e) {
                 throw new RuntimeException(e);
             }
@@ -63,7 +62,7 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
 
     @Override
     public String getRawValue() {
-        throw new RuntimeException("When reading a property with expression language enabled, you must call the evaluate(record) method first");
+        throw new RuntimeException("When reading a property with expression language enabled, you must call the evaluate(record) method");
     }
 
     /**
@@ -74,7 +73,9 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
      */
     protected Object getRawValue(Record record) throws InterpreterEngineException {
         ScriptContext context = new SimpleScriptContext();
-        record.getFieldsEntrySet().forEach(entry -> context.setAttribute(entry.getKey(), entry.getValue().getRawValue(), ScriptContext.ENGINE_SCOPE));
+        if (record != null) {
+            record.getFieldsEntrySet().forEach(entry -> context.setAttribute(entry.getKey(), entry.getValue().getRawValue(), ScriptContext.ENGINE_SCOPE));
+        }
         return getRawValue(context);
     }
 

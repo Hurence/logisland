@@ -16,8 +16,10 @@
 package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -26,10 +28,10 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.collections.map.HashedMap;
 
@@ -49,11 +51,12 @@ import static com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic.*;
         "i-e: **" + PROP_UTM_SOURCE + "**, **" + PROP_UTM_MEDIUM + "**, **" + PROP_UTM_CAMPAIGN + "**, **" + PROP_UTM_CONTENT + "**, **" + PROP_UTM_TERM + "**)\n" +
         ", the referer (**" + PROP_REFERER + "** property) and the first visited page of the session (**" + PROP_FIRST_VISITED_PAGE + "** property).\n" +
         "By default the source of traffic information are placed in a flat structure (specified by the **" + PROP_SOURCE_OF_TRAFFIC_SUFFIX + "** property\n" +
-        " with a default value of " + SOURCE_OF_TRAFFIC_SUFFIX_NAME + "_). To work properly the setSourceOfTraffic processor needs to have access to an \n" +
+        "with a default value of " + SOURCE_OF_TRAFFIC_SUFFIX_NAME + "). To work properly the setSourceOfTraffic processor needs to have access to an \n" +
         "Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **" + PROP_ES_INDEX + "** property) " +
         "should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field " +
         "(default being " + SEARCH_ENGINE_SITE + ") specified by the property **" + PROP_ES_SEARCH_ENGINE + "** with a value set to true. If the domain is a social network " +
         ", the related ES doc MUST have a boolean field (default being " + SOCIAL_NETWORK_SITE + ") specified by the property **" + PROP_ES_SOCIAL_NETWORK + "** with a value set to true. ")
+@ExtraDetailFile("./details/setSourceOfTraffic-Detail.rst")
 public class setSourceOfTraffic extends AbstractProcessor {
 
     protected static final String PROP_ES_INDEX = "es.index";
@@ -298,7 +301,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
 
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
         elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE).asControllerService());

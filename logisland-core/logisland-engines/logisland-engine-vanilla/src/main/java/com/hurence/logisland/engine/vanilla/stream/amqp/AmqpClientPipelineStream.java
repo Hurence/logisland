@@ -56,7 +56,7 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
     private StreamContext streamContext;
     private String contentType;
     private ConnectionControl connectionControl;
-    private final Vertx vertx = Vertx.vertx();
+    private Vertx vertx;
     private ProtonClient protonClient;
 
     private byte[] extractBodyContent(Section body) {
@@ -241,6 +241,9 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
                 protonConnection = null;
             }
         }
+        if (vertx != null) {
+            vertx.close();
+        }
         super.stop();
     }
 
@@ -248,6 +251,7 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
     public void init(ComponentContext context) {
         try {
             super.init(context);
+            vertx = Vertx.vertx();
             options = new ProtonClientOptions();
             protonClient = ProtonClient.create(vertx);
 

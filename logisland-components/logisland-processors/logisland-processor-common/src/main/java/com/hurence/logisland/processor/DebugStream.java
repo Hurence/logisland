@@ -16,16 +16,16 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.JsonSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.serializer.StringSerializer;
 import com.hurence.logisland.validator.StandardValidators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,6 +38,7 @@ import java.util.List;
 
 @Tags({"record", "debug"})
 @CapabilityDescription("This is a processor that logs incoming records")
+@ExtraDetailFile("./details/common-processors/DebugStream-Detail.rst")
 public class DebugStream extends AbstractProcessor {
 
 
@@ -68,7 +69,7 @@ public class DebugStream extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         if (memBean == null) {
             memBean = ManagementFactory.getMemoryMXBean();

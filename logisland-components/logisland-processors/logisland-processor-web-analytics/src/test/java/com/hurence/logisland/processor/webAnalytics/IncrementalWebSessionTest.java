@@ -23,9 +23,10 @@ import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -1262,6 +1263,21 @@ public class IncrementalWebSessionTest
         }
 
         @Override
+        public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
+            return null;
+        }
+
+        @Override
+        public Collection<Record> query(String query) {
+            return null;
+        }
+
+        @Override
+        public long queryCount(String query) {
+            return 0;
+        }
+
+        @Override
         public void bulkPut(String docIndex, String docType, String document, Optional<String> OptionalId)
         {
             throw new UnsupportedOperationException();
@@ -1284,37 +1300,50 @@ public class IncrementalWebSessionTest
         }
 
         @Override
-        public void flushBulkProcessor() {}
+        public void bulkFlush() {}
 
         @Override
-        public boolean existsIndex(String indexName) throws IOException { return false; }
+        public boolean existsCollection(String indexName) throws DatastoreClientServiceException { return false; }
 
         @Override
-        public void refreshIndex(String indexName) throws Exception {}
-
-        @Override
-        public void saveAsync(String indexName, String doctype, Map<String, Object> doc) throws Exception {}
+        public void refreshCollection(String indexName) throws DatastoreClientServiceException {}
 
         @Override
         public void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception {}
 
         @Override
-        public long countIndex(String indexName) throws Exception { return 0; }
+        public long countCollection(String indexName) throws DatastoreClientServiceException { return 0; }
 
         @Override
-        public void createIndex(int numShards, int numReplicas, String indexName) throws IOException {}
+        public void createCollection(String indexName, int numShards, int numReplicas) throws DatastoreClientServiceException {}
 
         @Override
-        public void dropIndex(String indexName) throws IOException {}
+        public void dropCollection(String indexName) throws DatastoreClientServiceException {}
 
         @Override
-        public void copyIndex(String reindexScrollTimeout, String srcIndex, String dstIndex) throws IOException {}
+        public void copyCollection(String reindexScrollTimeout, String srcIndex, String dstIndex) throws DatastoreClientServiceException {}
 
         @Override
-        public void createAlias(String indexName, String aliasName) throws IOException {}
+        public void createAlias(String indexName, String aliasName) throws DatastoreClientServiceException {}
 
         @Override
-        public boolean putMapping(String indexName, String doctype, String mappingAsJsonString) throws IOException { return false; }
+        public boolean putMapping(String indexName, String doctype, String mappingAsJsonString) throws DatastoreClientServiceException { return false; }
+
+
+        @Override
+        public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
+
+        }
+
+        @Override
+        public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+
+        }
+
+        @Override
+        public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+
+        }
 
         @Override
         public long searchNumberOfHits(String docIndex, String docType, String docName, String docValue) { return 0; }

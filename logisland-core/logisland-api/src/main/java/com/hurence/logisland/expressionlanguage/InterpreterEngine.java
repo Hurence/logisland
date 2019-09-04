@@ -30,13 +30,10 @@ public interface InterpreterEngine {
     public boolean isCompilable();
     public CompiledScript compile(String script);
 
-    // Handling of : ${...}
     static boolean isExpressionLanguage(String content) {
         if (content != null) {
             String trim = content.trim();
-            if (trim.startsWith("${") && trim.endsWith("}")) {
-                return true;
-            }
+            return trim.startsWith("${") && trim.endsWith("}");
         }
         return false;
     }

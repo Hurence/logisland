@@ -16,8 +16,10 @@
 package com.hurence.logisland.processor.enrichment;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.processor.ProcessContext;
@@ -47,6 +49,7 @@ import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
         " one must define a comma separated list of fields as a value for the **" + IpToGeo.PROP_GEO_FIELDS + "** property. The list of the available geo fields" +
         " is in the description of the **" + IpToGeo.PROP_GEO_FIELDS + "** property."
 )
+@ExtraDetailFile("./details/IpToGeo-Detail.rst")
 public class IpToGeo extends IpAbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(IpToGeo.class);
@@ -213,7 +216,7 @@ public class IpToGeo extends IpAbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
 
         /**

@@ -17,9 +17,11 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -38,6 +40,7 @@ import java.util.regex.Pattern;
         supportsExpressionLanguage = true,
         value = "another split that could match",
         description = "This processor is used to create a new set of fields from one field (using split).")
+@ExtraDetailFile("./details/common-processors/SplitField-Detail.rst")
 public class SplitField extends AbstractProcessor {
 
     private Map<String, regexRule> fieldsNameMapping;
@@ -109,7 +112,7 @@ public class SplitField extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         this.fieldsNameMapping = getFieldsNameMapping(context);
         this.nbSplitLimit = context.getPropertyValue(NB_SPLIT_LIMIT).asInteger();

@@ -27,7 +27,9 @@ import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.outlier.streaming.mad.SketchyMovingMAD;
 import com.hurence.logisland.annotation.behavior.Stateful;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
@@ -60,6 +62,7 @@ import java.util.*;
         "- Expensive computationally, but run infrequently\n" +
         "\n" +
         "This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.")
+@ExtraDetailFile("./details/DetectOutliers-Detail.rst")
 public class DetectOutliers extends AbstractProcessor {
 
     static final long serialVersionUID = -1L;
@@ -349,7 +352,7 @@ public class DetectOutliers extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         logger.info("init");
 
@@ -579,9 +582,6 @@ public class DetectOutliers extends AbstractProcessor {
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
-        // context may not have been initialized
-        if(outlierConfig == null)
-            init(context);
 
         Collection<Record> list = new ArrayList<>();
 

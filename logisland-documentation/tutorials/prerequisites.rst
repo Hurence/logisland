@@ -6,14 +6,16 @@ There are two main ways to launch a logisland job :
 - within Docker containers
 - within an Hadoop distribution (Cloudera, Hortonworks, ...)
 
-
 1. Trough a Docker container (testing way)
 ------------------------------------------
 Logisland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
 
-To facilitate integration testing and to easily run tutorials, you can use `docker-compose` with the following `docker-compose.yml <https://raw.githubusercontent.com/Hurence/logisland/master/logisland-core/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml>`_.
+To facilitate integration testing and to easily run tutorials, you can use `docker-compose` with the followings :
 
-Once you have this file you can run a `docker-compose` command to launch all the needed services (zookeeper, kafka, es, kibana and logisland)
+* `docker-compose.yml <https://raw.githubusercontent.com/Hurence/logisland/master/logisland-core/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml>`_.
+
+Once you have these file you can run a `docker-compose` command to launch all the needed services (zookeeper, kafka, es, kibana, redis and logisland).
+(You can remove the services that you do not need depending on tutorial).
 
 Elasticsearch on docker needs a special tweak as described `here <https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode>`_
 

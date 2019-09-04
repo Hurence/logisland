@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
@@ -43,6 +44,7 @@ import java.util.regex.Pattern;
         supportsExpressionLanguage = true,
         value = "another regex that could match",
         description = "This processor is used to create a new set of fields from one field (using regexp).")
+@ExtraDetailFile("./details/common-processors/ApplyRegexp-Detail.rst")
 public class ApplyRegexp extends AbstractProcessor {
 
     static final long serialVersionUID = 1413578915552852739L;

@@ -21,7 +21,7 @@ import com.hurence.logisland.record.Record;
 /**
  * That class encapsulates an InterpretedPropertyValue instance with an associated Record instance.
  */
-class DecoratedInterpretedPropertyValue extends AbstractPropertyValue{
+class DecoratedInterpretedPropertyValue extends AbstractPropertyValue {
 
     public DecoratedInterpretedPropertyValue(InterpretedPropertyValue interpretedPropertyValue, Record record) {
         try {

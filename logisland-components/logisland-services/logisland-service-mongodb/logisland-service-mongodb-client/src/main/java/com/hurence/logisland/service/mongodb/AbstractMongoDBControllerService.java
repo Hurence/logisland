@@ -22,6 +22,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -33,6 +34,7 @@ import org.bson.Document;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.util.Collections;
 
 public abstract class AbstractMongoDBControllerService extends AbstractControllerService {
 
@@ -204,7 +206,7 @@ public abstract class AbstractMongoDBControllerService extends AbstractControlle
     }
 
     protected String getURI(final ControllerServiceInitializationContext context) {
-        return context.getPropertyValue(URI).evaluate(null).asString();
+        return context.getPropertyValue(URI).evaluate(Collections.emptyMap()).asString();
     }
 
 }

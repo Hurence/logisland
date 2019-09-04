@@ -2,7 +2,7 @@
 # Logisland configuration script template
 #########################################################################################################
 
-version: 1.1.2
+version: 1.2.0
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -27,7 +27,7 @@ engine:
     spark.yarn.executor.failuresValidityInterval: 1h
     spark.task.maxFailures: 2
     spark.serializer: org.apache.spark.serializer.KryoSerializer
-    spark.streaming.batchDuration: 2000
+    spark.streaming.batchDuration: 10000
     spark.streaming.backpressure.enabled: false
     spark.streaming.unpersist: false
     spark.streaming.blockInterval: 500
@@ -178,15 +178,15 @@ engine:
 #        kafka.topic.default.replicationFactor: 1
 #      processorConfigurations:
 #        - processor: es_publisher
-#          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+#          component: com.hurence.logisland.processor.datastore.BulkPut
 #          type: processor
 #          documentation: a processor that indexes processed events in elasticsearch
 #          configuration:
-#            elasticsearch.client.service: elasticsearch_service
-#            default.index: logisland
+#            datastore.client.service: datastore_service
+#            default.collection: logisland
 #            default.type: event
-#            timebased.index: yesterday
-#            es.index.field: search_index
-#            es.type.field: record_type
+#            timebased.collection: yesterday
+#            collection.field: search_index
+#            type.field: record_type
 
 

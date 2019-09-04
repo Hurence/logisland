@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.record;
 
+import com.hurence.logisland.component.AbstractPropertyValue;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.util.FormatUtils;
@@ -23,7 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -40,15 +43,15 @@ import java.util.concurrent.TimeUnit;
  * bytes: sequence of 8-bit unsigned bytes
  * string: unicode character sequence
  */
-public class Field implements PropertyValue, Serializable {
+public class Field extends AbstractPropertyValue implements PropertyValue, Serializable, Comparable<Field> {
 
 
     private static final Logger logger = LoggerFactory.getLogger(Field.class);
 
-    private final String name;
-    private final FieldType type;
-    private final Object rawValue;
+    protected final String name;
+    protected final FieldType type;
 
+    //TODO can we get rid of that ? May be needed for serialization ?
     public Field() {
         this("", FieldType.STRING, null);
     }
@@ -57,6 +60,62 @@ public class Field implements PropertyValue, Serializable {
         this.name = name;
         this.type = type;
         this.rawValue = rawValue;
+    }
+
+    public Field(String name, String value) {
+        this(name, FieldType.STRING, value);
+    }
+
+    public Field(String name, long value) {
+        this(name, FieldType.LONG, value);
+    }
+
+    public Field(String name, int value) {
+        this(name, FieldType.INT, value);
+    }
+
+    public Field(String name, float value) {
+        this(name, FieldType.FLOAT, value);
+    }
+
+    public Field(String name, double value) {
+        this(name, FieldType.DOUBLE, value);
+    }
+
+    public Field(String name, byte[] value) {
+        this(name, FieldType.BYTES, value);
+    }
+
+    public <T>Field(String name, T[] value) {
+        this(name, FieldType.ARRAY, value);
+    }
+
+    public Field(String name, Collection value) {
+        this(name, FieldType.ARRAY, value);
+    }
+
+    public Field(String name, Map value) {
+        this(name, FieldType.MAP, value);
+    }
+
+    public Field(String name, boolean value) {
+        this(name, FieldType.BOOLEAN, value);
+    }
+
+    public Field(String name, Date value) {
+        this(name, FieldType.DATETIME, value);
+    }
+
+    public Field(String name, Record value) {
+        this(name, FieldType.RECORD, value);
+    }
+
+    public Field(String name, Enum value) {
+        this(name, FieldType.ENUM, value);
+    }
+
+    public Field(String name) {
+        this(name, FieldType.NULL, null);
     }
 
     public Boolean isReserved() {
@@ -80,7 +139,6 @@ public class Field implements PropertyValue, Serializable {
                     '}';
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -98,137 +156,18 @@ public class Field implements PropertyValue, Serializable {
     public int hashCode() {
         int result = type.hashCode();
         result = 31 * result + name.hashCode();
-        if ( rawValue != null ) {
+        if (rawValue != null) {
             result = 31 * result + rawValue.hashCode();
         }
         return result;
     }
 
-
     public FieldType getType() {
         return type;
     }
 
-
     public String getName() {
         return name;
-    }
-
-
-    @Override
-    public Object getRawValue() {
-        return rawValue;
-    }
-
-    @Override
-    public String asString() {
-        return (rawValue == null) ? null : rawValue.toString();
-    }
-
-    @Override
-    public Integer asInteger() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof Number) {
-            return ((Number) rawValue).intValue();
-        } else {
-            try {
-                return Integer.parseInt(rawValue.toString());
-            } catch (Exception ex) {
-                logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a int, returning 0");
-                return 0;
-            }
-        }
-    }
-
-    @Override
-    public Record asRecord() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof Record) {
-            return ((Record) rawValue);
-        } else return null;
-    }
-
-    @Override
-    public Long asLong() {
-        if (rawValue == null) {
-            return null;
-        } else {
-            if (rawValue instanceof Number) {
-                return ((Number) rawValue).longValue();
-            } else if (rawValue instanceof Date) {
-              return ((Date) rawValue).getTime();
-            } else {
-                try {
-                    return Long.parseLong(rawValue.toString());
-                } catch (Exception ex) {
-                    logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a long, returning 0");
-                    return 0L;
-                }
-            }
-        }
-
-    }
-
-    @Override
-    public Boolean asBoolean() {
-        if(rawValue == null)
-            return null;
-
-        return BooleanUtils.toBoolean(rawValue.toString());
-
-    }
-
-    @Override
-    public Float asFloat() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof Number) {
-            return ((Number) rawValue).floatValue();
-        } else {
-            try {
-                return Float.parseFloat(rawValue.toString());
-            } catch (Exception ex) {
-                try {
-                    return Float.parseFloat(rawValue.toString().replaceAll(",", "."));
-                } catch (Exception ex2) {
-                    logger.error(ex2.toString() + " : unable to convert " + rawValue.toString() + " as a float, returning 0");
-                    return 0.0f;
-                }
-            }
-        }
-    }
-
-    @Override
-    public Double asDouble() {
-        if (rawValue == null) {
-            return null;
-        } else if (rawValue instanceof Number) {
-            return ((Number) rawValue).doubleValue();
-        } else {
-            try {
-                return Double.parseDouble(rawValue.toString());
-            } catch (Exception ex) {
-
-                try{
-                    return Double.parseDouble(rawValue.toString().replaceAll(",", "."));
-                }catch (Exception ex2) {
-                    logger.error(ex2.toString() + " : unable to convert " + rawValue.toString() + " as a double, returning 0");
-                    return 0.0;
-                }
-            }
-        }
-    }
-
-    @Override
-    public Long asTimePeriod(final TimeUnit timeUnit) {
-        return (rawValue == null) ? null : FormatUtils.getTimeDuration(rawValue.toString().trim(), timeUnit);
-    }
-
-    @Override
-    public boolean isSet() {
-        return rawValue != null;
     }
 
     @Override
@@ -244,5 +183,39 @@ public class Field implements PropertyValue, Serializable {
     @Override
     public PropertyValue evaluate(Record record) {
         throw new UnsupportedOperationException("The evaluate(record) method is not available for this type of PropertyValue");
+    }
+
+    @Override
+    public int compareTo(Field o) {
+        if (this == o) return 0;
+        if (o == null) return 1;
+        switch (getType()) {
+            case STRING:
+                return asString().compareTo(o.asString());
+            case INT:
+                return asInteger().compareTo(o.asInteger());
+            case LONG:
+                return asLong().compareTo(o.asLong());
+            case FLOAT:
+                return asFloat().compareTo(o.asFloat());
+            case DOUBLE:
+                return asDouble().compareTo(o.asDouble());
+            case BOOLEAN:
+                return asBoolean().compareTo(o.asBoolean());
+            case DATETIME:
+                logger.warn("date not yet handled ! Ignored");
+                return 0;
+            case NULL:
+            case ARRAY:
+            case BYTES:
+            case RECORD:
+            case MAP:
+            case ENUM:
+            case UNION:
+                return 0;
+            default:
+                logger.warn("unknown field type ! '{}'", getType());
+                return 0;
+        }
     }
 }

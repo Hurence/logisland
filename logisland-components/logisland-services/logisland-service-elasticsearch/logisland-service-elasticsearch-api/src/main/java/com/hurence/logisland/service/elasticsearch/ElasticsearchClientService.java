@@ -20,15 +20,12 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.controller.ControllerService;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +34,7 @@ import java.util.Optional;
 
 @Tags({"elasticsearch", "client"})
 @CapabilityDescription("A controller service for accessing an elasticsearch client.")
-public interface ElasticsearchClientService extends ControllerService {
+public interface ElasticsearchClientService extends DatastoreClientService {
 
     //////////////////////////////////////
     // Properties of the backoff policy //
@@ -82,22 +79,6 @@ public interface ElasticsearchClientService extends ControllerService {
     ////////////////////////////////////////////////
     // Properties of elasticsearch bulk processor //
     ////////////////////////////////////////////////
-
-    PropertyDescriptor BATCH_SIZE = new PropertyDescriptor.Builder()
-            .name("batch.size")
-            .description("The preferred number of Records to setField to the database in a single transaction")
-            .required(false)
-            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("1000")
-            .build();
-
-    PropertyDescriptor BULK_SIZE = new PropertyDescriptor.Builder()
-            .name("bulk.size")
-            .description("bulk size in MB")
-            .required(false)
-            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("5")
-            .build();
 
     PropertyDescriptor FLUSH_INTERVAL = new PropertyDescriptor.Builder()
             .name("flush.interval")
@@ -214,18 +195,6 @@ public interface ElasticsearchClientService extends ControllerService {
             .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
             .build();
 
-    /**
-     * Flush the bulk processor.
-     */
-    void flushBulkProcessor();
-
-    /**
-     * Get a list of documents based on their index, type and id.
-     *
-     * @param multiGetQueryRecords list of MultiGetQueryRecord to fetch
-     * @return the list of fetched MultiGetResponseRecord records
-     */
-    List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords);
 
     /**
      * Put a given document in elasticsearch bulk processor.
@@ -245,68 +214,12 @@ public interface ElasticsearchClientService extends ControllerService {
      */
     void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId);
 
-    /**
-     * Return true if the specified index exists (also true if the name is an alias to an index).
-     */
-    boolean existsIndex(String indexName) throws IOException ;
-
-    /**
-     * Wait until the specified index has integrated all previously-saved data.
-     */
-    void refreshIndex(String indexName) throws Exception ;
-
-    /**
-     * Save the specified object to the index.
-     */
-    void saveAsync(String indexName, String doctype, Map<String, Object> doc) throws Exception;
 
     /**
      * Save the specified object to the index.
      */
     void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception;
 
-    /**
-     * Return the number of documents in the index.
-     */
-    long countIndex(String indexName) throws Exception;
-
-    /**
-     * Create the specified index.
-     */
-    void createIndex(int numShards, int numReplicas, String indexName) throws IOException;
-
-    /**
-     * Delete the specified index.
-     */
-    void dropIndex(String indexName) throws IOException;
-
-    /**
-     * Copy the contents of srcIndex into dstIndex.
-     * <p>
-     * Although ES provides a "reindex" REST endpoint, it does so via a "standard extension module" rather than
-     * implementing the logic in ES core itself. This means there is no reindex java API; we must implement
-     * reindexing as a search-scroll loop.
-     * </p>
-     * <p>
-     * Credits: http://blog.davidvassallo.me/2016/10/11/elasticsearch-java-tips-for-faster-re-indexing/
-     * </p>
-     */
-    void copyIndex(String reindexScrollTimeout, String srcIndex, String dstIndex) throws IOException;
-
-    /**
-     * Creates an alias.
-     */
-    void createAlias(String indexName, String aliasName) throws IOException;
-
-    /**
-     * Adds a mapping to an index, or overwrites an existing mapping.
-     * <p>
-     * If the new mapping is "not compatible" with the index, then false is returned. If a system-error occurred
-     * while updating the index, an exception is thrown.
-     * </p>
-     */
-    boolean putMapping(String indexName, String doctype, String mappingAsJsonString)
-            throws IOException;
 
     /**
      * Number of Hits of a given search query.

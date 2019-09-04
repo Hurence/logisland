@@ -1,0 +1,128 @@
+version: 1.2.0
+documentation: LogIsland Kafka Connect Integration
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Use Kafka connectors with logisland
+  configuration:
+    spark.app.name: LogislandConnect
+    spark.master: local[*]
+    spark.driver.memory: 512M
+    spark.driver.cores: 1
+    spark.executor.memory: 512M
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 2000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 10000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4040
+
+  controllerServiceConfigurations:
+
+    # Our source service
+    - controllerService: kc_source_service
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
+      documentation: A kafka source connector provider reading from its own source and providing structured streaming to the underlying layer
+      configuration:
+        # We will use the logisland record converter for both key and value
+        kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
+        # Use kryo to serialize the inner data
+        kc.data.value.converter.properties: |
+          record.serializer=com.hurence.logisland.serializer.KryoSerializer
+
+        kc.data.key.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
+        # Use kryo to serialize the inner data
+        kc.data.key.converter.properties: |
+          record.serializer=com.hurence.logisland.serializer.KryoSerializer
+        # Only one task to handle source input (unique)
+        kc.worker.tasks.max: 1
+        # The kafka source connector to wrap (here we're using a simulator source)
+        kc.connector.class: com.github.jcustenborder.kafka.connect.simulator.SimulatorSourceConnector
+        # The properties for the connector (as per connector documentation)
+        kc.connector.properties: |
+          key.schema.fields=email
+          topic=simulator
+          value.schema.fields=email,firstName,middleName,lastName,telephoneNumber,dateOfBirth
+        # We are using a standalone source for testing. We can store processed offsets in memory
+        kc.connector.offset.backing.store: memory
+
+    # Kafka sink configuration
+    - controllerService: kafka_out_service
+      component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
+      configuration:
+        kafka.output.topics: logisland_raw
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+
+  streamConfigurations:
+  ################ Indexing stream ###############
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: "Concurrently process source incoming records. Source -> Kafka -> here"
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        # We just print the received records (but you may do something more interesting!)
+        - processor: stream_debugger
+          component: com.hurence.logisland.processor.DebugStream
+          type: processor
+          documentation: debug records
+          configuration:
+            event.serializer: json
+
+
+    ######### parsing stream ##############
+    - stream: parsing_stream_source
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      documentation: "Takes records from the kafka source and distributes related partitions over a kafka topic. Records are then handed off to the indexing stream"
+      configuration:
+        read.topics: /a/in
+        read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        read.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
+        read.stream.service.provider: kc_source_service
+        write.topics: logisland_raw
+        write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        write.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
+        write.stream.service.provider: kafka_out_service
+      processorConfigurations:
+        - processor: flatten
+          component: com.hurence.logisland.processor.FlatMap
+          type: processor
+          documentation: "Takes out data from record_value"
+          configuration:
+            keep.root.record: false
+            copy.root.record.fields: true
+
+

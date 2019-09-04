@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@ExtraDetailFile("./details/common-processors/SplitTextWithProperties-Detail.rst")
 public class SplitTextWithProperties extends SplitText {
 
     private static final long serialVersionUID = 4180349996855996949L;

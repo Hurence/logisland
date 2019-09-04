@@ -79,7 +79,7 @@ public final class ComponentFactory {
 
             return Optional.of(engineContext);
 
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | InitializationException e) {
             throw new IllegalStateException("unable to instantiate engine " + configuration.getComponent(), e);
         }
     }
@@ -133,7 +133,6 @@ public final class ComponentFactory {
 
     }
 
-
     public static <T> T loadComponent(String className) throws ClassNotFoundException {
         //first look for a plugin
         try {
@@ -146,6 +145,4 @@ public final class ComponentFactory {
             throw new ClassNotFoundException("Unable to find class " + className, e);
         }
     }
-
-
 }

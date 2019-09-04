@@ -28,36 +28,6 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-/**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
-/**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
 
 package com.hurence.logisland.engine.spark
 
@@ -391,6 +361,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     private var running = false
 
 
+    var batchDurationMs:Int = 1000
+
     /**
       * Provides subclasses the ability to perform initialization logic
       */
@@ -399,7 +371,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val engineContext = context.asInstanceOf[EngineContext]
         val sparkMaster = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_MASTER).asString
         val appName = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_APP_NAME).asString
-        val batchDuration = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
+        batchDurationMs = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
 
         /**
           * job configuration
@@ -506,7 +478,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
-            s"batchDuration:$batchDuration ")
+            s"batchDuration:$batchDurationMs ")
         logger.info(s"conf : ${conf.toDebugString}")
     }
 
@@ -565,9 +537,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
     protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {
         return StreamingContext.getActiveOrCreate(() =>
-            return new StreamingContext(sparkContext,
-                Milliseconds(sparkContext.getConf.get(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION.getName,
-                    KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION.getDefaultValue).toInt))
+            return new StreamingContext(sparkContext, Milliseconds(batchDurationMs))
         )
     }
 

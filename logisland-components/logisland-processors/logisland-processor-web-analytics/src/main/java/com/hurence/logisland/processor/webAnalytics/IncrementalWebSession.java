@@ -16,8 +16,10 @@
 package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -28,9 +30,9 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.time.Duration;
@@ -71,12 +73,12 @@ value = "This processor creates and updates web-sessions based on incoming web-e
         " Updates have impacts on fields of the web session such as event counter, last visited page, " +
         " session duration, ...\n" +
         " Before updates are actually applied, checks are performed to detect rules that would trigger the creation" +
-        " of a new session:" +
+        " of a new session:\n\n" +
         "\tthe duration between the web session and the web event must not exceed the specified time-out,\n" +
         "\tthe web session and the web event must have timestamps within the same day (at midnight a new web session " +
         "is created),\n" +
         "\tsource of traffic (campaign, ...) must be the same on the web session and the web event.\n" +
-
+        "\n" +
         " When a breaking rule is detected, a new web session is created with a new session identifier where as" +
         " remaining web-events still have the original session identifier. The new session identifier is the original" +
         " session suffixed with the character '#' followed with an incremented counter. This new session identifier" +
@@ -95,6 +97,7 @@ value = "This processor creates and updates web-sessions based on incoming web-e
         "- optional fields that may be retrieved from the processed events\n" +
         "\n"
 )
+@ExtraDetailFile("./details/IncrementalWebSession-Detail.rst")
 public class IncrementalWebSession
        extends AbstractProcessor
 {
@@ -411,7 +414,7 @@ public class IncrementalWebSession
     }
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         this.elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE)
@@ -866,7 +869,7 @@ public class IncrementalWebSession
                                                          map,
                                                          Optional.of((String)map.get(FieldDictionary.RECORD_ID)));
                   });
-            elasticsearchClientService.flushBulkProcessor();
+            elasticsearchClientService.bulkFlush();
 
             // Convert all created sessions to records.
             final Collection<Record> result = rewriters.stream()

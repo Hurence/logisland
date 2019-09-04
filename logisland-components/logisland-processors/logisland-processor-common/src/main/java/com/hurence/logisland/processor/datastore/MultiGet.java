@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.datastore;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -34,20 +35,24 @@ import java.util.*;
 @Tags({"datastore","get", "multiget"})
 @CapabilityDescription("Retrieves a content from datastore using datastore multiget queries.\n" +
         "Each incoming record contains information regarding the datastore multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :\n" +
-        "- collection (String) : name of the datastore collection on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
-        "- type (String) : name of the datastore type on which the multiget query will be performed. This field is not mandatory.\n" +
-        "- ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
-        "- includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
-        "- excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
+        "\n" +
+        " - collection (String) : name of the datastore collection on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
+        " - type (String) : name of the datastore type on which the multiget query will be performed. This field is not mandatory.\n" +
+        " - ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
+        " - includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
+        " - excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
         "\n" +
         "Each outcoming record holds data of one datastore retrieved document. This data is stored in these fields :\n" +
-        "- collection (same field name as the incoming record) : name of the datastore collection.\n" +
-        "- type (same field name as the incoming record) : name of the datastore type.\n" +
-        "- id (same field name as the incoming record) : retrieved document id.\n" +
-        "- a list of String fields containing :\n" +
-        "   * field name : the retrieved field name\n" +
-        "   * field value : the retrieved field value"
+        "\n" +
+        " - collection (same field name as the incoming record) : name of the datastore collection.\n" +
+        " - type (same field name as the incoming record) : name of the datastore type.\n" +
+        " - id (same field name as the incoming record) : retrieved document id.\n" +
+        " - a list of String fields containing :\n" +
+        "\n" +
+        "  - field name : the retrieved field name\n" +
+        "  - field value : the retrieved field value"
 )
+@ExtraDetailFile("./details/common-processors/MultiGet-Detail.rst")
 public class MultiGet extends AbstractDatastoreProcessor
 {
 

@@ -16,7 +16,9 @@
 package com.hurence.logisland.processor.bro;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
@@ -97,6 +99,7 @@ import java.util.Map;
         + "\"proto\": \"tcp\"\n\n"
         + "\"id_resp_h\": \"172.17.0.3\"\n\n"
         + "\"ts\": 1487596886.953917")
+@ExtraDetailFile("./details/ParseBroEvent-Detail.rst")
 public class ParseBroEvent extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(ParseBroEvent.class);
@@ -117,7 +120,7 @@ public class ParseBroEvent extends AbstractProcessor {
     private static final String FIELD_VERSION = "version";
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
 
         super.init(context);

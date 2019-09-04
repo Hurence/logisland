@@ -146,7 +146,7 @@ public class MockDatastoreService implements DatastoreClientService {
 
     @Override
     public Collection<ValidationResult> validate(ValidationContext context) {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -161,7 +161,7 @@ public class MockDatastoreService implements DatastoreClientService {
 
     @Override
     public List<PropertyDescriptor> getPropertyDescriptors() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

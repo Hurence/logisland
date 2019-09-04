@@ -18,10 +18,11 @@ package com.hurence.logisland.processor.xml;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.behavior.WritesAttribute;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
@@ -61,7 +62,7 @@ import static javax.xml.xpath.XPathConstants.STRING;
 @WritesAttribute(attribute = "user-defined", description = "This processor adds user-defined attributes.")
 @DynamicProperty(name = "An attribute", value = "An XPath expression", description = " "
         + "the attribute is set to the result of the XPath Expression.")
-
+@ExtraDetailFile("./details/EvaluateXPath-Detail.rst")
 public class EvaluateXPath extends AbstractProcessor {
 
     private static final String XPATH_FACTORY_IMPL = "net.sf.saxon.xpath.XPathFactoryImpl";
@@ -107,7 +108,7 @@ public class EvaluateXPath extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         try {
             factoryRef.set(XPathFactory.newInstance(NamespaceConstant.OBJECT_MODEL_SAXON,

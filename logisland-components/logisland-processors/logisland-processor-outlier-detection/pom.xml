@@ -25,12 +25,12 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-processors</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
 
     <packaging>jar</packaging>
     <artifactId>logisland-processor-outlier-detection</artifactId>
-    <name>Anomaly detection Processor Plugin</name>
+    <name>Outlier Detection Plugin</name>
 
 
     <dependencies>
@@ -76,7 +76,7 @@
 
         <dependency>
             <groupId>com.twitter</groupId>
-            <artifactId>algebird-core_2.10</artifactId>
+            <artifactId>algebird-core_2.12</artifactId>
             <version>0.13.4</version>
             <optional>true</optional>
         </dependency>
@@ -121,9 +121,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>
@@ -148,10 +147,8 @@
                       </execution>-->
                 </executions>
                 <configuration>
-                    <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
                     <scalaVersion>${scala.version}</scalaVersion>
                     <recompileMode>incremental</recompileMode>
-                    <useZincServer>false</useZincServer>
                     <args>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
@@ -163,12 +160,7 @@
                         <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
                         <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
                     </jvmArgs>
-                    <javacArgs>
-                        <javacArg>-source</javacArg>
-                        <javacArg>${maven.compiler.source}</javacArg>
-                        <javacArg>-target</javacArg>
-                        <javacArg>${maven.compiler.target}</javacArg>
-                    </javacArgs>
+
                 </configuration>
             </plugin>
 

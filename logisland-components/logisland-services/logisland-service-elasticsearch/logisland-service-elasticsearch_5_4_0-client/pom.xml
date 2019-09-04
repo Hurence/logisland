@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-elasticsearch</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>logisland-service-elasticsearch_5_4_0-client</artifactId>
@@ -19,51 +19,34 @@
         <!-- Versions -->
         <elasticsearch.version>5.4.0</elasticsearch.version>
     </properties>
-    <dependencies>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.16</version>
-            <optional>true</optional>
-            <scope>provided</scope>
-        </dependency>
+    <dependencies>
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
             <scope>provided</scope>
         </dependency>
-
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-elasticsearch-api</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.7</version>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>${elasticsearch.version}</version>
-            <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>transport</artifactId>
             <version>${elasticsearch.version}</version>
-            <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -91,6 +74,7 @@
             <version>2.11.1</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
@@ -98,9 +82,8 @@
             <scope>test</scope>
         </dependency>
 
-
-
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -120,17 +103,8 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
-                <configuration>
-                    <apiArtifacts>
-                        <apiArtifact>
-                            <groupId>com.hurence.logisland</groupId>
-                            <artifactId>logisland-service-elasticsearch-api</artifactId>
-                        </apiArtifact>
-                    </apiArtifacts>
-                </configuration>
             </plugin>
         </plugins>
     </build>
-
 
 </project>

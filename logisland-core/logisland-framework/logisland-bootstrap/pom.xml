@@ -22,12 +22,13 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-framework</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
     <artifactId>logisland-bootstrap</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
+        <!--Versions are set in root pom <dependencyManagement> so that all core library use the same -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
@@ -38,41 +39,27 @@
             <artifactId>logisland-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
-            <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.ivy</groupId>
             <artifactId>ivy</artifactId>
-            <version>2.2.0</version>
         </dependency>
-
-
-
-
     </dependencies>
-
     <build>
         <resources>
             <resource>
@@ -80,6 +67,5 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-
     </build>
 </project>

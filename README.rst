@@ -53,9 +53,9 @@ to build from the source just clone source and package with maven (logisland req
 
     git clone https://github.com/Hurence/logisland.git
     cd logisland
-    mvn clean install -Pfull
+    mvn clean package
 
-the final package is available at `logisland-assembly/target/logisland-1.1.2-bin.tar.gz`
+the final package is available at `logisland-assembly/target/logisland-1.2.0-bin.tar.gz`
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
@@ -88,9 +88,9 @@ But you should choose the Spark version that is compatible with your environment
     curl -s http://d3kbcqa49mib13.cloudfront.net/spark-<spark-version>-bin-hadoop<hadoop-version>.tgz | tar -xz -C /usr/local/
     export SPARK_HOME=/usr/local/spark-<spark-version>-bin-hadoop<hadoop-version>
 
-    # install Logisland 1.1.2
+    # install Logisland 1.2.0
     curl -s https://github.com/Hurence/logisland/releases/download/v1.0.0-RC2/logisland-1.0.0-RC2-bin.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-1.1.2
+    cd /usr/local/logisland-1.2.0
 
     # launch a logisland job
     bin/logisland.sh --conf conf/index-apache-logs.yml
@@ -119,9 +119,9 @@ Launching logisland streaming apps is just easy as unarchiving logisland distrib
 
 .. code-block:: sh
 
-    # install Logisland 1.1.2
-    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-1.1.2-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-1.1.2
+    # install Logisland 1.2.0
+    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-1.2.0-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
+    cd /usr/local/logisland-1.2.0
     bin/logisland.sh --conf conf/index-apache-logs.yml
 
 
@@ -142,7 +142,7 @@ The first part is the `ProcessingEngine` configuration (here a Spark streaming e
 
 .. code-block:: yaml
 
-    version: 1.1.2
+    version: 1.2.0
     documentation: LogIsland job config file
     engine:
       component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
@@ -180,13 +180,12 @@ Then comes a list of `ControllerService` which are the shared components that in
 
 .. code-block:: yaml
 
-        - controllerService: elasticsearch_service
-          component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_3_3_ClientService
+        - controllerService: datastore_service
+          component: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
           type: service
           documentation: elasticsearch service
           configuration:
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
+            hosts: sandbox:9200
             batch.size: 5000
 
 Then comes a list of `RecordStream`, each of them route the input batch of `Record` through a pipeline of `Processor`
@@ -213,7 +212,7 @@ to the output topic
             kafka.topic.default.replicationFactor: 1
 
 Then come the configurations of all the `Processor` pipeline. Each Record will go through these components.
-Here we first parse raw apache logs and then we add those records to Elasticsearch. Pleas note that the ES processor makes
+Here we first parse raw apache logs and then we add those records to Elasticsearch. Please note that the datastore processor makes
 use of the previously defined ControllerService.
 
 .. code-block:: yaml
@@ -230,16 +229,16 @@ use of the previously defined ControllerService.
                 value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
             - processor: es_publisher
-              component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+              component: com.hurence.logisland.processor.datastore.BulkPut
               type: processor
               documentation: a processor that indexes processed events in elasticsearch
               configuration:
-                elasticsearch.client.service: elasticsearch_service
-                default.index: logisland
+                datastore.client.service: datastore_service
+                default.collection: logisland
                 default.type: event
-                timebased.index: yesterday
-                es.index.field: search_index
-                es.type.field: record_type
+                timebased.collection: yesterday
+                collection.field: search_index
+                type.field: record_type
 
 
 

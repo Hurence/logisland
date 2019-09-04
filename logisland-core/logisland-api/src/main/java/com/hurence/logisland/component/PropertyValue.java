@@ -16,11 +16,13 @@
 package com.hurence.logisland.component;
 
 
-
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,6 +46,14 @@ public interface PropertyValue extends Serializable {
     String asString();
 
     /**
+     * @return an String representation of the property value, or
+     * <code>null</code> if not set
+     */
+    default Optional<String> asStringOpt() {
+        return Optional.ofNullable(asString());
+    }
+
+    /**
      * @return an integer representation of the property value, or
      * <code>null</code> if not set
      * @throws NumberFormatException if not able to parse
@@ -51,6 +61,20 @@ public interface PropertyValue extends Serializable {
     Integer asInteger();
 
 
+    /**
+     * @return a byte[] representation of the property value, of
+     * <code>null</code> if not set
+     * @throws IllegalArgumentException if not able to parse
+     */
+    byte[] asBytes();
+
+
+    /**
+     * @return a char[] representation of the property value, of
+     * <code>null</code> if not set
+     * @throws IllegalArgumentException if not able to parse
+     */
+    char[] asChars();
 
     /**
      * @return a Record representation of the property value, or
@@ -120,4 +144,17 @@ public interface PropertyValue extends Serializable {
      */
     PropertyValue evaluate(Record record);
 
+    /**
+     * In the case of PropertyDescriptors that do support expression language, the fill method allows to
+     * obtain a PropertyValue that is filled in with map content.
+     *
+     * @param attributes a Map of attributes that the Expression language can reference.
+     *
+     * @return a PropertyValue with the new value
+     */
+    default PropertyValue evaluate(Map<String, String> attributes) {
+        Record record = new StandardRecord("from_map");
+        record.setStringFields(attributes);
+        return evaluate(record);
+    }
 }
