@@ -17,7 +17,7 @@ Add one or more field to records
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -64,7 +64,7 @@ This processor is used to create a new set of fields from one field (using regex
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -113,7 +113,7 @@ Indexes the content of a Record in a Datastore using bulk processor
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -153,7 +153,7 @@ Add one or more records representing alerts. Using a datastore.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -308,7 +308,7 @@ Compute threshold cross from given formulas.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -458,7 +458,7 @@ Enable to compute some common aggregations on all records or on array fields of 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -491,7 +491,7 @@ a threshold_cross has the following properties : count, sum, avg, time, duration
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -639,7 +639,7 @@ Converts a field value into the given type. does nothing if conversion is not po
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -677,7 +677,7 @@ Convert one or more field representing a date into a Unix Epoch Time (time in mi
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -724,7 +724,7 @@ This is a processor that logs incoming records
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -758,7 +758,7 @@ This is a processor that is used to encrypt or decrypt one or many fields of any
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -818,7 +818,7 @@ Each outcoming record holds at least the input record plus potentially one or mo
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -857,7 +857,7 @@ Evaluates one or more JsonPath expressions against the content of a FlowFile. Th
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -905,7 +905,7 @@ Expands the content of a MAP field to the root.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -936,11 +936,11 @@ __________________
 
 FilterRecords
 -------------
-Keep only records based on a given field value
+Keep only records based on a given field value or/and based on custom methods returning a boolean (or something that can be casted into a boolean).
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -959,8 +959,21 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
    :escape: \
 
-   "**field.name**", "the field name", "", "record_id", "false", "false"
-   "**field.value**", "the field value to keep", "", "null", "false", "false"
+   "field.name", "the field name", "", "null", "false", "false"
+   "field.value", "the field value to keep", "", "null", "false", "false"
+   "logic", "the logic to use between the different filter criterias (methods).", "AND, OR", "OR", "false", "false"
+   "keep.errors", "If you want to keep records that got exception while evaluating a custom method or not.", "", "true", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "Name of the method to add (the name is just for documentation purpose)", "an expression returning a boolean or an object that can be cast into a boolean that will be used to filter out records", "an expression returning a boolean or an object that can be cast into a boolean that will be used to filter out records", "", "null", **true**
 
 Extra informations
 __________________
@@ -975,7 +988,7 @@ Converts each field records into a single flatten record...
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1014,7 +1027,7 @@ This is a processor that make random records given an Avro schema
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1050,7 +1063,7 @@ Merge contents of several records into less records.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1087,7 +1100,7 @@ modify id of records or generate it following defined rules
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1143,7 +1156,7 @@ Each outcoming record holds data of one datastore retrieved document. This data 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1182,7 +1195,7 @@ Changes the name of a field according to a provided name mapping...
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1227,7 +1240,7 @@ The Gitlab logs processor is the Logisland entry point to get and process `Gitla
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1262,7 +1275,7 @@ a string like "a=1 b=2 c=3" will add a,b & c fields, respectively with values 1,
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1296,7 +1309,7 @@ Removes a list of fields defined by a comma separated list of field names or kee
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1331,7 +1344,7 @@ Keep only distinct records based on a given field
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1375,7 +1388,7 @@ The SendMail processor is aimed at sending an email (like for instance an alert 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1422,7 +1435,7 @@ The SetJsonAsFields processor reads the content of a string field containing a j
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1461,7 +1474,7 @@ This processor is used to create a new set of fields from one field (using split
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1513,7 +1526,7 @@ This is a processor that is used to split a String into fields according to a gi
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1568,7 +1581,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____
@@ -1604,7 +1617,7 @@ This is a processor that is used to split a String into fields according to a gi
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.2
+com.hurence.logisland:logisland-processor-common:1.2.0
 
 Class
 _____

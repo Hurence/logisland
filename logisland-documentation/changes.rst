@@ -2,6 +2,13 @@ What's new in logisland ?
 =========================
 
 
+v1.2.0
+------
+
+- include Chronix timeseries api
+- add EL support for FilterRecords
+- add Solr8 support
+- add Elasticsearch7 support
 
 v1.1.2
 ------

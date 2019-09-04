@@ -17,7 +17,7 @@ The user-agent processor allows to decompose User-Agent value from an HTTP heade
 
 Module
 ______
-com.hurence.logisland:logisland-processor-useragent:1.1.2
+com.hurence.logisland:logisland-processor-useragent:1.2.0
 
 Class
 _____
@@ -58,7 +58,7 @@ Indexes the content of a Record in Elasticsearch using elasticsearch's bulk proc
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.1.2
+com.hurence.logisland:logisland-processor-elasticsearch:1.2.0
 
 Class
 _____
@@ -99,7 +99,7 @@ The ConsolidateSession processor is the Logisland entry point to get and process
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.1.2
+com.hurence.logisland:logisland-processor-web-analytics:1.2.0
 
 Class
 _____
@@ -162,7 +162,7 @@ This becomes a data filter which can be attached to a timeseries data stream wit
 
 Module
 ______
-com.hurence.logisland:logisland-processor-outlier-detection:1.1.2
+com.hurence.logisland:logisland-processor-outlier-detection:1.2.0
 
 Class
 _____
@@ -226,7 +226,7 @@ Each outcoming record holds at least the input record plus potentially one or mo
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.1.2
+com.hurence.logisland:logisland-processor-elasticsearch:1.2.0
 
 Class
 _____
@@ -265,7 +265,7 @@ Evaluates one or more XPaths against the content of a record. The results of tho
 
 Module
 ______
-com.hurence.logisland:logisland-processor-xml:1.1.2
+com.hurence.logisland:logisland-processor-xml:1.2.0
 
 Class
 _____
@@ -312,7 +312,7 @@ Consumes a Microsoft Excel document and converts each worksheet's line to a stru
 
 Module
 ______
-com.hurence.logisland:logisland-processor-excel:1.1.2
+com.hurence.logisland:logisland-processor-excel:1.2.0
 
 Class
 _____
@@ -351,7 +351,7 @@ Fetches a row from an HBase table. The Destination property controls whether the
 
 Module
 ______
-com.hurence.logisland:logisland-processor-hbase:1.1.2
+com.hurence.logisland:logisland-processor-hbase:1.2.0
 
 Class
 _____
@@ -415,7 +415,7 @@ WebSession information are:
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.1.2
+com.hurence.logisland:logisland-processor-web-analytics:1.2.0
 
 Class
 _____
@@ -472,7 +472,7 @@ Translates an IP address into a FQDN (Fully Qualified Domain Name). An input fie
 
 Module
 ______
-com.hurence.logisland:logisland-processor-enrichment:1.1.2
+com.hurence.logisland:logisland-processor-enrichment:1.2.0
 
 Class
 _____
@@ -512,7 +512,7 @@ Looks up geolocation information for an IP address. The attribute that contains 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-enrichment:1.1.2
+com.hurence.logisland:logisland-processor-enrichment:1.2.0
 
 Class
 _____
@@ -571,7 +571,7 @@ Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/query
 
 Module
 ______
-com.hurence.logisland:logisland-processor-querymatcher:1.1.2
+com.hurence.logisland:logisland-processor-querymatcher:1.2.0
 
 Class
 _____
@@ -638,7 +638,7 @@ Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/query
 
 Module
 ______
-com.hurence.logisland:logisland-processor-querymatcher:1.1.2
+com.hurence.logisland:logisland-processor-querymatcher:1.2.0
 
 Class
 _____
@@ -704,7 +704,7 @@ Each outcoming record holds data of one elasticsearch retrieved document. This d
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.1.2
+com.hurence.logisland:logisland-processor-elasticsearch:1.2.0
 
 Class
 _____
@@ -833,7 +833,7 @@ It gets processed and transformed into the following Logisland record by the Par
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.1.2
+com.hurence.logisland:logisland-processor-cyber-security:1.2.0
 
 Class
 _____
@@ -859,41 +859,6 @@ __________________
 .. include:: ./details/ParseBroEvent-Detail.rst
 ----------
 
-.. _com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog: 
-
-ParseGitlabLog
---------------
-The Gitlab logs processor is the Logisland entry point to get and process `Gitlab <https://www.gitlab.com>`_ logs. This allows for instance to monitor activities in your Gitlab server. The expected input of this processor are records from the production_json.log log file of Gitlab which contains JSON records. You can for instance use the `kafkacat <https://github.com/edenhill/kafkacat>`_ command to inject those logs into kafka and thus Logisland.
-
-Module
-______
-com.hurence.logisland:logisland-processor-common-logs:1.1.2
-
-Class
-_____
-com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog
-
-Tags
-____
-logs, gitlab
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-   :escape: \
-
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
-
-Extra informations
-__________________
-No additional information is provided
-
-----------
-
 .. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
 
 ParseNetflowEvent
@@ -910,7 +875,7 @@ In the tutorial we will simulate Netflow traffic using `nfgen <https://github.co
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.1.2
+com.hurence.logisland:logisland-processor-cyber-security:1.2.0
 
 Class
 _____
@@ -946,7 +911,7 @@ The ParseNetworkPacket processor is the LogIsland entry point to parse network p
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.1.2
+com.hurence.logisland:logisland-processor-cyber-security:1.2.0
 
 Class
 _____
@@ -982,7 +947,7 @@ Adds the Contents of a Record to HBase as the value of a single cell
 
 Module
 ______
-com.hurence.logisland:logisland-processor-hbase:1.1.2
+com.hurence.logisland:logisland-processor-hbase:1.2.0
 
 Class
 _____
@@ -1031,7 +996,7 @@ This processor allows to implement and run a processor written in python. This c
 
 Module
 ______
-com.hurence.logisland:logisland-processor-scripting:1.1.2
+com.hurence.logisland:logisland-processor-scripting:1.2.0
 
 Class
 _____
@@ -1062,61 +1027,6 @@ __________________
 .. include:: ./details/RunPython-Detail.rst
 ----------
 
-.. _com.hurence.logisland.processor.SampleRecords: 
-
-SampleRecords
--------------
-Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
-
-you can use this processor to handle custom events defined by lucene queries
-a new record is added to output each time a registered query is matched
-
-A query is expressed as a lucene query against a field like for example: 
-
-.. code::
-
-   message:'bad exception'
-   error_count:[10 TO *]
-   bytes_out:5000
-   user_name:tom*
-
-Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
-
-.. warning::
-   don't forget to set numeric fields property to handle correctly numeric ranges queries
-
-Module
-______
-com.hurence.logisland:logisland-processor-sampling:1.1.2
-
-Class
-_____
-com.hurence.logisland.processor.SampleRecords
-
-Tags
-____
-analytic, sampler, record, iot, timeseries
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-   :escape: \
-
-   "record.value.field", "the name of the numeric field to sample", "", "record_value", "false", "false"
-   "record.time.field", "the name of the time field to sample", "", "record_time", "false", "false"
-   "**sampling.algorithm**", "the implementation of the algorithm", "none, lttb, average, first_item, min_max, mode_median", "null", "false", "false"
-   "**sampling.parameter**", "the parmater of the algorithm", "", "null", "false", "false"
-
-Extra informations
-__________________
-No additional information is provided
-
-----------
-
 .. _com.hurence.logisland.processor.webAnalytics.URLDecoder: 
 
 URLDecoder
@@ -1126,7 +1036,7 @@ Decode one or more field containing an URL with possibly special chars encoded
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.1.2
+com.hurence.logisland:logisland-processor-web-analytics:1.2.0
 
 Class
 _____
@@ -1180,7 +1090,7 @@ Elasticsearch index containing a list of the most popular search engines and soc
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.1.2
+com.hurence.logisland:logisland-processor-web-analytics:1.2.0
 
 Class
 _____

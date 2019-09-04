@@ -17,7 +17,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.1.2
+com.hurence.logisland:logisland-service-inmemory-cache:1.2.0
 
 Class
 _____
@@ -59,7 +59,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.1.2
+com.hurence.logisland:logisland-service-cassandra-client:1.2.0
 
 Class
 _____
@@ -101,7 +101,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 2.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.1.2
+com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.2.0
 
 Class
 _____
@@ -151,7 +151,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 5.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.2
+com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.2.0
 
 Class
 _____
@@ -201,7 +201,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.1.2
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.2.0
 
 Class
 _____
@@ -250,7 +250,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.1.2
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.2.0
 
 Class
 _____
@@ -299,7 +299,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.1.2
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.2.0
 
 Class
 _____
@@ -350,7 +350,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.1.2
+com.hurence.logisland:logisland-service-influxdb-client:1.2.0
 
 Class
 _____
@@ -396,7 +396,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.1.2
+com.hurence.logisland:logisland-service-inmemory-cache:1.2.0
 
 Class
 _____
@@ -431,7 +431,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.1.2
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.2.0
 
 Class
 _____
@@ -469,7 +469,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.1.2
+com.hurence.logisland:logisland-service-mongodb-client:1.2.0
 
 Class
 _____
@@ -512,7 +512,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.1.2
+com.hurence.logisland:logisland-service-redis:1.2.0
 
 Class
 _____
@@ -558,19 +558,19 @@ No additional information is provided
 
 ----------
 
-.. _com.hurence.logisland.service.solr.Solr_5_5_5_ClientService: 
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
 
-Solr_5_5_5_ClientService
-------------------------
-Implementation of ElasticsearchClientService for Solr 5.5.5.
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_5_5_5-client:1.1.2
+com.hurence.logisland:logisland-service-solr_8-client:1.2.0
 
 Class
 _____
-com.hurence.logisland.service.solr.Solr_5_5_5_ClientService
+com.hurence.logisland.service.solr.Solr8ClientService
 
 Tags
 ____
@@ -608,7 +608,7 @@ Implementation of ChronixClientService for Solr 6 4 2
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:1.1.2
+com.hurence.logisland:logisland-service-solr_chronix_6_4_2-client:1.2.0
 
 Class
 _____
@@ -648,7 +648,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.1.2
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.2.0
 
 Class
 _____
@@ -675,6 +675,46 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
    "flush.interval", "flush interval in ms", "", "500", "false", "false"
    "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_8_ChronixClientService: 
+
+Solr_8_ChronixClientService
+---------------------------
+Implementation of ChronixClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_chronix_8-client:1.2.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_8_ChronixClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "group.by", "The field the chunk should be grouped by", "", "", "false", "false"
 
 Extra informations
 __________________

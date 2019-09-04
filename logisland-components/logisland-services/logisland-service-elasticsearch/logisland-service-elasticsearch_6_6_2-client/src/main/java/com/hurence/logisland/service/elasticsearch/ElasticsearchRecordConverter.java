@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Hurence (support@hurence.com)
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

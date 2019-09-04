@@ -47,19 +47,13 @@ class switch(object):
 
 
 parser = argparse.ArgumentParser(__file__, description="Fake Apache Log Generator")
-parser.add_argument("--output", "-o", dest='output_type', help="Write to a Log file, a gzip file or to STDOUT",
-                    choices=['LOG', 'GZ', 'CONSOLE'])
-parser.add_argument("--log-format", "-l", dest='log_format', help="Log format, Common or Extended Log Format ",
-                    choices=['CLF', 'ELF'], default="ELF")
-parser.add_argument("--num", "-n", dest='num_lines', help="Number of lines to generate (0 for infinite)", type=int,
-                    default=os.getenv('LOGGEN_NUM', 0))
+parser.add_argument("--output", "-o", dest='output_type', help="Write to a Log file, a gzip file or to STDOUT", choices=['LOG', 'GZ', 'CONSOLE', 'KAFKA'], default="KAFKA")
+parser.add_argument("--log-format", "-l", dest='log_format', help="Log format, Common or Extended Log Format ", choices=['CLF', 'ELF'], default="ELF")
+parser.add_argument("--num", "-n", dest='num_lines', help="Number of lines to generate by batch", type=int, default=os.getenv('LOGGEN_NUM', 50))
 parser.add_argument("--prefix", "-p", dest='file_prefix', help="Prefix the output file name", type=str)
-parser.add_argument("--sleep", "-s", help="Sleep this long between lines (in seconds)",
-                    default=os.getenv('LOGGEN_SLEEP', 1.0), type=float)
-parser.add_argument("--kafka-brokers", "-k", dest='kafka_brokers', help="the kafka brokers connection string",
-                    default=os.getenv('LOGGEN_KAFKA', "kafka:9092"), type=str)
-parser.add_argument("--kafka-topic", "-t", dest='kafka_topic', help="the kafka topic to publich logs on",
-                    default=os.getenv('LOGGEN_KAFKA_TOPIC', "logisland_raw"), type=str)
+parser.add_argument("--sleep", "-s", help="Sleep this long between lines (in seconds)",  default=os.getenv('LOGGEN_SLEEP', 0.1), type=float)
+parser.add_argument("--kafka-brokers", "-k", dest='kafka_brokers', help="the kafka brokers connection string", default=os.getenv('LOGGEN_KAFKA', "kafka:9092"), type=str)
+parser.add_argument("--kafka-topic", "-t", dest='kafka_topic', help="the kafka topic to publich logs on", default=os.getenv('LOGGEN_KAFKA_TOPIC', "logisland_raw"), type=str)
 
 
 args = parser.parse_args()
@@ -74,18 +68,6 @@ faker = Faker()
 timestr = time.strftime("%Y%m%d-%H%M%S")
 otime = datetime.datetime.now()
 
-outFileName = 'access_log_' + timestr + '.log' if not file_prefix else file_prefix + '_access_log_' + timestr + '.log'
-
-for case in switch(output_type):
-    if case('LOG'):
-        f = open(outFileName, 'w')
-        break
-    if case('GZ'):
-        f = gzip.open(outFileName + '.gz', 'w')
-        break
-    if case('CONSOLE'): pass
-    if case():
-        f = sys.stdout
 
 response = ["200", "404", "500", "301"]
 
@@ -94,19 +76,25 @@ verb = ["GET", "POST", "DELETE", "PUT"]
 resources = ["/list", "/wp-content", "/wp-admin", "/explore", "/search/tag/list", "/app/main/posts",
              "/posts/posts/explore", "/apps/cart.jsp?appID="]
 
+frequent_ips = ["12.13.14.15", "123.124.125.126"]
+
 ualist = [faker.firefox, faker.chrome, faker.safari, faker.internet_explorer, faker.opera]
 
+
+# wait a little while zk & kafka start
+time.sleep(10)
 producer = KafkaProducer(bootstrap_servers=args.kafka_brokers, client_id='loggen')
 
-flag = True
-while (flag):
-    if args.sleep:
-        increment = datetime.timedelta(seconds=args.sleep)
-    else:
-        increment = datetime.timedelta(seconds=random.randint(30, 300))
-    otime += increment
 
+
+
+
+def create_log():
     ip = faker.ipv4()
+    if random.randint(0, 100) < 70:
+        ip = numpy.random.choice(frequent_ips, p=[0.6, 0.4])
+        print(ip)
+
     dt = otime.strftime('%d/%b/%Y:%H:%M:%S')
     tz = datetime.datetime.now(local).strftime('%z')
     vrb = numpy.random.choice(verb, p=[0.6, 0.1, 0.1, 0.2])
@@ -120,18 +108,23 @@ while (flag):
     referer = faker.uri()
     useragent = numpy.random.choice(ualist, p=[0.5, 0.3, 0.1, 0.05, 0.05])()
     if log_format == "CLF":
-        f.write('%s - - [%s %s] "%s %s HTTP/1.0" %s %s\n' % (ip, dt, tz, vrb, uri, resp, byt))
+        return '{} - - [{} {}] "{} {} HTTP/1.0" {} {}'.format(ip, dt, tz, vrb, uri, resp, byt)
     elif log_format == "ELF":
-        f.write(
-            '%s - - [%s %s] "%s %s HTTP/1.0" %s %s "%s" "%s"\n' % (ip, dt, tz, vrb, uri, resp, byt, referer, useragent))
-    f.flush()
+        return '{} - - [{} {}] "{} {} HTTP/1.0" {} {} "{}" "{}"'.format(ip, dt, tz, vrb, uri, resp, byt, referer, useragent)
 
-    message = '{} - - [{} {}] "{} {} HTTP/1.0" {} {} "{}" "{}"\n'.format(ip, dt, tz, vrb, uri, resp, byt, referer,
-                                                                         useragent)
 
-    producer.send(args.kafka_topic, str.encode(message))
 
-    log_lines = log_lines - 1
-    flag = False if log_lines == 0 else True
+
+while True:
+    if args.sleep:
+        increment = datetime.timedelta(seconds=args.sleep)
+    else:
+        increment = datetime.timedelta(seconds=random.randint(30, 300))
+    otime += increment
+
+    for x in range(0, random.randint(0, log_lines)):
+        log = create_log()
+        producer.send(args.kafka_topic, str.encode(log))
+
     if args.sleep:
         time.sleep(args.sleep)
