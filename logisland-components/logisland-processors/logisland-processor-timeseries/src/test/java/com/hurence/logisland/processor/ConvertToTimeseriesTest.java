@@ -17,9 +17,7 @@ package com.hurence.logisland.processor;
 
 
 import com.hurence.logisland.record.*;
-import com.hurence.logisland.timeseries.MetricTimeSeries;
 import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
-import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -28,12 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -114,13 +110,13 @@ public class ConvertToTimeseriesTest {
         testRunner.assertOutputRecordsCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertFieldExists(FieldDictionary.RECORD_CHUNK_START);
-        out.assertFieldExists(FieldDictionary.RECORD_CHUNK_END);
+        out.assertFieldExists(FieldDictionary.CHUNK_START);
+        out.assertFieldExists(FieldDictionary.CHUNK_END);
         out.assertFieldExists(FieldDictionary.RECORD_NAME);
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
 
-        out.assertFieldEquals(FieldDictionary.RECORD_CHUNK_START, 1000000);
-        out.assertFieldEquals(FieldDictionary.RECORD_CHUNK_END, 1001999);
+        out.assertFieldEquals(FieldDictionary.CHUNK_START, 1000000);
+        out.assertFieldEquals(FieldDictionary.CHUNK_END, 1001999);
         out.assertFieldEquals(FieldDictionary.RECORD_NAME, "cpu.load");
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, SAMPLED_RECORD);
         out.assertRecordSizeEquals(4);

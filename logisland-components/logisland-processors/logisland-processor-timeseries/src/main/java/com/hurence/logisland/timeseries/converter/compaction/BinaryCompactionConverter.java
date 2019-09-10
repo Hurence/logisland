@@ -61,7 +61,9 @@ public class BinaryCompactionConverter implements Serializable {
         final TimeSeriesRecord chunkrecord = new TimeSeriesRecord(timeSeries);
 
         // compress chunk into binaries
-        chunkrecord.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, serializeTimeseries(timeSeries));
+        byte[] serializedTimeseries = serializeTimeseries(timeSeries);
+        chunkrecord.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, serializedTimeseries);
+        chunkrecord.setField(FieldDictionary.CHUNK_SIZE_BYTES, FieldType.INT, serializedTimeseries.length);
 
         return chunkrecord;
     }

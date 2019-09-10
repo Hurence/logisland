@@ -16,8 +16,6 @@
 package com.hurence.logisland.record;
 
 import com.hurence.logisland.timeseries.MetricTimeSeries;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Timeseries holder record
@@ -31,8 +29,10 @@ public class TimeSeriesRecord extends StandardRecord {
         this.timeSeries = timeSeries;
 
         setStringField(FieldDictionary.RECORD_NAME, timeSeries.getName());
-        setField(FieldDictionary.RECORD_CHUNK_START, FieldType.LONG, timeSeries.getStart());
-        setField(FieldDictionary.RECORD_CHUNK_END, FieldType.LONG, timeSeries.getEnd());
+        setField(FieldDictionary.CHUNK_START, FieldType.LONG, timeSeries.getStart());
+        setField(FieldDictionary.CHUNK_END, FieldType.LONG, timeSeries.getEnd());
+        setField(FieldDictionary.CHUNK_SIZE, FieldType.INT, timeSeries.getValues().size());
+        setField(FieldDictionary.CHUNK_WINDOW_MS, FieldType.LONG, timeSeries.getEnd() - timeSeries.getStart());
 
         timeSeries.attributes().keySet().forEach(key -> {
             setStringField(key, String.valueOf(timeSeries.attribute(key)));

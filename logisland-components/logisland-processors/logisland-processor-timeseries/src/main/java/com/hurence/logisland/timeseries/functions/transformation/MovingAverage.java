@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,8 @@ import com.hurence.logisland.timeseries.functions.FunctionValueMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.temporal.ChronoUnit;
 
@@ -34,6 +36,8 @@ public final class MovingAverage implements ChronixTransformation<MetricTimeSeri
     private final long timeSpan;
     private final ChronoUnit unit;
     private final long windowTime;
+
+    private static Logger logger = LoggerFactory.getLogger(MovingAverage.class);
 
     /**
      * Constructs a moving average transformation
@@ -61,57 +65,64 @@ public final class MovingAverage implements ChronixTransformation<MetricTimeSeri
     @Override
     public void execute(MetricTimeSeries timeSeries, FunctionValueMap functionValueMap) {
 
-        //we need a sorted time series
-        timeSeries.sort();
+        if(timeSeries.size() <= 1)
+            return;
 
-        //get the raw values as arrays
-        double[] values = timeSeries.getValuesAsArray();
-        long[] times = timeSeries.getTimestampsAsArray();
+        try {
+            //we need a sorted time series
+            timeSeries.sort();
 
-        int timeSeriesSize = timeSeries.size();
-        //remove the old values
-        timeSeries.clear();
+            //get the raw values as arrays
+            double[] values = timeSeries.getValuesAsArray();
+            long[] times = timeSeries.getTimestampsAsArray();
 
-        int startIdx = 0;
-        long current = times[0];
-        long currentWindowEnd = current + windowTime;
-        long last = times[timeSeriesSize - 1];
+            int timeSeriesSize = timeSeries.size();
+            //remove the old values
+            timeSeries.clear();
 
-        boolean lastWindowOnlyOnePoint = true;
+            int startIdx = 0;
+            long current = times[0];
+            long currentWindowEnd = current + windowTime;
+            long last = times[timeSeriesSize - 1];
 
-        //the start is already set
-        for (int i = 0; i < timeSeriesSize; i++) {
+            boolean lastWindowOnlyOnePoint = true;
 
-            //fill window
-            while (i < timeSeriesSize && !outsideWindow(currentWindowEnd, current)) {
-                current = times[i++];
+            //the start is already set
+            for (int i = 0; i < timeSeriesSize; i++) {
+
+                //fill window
+                while (i < timeSeriesSize && !outsideWindow(currentWindowEnd, current)) {
+                    current = times[i++];
+                }
+                //decrement counter to mark the last index position that is within the window
+                i -= 1;
+
+                //calculate the average of the values and the time
+                evaluateAveragesAndAddToTimeSeries(timeSeries, values, times, startIdx, i);
+
+                //slide the window
+                startIdx++;
+                currentWindowEnd = times[startIdx] + windowTime;
+
+                //check if the current window end is larger equals the end timestamp
+                if (currentWindowEnd >= last) {
+                    //break and add the last window
+                    lastWindowOnlyOnePoint = false;
+                    break;
+                }
             }
-            //decrement counter to mark the last index position that is within the window
-            i -= 1;
 
-            //calculate the average of the values and the time
-            evaluateAveragesAndAddToTimeSeries(timeSeries, values, times, startIdx, i);
-
-            //slide the window
-            startIdx++;
-            currentWindowEnd = times[startIdx] + windowTime;
-
-            //check if the current window end is larger equals the end timestamp
-            if (currentWindowEnd >= last) {
-                //break and add the last window
-                lastWindowOnlyOnePoint = false;
-                break;
+            if (lastWindowOnlyOnePoint) {
+                timeSeries.add(times[timeSeriesSize - 1], values[timeSeriesSize - 1]);
+            } else {
+                //add the last window
+                evaluateAveragesAndAddToTimeSeries(timeSeries, values, times, startIdx, timeSeriesSize);
             }
-        }
 
-        if (lastWindowOnlyOnePoint) {
-            timeSeries.add(times[timeSeriesSize - 1], values[timeSeriesSize - 1]);
-        } else {
-            //add the last window
-            evaluateAveragesAndAddToTimeSeries(timeSeries, values, times, startIdx, timeSeriesSize);
+            functionValueMap.add(this);
+        }catch (Exception ex){
+            logger.error(ex.toString());
         }
-
-        functionValueMap.add(this);
     }
 
     /**
@@ -140,8 +151,8 @@ public final class MovingAverage implements ChronixTransformation<MetricTimeSeri
         }
         int amount = end - startIdx;
 
-
-        timeSeries.add(timeSum / amount, valueSum / amount);
+        if (amount != 0)
+            timeSeries.add(timeSum / amount, valueSum / amount);
     }
 
     private boolean outsideWindow(long currentWindow, long windowTime) {
