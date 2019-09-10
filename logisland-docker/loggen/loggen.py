@@ -46,7 +46,8 @@ class switch(object):
             return False
 
 
-parser = argparse.ArgumentParser(__file__, description="Fake Apache Log Generator")
+parser = argparse.ArgumentParser(__file__, description="Fake event Generator")
+parser.add_argument("--gen-mode", "-g", dest='gen_mode', help="Generate either a metric or a log", choices=['LOG', 'METRIC'], default="LOG")
 parser.add_argument("--output", "-o", dest='output_type', help="Write to a Log file, a gzip file or to STDOUT", choices=['LOG', 'GZ', 'CONSOLE', 'KAFKA'], default="KAFKA")
 parser.add_argument("--log-format", "-l", dest='log_format', help="Log format, Common or Extended Log Format ", choices=['CLF', 'ELF'], default="ELF")
 parser.add_argument("--num", "-n", dest='num_lines', help="Number of lines to generate by batch", type=int, default=os.getenv('LOGGEN_NUM', 50))
@@ -58,7 +59,7 @@ parser.add_argument("--kafka-topic", "-t", dest='kafka_topic', help="the kafka t
 
 args = parser.parse_args()
 
-log_lines = args.num_lines
+num_lines = args.num_lines
 file_prefix = args.file_prefix
 output_type = args.output_type
 log_format = args.log_format
@@ -114,6 +115,30 @@ def create_log():
 
 
 
+tags = ["temp_a", "temp_b", "pressure", "speed", "rotation"]
+qualities = ["100", "95", "80", "50", "20", "0"]
+
+#yyyy-MM-dd HH:mm:ss.SSS
+def now_fmt():
+    oslo = pytz.timezone('Europe/Paris')
+    otime = oslo.localize(datetime.datetime.now())
+    msecs = otime.microsecond
+    res = otime.strftime('%Y-%m-%d %H:%M:%S.')
+    res += str(msecs)[:3]
+    return res
+
+def create_metric():
+    quality = numpy.random.choice(qualities, p=[0.8, 0.1, 0.05, 0.04, 0.007, 0.003])
+    value = random.gauss(50, 20)
+    time = now_fmt()
+    tag_name = numpy.random.choice(tags, p=[0.5, 0.2, 0.1, 0.15, 0.05])
+    return '{};{};{};{}'.format(time, tag_name, value, quality)
+
+
+def send_to_kakfa(event):
+    str_event = str.encode(event)
+    print(str_event)
+    producer.send(args.kafka_topic, str_event)
 
 while True:
     if args.sleep:
@@ -122,9 +147,11 @@ while True:
         increment = datetime.timedelta(seconds=random.randint(30, 300))
     otime += increment
 
-    for x in range(0, random.randint(0, log_lines)):
-        log = create_log()
-        producer.send(args.kafka_topic, str.encode(log))
+    for x in range(0, random.randint(0, num_lines)):
+        if args.gen_mode == 'LOG':
+            send_to_kakfa(create_log())
+        else:
+            send_to_kakfa(create_metric())
 
     if args.sleep:
         time.sleep(args.sleep)
