@@ -89,6 +89,8 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     descriptors.add(WRITE_TOPICS_SERIALIZER)
     descriptors.add(WRITE_TOPICS_KEY_SERIALIZER)
     descriptors.add(GROUPBY)
+    descriptors.add(STATE_TIMEOUT_MS)
+    descriptors.add(CHUNK_SIZE)
 
     Collections.unmodifiableList(descriptors)
   }

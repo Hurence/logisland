@@ -5,26 +5,28 @@ engine:
   component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   configuration:
     spark.app.name: TimeseriesParsing
-    spark.master: local[1]
-    spark.streaming.batchDuration: 2000
+    spark.master: local[2]
+    spark.streaming.batchDuration: 200
     spark.streaming.kafka.maxRatePerPartition: 10000
   controllerServiceConfigurations:
 
     - controllerService: local_file_service
       component: com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService
       configuration:
-        local.input.path: /tmp/logisland/data
+        local.input.path:  /Users/tom/tmp/logisland/data
 
     - controllerService: console_service
       component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
       configuration:
         truncate: false
 
-    - controllerService: kafka_out_service
+    - controllerService: kafka_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
       configuration:
+        kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_measures
         kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: localhost:9092
@@ -33,12 +35,14 @@ engine:
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
 
-    - controllerService: kafka_in_service
+    - controllerService: kafka_service_out
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
       configuration:
         kafka.input.topics: logisland_measures
+        kafka.output.topics: logisland_metrics
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: localhost:9092
         kafka.zookeeper.quorum: localhost:2181
@@ -54,15 +58,15 @@ engine:
       component: com.hurence.logisland.stream.spark.structured.StructuredStream
       configuration:
         read.topics.serializer: none
-        read.stream.service.provider: local_file_service
+        read.stream.service.provider: kafka_service
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        write.stream.service.provider: kafka_out_service
+        write.stream.service.provider: kafka_service
       processorConfigurations:
 
         - processor: historian_parser
           component: com.hurence.logisland.processor.SplitText
           configuration:
-            record.type: historian_serie
+            record.type: timeserie
             value.regex: (\S+\s+\S+);(\S+);(\S+);(\S+)
             value.fields: record_time,tagname,record_value,quality
 
@@ -84,10 +88,12 @@ engine:
       configuration:
         read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
         read.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        read.stream.service.provider: kafka_in_service
+        read.stream.service.provider: kafka_service_out
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        write.stream.service.provider: console_service
-        groupby.keys: tagname
+        write.stream.service.provider: kafka_service_out
+        groupby: tagname
+        chunk.size: 500
+        state.timeout.ms: 60000
 
       processorConfigurations:
 
@@ -97,7 +103,8 @@ engine:
         - processor: timeseries_converter
           component: com.hurence.logisland.processor.ConvertToTimeseries
           configuration:
-            group.by.field: tagname
-            sax.encoding: true
-#        - processor: debug_2
-#          component: com.hurence.logisland.processor.DebugStream
+            groupby: tagname
+            metric: avg;max;min;trend;sax:7,0.01,9
+
+        - processor: debug_2
+          component: com.hurence.logisland.processor.DebugStream

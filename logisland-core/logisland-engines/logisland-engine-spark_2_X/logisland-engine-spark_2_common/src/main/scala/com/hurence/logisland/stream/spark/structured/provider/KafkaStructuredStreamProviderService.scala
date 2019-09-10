@@ -161,8 +161,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     * @return DataFrame currently loaded
     */
   override def read(spark: SparkSession, streamContext: StreamContext) = {
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
     import spark.implicits._
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
     logger.info(s"starting Kafka direct stream on topics $inputTopics from $kafkaOffset offsets")
     val df = spark.readStream

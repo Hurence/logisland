@@ -121,6 +121,8 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService w
       */
     override def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): StreamingQuery = {
 
+        implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+
         // make sure controller service lookup won't be serialized !!
         streamContext.setControllerServiceLookup(null)
 
@@ -134,7 +136,6 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService w
             streamContext.getPropertyValue(WRITE_TOPICS_KEY_SERIALIZER).asString, null)
 
         // do the parallel processing
-        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
         val df2 = df.mapPartitions(record => record.map(record => serializeRecords(serializer, keySerializer, record)))
 
 

@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 /**
   * Copyright (C) 2016 Hurence (support@hurence.com)
   *
@@ -32,6 +32,7 @@ package com.hurence.logisland.stream.spark.structured.provider
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
+import java.util.Date
 
 import com.hurence.logisland.controller.ControllerService
 import com.hurence.logisland.record._
@@ -42,11 +43,13 @@ import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, ProcessorM
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.streaming._
+import org.apache.spark.sql.Encoders
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+
 
 trait StructuredStreamProviderService extends ControllerService {
 
@@ -78,9 +81,9 @@ trait StructuredStreamProviderService extends ControllerService {
     * @return
     */
   def load(spark: SparkSession, controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): Dataset[Record] = {
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
     import spark.implicits._
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
     val df = read(spark, streamContext)
 
@@ -109,16 +112,15 @@ trait StructuredStreamProviderService extends ControllerService {
     if (streamContext.getPropertyValue(GROUPBY).isSet) {
 
       val keys = streamContext.getPropertyValue(GROUPBY).asString()
-
+      val stateTimeoutDuration = streamContext.getPropertyValue(STATE_TIMEOUT_MS).asLong()
+      val chunkSize = streamContext.getPropertyValue(CHUNK_SIZE).asInteger()
 
       processingRecords
         .filter(_.hasField(keys))
         .groupByKey(_.getField(keys).asString())
-        .flatMapGroupsWithState(
-          outputMode = OutputMode.Append,
-          timeoutConf = GroupStateTimeout.NoTimeout)( (sessionId: String, eventsIter: Iterator[Record], state: GroupState[Record]) =>{
-            executePipeline(controllerServiceLookupSink, streamContext, eventsIter)
-        })
+        .flatMapGroupsWithState(outputMode = OutputMode.Append, timeoutConf = GroupStateTimeout.ProcessingTimeTimeout())(
+          mappingFunction(controllerServiceLookupSink, streamContext, chunkSize, stateTimeoutDuration)
+        )
 
     } else {
       processingRecords.mapPartitions(iterator => {
@@ -129,9 +131,84 @@ trait StructuredStreamProviderService extends ControllerService {
 
   }
 
+  val ALL_RECORDS = "all_records"
+  val CHUNK_CREATION_TS = "chunk_creation_ts"
+
+  def mappingFunction(controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink],
+                      streamContext: StreamContext,
+                      chunkSize: Int,
+                      timeOutDuration: Long)
+                     (key: String,
+                      value: Iterator[Record],
+                      state: GroupState[Record]): Iterator[Record] = {
 
 
-  private def executePipeline(controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext, iterator: Iterator[Record]) = {
+    val currentTimestamp = new Date().getTime
+    val inputRecords = value.toList
+    val allRecords = if (state.exists) state.get.getField(ALL_RECORDS).getRawValue.asInstanceOf[List[Record]] ++ inputRecords else inputRecords
+    val recordChunks = allRecords.grouped(chunkSize).toList
+
+
+    if (state.hasTimedOut || (state.exists && (currentTimestamp - state.get.getField(CHUNK_CREATION_TS).asLong()) >= timeOutDuration)) {
+      state.remove()
+    //  logger.debug("TIMEOUT key " + key + ", flushing " + allRecords.size + " records in " + recordChunks.size + "chunks")
+      recordChunks
+        .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
+        .iterator
+    }
+    else if (recordChunks.last.size == chunkSize) {
+      state.remove()
+      //logger.debug("REMOVE key " + key + ", flushing " + allRecords.size + " records in " + recordChunks.size + "chunks")
+      recordChunks
+        .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
+        .iterator
+    }
+    else if (!state.exists) {
+
+      val newChunk = new StandardRecord("chunk_record") //Chunk(key, recordChunks.last)
+      newChunk.setObjectField(ALL_RECORDS, recordChunks.last)
+      newChunk.setStringField(FieldDictionary.RECORD_KEY, key)
+      newChunk.setLongField(CHUNK_CREATION_TS, new Date().getTime )
+     // logger.debug("CREATE key " + key + " new chunk with " + allRecords.size + " records")
+
+      state.update(newChunk)
+      state.setTimeoutDuration(timeOutDuration)
+
+      recordChunks
+        .slice(0, recordChunks.length - 1)
+        .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
+        .iterator
+    }
+
+
+    else {
+      val currentChunk = state.get
+      if (recordChunks.size == 1) {
+        currentChunk.setObjectField(ALL_RECORDS, allRecords)
+        state.update(currentChunk)
+       // logger.debug("UPDATE key " + key + ", allRecords " + allRecords.size + ", recordChunks " + recordChunks.size)
+        Iterator.empty
+      }else{
+        currentChunk.setObjectField(ALL_RECORDS, recordChunks.last)
+        //logger.debug("UPDATE key " + key + ", allRecords " + allRecords.size + ", recordChunks " + recordChunks.size)
+
+        state.update(currentChunk)
+        state.setTimeoutDuration(timeOutDuration)
+
+        recordChunks
+          .slice(0, recordChunks.length - 1)
+          .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
+          .iterator
+      }
+
+    }
+
+
+  }
+
+  private def executePipeline(controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext, iterator: Iterator[Record])
+
+  = {
     val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
 
 
@@ -182,6 +259,9 @@ trait StructuredStreamProviderService extends ControllerService {
     */
   def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): StreamingQuery = {
 
+
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+
     // make sure controller service lookup won't be serialized !!
     streamContext.setControllerServiceLookup(null)
 
@@ -195,19 +275,21 @@ trait StructuredStreamProviderService extends ControllerService {
       streamContext.getPropertyValue(WRITE_TOPICS_KEY_SERIALIZER).asString, null)
 
     // do the parallel processing
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
     val df2 = df.mapPartitions(record => record.map(record => serializeRecords(serializer, keySerializer, record)))
 
     write(df2, controllerServiceLookupSink, streamContext)
       .queryName(streamContext.getIdentifier)
-     // .outputMode("update")
+      // .outputMode("update")
+      .option("checkpointLocation", "checkpoints/" + streamContext.getIdentifier)
       .start()
-     // .processAllAvailable()
+    // .processAllAvailable()
 
   }
 
 
-  protected def serializeRecords(valueSerializer: RecordSerializer, keySerializer: RecordSerializer, record: Record) = {
+  protected def serializeRecords(valueSerializer: RecordSerializer, keySerializer: RecordSerializer, record: Record)
+
+  = {
 
     try {
       val ret = valueSerializer match {
@@ -238,7 +320,9 @@ trait StructuredStreamProviderService extends ControllerService {
 
   }
 
-  private def doSerializeAsString(serializer: RecordSerializer, record: Record): String = {
+  private def doSerializeAsString(serializer: RecordSerializer, record: Record): String
+
+  = {
     val baos: ByteArrayOutputStream = new ByteArrayOutputStream
     serializer.serialize(baos, record)
     val bytes = baos.toByteArray
@@ -248,7 +332,9 @@ trait StructuredStreamProviderService extends ControllerService {
 
   }
 
-  private def doSerialize(serializer: RecordSerializer, record: Record): Array[Byte] = {
+  private def doSerialize(serializer: RecordSerializer, record: Record): Array[Byte]
+
+  = {
     val baos: ByteArrayOutputStream = new ByteArrayOutputStream
     serializer.serialize(baos, record)
     val bytes = baos.toByteArray
@@ -258,7 +344,9 @@ trait StructuredStreamProviderService extends ControllerService {
 
   }
 
-  private def doDeserialize(serializer: RecordSerializer, field: Field): Record = {
+  private def doDeserialize(serializer: RecordSerializer, field: Field): Record
+
+  = {
     val f = field.getRawValue
     val s = if (f.isInstanceOf[String]) f.asInstanceOf[String].getBytes else f;
     val bais = new ByteArrayInputStream(s.asInstanceOf[Array[Byte]])
@@ -269,7 +357,9 @@ trait StructuredStreamProviderService extends ControllerService {
     }
   }
 
-  protected def deserializeRecords(serializer: RecordSerializer, keySerializer: RecordSerializer, r: Record) = {
+  protected def deserializeRecords(serializer: RecordSerializer, keySerializer: RecordSerializer, r: Record)
+
+  = {
     try {
       val deserialized = doDeserialize(serializer, r.getField(FieldDictionary.RECORD_VALUE))
       // copy root record field
