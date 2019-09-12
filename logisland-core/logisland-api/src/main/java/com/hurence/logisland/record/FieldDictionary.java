@@ -48,6 +48,7 @@ public class FieldDictionary {
     public static final String CHUNK_AVG = "chunk_avg";
     public static final String CHUNK_SAX = "chunk_sax";
     public static final String CHUNK_SIZE = "chunk_size";
+    public static final String CHUNK_VALUE = "chunk_value";
     public static final String CHUNK_SIZE_BYTES ="chunk_size_bytes";
     public static final String CHUNK_WINDOW_MS = "chunk_window_ms";
 
