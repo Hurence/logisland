@@ -32,6 +32,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.rest.service.rest.RestClientService;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.lookup.LookupFailureException;
 import com.hurence.logisland.service.lookup.RecordLookupService;
@@ -65,7 +66,7 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
         @DynamicProperty(name = "*", value = "*", description = "All dynamic properties are added as HTTP headers with the name " +
                 "as the header name and the value as the header value.")
 })
-public class RestLookupService extends AbstractControllerService implements RecordLookupService {
+public class RestLookupService extends AbstractControllerService implements RestClientService {
     static final PropertyDescriptor URL = new PropertyDescriptor.Builder()
             .name("rest.lookup.url")
             .displayName("URL")
@@ -150,14 +151,14 @@ public class RestLookupService extends AbstractControllerService implements Reco
     public static final PropertyDescriptor PROXY_CONFIGURATION_SERVICE
             = ProxyConfiguration.createProxyConfigPropertyDescriptor(true, PROXY_SPECS);
 
-    static final String MIME_TYPE_KEY = "mime.type";
-    static final String BODY_KEY = "request.body";
-    static final String METHOD_KEY = "request.method";
+    public static final String MIME_TYPE_KEY = "mime.type";
+    public static final String BODY_KEY = "request.body";
+    public static final String METHOD_KEY = "request.method";
 
     static final List<PropertyDescriptor> DESCRIPTORS;
     static final Set<String> KEYS;
 
-    static final List VALID_VERBS = Arrays.asList("delete", "get", "post", "put");
+    public static final List VALID_VERBS = Arrays.asList("delete", "get", "post", "put");
 
     static {
         DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
