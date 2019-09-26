@@ -22,18 +22,17 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.rest.service.lookup.RestLookupService;
 import com.hurence.logisland.service.lookup.LookupFailureException;
 import com.hurence.logisland.validator.StandardValidators;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Tags({"datastore", "record", "put", "bulk"})
 @CapabilityDescription("Indexes the content of a Record in a Datastore using bulk processor")
@@ -74,14 +73,14 @@ public class CallRequest extends AbstractHttpProcessor
             .expressionLanguageSupported(true)
             .build();
 
-    private static final AllowableValue OVERWRITE_EXISTING =
+    public static final AllowableValue OVERWRITE_EXISTING =
             new AllowableValue("overwrite_existing", "overwrite existing field", "if field already exist");
 
-    private static final AllowableValue KEEP_OLD_FIELD =
+    public static final AllowableValue KEEP_OLD_FIELD =
             new AllowableValue("keep_only_old_field", "keep only old field value", "keep only old field");
 
 
-    private static final PropertyDescriptor CONFLICT_RESOLUTION_POLICY = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor CONFLICT_RESOLUTION_POLICY = new PropertyDescriptor.Builder()
             .name("conflict.resolution.policy")
             .description("What to do when a field with the same name already exists ?")
             .required(false)
@@ -134,37 +133,39 @@ public class CallRequest extends AbstractHttpProcessor
          * loop over events to add them to bulk
          */
         for (Record record : records) {
-            String verb = calculVerb(record, context);
-            String mimeType = calculMimTyp(record, context);
-            String body = calculBody(record, context);
-            Record coordinates = RecordUtils.getRecordOfString(
-                    RestLookupService.BODY_KEY, body,
-                    RestLookupService.MIME_TYPE_KEY, mimeType,
-                    RestLookupService.METHOD_KEY, verb
-            );
+            StandardRecord coordinates = new StandardRecord(record);
+            calculVerb(record, context).ifPresent(verb -> coordinates.setStringField(RestLookupService.METHOD_KEY, verb));
+            calculMimTyp(record, context).ifPresent(mimeType -> coordinates.setStringField(RestLookupService.MIME_TYPE_KEY, mimeType));
+            calculBody(record, context).ifPresent(body -> coordinates.setStringField(RestLookupService.BODY_KEY, body));
             try {
                 restClientService.lookup(coordinates).ifPresent(rsp -> {
                     record.setRecordField(responseFieldName, rsp);
                 });
-            } catch (LookupFailureException ex) {
+            } catch (Exception ex) { //There is other errors than LookupException, The proxyWrapper does wrap those into Reflection exceptions...
                 record.addError(ProcessError.RUNTIME_ERROR.getName(), getLogger(), ex.getMessage());
             }
         }
         return records;
     }
 
-    private String calculBody(Record record, ProcessContext context) {
-//        if (context.getPropertyValue(REQUEST_BODY).isSet()) {
-        return context.getPropertyValue(context.getProperty(REQUEST_BODY)).evaluate(record).asString();
-//        }
-//        return RestLookupService.BO
+    private Optional<String> calculBody(Record record, ProcessContext context) {
+        if (context.getPropertyValue(REQUEST_BODY).isSet()) {
+            return Optional.ofNullable(context.getPropertyValue(REQUEST_BODY.getName()).evaluate(record).asString());
+        }
+        return Optional.empty();
     }
 
-    private String calculMimTyp(Record record, ProcessContext context) {
-        return context.getPropertyValue(context.getProperty(REQUEST_MIME_TYPE)).evaluate(record).asString();
+    private Optional<String> calculMimTyp(Record record, ProcessContext context) {
+        if (context.getPropertyValue(REQUEST_MIME_TYPE).isSet()) {
+            return Optional.ofNullable(context.getPropertyValue(REQUEST_MIME_TYPE.getName()).evaluate(record).asString());
+        }
+        return Optional.empty();
     }
 
-    private String calculVerb(Record record, ProcessContext context) {
-        return context.getPropertyValue(context.getProperty(REQUEST_METHOD)).evaluate(record).asString();
+    private Optional<String> calculVerb(Record record, ProcessContext context) {
+        if (context.getPropertyValue(REQUEST_METHOD).isSet()) {
+            return Optional.ofNullable(context.getPropertyValue(REQUEST_METHOD.getName()).evaluate(record).asString());
+        }
+        return Optional.empty();
     }
 }

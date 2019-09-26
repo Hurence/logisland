@@ -67,7 +67,7 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
                 "as the header name and the value as the header value.")
 })
 public class RestLookupService extends AbstractControllerService implements RestClientService {
-    static final PropertyDescriptor URL = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor URL = new PropertyDescriptor.Builder()
             .name("rest.lookup.url")
             .displayName("URL")
             .description("The URL for the REST endpoint. Expression language is evaluated against the lookup key/value pairs")
