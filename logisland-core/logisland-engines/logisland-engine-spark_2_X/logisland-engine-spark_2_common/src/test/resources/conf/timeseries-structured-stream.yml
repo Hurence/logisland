@@ -10,15 +10,6 @@ engine:
     spark.streaming.kafka.maxRatePerPartition: 10000
   controllerServiceConfigurations:
 
-    - controllerService: local_file_service
-      component: com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService
-      configuration:
-        local.input.path:  /Users/tom/tmp/logisland/data
-
-    - controllerService: console_service
-      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
-      configuration:
-        truncate: false
 
     - controllerService: kafka_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
@@ -104,5 +95,5 @@ engine:
           component: com.hurence.logisland.processor.ConvertToTimeseries
           configuration:
             groupby: tagname
-            metric: avg;max;min;trend;sax:7,0.01,9
+            metric: avg;max;min;trend;sax:7,0.01,10
 
