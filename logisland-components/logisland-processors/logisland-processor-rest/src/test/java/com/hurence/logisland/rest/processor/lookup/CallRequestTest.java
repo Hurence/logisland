@@ -17,17 +17,17 @@ package com.hurence.logisland.rest.processor.lookup;
 
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.lookup.LookupFailureException;
-import com.hurence.logisland.rest.service.lookup.MockRestLookUpService;
+import com.hurence.logisland.service.rest.MockRestClientService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static com.hurence.logisland.rest.processor.lookup.CallRequest.*;
 
@@ -64,17 +64,9 @@ public class CallRequestTest {
     @Test
     public void basic_test() throws InitializationException {
         final TestRunner runner = TestRunners.newTestRunner(new CallRequest());
-        MockRestLookUpService service = new MockRestLookUpService();
-        //build mock urls
-        service.addServerResponse("http://fake.com/employee/1",
-                "{ \"name\" : \"greg\" }".getBytes(StandardCharsets.UTF_8));
-        service.addServerResponse("http://fake.com/employee/2",
-                "{ \"name\" : \"jésus\" }".getBytes(StandardCharsets.UTF_8));
-        service.addServerResponse("http://fake.com/employee/hello",
-                "Hello World !".getBytes(StandardCharsets.UTF_8));
+        MockRestClientService service = new MockRestClientService();
         //enable service
         runner.addControllerService("restLookupService", service);
-        runner.setProperty(service, MockRestLookUpService.URL, "http://fake.com/employee/${employeeId}");
         runner.enableControllerService(service);
         runner.assertValid(service);
 
@@ -98,26 +90,27 @@ public class CallRequestTest {
         out.assertRecordSizeEquals(2);
         out.assertFieldEquals("employeeId", 1);
         out.assertFieldTypeEquals("employeeId", FieldType.INT);
-        out.assertFieldEquals("response", RecordUtils.getRecordOfString("name", "greg"));
         out.assertFieldTypeEquals("response", FieldType.RECORD);
+        MockRecord coordinnates = new MockRecord(out.getField("response").asRecord());
+        coordinnates.assertRecordSizeEquals(1);
+        coordinnates.assertFieldEquals("employeeId", 1);
+        coordinnates.assertFieldTypeEquals("employeeId", FieldType.INT);
         MockRecord out2 = runner.getOutputRecords().get(1);
         out2.assertFieldEquals("employeeId", 2);
         out2.assertFieldTypeEquals("employeeId", FieldType.INT);
-        out2.assertFieldEquals("response", RecordUtils.getRecordOfString("name", "jésus"));
         out2.assertFieldTypeEquals("response", FieldType.RECORD);
+        MockRecord coordinnates2 = new MockRecord(out2.getField("response").asRecord());
+        coordinnates2.assertRecordSizeEquals(1);
+        coordinnates2.assertFieldEquals("employeeId", 2);
+        coordinnates2.assertFieldTypeEquals("employeeId", FieldType.INT);
     }
 
     @Test
     public void basic_test_2() throws InitializationException, IOException, LookupFailureException {
         final TestRunner runner = TestRunners.newTestRunner(new CallRequest());
-        MockRestLookUpService service = new MockRestLookUpService();
-        //build mock urls
-        service.addServerResponse("http://fake.com/employee/hello",
-                "Hello World !".getBytes(StandardCharsets.UTF_8));
+        MockRestClientService service = new MockRestClientService();
         //enable service
         runner.addControllerService("restLookupService", service);
-        runner.setProperty(service, MockRestLookUpService.URL, "http://fake.com/employee/${employeeId}");
-        runner.setProperty(service, MockRestLookUpService.RECORD_SERIALIZER, MockRestLookUpService.STRING_SERIALIZER);
         runner.enableControllerService(service);
         runner.assertValid(service);
 
@@ -130,7 +123,7 @@ public class CallRequestTest {
         //test queries
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
-        runner.enqueue(record);
+        runner.enqueue(new StandardRecord(record));
         runner.run();
         runner.assertAllInputRecordsProcessed();
         runner.assertOutputRecordsCount(1);
@@ -139,8 +132,11 @@ public class CallRequestTest {
         out.assertRecordSizeEquals(2);
         out.assertFieldEquals("employeeId", "hello");
         out.assertFieldTypeEquals("employeeId", FieldType.STRING);
-        out.assertFieldEquals("response", RecordUtils.getRecordOfString("record_value", "Hello World !"));
         out.assertFieldTypeEquals("response", FieldType.RECORD);
+        MockRecord coordinnates = new MockRecord(out.getField("response").asRecord());
+        coordinnates.assertRecordSizeEquals(1);
+        coordinnates.assertFieldEquals("employeeId", "hello");
+        coordinnates.assertFieldTypeEquals("employeeId", FieldType.STRING);
     }
 
 

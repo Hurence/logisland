@@ -32,10 +32,9 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.rest.service.rest.RestClientService;
+import com.hurence.logisland.service.rest.RestClientService;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.lookup.LookupFailureException;
-import com.hurence.logisland.service.lookup.RecordLookupService;
 import com.hurence.logisland.service.proxy.ProxyConfiguration;
 import com.hurence.logisland.service.proxy.ProxyConfigurationService;
 import com.hurence.logisland.service.proxy.ProxySpec;
@@ -67,14 +66,7 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
                 "as the header name and the value as the header value.")
 })
 public class RestLookupService extends AbstractControllerService implements RestClientService {
-    public static final PropertyDescriptor URL = new PropertyDescriptor.Builder()
-            .name("rest.lookup.url")
-            .displayName("URL")
-            .description("The URL for the REST endpoint. Expression language is evaluated against the lookup key/value pairs")
-            .expressionLanguageSupported(false)
-            .required(true)
-            .addValidator(StandardValidators.URL_VALIDATOR)
-            .build();
+
 
     public static final AllowableValue AVRO_SERIALIZER =
             new AllowableValue(AvroSerializer.class.getName(), "avro serialization", "serialize events as avro blocs");
@@ -434,5 +426,20 @@ public class RestLookupService extends AbstractControllerService implements Rest
     @Override
     public Set<String> getRequiredKeys() {
         return KEYS;
+    }
+
+    @Override
+    public String getMimeTypeKey() {
+        return MIME_TYPE_KEY;
+    }
+
+    @Override
+    public String getMethodKey() {
+        return METHOD_KEY;
+    }
+
+    @Override
+    public String getbodyKey() {
+        return BODY_KEY;
     }
 }

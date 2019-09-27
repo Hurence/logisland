@@ -164,6 +164,11 @@ public class MockRecord extends StandardRecord {
             logger.debug("testing field {}", field);
             Assert.assertEquals(field, this.getField(field.getName()));
         });
+        this.getAllFields().forEach(field -> {
+            if (this.isInternField(field)) return;
+            logger.debug("testing field {}", field);
+            Assert.assertEquals(field, expected.getField(field.getName()));
+        });
     }
 
 }

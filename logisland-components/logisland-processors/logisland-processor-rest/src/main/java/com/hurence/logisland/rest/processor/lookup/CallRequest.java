@@ -22,15 +22,12 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.RecordUtils;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.rest.service.lookup.RestLookupService;
-import com.hurence.logisland.service.lookup.LookupFailureException;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.error.ErrorUtils;
 
 import java.util.*;
 
@@ -134,15 +131,15 @@ public class CallRequest extends AbstractHttpProcessor
          */
         for (Record record : records) {
             StandardRecord coordinates = new StandardRecord(record);
-            calculVerb(record, context).ifPresent(verb -> coordinates.setStringField(RestLookupService.METHOD_KEY, verb));
-            calculMimTyp(record, context).ifPresent(mimeType -> coordinates.setStringField(RestLookupService.MIME_TYPE_KEY, mimeType));
-            calculBody(record, context).ifPresent(body -> coordinates.setStringField(RestLookupService.BODY_KEY, body));
+            calculVerb(record, context).ifPresent(verb -> coordinates.setStringField(restClientService.getMethodKey(), verb));
+            calculMimTyp(record, context).ifPresent(mimeType -> coordinates.setStringField(restClientService.getMimeTypeKey(), mimeType));
+            calculBody(record, context).ifPresent(body -> coordinates.setStringField(restClientService.getbodyKey(), body));
             try {
                 restClientService.lookup(coordinates).ifPresent(rsp -> {
                     record.setRecordField(responseFieldName, rsp);
                 });
             } catch (Exception ex) { //There is other errors than LookupException, The proxyWrapper does wrap those into Reflection exceptions...
-                record.addError(ProcessError.RUNTIME_ERROR.getName(), getLogger(), ex.getMessage());
+                ErrorUtils.handleError(getLogger(), ex, record, ProcessError.RUNTIME_ERROR.getName());
             }
         }
         return records;

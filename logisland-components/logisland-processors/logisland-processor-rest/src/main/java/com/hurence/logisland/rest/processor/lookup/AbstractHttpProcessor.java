@@ -20,7 +20,7 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.rest.service.rest.RestClientService;
+import com.hurence.logisland.service.rest.RestClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

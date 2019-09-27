@@ -31,8 +31,7 @@ public class MockRestLookUpService extends RestLookupService {
     }
 
     @Override
-    protected Response executeRequest(Request request) throws IOException {
-        super.executeRequest(request);
+    protected Response executeRequest(Request request) {
         String url = request.url().toString();
         if (!fakeServer.containsKey(url)) {
             throw new IllegalArgumentException(String.format("Please add a fake payload for url : '%s'", url));
