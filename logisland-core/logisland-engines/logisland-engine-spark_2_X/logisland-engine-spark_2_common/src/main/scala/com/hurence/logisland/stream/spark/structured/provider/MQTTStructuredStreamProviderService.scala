@@ -35,6 +35,7 @@ import java.sql.Timestamp
 import java.util
 import java.util.Collections
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
@@ -42,12 +43,11 @@ import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, Standar
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
-import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
-import org.apache.spark.sql.streaming.{DataStreamReader, DataStreamWriter}
 
-
+@CapabilityDescription("Provide a ways to use Mqtt a input or output in StructuredStream streams")
 class MQTTStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
 
 
@@ -66,6 +66,7 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
     @OnEnabled
     @throws[InitializationException]
     override def init(context: ControllerServiceInitializationContext): Unit = {
+        super.init(context)
         this.synchronized {
             try {
 

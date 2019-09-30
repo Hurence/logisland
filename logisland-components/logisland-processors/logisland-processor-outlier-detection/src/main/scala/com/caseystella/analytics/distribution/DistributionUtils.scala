@@ -17,7 +17,7 @@ package com.caseystella.analytics.distribution
 
 import com.twitter.algebird.QTree
 import com.twitter.algebird.QTreeSemigroup
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object DistributionUtils {
   def createTree(values: java.lang.Iterable[java.lang.Double] ) : QTree[Double] = {

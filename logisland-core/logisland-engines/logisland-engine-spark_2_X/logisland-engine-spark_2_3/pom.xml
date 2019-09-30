@@ -6,7 +6,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-engine-spark_2_X</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
     <artifactId>logisland-engine-spark_2_3</artifactId>
     <packaging>jar</packaging>
@@ -15,7 +15,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <properties>
 
         <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.3.0</spark.version>
+        <spark.version>2.3.3</spark.version>
         <kafka.version>0.10.2.1</kafka.version>
         <scala.version>2.11.8</scala.version>
 

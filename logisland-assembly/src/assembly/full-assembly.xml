@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>full-bin</id>
+    <formats>
+        <format>dir</format>
+        <format>tar.gz</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <baseDirectory>logisland-${project.version}</baseDirectory>
+    <moduleSets>
+        <moduleSet>
+            <!-- Enable access to all projects in the current multimodule build! -->
+            <useAllReactorProjects>true</useAllReactorProjects>
+
+            <!-- Now, select which projects to include in this module-set. -->
+            <includes>
+                <!--                SERVICES          -->
+                <include>com.hurence.logisland:logisland-service-inmemory-cache</include>
+                <include>com.hurence.logisland:logisland-service-ip-to-geo-maxmind</include>
+                <include>com.hurence.logisland:logisland-service-hbase_1_1_2-client</include>
+                <include>com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client</include>
+                <include>com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client</include>
+                <include>com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client</include>
+                <include>com.hurence.logisland:logisland-service-elasticsearch_7_x-client</include>
+                <include>com.hurence.logisland:logisland-service-solr_5_5_5-client</include>
+                <include>com.hurence.logisland:logisland-service-solr_6_6_2-client</include>
+                <include>com.hurence.logisland:logisland-service-solr_8-client</include>
+                <include>com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client</include>
+                <include>com.hurence.logisland:logisland-service-solr_chronix_8-client</include>
+                <include>com.hurence.logisland:logisland-service-mongodb-client</include>
+                <include>com.hurence.logisland:logisland-service-cassandra-client</include>
+                <include>com.hurence.logisland:logisland-service-influxdb-client</include>
+                <include>com.hurence.logisland:logisland-service-redis</include>
+                <!--                PROCESSORS          -->
+                <include>com.hurence.logisland:logisland-processor-common</include>
+                <include>com.hurence.logisland:logisland-processor-xml</include>
+                <include>com.hurence.logisland:logisland-processor-web-analytics</include>
+                <include>com.hurence.logisland:logisland-processor-cyber-security</include>
+                <include>com.hurence.logisland:logisland-processor-useragent</include>
+                <include>com.hurence.logisland:logisland-processor-querymatcher</include>
+                <include>com.hurence.logisland:logisland-processor-outlier-detection</include>
+                <include>com.hurence.logisland:logisland-processor-timeseries</include>
+                <include>com.hurence.logisland:logisland-processor-enrichment</include>
+                <include>com.hurence.logisland:logisland-processor-hbase</include>
+                <include>com.hurence.logisland:logisland-processor-elasticsearch</include>
+                <include>com.hurence.logisland:logisland-processor-excel</include>
+                <include>com.hurence.logisland:logisland-processor-scripting</include>
+                <!--                CONNECTORS          -->
+                <include>com.hurence.logisland:logisland-connector-opc</include>
+            </includes>
+            <binaries>
+                <directoryMode>0770</directoryMode>
+                <fileMode>0660</fileMode>
+                <outputDirectory>lib/plugins</outputDirectory>
+                <includeDependencies>false</includeDependencies>
+                <unpack>false</unpack>
+            </binaries>
+        </moduleSet>
+    </moduleSets>
+    <componentDescriptors>
+        <componentDescriptor>./shared-dependencies.xml</componentDescriptor>
+    </componentDescriptors>
+</assembly>

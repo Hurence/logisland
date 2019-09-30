@@ -26,7 +26,10 @@ import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.outlier.streaming.mad.SketchyMovingMAD;
 import com.hurence.logisland.annotation.behavior.Stateful;
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
@@ -41,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 
-@Category(ComponentCategory.ANALYTICS)
 @Stateful
 @Tags({"analytic", "outlier", "record", "iot", "timeseries"})
 @CapabilityDescription("Outlier Analysis: A Hybrid Approach\n" +
@@ -350,7 +352,7 @@ public class DetectOutliers extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         logger.info("init");
 
@@ -580,9 +582,6 @@ public class DetectOutliers extends AbstractProcessor {
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
-        // context may not have been initialized
-        if(outlierConfig == null)
-            init(context);
 
         Collection<Record> list = new ArrayList<>();
 

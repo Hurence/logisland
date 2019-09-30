@@ -1,0 +1,127 @@
+version: 1.2.0
+documentation: LogIsland future factory job
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index blockchain transactions with logisland
+  configuration:
+    spark.app.name: BlockchainTest
+    spark.master: local[*]
+    spark.driver.memory: 512M
+    spark.driver.cores: 1
+    spark.executor.memory: 512M
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 2000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 10000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4040
+
+  controllerServiceConfigurations:
+
+    - controllerService: kc_source_service
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
+      configuration:
+        kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
+        kc.data.value.converter.properties: |
+          record.serializer=com.hurence.logisland.serializer.KryoSerializer
+        kc.data.key.converter.properties: |
+          schemas.enable=false
+        kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
+        kc.worker.tasks.max: 1
+        kc.connector.class: com.datamountaineer.streamreactor.connect.blockchain.source.BlockchainSourceConnector
+        kc.connector.offset.backing.store: memory
+        kc.connector.properties: |
+          connect.blockchain.source.url=wss://ws.blockchain.info/inv
+          connect.blockchain.source.kafka.topic=blockchain
+
+    - controllerService: kafka_out_service
+      component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
+      configuration:
+        kafka.output.topics: logisland_raw
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      type: service
+      documentation: elasticsearch service
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: es-logisland
+        batch.size: 5000
+
+  streamConfigurations:
+  ################ indexing stream ###############
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that converts raw excel file content into structured log records
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        # all the parsed records are added to elasticsearch by bulk
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that indexes processed events in elasticsearch
+          configuration:
+            elasticsearch.client.service: elasticsearch_service
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+
+
+    ######### parsing stream ##############
+    - stream: parsing_stream_source
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.topics: /a/in
+        read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        read.stream.service.provider: kc_source_service
+        write.topics: logisland_raw
+        write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        write.stream.service.provider: kafka_out_service
+      processorConfigurations:
+        - processor: flatten
+          component: com.hurence.logisland.processor.FlatMap
+          type: processor
+          documentation: "extract from root record"
+          configuration:
+            keep.root.record: false
+            copy.root.record.fields: true

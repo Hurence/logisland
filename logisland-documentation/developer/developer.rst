@@ -165,26 +165,19 @@ Building
 
 The following commands must be run from the top-level directory.
 
-To build a light version of logisland with only common processors installed, run the unit tests and integration tests:
+To build logisland and run the unit tests
 
 .. code-block:: sh
 
-    mvn -Pintegration-tests install
+    mvn clean package
 
-To build a heavy version of logisland with all logisland plugins installed, run the unit tests and integration tests:
-
+To build logisland, run the unit tests an integration tests:
 
 .. code-block:: sh
 
-    mvn -P full,integration-tests install
+    mvn clean -Pintegration-tests verify
 
-If you wish to run unit tests and integration tests, no more, use the maven 'verify' phase instead of 'install'
-
-If you wish to skip the unit as well as integration tests you can do this by adding `-DskipTests` to the command line.
-
-If you wish to skip the integration tests, remove the 'integration-tests' profile.
-
-If you wish to add all the plugins to the build, add the 'full' profile.
+If you wish to skip the unit tests, add -DskipTests.
 
 Unit tests and integration tests guidelines
 -------------------------------------------
@@ -215,7 +208,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
    ./update-version.sh -o 1\\.1\\.2 -n 14.4
     mvn license:format
     mvn test
-    mvn -DperformRelease=true clean deploy -Pfull
+    mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
 
@@ -241,7 +234,7 @@ Building the image
 .. code-block:: sh
 
     # build logisland
-    mvn install -DskipTests -Pdocker -Pfull
+    mvn install -DskipTests -Pdocker
 
     # verify image build
     docker images

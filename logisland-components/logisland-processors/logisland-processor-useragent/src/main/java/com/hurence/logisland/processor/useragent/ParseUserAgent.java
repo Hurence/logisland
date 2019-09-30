@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.useragent;
 
 import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginLoader;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
@@ -30,8 +31,6 @@ import com.hurence.logisland.validator.Validator;
 import nl.basjes.parse.useragent.UserAgent;
 import nl.basjes.parse.useragent.UserAgentAnalyzer;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -221,7 +220,7 @@ public class ParseUserAgent extends AbstractProcessor {
 
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         getLogger().debug("Initializing User-Agent Processor");
 

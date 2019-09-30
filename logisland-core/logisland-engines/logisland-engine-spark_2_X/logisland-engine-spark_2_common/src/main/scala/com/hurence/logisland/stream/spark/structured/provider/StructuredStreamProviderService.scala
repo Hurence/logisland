@@ -35,225 +35,267 @@ import java.util
 
 import com.hurence.logisland.controller.ControllerService
 import com.hurence.logisland.record._
-import com.hurence.logisland.serializer.{RecordSerializer, SerializerProvider}
+import com.hurence.logisland.serializer.{JsonSerializer, NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, ProcessorMetrics}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.streaming.DataStreamWriter
+import org.apache.spark.sql.streaming._
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 trait StructuredStreamProviderService extends ControllerService {
 
-    val logger = LoggerFactory.getLogger(this.getClass)
+  val logger = LoggerFactory.getLogger(this.getClass)
 
+
+  /**
+    * create a streaming DataFrame that represents data received
+    *
+    * @param spark
+    * @param streamContext
+    * @return DataFrame currently loaded
+    */
+  protected def read(spark: SparkSession, streamContext: StreamContext): Dataset[Record]
+
+  /**
+    * create a streaming DataFrame that represents data received
+    *
+    * @param streamContext
+    * @return DataFrame currently loaded
+    */
+  protected def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_]
+
+  /**
+    *
+    *
+    * @param spark
+    * @param streamContext
+    * @return
+    */
+  def load(spark: SparkSession, controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): Dataset[Record] = {
+    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+
+    import spark.implicits._
+
+    val df = read(spark, streamContext)
 
     /**
-      * create a streaming DataFrame that represents data received
-      *
-      * @param spark
-      * @param streamContext
-      * @return DataFrame currently loaded
+      * create serializers
       */
-    protected def read(spark: SparkSession, streamContext: StreamContext): Dataset[Record]
+    val serializer = SerializerProvider.getSerializer(
+      streamContext.getPropertyValue(READ_TOPICS_SERIALIZER).asString,
+      streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 
-    /**
-      * create a streaming DataFrame that represents data received
-      *
-      * @param streamContext
-      * @return DataFrame currently loaded
-      */
-    protected def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_]
-
-    /**
-      *
-      *
-      * @param spark
-      * @param streamContext
-      * @return
-      */
-    def load(spark: SparkSession, controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): Dataset[Record] = {
-        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-
-        val df = read(spark, streamContext)
+    val keySerializer = SerializerProvider.getSerializer(
+      streamContext.getPropertyValue(READ_TOPICS_KEY_SERIALIZER).asString,
+      null)
 
 
-        df.mapPartitions(iterator => {
+    // convert to logisland records
+
+    val processingRecords: Dataset[Record] = df.flatMap(r => {
+      serializer match {
+        case sr: NoopSerializer => Some(r)
+        case _ => deserializeRecords(serializer, keySerializer, r)
+      }
+    })
 
 
-            val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
+    if (streamContext.getPropertyValue(GROUPBY).isSet) {
 
-            /**
-              * create serializers
-              */
-            val serializer = SerializerProvider.getSerializer(
-                streamContext.getPropertyValue(READ_TOPICS_SERIALIZER).asString,
-                streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
-
-            val keySerializer = SerializerProvider.getSerializer(
-                streamContext.getPropertyValue(READ_TOPICS_KEY_SERIALIZER).asString,
-                null)
+      val keys = streamContext.getPropertyValue(GROUPBY).asString()
 
 
-            val pipelineMetricPrefix = streamContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
-
-
-            // convert to logisland records
-            val inEnvents = iterator.toList
-
-            val incomingEvents = inEnvents
-                .flatMap(r => {
-                    var processingRecords: util.Collection[Record] = deserializeRecords(serializer, keySerializer, r).toList
-
-                    // loop over processor chain
-                    streamContext.getProcessContexts.foreach(processorContext => {
-                        val startTime = System.currentTimeMillis()
-                        val processor = processorContext.getProcessor
-
-                        val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
-                            processorContext.getIdentifier + ".processing_time_ms").time()
-
-
-                        // injects controller service lookup into processor context
-                        if (processor.hasControllerService) {
-                            //  val controllerServiceLookup = streamContext.getControllerServiceLookup
-                            processorContext.setControllerServiceLookup(controllerServiceLookup)
-                        }
-
-                        // processor setup (don't forget that)
-                        processor.init(processorContext)
-
-                        // do the actual processing
-                        processingRecords = processor.process(processorContext, processingRecords)
-
-                        // compute metrics
-                        ProcessorMetrics.computeMetrics(
-                            pipelineMetricPrefix + processorContext.getIdentifier + ".",
-                            inEnvents,
-                            processingRecords,
-                            0,
-                            inEnvents.size,
-                            System.currentTimeMillis() - startTime)
-
-                        processorTimerContext.stop()
-
-                        processingRecords
-                    })
-                    processingRecords
-                })
-                .iterator
-
-            incomingEvents
+      processingRecords
+        .filter(_.hasField(keys))
+        .groupByKey(_.getField(keys).asString())
+        .flatMapGroupsWithState(
+          outputMode = OutputMode.Append,
+          timeoutConf = GroupStateTimeout.NoTimeout)( (sessionId: String, eventsIter: Iterator[Record], state: GroupState[Record]) =>{
+            executePipeline(controllerServiceLookupSink, streamContext, eventsIter)
         })
 
-
+    } else {
+      processingRecords.mapPartitions(iterator => {
+        executePipeline(controllerServiceLookupSink, streamContext, iterator)
+      })
     }
 
 
-    /**
-      * create a streaming DataFrame that represents data received
-      *
-      * @param streamContext
-      * @return DataFrame currently loaded
-      */
-    def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext) = {
-
-        // make sure controller service lookup won't be serialized !!
-        streamContext.setControllerServiceLookup(null)
-
-        // create serializer
-        val serializer = SerializerProvider.getSerializer(
-            streamContext.getPropertyValue(WRITE_TOPICS_SERIALIZER).asString,
-            streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
-
-        // create serializer
-        val keySerializer = SerializerProvider.getSerializer(
-            streamContext.getPropertyValue(WRITE_TOPICS_KEY_SERIALIZER).asString, null)
-
-        // do the parallel processing
-        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-        val df2 = df.
-            mapPartitions(record =>
-                record.map(record => serializeRecords(serializer, keySerializer, record)))
-        write(df2, controllerServiceLookupSink, streamContext).queryName(streamContext.getIdentifier).start()
+  }
 
 
+
+  private def executePipeline(controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext, iterator: Iterator[Record]) = {
+    val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
+
+
+    // convert to logisland records
+    var processingRecords: util.Collection[Record] = iterator.toList
+
+    val pipelineMetricPrefix = streamContext.getIdentifier + "."
+    // loop over processor chain
+    streamContext.getProcessContexts.foreach(processorContext => {
+      val startTime = System.currentTimeMillis()
+      val processor = processorContext.getProcessor
+
+      val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
+        processorContext.getIdentifier + ".processing_time_ms").time()
+
+      // injects controller service lookup into processor context
+      if (processor.hasControllerService) {
+        processorContext.setControllerServiceLookup(controllerServiceLookup)
+      }
+
+      // processor setup (don't forget that)
+      processor.init(processorContext)
+
+      // do the actual processing
+      processingRecords = processor.process(processorContext, processingRecords)
+
+      // compute metrics
+      ProcessorMetrics.computeMetrics(
+        pipelineMetricPrefix + processorContext.getIdentifier + ".",
+        processingRecords,
+        processingRecords,
+        0,
+        processingRecords.size,
+        System.currentTimeMillis() - startTime)
+
+      processorTimerContext.stop()
+    })
+
+
+    processingRecords.asScala.iterator
+  }
+
+  /**
+    * create a streaming DataFrame that represents data received
+    *
+    * @param streamContext
+    * @return DataFrame currently loaded
+    */
+  def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): StreamingQuery = {
+
+    // make sure controller service lookup won't be serialized !!
+    streamContext.setControllerServiceLookup(null)
+
+    // create serializer
+    val serializer = SerializerProvider.getSerializer(
+      streamContext.getPropertyValue(WRITE_TOPICS_SERIALIZER).asString,
+      streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
+
+    // create serializer
+    val keySerializer = SerializerProvider.getSerializer(
+      streamContext.getPropertyValue(WRITE_TOPICS_KEY_SERIALIZER).asString, null)
+
+    // do the parallel processing
+    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+    val df2 = df.mapPartitions(record => record.map(record => serializeRecords(serializer, keySerializer, record)))
+
+    write(df2, controllerServiceLookupSink, streamContext)
+      .queryName(streamContext.getIdentifier)
+     // .outputMode("update")
+      .start()
+     // .processAllAvailable()
+
+  }
+
+
+  protected def serializeRecords(valueSerializer: RecordSerializer, keySerializer: RecordSerializer, record: Record) = {
+
+    try {
+      val ret = valueSerializer match {
+        case s: JsonSerializer =>
+          new StandardRecord()
+            .setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, doSerializeAsString(valueSerializer, record))
+        case _ =>
+          new StandardRecord()
+            .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, doSerialize(valueSerializer, record))
+      }
+      val fieldKey = record.getField(FieldDictionary.RECORD_KEY);
+      if (fieldKey != null) {
+        ret.setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, doSerialize(keySerializer, new StandardRecord().setField(fieldKey)))
+      } else {
+        ret.setField(FieldDictionary.RECORD_KEY, FieldType.NULL, null)
+
+      }
+      ret
+
+    } catch {
+      case t: Throwable =>
+        logger.error(s"exception while serializing events ${
+          t.getMessage
+        }")
+        null
     }
 
 
-    protected def serializeRecords(valueSerializer: RecordSerializer, keySerializer: RecordSerializer, record: Record) = {
+  }
 
-        try {
-            val ret = new StandardRecord()
-                .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, doSerialize(valueSerializer, record))
-            val fieldKey = record.getField(FieldDictionary.RECORD_KEY);
-            if (fieldKey != null) {
-                ret.setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, doSerialize(keySerializer, new StandardRecord().setField(fieldKey)))
-            } else {
-                ret.setField(FieldDictionary.RECORD_KEY, FieldType.NULL, null)
+  private def doSerializeAsString(serializer: RecordSerializer, record: Record): String = {
+    val baos: ByteArrayOutputStream = new ByteArrayOutputStream
+    serializer.serialize(baos, record)
+    val bytes = baos.toByteArray
+    baos.close()
+    new String(bytes)
 
-            }
-            ret
 
-        } catch {
-            case t: Throwable =>
-                logger.error(s"exception while serializing events ${t.getMessage}")
-                null
+  }
+
+  private def doSerialize(serializer: RecordSerializer, record: Record): Array[Byte] = {
+    val baos: ByteArrayOutputStream = new ByteArrayOutputStream
+    serializer.serialize(baos, record)
+    val bytes = baos.toByteArray
+    baos.close()
+    bytes
+
+
+  }
+
+  private def doDeserialize(serializer: RecordSerializer, field: Field): Record = {
+    val f = field.getRawValue
+    val s = if (f.isInstanceOf[String]) f.asInstanceOf[String].getBytes else f;
+    val bais = new ByteArrayInputStream(s.asInstanceOf[Array[Byte]])
+    try {
+      serializer.deserialize(bais)
+    } finally {
+      bais.close()
+    }
+  }
+
+  protected def deserializeRecords(serializer: RecordSerializer, keySerializer: RecordSerializer, r: Record) = {
+    try {
+      val deserialized = doDeserialize(serializer, r.getField(FieldDictionary.RECORD_VALUE))
+      // copy root record field
+      if (r.hasField(FieldDictionary.RECORD_NAME))
+        deserialized.setField(r.getField(FieldDictionary.RECORD_NAME))
+
+      if (r.hasField(FieldDictionary.RECORD_KEY) && r.getField(FieldDictionary.RECORD_KEY).getRawValue != null) {
+        val deserializedKey = doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY))
+        if (deserializedKey.hasField(FieldDictionary.RECORD_VALUE) && deserializedKey.getField(FieldDictionary.RECORD_VALUE).getRawValue != null) {
+          val f = deserializedKey.getField(FieldDictionary.RECORD_VALUE)
+          deserialized.setField(FieldDictionary.RECORD_KEY, f.getType, f.getRawValue)
+        } else {
+          logger.warn("Unable to serialize key for record $r with serializer $keySerializer")
         }
+      }
 
+      Some(deserialized)
 
+    } catch {
+      case t: Throwable =>
+        logger.error(s"exception while deserializing events ${
+          t.getMessage
+        }")
+        None
     }
-
-    private def doSerialize(serializer: RecordSerializer, record: Record): Array[Byte] = {
-        val baos: ByteArrayOutputStream = new ByteArrayOutputStream
-        serializer.serialize(baos, record)
-        val bytes = baos.toByteArray
-        baos.close()
-        bytes
-
-
-    }
-
-    private def doDeserialize(serializer: RecordSerializer, field: Field): Record = {
-        val f = field.getRawValue
-        val s = if (f.isInstanceOf[String]) f.asInstanceOf[String].getBytes else f;
-        val bais = new ByteArrayInputStream(s.asInstanceOf[Array[Byte]])
-        try {
-            serializer.deserialize(bais)
-        } finally {
-            bais.close()
-        }
-    }
-
-    protected def deserializeRecords(serializer: RecordSerializer, keySerializer: RecordSerializer, r: Record) = {
-        try {
-            val deserialized = doDeserialize(serializer, r.getField(FieldDictionary.RECORD_VALUE))
-            // copy root record field
-            if (r.hasField(FieldDictionary.RECORD_NAME))
-                deserialized.setField(r.getField(FieldDictionary.RECORD_NAME))
-
-            if (r.hasField(FieldDictionary.RECORD_KEY) && r.getField(FieldDictionary.RECORD_KEY).getRawValue != null) {
-                val deserializedKey = doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY))
-                if (deserializedKey.hasField(FieldDictionary.RECORD_VALUE) && deserializedKey.getField(FieldDictionary.RECORD_VALUE).getRawValue != null) {
-                    val f = deserializedKey.getField(FieldDictionary.RECORD_VALUE)
-                    deserialized.setField(FieldDictionary.RECORD_KEY, f.getType, f.getRawValue)
-                } else {
-                    logger.warn("Unable to serialize key for record $r with serializer $keySerializer")
-                }
-            }
-
-            Some(deserialized)
-
-        } catch {
-            case t: Throwable =>
-                logger.error(s"exception while deserializing events ${t.getMessage}")
-                None
-        }
-    }
+  }
 
 
 }

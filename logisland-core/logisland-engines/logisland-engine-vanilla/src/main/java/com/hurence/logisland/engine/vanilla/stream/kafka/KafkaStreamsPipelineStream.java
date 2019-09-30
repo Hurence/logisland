@@ -16,6 +16,7 @@
 package com.hurence.logisland.engine.vanilla.stream.kafka;
 
 import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.stream.AbstractRecordStream;
@@ -69,7 +70,7 @@ public class KafkaStreamsPipelineStream extends AbstractRecordStream {
     }
 
     @Override
-    public void init(ComponentContext context) {
+    public void init(ComponentContext context) throws InitializationException {
         super.init(context);
         StreamContext streamContext = (StreamContext) context;
         Topology topology = new Topology();

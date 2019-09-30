@@ -25,11 +25,12 @@ import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.net.util.IPAddressUtil;
+
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -426,45 +427,45 @@ public class IpToFqdnTest {
     @Test
     public void testValidatorIpV4() {
         //VALID
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("2"));
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("255"));
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("024.003"));
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("024.3.78"));
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("255.255.255.255"));
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("1.3.78.159"));
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("024.003.78.159"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("2"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("255"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("024.003"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("024.3.78"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("255.255.255.255"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("1.3.78.159"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("024.003.78.159"));
 
         //VALID, BUT VALIDITY IS JUSTIFIED OR NOT ?
         //It seems that it supports greater integer than 255 for most right part. It convert it in several bytes for completing address
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("125.1288"));
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("256"));//valid , is it okay ? probably converting integer into bytes
-        Assert.assertTrue(IPAddressUtil.isIPv4LiteralAddress("257"));//valid , is it okay ? probably converting integer into bytes
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("125.1288"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("256"));//valid , is it okay ? probably converting integer into bytes
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("257"));//valid , is it okay ? probably converting integer into bytes
 
         //NOT VALID
-        Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("a"));
-        Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("256.1"));
-        Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("125.1288.123"));
-        Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("125.128.123.255.1"));
-        Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("125.128.123.2551"));
-        Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("1288.128"));
-        Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress(""));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("a"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("256.1"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("125.1288.123"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("125.128.123.255.1"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("125.128.123.2551"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("1288.128"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address(""));
     }
 
     @Test
     public void testValidatorIpV6() {
         //VALID
-        Assert.assertTrue(IPAddressUtil.isIPv6LiteralAddress("2::"));
-        Assert.assertTrue(IPAddressUtil.isIPv6LiteralAddress("::255"));
-        Assert.assertTrue(IPAddressUtil.isIPv6LiteralAddress("02f4::0a03"));
-        Assert.assertTrue(IPAddressUtil.isIPv6LiteralAddress("024F:a3:B78::"));
-        Assert.assertTrue(IPAddressUtil.isIPv6LiteralAddress("1234:45af:1234:1234:1234:1234:1234:1234"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet6Address("2::"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet6Address("::255"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet6Address("02f4::0a03"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet6Address("024F:a3:B78::"));
+        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet6Address("1234:45af:1234:1234:1234:1234:1234:1234"));
 
         //NOT VALID
-        Assert.assertFalse(IPAddressUtil.isIPv6LiteralAddress("g485::"));
-        Assert.assertFalse(IPAddressUtil.isIPv6LiteralAddress("z12::"));
-        Assert.assertFalse(IPAddressUtil.isIPv6LiteralAddress("z12::1::"));
-        Assert.assertFalse(IPAddressUtil.isIPv6LiteralAddress("1234:45af:1234:1234:1234:1234:1234:1234:abcd"));
-        Assert.assertFalse(IPAddressUtil.isIPv6LiteralAddress(""));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet6Address("g485::"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet6Address("z12::"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet6Address("z12::1::"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet6Address("1234:45af:1234:1234:1234:1234:1234:1234:abcd"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet6Address(""));
     }
 
 }

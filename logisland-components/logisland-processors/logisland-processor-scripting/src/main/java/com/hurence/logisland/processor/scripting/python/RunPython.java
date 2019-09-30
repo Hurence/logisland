@@ -15,7 +15,10 @@
  */
 package com.hurence.logisland.processor.scripting.python;
 
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Record;
@@ -50,10 +53,9 @@ import static java.util.stream.Collectors.joining;
  * - doc for tutorial (inline?, file? , both?)
  */
 
-@Category(ComponentCategory.PROCESSING)
 @Tags({"scripting", "python"})
 @CapabilityDescription(
-        "!!!! WARNING !!!!\n\nThe RunPython processor is currently an experimental feature : it is delivered as is, with the"
+        " !!!! WARNING !!!!\n\nThe RunPython processor is currently an experimental feature : it is delivered as is, with the"
         + " current set of features and is subject to modifications in API or anything else in further logisland releases"
         + " without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml"
         + " example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end"
@@ -210,7 +212,7 @@ public class RunPython extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         pythonInterpreter = new PythonInterpreter();
@@ -490,8 +492,6 @@ public class RunPython extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records)
     {
-        if(pythonInterpreter == null)
-            init(context);
 
         Collection<Record> outputRecords = null;
         

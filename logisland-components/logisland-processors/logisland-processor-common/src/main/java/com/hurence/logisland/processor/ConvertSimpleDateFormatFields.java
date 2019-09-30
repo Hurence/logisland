@@ -16,8 +16,11 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -28,8 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Category(ComponentCategory.PROCESSING)
-@Tags({"record", "fields", "Add"})
+@Tags({"record", "fields", "add", "date", "conversion", "convert"})
 @CapabilityDescription("Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)...")
 @DynamicProperty(name = "field name to add",
         supportsExpressionLanguage = true,
@@ -98,7 +100,7 @@ public class ConvertSimpleDateFormatFields extends AbstractProcessor {
     String conflictPolicy;
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         this.dynamicProperties = getDynamicProperties(context);
         this.inputDateFormat = new SimpleDateFormat(context.getPropertyValue(INPUT_DATE_FORMAT).asString());

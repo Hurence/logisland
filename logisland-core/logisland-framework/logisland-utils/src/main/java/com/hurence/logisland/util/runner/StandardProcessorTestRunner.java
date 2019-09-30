@@ -82,7 +82,11 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void run() {
-        this.processor.init(context);
+        try {
+            this.processor.init(context);
+        } catch (InitializationException e) {
+            throw new RuntimeException(e);
+        }
         Collection<Record> outputRecords = processor.process(context, inputRecordsQueue);
         outputRecordsList.addAll(outputRecords);
         inputRecordsQueue.clear();
@@ -167,6 +171,11 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
+    public boolean removeProperty(String propertyName) {
+        return context.removeProperty(propertyName);
+    }
+
+    @Override
     public ValidationResult setProperty(final String propertyName, final String propertyValue) {
         return context.setProperty(propertyName, propertyValue);
     }
@@ -192,6 +201,12 @@ public class StandardProcessorTestRunner implements TestRunner {
         long recordsCount =
                 outputRecordsList.stream().filter(r -> !r.hasField(FieldDictionary.RECORD_ERRORS)).count();
         assertTrue("expected output record count was " + count + " but is currently " +recordsCount, recordsCount == count);
+    }
+
+    @Override
+    public void assertOutputRecordsIncludingErrorsCount(int count) {
+        long recordsCount = outputRecordsList.stream().count();
+        assertTrue("expected total output record (including errors) count was " + count + " but is currently " +recordsCount, recordsCount == count);
     }
 
     @Override

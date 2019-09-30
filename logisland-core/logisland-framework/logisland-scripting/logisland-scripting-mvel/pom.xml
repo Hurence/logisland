@@ -4,13 +4,14 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-scripting</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>logisland-scripting-mvel</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
+        <!--Versions are set in root pom <dependencyManagement> so that all core library use the same -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-scripting-base</artifactId>

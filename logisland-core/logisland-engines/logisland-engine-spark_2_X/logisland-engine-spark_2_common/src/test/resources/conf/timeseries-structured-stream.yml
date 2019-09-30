@@ -1,0 +1,103 @@
+version: 1.2.0
+documentation: LogIsland future factory job
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  configuration:
+    spark.app.name: TimeseriesParsing
+    spark.master: local[1]
+    spark.streaming.batchDuration: 2000
+    spark.streaming.kafka.maxRatePerPartition: 10000
+  controllerServiceConfigurations:
+
+    - controllerService: local_file_service
+      component: com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService
+      configuration:
+        local.input.path: /tmp/logisland/data
+
+    - controllerService: console_service
+      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+      configuration:
+        truncate: false
+
+    - controllerService: kafka_out_service
+      component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
+      configuration:
+        kafka.output.topics: logisland_measures
+        kafka.error.topics: logisland_errors
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: localhost:9092
+        kafka.zookeeper.quorum: localhost:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+
+    - controllerService: kafka_in_service
+      component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
+      configuration:
+        kafka.input.topics: logisland_measures
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: localhost:9092
+        kafka.zookeeper.quorum: localhost:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+
+  streamConfigurations:
+
+    # This stream take all raw events as lines comming from local files
+    # these lines are split into logisland records and sent into a kafka topic
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.topics.serializer: none
+        read.stream.service.provider: local_file_service
+        write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        write.stream.service.provider: kafka_out_service
+      processorConfigurations:
+
+        - processor: historian_parser
+          component: com.hurence.logisland.processor.SplitText
+          configuration:
+            record.type: historian_serie
+            value.regex: (\S+\s+\S+);(\S+);(\S+);(\S+)
+            value.fields: record_time,tagname,record_value,quality
+
+        - processor: create_aliases
+          component: com.hurence.logisland.processor.NormalizeFields
+          configuration:
+            conflict.resolution.policy: keep_both_fields
+            record_name: tagname
+
+        - processor: fields_types_converter
+          component: com.hurence.logisland.processor.ConvertFieldsType
+          configuration:
+            record_value: double
+            quality: float
+
+    # This stream will perform a statefull groupBy operation on tagname
+    - stream: compaction_stream
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        read.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        read.stream.service.provider: kafka_in_service
+        write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        write.stream.service.provider: console_service
+        groupby.keys: tagname
+
+      processorConfigurations:
+
+#        - processor: debug_1
+#          component: com.hurence.logisland.processor.DebugStream
+        # Make one chronix chunk from all records
+        - processor: timeseries_converter
+          component: com.hurence.logisland.processor.ConvertToTimeseries
+          configuration:
+            group.by.field: tagname
+            sax.encoding: true
+#        - processor: debug_2
+#          component: com.hurence.logisland.processor.DebugStream

@@ -97,7 +97,7 @@ main() {
     )
     abort_if "${?}" "Unable to count events in ${KAFKA_OUTPUT_TOPIC_2}. Aborting."
 
-    if [[ 35 == ${REAL_DOCS_COUNT} ]]
+    if [[ 7 == ${REAL_DOCS_COUNT} ]]
     then
         exit 0
     else

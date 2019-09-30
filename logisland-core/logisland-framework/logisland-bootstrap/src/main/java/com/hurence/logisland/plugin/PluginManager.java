@@ -89,8 +89,10 @@ public class PluginManager {
 
     public static void main(String... args) throws Exception {
         System.out.println(BannerLoader.loadBanner());
-
-        String logislandHome = new File(new File(PluginManager.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent()).getParent();
+        String logislandHome = new File(PluginManager.class.getProtectionDomain().getCodeSource().getLocation().getPath())
+                .getParentFile()
+                .getParentFile()
+                .getParent();
         System.out.println("Using Logisland home: " + logislandHome);
         Options options = new Options();
         OptionGroup mainGroup = new OptionGroup()
@@ -229,7 +231,7 @@ public class PluginManager {
                             ". Please check the name is correct and the repositories on ivy.xml are correctly configured"));
 
             Manifest manifest = new JarFile(artifactJar.getLocalFile()).getManifest();
-            File libDir = new File(logislandHome, "lib");
+            File libDir = new File(new File(logislandHome, "lib"), "plugins");
 
 
             if (manifest.getMainAttributes().containsKey(ManifestAttributes.MODULE_ARTIFACT)) {

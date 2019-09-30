@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-elasticsearch</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>
@@ -68,13 +68,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!--LOG DEPENDECIES-->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${org.slf4j.version}</version>
-            <scope>provided</scope>
-        </dependency>
         <!--simple impl of slf4j-->
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -16,7 +16,10 @@
 package com.hurence.logisland.processor;
 
 import com.google.common.collect.Lists;
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.record.FieldDictionary;
@@ -32,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-@Category(ComponentCategory.PROCESSING)
 @Tags({"record", "fields", "remove", "delete", "keep"})
 @CapabilityDescription("Removes a list of fields defined by a comma separated list of field names or keeps only fields " +
         "defined by a comma separated list of field names.")
@@ -74,7 +76,7 @@ public class RemoveFields extends AbstractProcessor {
     List<String> fieldsToKeep;
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         PropertyValue propertyValue = context.getPropertyValue(FIELDS_TO_REMOVE);
 

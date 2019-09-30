@@ -226,23 +226,35 @@ You just have to add this code in the *pom.xml* of your module.
 Add your module in tar gz assembly
 ++++++++++++++++++++++++++++++++++
 
-You will have to add your module as a dependency in the **logisland-assembly** module. Add it in **full** maven profile so that it is automatically
-Added to logisland jar when building with -Pfull option.
+You will have to add your module in the ./logisland-assembly/src/assembly/full-assembly.xml descriptor in the **logisland-assembly** module.
+So that it is automatically embedded to logisland full tar gz version.
 
 .. code:: xml
 
-    <profile>
-        <id>full</id>
-        <activation>
-            <activeByDefault>false</activeByDefault>
-        </activation>
-        <dependencies>
-            ...
-            <dependency>
-                <groupId>com.hurence.logisland</groupId>
-                <artifactId>YOUR_MODULE_NAME</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-         </dependencies>
-    </profile>
+<moduleSets>
+    <moduleSet>
+        <!-- Enable access to all projects in the current multimodule build! -->
+        <useAllReactorProjects>true</useAllReactorProjects>
 
+        <!-- Now, select which projects to include in this module-set. -->
+        <includes>
+            <!--                SERVICES          -->
+            <include>com.hurence.logisland:logisland-service-inmemory-cache</include>
+            ...
+            <!--                PROCESSORS          -->
+            <include>com.hurence.logisland:logisland-processor-common</include>
+            <include>com.hurence.logisland:YOUR_MODULE_NAME</include>
+            ...
+            <!--                CONNECTORS          -->
+            <include>com.hurence.logisland:logisland-connector-opc</include>
+            ...
+        </includes>
+        <binaries>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0660</fileMode>
+            <outputDirectory>lib/plugins</outputDirectory>
+            <includeDependencies>false</includeDependencies>
+            <unpack>false</unpack>
+        </binaries>
+    </moduleSet>
+</moduleSets>

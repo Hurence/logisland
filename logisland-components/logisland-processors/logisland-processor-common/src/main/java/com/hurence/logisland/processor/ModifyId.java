@@ -18,6 +18,7 @@ package com.hurence.logisland.processor;
 import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
@@ -159,7 +160,7 @@ public class ModifyId extends AbstractProcessor {
     private IdBuilder idBuilder = null;
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         if (context.getPropertyValue(STRATEGY).isSet()) {
             if (context.getPropertyValue(STRATEGY).getRawValue().equals(RANDOM_UUID_STRATEGY.getValue())) {

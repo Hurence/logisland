@@ -1,0 +1,113 @@
+version: 1.2.0
+documentation: LogIsland future factory job
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: FutureFactory
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 1G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+   #spark.serializer: org.apache.spark.serializer.JavaSerializer
+    spark.streaming.batchDuration: 2000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 10000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4040
+
+  controllerServiceConfigurations:
+
+    - controllerService: datastore_service
+      component: com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService
+      configuration:
+        solr.cloud: false
+        solr.connection.string: ${SOLR_CONNECTION}
+        solr.collection: chronix
+        solr.concurrent.requests: 4
+        flush.interval: 2000
+        batch.size: 500
+
+    - controllerService: mqtt_service
+      component: com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService
+      configuration:
+       # mqtt.broker.url: tcp://51.15.164.141:1883
+        mqtt.broker.url: ${MQTT_BROKER_URL}
+        mqtt.persistence: memory
+        mqtt.client.id: logisland
+        mqtt.qos: 0
+        mqtt.topic: Account123/#
+        mqtt.username: User123
+        # injecter en env var
+        mqtt.password: Kapu12345678+
+        mqtt.clean.session: true
+        mqtt.connection.timeout: 30
+        mqtt.keep.alive: 60
+        mqtt.version: 3
+
+    - controllerService: console_service
+      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+
+  streamConfigurations:
+
+    # indexing stream
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.topics: /a/in
+        read.topics.serializer: com.hurence.logisland.serializer.KuraProtobufSerializer
+        read.stream.service.provider: mqtt_service
+        write.topics: /a/out
+        write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        write.stream.service.provider: console_service
+      processorConfigurations:
+
+        - processor: flatten
+          component: com.hurence.logisland.processor.FlatMap
+          type: processor
+          documentation: "extract metrics from root record"
+          configuration:
+            keep.root.record: false
+            copy.root.record.fields: true
+            leaf.record.type: record_metric
+            concat.fields: record_name
+
+        - processor: rename_fields
+          component: com.hurence.logisland.processor.NormalizeFields
+          type: processor
+          documentation: "rename fields for dynamic indexation in chronix : add *_s suffix"
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            position_latitude_s: record_position_latitude
+            position_longitude_s: record_position_longitude
+            position_altitude_s: record_position_altitude
+            position_heading_s: record_position_heading
+            position_precision_s: record_position_precision
+            position_satellites_s: record_position_satellites
+            position_speed_s: record_position_speed
+            position_status_s: record_position_status
+            position_timestamp_s: record_position_timestamp
+
+
+        - processor: chronix_publisher
+          component: com.hurence.logisland.processor.datastore.BulkPut
+          type: processor
+          documentation: "indexes processed events in SolR/Chronix"
+          configuration:
+            datastore.client.service: datastore_service

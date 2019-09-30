@@ -1,5 +1,7 @@
 sudo: required
+dist: trusty
 
+dist: trusty
 #services:
 #  - docker
 
@@ -31,12 +33,14 @@ script:
   # Build
   # use travis_wait so it does not time_out after 10 minutes without output (unfortunately that seems to not work)
   # use -q so there's not too much output for travis (4Mb max)
-  - mvn clean install -P full,integration-tests -q
+  - travis_wait mvn clean install -Pintegration-tests -q
+  # build assembly (there is currently missing jars in assembly when using mvn clean install...)
+  - mvn clean package -DskipTests -q
   # Integrations tests
   - sudo logisland-docker/src/integration-test/run-all-test.sh
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 install:
   - sudo sysctl -w vm.max_map_count=262144

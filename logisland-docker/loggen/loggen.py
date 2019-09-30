@@ -80,6 +80,9 @@ frequent_ips = ["12.13.14.15", "123.124.125.126"]
 
 ualist = [faker.firefox, faker.chrome, faker.safari, faker.internet_explorer, faker.opera]
 
+
+# wait a little while zk & kafka start
+time.sleep(10)
 producer = KafkaProducer(bootstrap_servers=args.kafka_brokers, client_id='loggen')
 
 
@@ -110,8 +113,7 @@ def create_log():
         return '{} - - [{} {}] "{} {} HTTP/1.0" {} {} "{}" "{}"'.format(ip, dt, tz, vrb, uri, resp, byt, referer, useragent)
 
 
-# wait a little while zk & kafka start
-time.sleep(10)
+
 
 while True:
     if args.sleep:

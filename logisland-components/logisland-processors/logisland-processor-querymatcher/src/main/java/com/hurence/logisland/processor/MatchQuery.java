@@ -16,7 +16,10 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
@@ -25,8 +28,6 @@ import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LegacyDoubleField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.co.flax.luwak.*;
 import uk.co.flax.luwak.matchers.SimpleMatcher;
 import uk.co.flax.luwak.presearcher.TermFilteredPresearcher;
@@ -35,7 +36,6 @@ import java.io.IOException;
 import java.util.*;
 
 
-@Category(ComponentCategory.ALERTING)
 @Tags({"analytic", "percolator", "record", "record", "query", "lucene"})
 @CapabilityDescription("Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_\n\n" +
         "you can use this processor to handle custom events defined by lucene queries\n" +
@@ -179,7 +179,7 @@ public class MatchQuery extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
 
         super.init(context);
         keywordAnalyzer = new KeywordAnalyzer();
@@ -230,9 +230,7 @@ public class MatchQuery extends AbstractProcessor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        // may have not been initialized
-        if (monitor == null)
-            init(context);
+
         try {
             return internalProcess(context, records);
         } finally {

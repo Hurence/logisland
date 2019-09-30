@@ -15,14 +15,13 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.util.string.JsonUtil;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
@@ -38,9 +37,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,7 +59,6 @@ import java.util.regex.Pattern;
  * and the format of src attribute in the img html tag should be like:
  * <img src="path/in/classpath/spectacular_image.gif" alt="Spectacular Image">
  */
-@Category(ComponentCategory.ALERTING)
 @Tags({"smtp", "email", "e-mail", "mail", "mailer", "sendmail", "message", "alert", "html"})
 @CapabilityDescription(
         "The SendMail processor is aimed at sending an email (like for instance an alert email) from an incoming record."
@@ -289,7 +285,7 @@ public class SendMail extends AbstractProcessor {
             .build();
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         logger.debug("Initializing SendMail Processor");

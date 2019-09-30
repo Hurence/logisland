@@ -22,11 +22,12 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-core</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
     <artifactId>logisland-api</artifactId>
     <packaging>jar</packaging>
     <dependencies>
+        <!--Versions are set in root pom <dependencyManagement> so that all core library use the same -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

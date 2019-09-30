@@ -65,38 +65,32 @@ public class StandardValidators {
         return new TypeValidator(clz);
     }
 
-    public static final Validator DOUBLE_VALIDATOR = new Validator() {
-        @Override
-        public ValidationResult validate(final String subject, final String value) {
-            String reason = null;
-            try {
-                final double intVal = Double.parseDouble(value);
+    public static final Validator DOUBLE_VALIDATOR = (Validator) (subject, value) -> {
+        String reason = null;
+        try {
+            final double val = Double.parseDouble(value);
 
-            } catch (final NumberFormatException e) {
-                reason = "not a valid double";
-            } catch (final NullPointerException e) {
-                reason = "null is not a valid double";
-            }
-
-            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        } catch (final NumberFormatException e) {
+            reason = "not a valid double";
+        } catch (final NullPointerException e) {
+            reason = "null is not a valid double";
         }
+
+        return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
     };
 
-    public static final Validator FLOAT_VALIDATOR = new Validator() {
-        @Override
-        public ValidationResult validate(final String subject, final String value) {
-            String reason = null;
-            try {
-                final float intVal = Float.parseFloat(value);
+    public static final Validator FLOAT_VALIDATOR = (Validator) (subject, value) -> {
+        String reason = null;
+        try {
+            final float val = Float.parseFloat(value);
 
-            } catch (final NumberFormatException e) {
-                reason = "not a valid double";
-            } catch (final NullPointerException e) {
-                reason = "null is not a valid double";
-            }
-
-            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        } catch (final NumberFormatException e) {
+            reason = "not a valid double";
+        } catch (final NullPointerException e) {
+            reason = "null is not a valid double";
         }
+
+        return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
     };
 
     public static final Validator POSITIVE_INTEGER_VALIDATOR = new Validator() {
@@ -116,6 +110,27 @@ public class StandardValidators {
                 }
             } catch (final NumberFormatException e) {
                 reason = "not a valid integer";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+    public static final Validator POSITIVE_DOUBLE_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                if (value == null) {
+                    reason = "null is not a valid double";
+                } else {
+                    final double doubleVal = Double.parseDouble(value);
+                    if (doubleVal <= 0) {
+                        reason = "not a positive value";
+                    }
+                }
+            } catch (final NumberFormatException e) {
+                reason = "not a valid double";
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
@@ -154,6 +169,7 @@ public class StandardValidators {
             return new ValidationResult.Builder().subject(subject).input(value).valid(value != null && !value.isEmpty()).explanation(subject + " cannot be empty").build();
         }
     };
+
 
     public static final Validator BOOLEAN_VALIDATOR = new Validator() {
         @Override
@@ -223,6 +239,23 @@ public class StandardValidators {
                 }
             } catch (final NumberFormatException e) {
                 reason = "value is not a valid integer";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+
+    public static final Validator SEMICOLON_SEPARATED_LIST_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+
+
+            String reason = null;
+            try {
+                value.split(";");
+            } catch (final Exception e) {
+                reason = "not a SEMICOLON separated list";
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();

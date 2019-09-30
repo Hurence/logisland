@@ -1,4 +1,4 @@
- /**
+/**
  * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.hurence.logisland.service.elasticsearch;
 
 import org.apache.http.HttpHost;

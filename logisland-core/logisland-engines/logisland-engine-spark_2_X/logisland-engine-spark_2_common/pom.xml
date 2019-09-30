@@ -6,7 +6,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-engine-spark_2_X</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.0</version>
     </parent>
     <artifactId>logisland-engine-spark_2_common</artifactId>
     <packaging>jar</packaging>
@@ -19,7 +19,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <scala-test-version>3.0.4</scala-test-version>
         <swagger-async-httpclient-version>0.3.5</swagger-async-httpclient-version>
         <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.1.0</spark.version>
+        <spark.version>2.3.3</spark.version>
         <kafka.version>0.10.2.1</kafka.version>
         <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
@@ -30,17 +30,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>2.2.4</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.typesafe.scala-logging</groupId>
                 <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
                 <version>2.1.2</version>
                 <scope>provided</scope>
-
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
@@ -113,8 +106,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <version>${kafka.version}</version>
                 <scope>test</scope>
             </dependency>
-
-
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
@@ -122,32 +113,35 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <classifier>test</classifier>
                 <scope>test</scope>
             </dependency>
-
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_${scala.binary.version}</artifactId>
+                <version>2.2.4</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <scope>provided</scope>
 
-        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
-
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
             <version>${project.version}</version>
-
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-processor-timeseries</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -163,12 +157,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
         </dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>provided</scope>
-
-        </dependency>
 
         <dependency>
             <groupId>com.groupon.dse</groupId>
@@ -211,7 +199,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>org.apache.bahir</groupId>
             <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
-            <version>${spark.version}</version>
+            <version>2.3.2</version>
         </dependency>
 
 
@@ -277,7 +265,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <version>${jackson.version}</version>
 
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>

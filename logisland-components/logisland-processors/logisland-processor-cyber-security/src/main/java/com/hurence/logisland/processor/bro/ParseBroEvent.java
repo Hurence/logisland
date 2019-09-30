@@ -15,7 +15,10 @@
  */
 package com.hurence.logisland.processor.bro;
 
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
@@ -38,7 +41,6 @@ import java.util.Map;
 /**
  * Bro (https://www.bro.org/) processor
  */
-@Category(ComponentCategory.SECURITY)
 @Tags({"bro", "security", "IDS", "NIDS"})
 @CapabilityDescription(
         "The ParseBroEvent processor is the Logisland entry point to get and process `Bro <https://www.bro.org>`_ events."
@@ -118,7 +120,7 @@ public class ParseBroEvent extends AbstractProcessor {
     private static final String FIELD_VERSION = "version";
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
 
         super.init(context);

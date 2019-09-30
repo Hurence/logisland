@@ -13,21 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- Copyright 2016 Hurence
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- */
 
 package com.hurence.logisland.record;
 
@@ -86,9 +71,10 @@ public class StandardRecord implements Record {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
+        if (!(o instanceof Record)) return false;
 
-        StandardRecord record = (StandardRecord) o;
+        Record record = (Record) o;
 
         if (getAllFields() == null || record.getAllFields() == null ||
                 !CollectionUtils.isEqualCollection(this.getAllFields(), record.getAllFields()))
@@ -115,7 +101,7 @@ public class StandardRecord implements Record {
     @Override
     public Record setPosition(Position position) {
         if (position != null)
-            setField(FieldDictionary.RECORD_POSITION, FieldType.RECORD, position);
+            setRecordField(FieldDictionary.RECORD_POSITION, position);
         return this;
     }
 
@@ -136,13 +122,13 @@ public class StandardRecord implements Record {
     @Override
     public Record setTime(Date recordTime) {
         if (recordTime != null)
-            setField(FieldDictionary.RECORD_TIME, FieldType.LONG, recordTime.getTime());
+            setLongField(FieldDictionary.RECORD_TIME, recordTime.getTime());
         return this;
     }
 
     @Override
     public Record setTime(long timestamp) {
-        setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp);
+        setLongField(FieldDictionary.RECORD_TIME, timestamp);
         return this;
     }
 
@@ -161,7 +147,7 @@ public class StandardRecord implements Record {
     @Override
     public Record setType(String type) {
         if (type != null) {
-            this.setField(FieldDictionary.RECORD_TYPE, FieldType.STRING, type);
+            this.setStringField(FieldDictionary.RECORD_TYPE, type);
         }
         return this;
     }
@@ -192,7 +178,7 @@ public class StandardRecord implements Record {
      * @param id
      */
     public Record setId(String id) {
-        setField(FieldDictionary.RECORD_ID, FieldType.STRING, id);
+        setStringField(FieldDictionary.RECORD_ID, id);
         return this;
     }
 
@@ -205,6 +191,17 @@ public class StandardRecord implements Record {
     @Override
     public boolean hasField(String fieldName) {
         return fields.containsKey(fieldName);
+    }
+
+    @Override
+    public boolean isInternField(String fieldName) {
+        return FieldDictionary.TECHNICAL_FIELDS.contains(fieldName);
+    }
+
+    @Override
+    public boolean isInternField(Field field) {
+        if (field != null) return isInternField(field.getName());
+        return false;
     }
 
     /**
@@ -220,13 +217,18 @@ public class StandardRecord implements Record {
 
     /**
      * set a field value
-     *
-     * @param fieldName
+     *  @param fieldName
      * @param value
      */
     @Override
     public Record setField(String fieldName, FieldType fieldType, Object value) {
         setField(new Field(fieldName, fieldType, value));
+        return this;
+    }
+
+    @Override
+    public Record setCheckedField(String fieldName, FieldType fieldType, Object value) throws FieldTypeException {
+        setField(new CheckedField(fieldName, fieldType, value));
         return this;
     }
 
@@ -238,8 +240,63 @@ public class StandardRecord implements Record {
      */
     @Override
     public Record setStringField(String fieldName, String value) {
-        setField(new Field(fieldName, FieldType.STRING, value));
-        return this;
+        return setField(fieldName, FieldType.STRING, value);
+    }
+
+    @Override
+    public Record setLongField(String fieldName, Long value) {
+        return setField(fieldName, FieldType.LONG, value);
+    }
+
+    @Override
+    public Record setIntField(String fieldName, Integer value) {
+        return setField(fieldName, FieldType.INT, value);
+    }
+
+    @Override
+    public Record setFloatField(String fieldName, Float value) {
+        return setField(fieldName, FieldType.FLOAT, value);
+    }
+
+    @Override
+    public Record setDoubleField(String fieldName, Double value) {
+        return setField(fieldName, FieldType.DOUBLE, value);
+    }
+
+    @Override
+    public Record setBooleanField(String fieldName, Boolean value) {
+        return setField(fieldName, FieldType.BOOLEAN, value);
+    }
+
+
+    @Override
+    public Record setRecordField(String fieldName, Record value) {
+        return setField(fieldName, FieldType.RECORD, value);
+    }
+
+    @Override
+    public Record setBytesField(String fieldName, byte[] value) {
+        return setField(fieldName, FieldType.BYTES, value);
+    }
+
+    @Override
+    public Record setBytesField(String fieldName, Byte[] value) {
+        return setField(fieldName, FieldType.BYTES, value);
+    }
+
+    @Override
+    public Record setArrayField(String fieldName, Collection value) {
+        return setField(fieldName, FieldType.ARRAY, value);
+    }
+
+    @Override
+    public Record setDateTimeField(String fieldName, Date value) {
+        return setField(fieldName, FieldType.DATETIME, value);
+    }
+
+    @Override
+    public Record setMapField(String fieldName, Map value) {
+        return setField(fieldName, FieldType.MAP, value);
     }
 
     /**
@@ -312,53 +369,14 @@ public class StandardRecord implements Record {
 
     @Override
     public boolean isValid() {
-
-
         for (final Field field : getAllFields()) {
             boolean isValid = true;
             try {
-
-
                 if (field.isSet()) {
-                    switch (field.getType()) {
-                        case STRING:
-                            isValid = field.getRawValue() instanceof String;
-                            break;
-                        case INT:
-                            isValid = field.getRawValue() instanceof Integer;
-                            break;
-                        case LONG:
-                            isValid = field.getRawValue() instanceof Long;
-                            break;
-                        case FLOAT:
-                            isValid = field.getRawValue() instanceof Float;
-                            break;
-                        case DOUBLE:
-                            isValid = field.getRawValue() instanceof Double;
-                            break;
-                        case BOOLEAN:
-                            isValid = field.getRawValue() instanceof Boolean;
-                            break;
-                        case ARRAY:
-                            isValid = field.getRawValue() instanceof Collection;
-                            break;
-                        case RECORD:
-                            isValid = field.getRawValue() instanceof Record;
-                            break;
-                        case MAP:
-                            isValid = field.getRawValue() instanceof Map;
-                            break;
-                        case NULL:
-                            isValid = field.getRawValue() == null;
-                            break;
-                        case BYTES:
-                            isValid = field.getRawValue() instanceof byte[] ||
-                                    field.getRawValue() instanceof Byte[];
-                            break;
-
-                        default:
-                            isValid = false;
-                            break;
+                    try {
+                        CheckedField.checkType(field.getType(), field.getRawValue());
+                    } catch (FieldTypeException ex) {
+                        isValid = false;
                     }
                 }
             } catch (Throwable ex) {
@@ -370,7 +388,6 @@ public class StandardRecord implements Record {
             }
         }
         return true;
-
     }
 
     /**
@@ -443,7 +460,9 @@ public class StandardRecord implements Record {
             finalMessage.append(message);
         }
         errors.add(finalMessage.toString());
-        setField(FieldDictionary.RECORD_ERRORS, FieldType.ARRAY, errors);
+        if (!hasField(FieldDictionary.RECORD_ERRORS)) {
+            setArrayField(FieldDictionary.RECORD_ERRORS, errors);
+        }
         return this;
     }
 

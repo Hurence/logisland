@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,6 +39,8 @@ public class CopyPasteDoc {
     private final static String HELP_OPT ="h";
     private final static String DIR_LONG_OPT ="doc-dir";
     private final static String DIR_OPT ="d";
+    private final static String OUTPUT_DIR_LONG_OPT ="output-dir";
+    private final static String OUTPUT_DIR_OPT ="o";
 
     public static void main(String[] args) {
         Options options = new Options();
@@ -51,9 +53,17 @@ public class CopyPasteDoc {
                 .withLongOpt(DIR_LONG_OPT)
                 .hasArg()
                 .create(DIR_OPT));
+        Option outputOpt = OptionBuilder
+                .withDescription("where to copy documentation")
+                .withLongOpt(OUTPUT_DIR_LONG_OPT)
+                .hasArg()
+                .create(OUTPUT_DIR_OPT);
+        outputOpt.setRequired(true);
+        options.addOption(outputOpt);
 
 
         String dir = ".";
+        File outputDir = null;
 
         try {
             final CommandLine commandLine = new PosixParser().parse(options, args);
@@ -64,6 +74,7 @@ public class CopyPasteDoc {
             if (commandLine.hasOption(DIR_OPT)) {
                 dir = commandLine.getOptionValue(DIR_OPT);
             }
+            outputDir = new File(commandLine.getOptionValue(OUTPUT_DIR_OPT));
         } catch (ParseException e) {
             if (!options.hasOption(HELP_OPT)) {
                 System.err.println(e.getMessage());
@@ -75,32 +86,35 @@ public class CopyPasteDoc {
         File rootDocDir = new File(dir);
 
         try {
+            System.out.println("STARTING");
+            System.out.println("copy " + rootDocDir + " into "+ outputDir);
+
             copyDirectory(rootDocDir,
-                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs"),
+                    outputDir,
                     new WildcardFileFilter("*.rst"));
 
             copyDirectory( new File(rootDocDir, "tutorials"),
-                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/tutorials"),
+                    new File(outputDir ,"tutorials"),
                     new WildcardFileFilter("*.rst"));
 
             copyDirectory( new File(rootDocDir, "developer"),
-                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/developer"),
+                    new File(outputDir ,"developer"),
                     new WildcardFileFilter("*.rst"));
 
             copyDirectory( new File(rootDocDir, "user"),
-                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/user"),
+                    new File(outputDir ,"user"),
                     new WildcardFileFilter("*.rst"));
 
             copyDirectory( new File(rootDocDir, "user/components"),
-                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/user/components"),
+                    new File(outputDir ,"user/components"),
                     new WildcardFileFilter("*.rst"));
 
             copyDirectory( new File(rootDocDir, "user/components/engines"),
-                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/user/components/engines"),
+                    new File(outputDir ,"user/components/engines"),
                     new WildcardFileFilter("*.rst"));
 
             copyDirectory(new File(rootDocDir, "_static"),
-                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/_static"));
+                    new File(outputDir ,"_static"));
 
         } catch (IOException e) {
             logger.error("I/O error", e);

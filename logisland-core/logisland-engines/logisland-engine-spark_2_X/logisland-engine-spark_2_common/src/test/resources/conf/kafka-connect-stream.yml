@@ -1,4 +1,4 @@
-version: 1.1.2
+version: 1.2.0
 documentation: LogIsland future factory job
 
 engine:
@@ -115,11 +115,11 @@ engine:
         read.topics: /a/in
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        read.topics.client.service: kc_source_service
+        read.stream.service.provider: kc_source_service
         write.topics: logisland_raw
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        write.topics.client.service: kc_sink_service
+        write.stream.service.provider: kc_sink_service
       processorConfigurations:
 
         - processor: flatten

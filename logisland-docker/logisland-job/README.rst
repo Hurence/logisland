@@ -31,8 +31,8 @@ Building the image
 .. code-block:: sh
 
     # build logisland
-    mvn clean install -Pfull
-    cp logisland-assembly/target/logisland-1.1.2-bin.tar.gz logisland-docker/logisland-job
+    mvn clean package
+    cp logisland-assembly/target/logisland-1.1.0-bin.tar.gz logisland-docker
 
 The archive is generated under dist directory, 
 you have to copy this file into your Dockerfile directory you can now issue
@@ -40,7 +40,7 @@ you have to copy this file into your Dockerfile directory you can now issue
 .. code-block:: sh
 
     docker build --rm -t hurence/logisland-job -f Dockerfile .
-    docker tag hurence/logisland-job:latest hurence/logisland-job:1.1.2
+    docker tag hurence/logisland-job:latest hurence/logisland-job:1.1.0
 
 
 Running the image
@@ -58,7 +58,7 @@ or
 
 .. code-block::
 
-    docker run -d -h sandbox hurence/logisland:1.1.2 -d
+    docker run -d -h sandbox hurence/logisland:1.1.0 -d
 
 if you want to mount a directory from your host, add the following option :
 

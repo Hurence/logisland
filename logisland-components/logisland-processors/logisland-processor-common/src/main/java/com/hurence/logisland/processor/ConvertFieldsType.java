@@ -16,7 +16,10 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
@@ -27,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-@Category(ComponentCategory.PROCESSING)
 @Tags({"type", "fields", "update", "convert"})
 @CapabilityDescription("Converts a field value into the given type. does nothing if conversion is not possible")
 @DynamicProperty(name = "field",
@@ -36,7 +38,6 @@ import java.util.*;
         description = "convert field value into new type")
 @ExtraDetailFile("./details/common-processors/ConvertFieldsType-Detail.rst")
 public class ConvertFieldsType extends AbstractProcessor {
-
 
     private static final Logger logger = LoggerFactory.getLogger(ConvertFieldsType.class);
 
@@ -59,15 +60,14 @@ public class ConvertFieldsType extends AbstractProcessor {
     private Map<String, FieldType> fieldTypes = null;
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
+        super.init(context);
         fieldTypes = getStringFieldTypes(context);
     }
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        if(fieldTypes == null)
-            init(context);
 
         for (Record record : records) {
             fieldTypes.keySet().forEach(fieldName -> {

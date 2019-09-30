@@ -15,7 +15,10 @@
  */
 package com.hurence.logisland.processor.webAnalytics;
 
-import com.hurence.logisland.annotation.documentation.*;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.*;
@@ -31,7 +34,6 @@ import java.util.stream.Collectors;
 /**
  * Consolidate session processor
  */
-@Category(ComponentCategory.ANALYTICS)
 @Tags({"analytics", "web", "session"})
 @CapabilityDescription(
         value = "The ConsolidateSession processor is the Logisland entry point to get and process events from the Web Analytics."
@@ -216,7 +218,7 @@ public class ConsolidateSession extends AbstractProcessor {
             .build();
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         logger.debug("Initializing Consolidate Session Processor");

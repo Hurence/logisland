@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -199,7 +200,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
     abstract protected void setupDynamicProperties(ProcessContext context);
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
 
         super.init(context);
         sandbox = NashornSandboxes.create();

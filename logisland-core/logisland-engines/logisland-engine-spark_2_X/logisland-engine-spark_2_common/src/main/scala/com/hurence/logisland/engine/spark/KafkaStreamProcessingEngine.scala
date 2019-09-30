@@ -362,6 +362,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     protected var batchDurationMs: Int = 1000
 
 
+    var batchDurationMs:Int = 1000
+
     /**
       * Provides subclasses the ability to perform initialization logic
       */
