@@ -413,6 +413,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>com.hurence.logisland:logisland-processor-enrichment</dependency>
                                     <dependency>com.hurence.logisland:logisland-processor-outlier-detection</dependency>
                                     <dependency>com.hurence.logisland:logisland-processor-timeseries</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-rest</dependency>
                                 </classpath>
                                 <argument>com.hurence.logisland.documentation.DocGenerator</argument>
                                 <argument>-d</argument>
@@ -466,6 +467,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>com.hurence.logisland:logisland-service-solr_chronix_8-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-inmemory-cache</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-ip-to-geo-maxmind</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-rest</dependency>
                                 </classpath>
                                 <argument>com.hurence.logisland.documentation.DocGenerator</argument>
                                 <argument>-d</argument>
