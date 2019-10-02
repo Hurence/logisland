@@ -17,23 +17,29 @@ package com.hurence.logisland.rest.processor.lookup;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.error.ErrorUtils;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.serializer.ExtendedJsonSerializer;
+import com.hurence.logisland.serializer.RecordSerializer;
+import com.hurence.logisland.serializer.SerializerProvider;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.error.ErrorUtils;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.*;
 
-@Tags({"datastore", "record", "put", "bulk"})
-@CapabilityDescription("Indexes the content of a Record in a Datastore using bulk processor")
-@ExtraDetailFile("./details/common-processors/BulkPut-Detail.rst")
+@Tags({"rest", "record", "http", "request", "call", "server"})
+@CapabilityDescription("Execute an http request with specified verb, body and mime type. Then stock result as a Record in the specified field")
+//@ExtraDetailFile("./details/common-processors/BulkPut-Detail.rst")
 public class CallRequest extends AbstractHttpProcessor
 {
 
@@ -70,12 +76,18 @@ public class CallRequest extends AbstractHttpProcessor
             .expressionLanguageSupported(true)
             .build();
 
+    public static final PropertyDescriptor INPUT_AS_BODY = new PropertyDescriptor.Builder()
+            .name("input.as.body")
+            .description("If the input record should be serialized into json and used as body of request or not.")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .build();
+
     public static final AllowableValue OVERWRITE_EXISTING =
             new AllowableValue("overwrite_existing", "overwrite existing field", "if field already exist");
 
     public static final AllowableValue KEEP_OLD_FIELD =
             new AllowableValue("keep_only_old_field", "keep only old field value", "keep only old field");
-
 
     public static final PropertyDescriptor CONFLICT_RESOLUTION_POLICY = new PropertyDescriptor.Builder()
             .name("conflict.resolution.policy")
@@ -87,6 +99,22 @@ public class CallRequest extends AbstractHttpProcessor
 
     private String responseFieldName = null;
     private String conflictPolicy = null;
+    private boolean inputAsBody = false;
+    private RecordSerializer serializer;
+
+    @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+        if (context.getPropertyValue(INPUT_AS_BODY).asBoolean() && context.getPropertyValue(REQUEST_BODY).isSet()) {
+            validationResults.add(
+                    new ValidationResult.Builder()
+                            .input(String.format("properties '%s' and '%s' are mutually exclusive so they can not be set both at the same time",
+                                    INPUT_AS_BODY.getName(), REQUEST_BODY.getName()))
+                            .valid(false)
+                            .build());
+        }
+        return validationResults;
+    }
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -96,6 +124,7 @@ public class CallRequest extends AbstractHttpProcessor
         props.add(REQUEST_MIME_TYPE);
         props.add(REQUEST_METHOD);
         props.add(REQUEST_BODY);
+        props.add(INPUT_AS_BODY);
         props.add(CONFLICT_RESOLUTION_POLICY);
         return Collections.unmodifiableList(props);
     }
@@ -108,6 +137,10 @@ public class CallRequest extends AbstractHttpProcessor
                 this.responseFieldName = context.getPropertyValue(FIELD_HTTP_RESPONSE).asString();
             }
             this.conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();
+            this.inputAsBody = context.getPropertyValue(INPUT_AS_BODY).asBoolean();
+            if (inputAsBody) {
+                serializer = SerializerProvider.getSerializer(ExtendedJsonSerializer.class.getName(), null);
+            }
         } catch (Exception ex) {
             throw new InitializationException(ex);
         }
@@ -133,7 +166,13 @@ public class CallRequest extends AbstractHttpProcessor
             StandardRecord coordinates = new StandardRecord(record);
             calculVerb(record, context).ifPresent(verb -> coordinates.setStringField(restClientService.getMethodKey(), verb));
             calculMimTyp(record, context).ifPresent(mimeType -> coordinates.setStringField(restClientService.getMimeTypeKey(), mimeType));
-            calculBody(record, context).ifPresent(body -> coordinates.setStringField(restClientService.getbodyKey(), body));
+            if (inputAsBody) {
+                OutputStream out = new ByteArrayOutputStream();
+                serializer.serialize(out, record);
+                coordinates.setStringField(restClientService.getbodyKey(), out.toString());
+            } else {
+                calculBody(record, context).ifPresent(body -> coordinates.setStringField(restClientService.getbodyKey(), body));
+            }
             try {
                 restClientService.lookup(coordinates).ifPresent(rsp -> {
                     record.setRecordField(responseFieldName, rsp);

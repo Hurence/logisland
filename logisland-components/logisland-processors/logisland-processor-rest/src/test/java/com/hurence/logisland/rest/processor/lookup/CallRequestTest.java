@@ -16,6 +16,7 @@
 package com.hurence.logisland.rest.processor.lookup;
 
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.lookup.LookupFailureException;
@@ -59,6 +60,11 @@ public class CallRequestTest {
         runner.assertValid();
         runner.setProperty(CONFLICT_RESOLUTION_POLICY, "other");
         runner.assertNotValid();
+        runner.setProperty(CONFLICT_RESOLUTION_POLICY, OVERWRITE_EXISTING.getValue());
+        runner.setProperty(INPUT_AS_BODY, "true");
+        runner.assertNotValid();
+        runner.removeProperty(REQUEST_BODY);
+        runner.assertValid();
     }
 
     @Test
@@ -92,6 +98,7 @@ public class CallRequestTest {
         coordinnates2.assertRecordSizeEquals(1);
         coordinnates2.assertFieldEquals("employeeId", 2);
         coordinnates2.assertFieldTypeEquals("employeeId", FieldType.INT);
+
     }
 
     @Test
@@ -277,6 +284,54 @@ public class CallRequestTest {
         coordinates.assertFieldEquals("employeeId", "hello");
         coordinates.assertFieldEquals(service.getbodyKey(), "body_hello");
         coordinates.assertFieldTypeEquals("employeeId", FieldType.STRING);
+    }
+
+    @Test
+    public void test_with_input_as_body() throws InitializationException, IOException, LookupFailureException {
+        final TestRunner runner = getRunnerInitialized();
+        final RestClientService service = (RestClientService) runner.getControllerService(SERVICE_ID);
+        runner.setProperty(INPUT_AS_BODY, "true");
+        runner.assertValid();
+
+        //test queries
+        StandardRecord record = new StandardRecord();
+        record.setField("param1", FieldType.STRING, "hello1");
+        record.setField("param2", FieldType.STRING, "hello2");
+        record.setField("param3", FieldType.STRING, "hello3");
+        record.setField(FieldDictionary.RECORD_TYPE, FieldType.STRING, "my_type");
+        record.setField(FieldDictionary.RECORD_ID, FieldType.STRING, "my_id");
+        record.setField(FieldDictionary.RECORD_TIME, FieldType.STRING, 1569938866837L);
+        runner.enqueue(new StandardRecord(record));
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(1);
+
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(4);
+        out.assertFieldEquals("param1", "hello1");
+        out.assertFieldTypeEquals("param1", FieldType.STRING);
+        out.assertFieldTypeEquals("response", FieldType.RECORD);
+        MockRecord coordinates = new MockRecord(out.getField("response").asRecord());
+        coordinates.assertRecordSizeEquals(4);
+        coordinates.assertFieldEquals("param1", "hello1");
+        coordinates.assertFieldTypeEquals("param1", FieldType.STRING);
+        coordinates.assertFieldEquals("param2", "hello2");
+        coordinates.assertFieldTypeEquals("param2", FieldType.STRING);
+        coordinates.assertFieldEquals("param3", "hello3");
+        coordinates.assertFieldTypeEquals("param3", FieldType.STRING);
+        coordinates.assertFieldTypeEquals(service.getbodyKey(), FieldType.STRING);
+        coordinates.assertFieldEquals(service.getbodyKey(),
+                "{" +
+                        "\"param1\":\"hello1\"," +
+                        "\"param2\":\"hello2\"," +
+                        "\"param3\":\"hello3\"," +
+                        "\"record_id\":\"my_id\"," +
+                        "\"record_time\":1569938866837," +
+                        "\"record_type\":\"my_type\"," +
+                        "\"id\":\"my_id\"," +
+                        "\"creationDate\":1569938866837," +
+                        "\"type\":\"my_type\"" +
+                        "}");
     }
 
     private TestRunner getRunnerInitialized() throws InitializationException {
