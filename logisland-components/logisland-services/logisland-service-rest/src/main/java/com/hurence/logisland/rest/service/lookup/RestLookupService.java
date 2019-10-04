@@ -149,6 +149,12 @@ public class RestLookupService extends AbstractControllerService implements Rest
     public static final String BODY_KEY = "request.body";
     public static final String METHOD_KEY = "request.method";
 
+    public final static String RESPONSE_CODE_FIELD = "code";
+    public final static String RESPONSE_MESSAGE_CODE_FIELD = "message_code";
+    public final static String RESPONSE_BODY_FIELD = "body";
+    public final static String RESPONSE_TYPE_RECORD = "http_response";
+
+
     static final List<PropertyDescriptor> DESCRIPTORS;
     static final Set<String> KEYS;
 
@@ -336,25 +342,26 @@ public class RestLookupService extends AbstractControllerService implements Rest
         return client.newCall(request).execute();
     }
 
+
+
     private Optional<Record> handleResponse(Response response) {
         final ResponseBody responseBody = response.body();
-        Record r = new StandardRecord("http_response");
-        r.setIntField("code", response.code());
-        r.setStringField("message_code", response.message());
+        Record r = new StandardRecord(RESPONSE_TYPE_RECORD);
+        r.setIntField(RESPONSE_CODE_FIELD, response.code());
+        r.setStringField(RESPONSE_MESSAGE_CODE_FIELD, response.message());
         if (responseBody == null) {
             return Optional.of(r);
         }
         try (InputStream is = responseBody.byteStream()) {
-            r.setRecordField("body", serializer.deserialize(is));
+            r.setRecordField(RESPONSE_BODY_FIELD, serializer.deserialize(is));
         } catch (RecordSerializationException ex) {
-            //try with String serializer
             try (InputStream is = responseBody.byteStream()) {
                 is.reset();
-                r.setRecordField("body", BACKUP_SERIALIZER.deserialize(is));
+                r.setRecordField(RESPONSE_BODY_FIELD, BACKUP_SERIALIZER.deserialize(is));
             } catch (IOException ex2) {
                 try (InputStream is = responseBody.byteStream()) {
                     is.reset();
-                    r.setStringField("body", responseBody.string());
+                    r.setStringField(RESPONSE_BODY_FIELD, responseBody.string());
                 } catch (IOException ex3) {
                     r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not deserialize body inputstream of http response");
                 }
@@ -363,7 +370,7 @@ public class RestLookupService extends AbstractControllerService implements Rest
             r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not read body inputstream of http response");
         }
 
-        return Optional.ofNullable(r);
+        return Optional.of(r);
     }
 
     private Request buildRequest(final String mimeType, final String method, final String body, final String endpoint) {
