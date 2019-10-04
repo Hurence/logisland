@@ -31,7 +31,9 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.rest.RestClientService;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.lookup.LookupFailureException;
@@ -152,6 +154,8 @@ public class RestLookupService extends AbstractControllerService implements Rest
 
     public static final List VALID_VERBS = Arrays.asList("delete", "get", "post", "put");
 
+    private final static RecordSerializer BACKUP_SERIALIZER;
+
     static {
         DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
                 URL,
@@ -164,6 +168,7 @@ public class RestLookupService extends AbstractControllerService implements Rest
                 PROP_DIGEST_AUTH
         ));
         KEYS = Collections.emptySet();
+        BACKUP_SERIALIZER = SerializerProvider.getSerializer(STRING_SERIALIZER.getValue(), null);;
     }
 
     @Override
@@ -180,7 +185,6 @@ public class RestLookupService extends AbstractControllerService implements Rest
     private volatile String basicPass;
     private volatile boolean isDigest;
     private volatile Pattern urlCoordinatePattern = Pattern.compile("\\$\\{([^}]*)\\}");
-    private volatile Matcher matcher;
 
     @Override
     @OnEnabled
@@ -218,7 +222,6 @@ public class RestLookupService extends AbstractControllerService implements Rest
             buildHeaders(context);
 
             urlTemplate = context.getProperty(URL);
-            matcher = urlCoordinatePattern.matcher(urlTemplate);
         } catch (Exception e) {
             throw new InitializationException(e);
         }
@@ -285,21 +288,11 @@ public class RestLookupService extends AbstractControllerService implements Rest
         Request request = buildRequest(mimeType, method, body, endpoint);
         try {
             Response response = executeRequest(request);
-
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug("Response code {} was returned for coordinate {}",
                         new Object[]{response.code(), coordinates});
             }
-
-            final ResponseBody responseBody = response.body();
-            if (responseBody == null) {
-                return Optional.empty();
-            }
-
-            InputStream is = responseBody.byteStream();
-            Record record = handleResponse(is);
-
-            return Optional.ofNullable(record);
+            return handleResponse(response);
         } catch (Exception e) {
             getLogger().error(String.format("Could not execute lookup at endpoint '%s'.", endpoint), e);
             throw new LookupFailureException(e);
@@ -307,10 +300,11 @@ public class RestLookupService extends AbstractControllerService implements Rest
     }
 
     protected String evaluateEndPoint(Record coordinates) throws LookupFailureException {
+        Matcher matcher = urlCoordinatePattern.matcher(urlTemplate);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             String key = matcher.group(1);
-            if (!coordinates.hasField(key)) {
+            if (!coordinates.hasField(key) || !coordinates.getField(key).isSet()) {
                 throw new LookupFailureException(
                         String.format("coordinates did not contain required '%s' field for evaluating url template '%s'.", key, urlTemplate)
                 );
@@ -342,14 +336,34 @@ public class RestLookupService extends AbstractControllerService implements Rest
         return client.newCall(request).execute();
     }
 
-    private Record handleResponse(InputStream is) throws IOException {
-        try {
-            Record record = serializer.deserialize(is);
-            return record;
-        } catch (Exception ex) {
-            is.close();
-            throw ex;
+    private Optional<Record> handleResponse(Response response) {
+        final ResponseBody responseBody = response.body();
+        Record r = new StandardRecord("http_response");
+        r.setIntField("code", response.code());
+        r.setStringField("message_code", response.message());
+        if (responseBody == null) {
+            return Optional.of(r);
         }
+        try (InputStream is = responseBody.byteStream()) {
+            r.setRecordField("body", serializer.deserialize(is));
+        } catch (RecordSerializationException ex) {
+            //try with String serializer
+            try (InputStream is = responseBody.byteStream()) {
+                is.reset();
+                r.setRecordField("body", BACKUP_SERIALIZER.deserialize(is));
+            } catch (IOException ex2) {
+                try (InputStream is = responseBody.byteStream()) {
+                    is.reset();
+                    r.setStringField("body", responseBody.string());
+                } catch (IOException ex3) {
+                    r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not deserialize body inputstream of http response");
+                }
+            }
+        } catch (IOException ex) {
+            r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not read body inputstream of http response");
+        }
+
+        return Optional.ofNullable(r);
     }
 
     private Request buildRequest(final String mimeType, final String method, final String body, final String endpoint) {

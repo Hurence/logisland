@@ -16,6 +16,7 @@
 package com.hurence.logisland.rest.service.lookup;
 
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.RecordUtils;
 import com.hurence.logisland.service.lookup.LookupFailureException;
 import com.hurence.logisland.service.lookup.RecordLookupService;
@@ -25,6 +26,7 @@ import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
@@ -123,6 +125,70 @@ public class TestRestLookupService {
         outputRecord2.assertRecordSizeEquals(1);
     }
 
+    @Test(expected = Throwable.class)
+    public void testNotRequestedFieldInCoordinates() throws InitializationException, IOException, LookupFailureException {
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
+        MockRestLookUpService service = new MockRestLookUpService();
+        //build mock urls
+        service.addServerResponse("http://192.168.99.100:31112/function/id1",
+                "{ \"name\" : \"greg\" }".getBytes(StandardCharsets.UTF_8));
+        //enable service
+        runner.addControllerService("restLookupService", service);
+        runner.setProperty(service, MockRestLookUpService.URL, "http://192.168.99.100:31112/function/${function_name}");
+        runner.enableControllerService(service);
+        runner.assertValid(service);
+
+        runner.setProperty(TestProcessor.LOOKUP_SERVICE, "restLookupService");
+
+        runner.enqueue(RecordUtils.getRecordOfString("function_name", "id1"));
+        runner.enqueue(RecordUtils.getRecordOfString("function_name",  null));//here should not work
+        runner.run();
+    }
+
+    @Test
+    public void testResponseSerialization() throws InitializationException, IOException, LookupFailureException {
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
+        MockRestLookUpService service = new MockRestLookUpService();
+        //build mock urls
+        service.addServerResponse("http://192.168.99.100:31112/function/id1",
+                "Hello world !".getBytes(StandardCharsets.UTF_8));
+        //enable service
+        runner.addControllerService("restLookupService", service);
+        runner.setProperty(service, MockRestLookUpService.URL, "http://192.168.99.100:31112/function/${function_name}");
+        runner.enableControllerService(service);
+        runner.assertValid(service);
+
+        runner.setProperty(TestProcessor.LOOKUP_SERVICE, "restLookupService");
+
+        runner.enqueue(RecordUtils.getRecordOfString("function_name", "id1"));
+        runner.run();
+
+        runner.assertAllInputRecordsProcessed();
+
+        final MockRecord outputRecord1 = runner.getOutputRecords().get(0);
+        outputRecord1.assertFieldExists(FieldDictionary.RECORD_VALUE);
+        outputRecord1.assertFieldEquals(FieldDictionary.RECORD_VALUE, "Hello world !");
+        outputRecord1.assertRecordSizeEquals(1);
+    }
+
+//    @Test
+//    public void testConcurrency() throws InitializationException, IOException, LookupFailureException {
+//        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
+//        MockRestLookUpService service = new MockRestLookUpService();
+//        //build mock urls
+//        service.addServerResponse("http://192.168.99.100:31112/function/id1",
+//                "Hello world !".getBytes(StandardCharsets.UTF_8));
+//        //enable service
+//        runner.addControllerService("restLookupService", service);
+//        runner.setProperty(service, MockRestLookUpService.URL, "http://192.168.99.100:31112/function/${function_name}");
+//        runner.enableControllerService(service);
+//        runner.assertValid(service);
+//
+//        runner.setProperty(TestProcessor.LOOKUP_SERVICE, "restLookupService");
+//
+//        runner.enqueue(RecordUtils.getRecordOfString("function_name", "id1"));
+//        runner.run();
+//    }
     //TODO test with a proxy
     //TODO test with SSL
 

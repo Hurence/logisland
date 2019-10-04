@@ -190,14 +190,15 @@ public class AsyncCallRequest extends AbstractHttpProcessor
                     Handler<Promise<Optional<Record>>> callRequestHandler = p -> {
                         try {
                             p.complete(restClientService.lookup(coordinates));
-                        } catch (Exception ex) { //There is other errors than LookupException, The proxyWrapper does wrap those into Reflection exceptions...
-                            p.fail(ex);
+                        } catch (Throwable t) { //There is other errors than LookupException, The proxyWrapper does wrap those into Reflection exceptions...
+                            p.fail(t);
                         }
                     };
-                    return Vertx.vertx()
+//                    return Optional<Record> record;
+                    return vertx
                             .rxExecuteBlocking(callRequestHandler)
-                            .doOnError(e -> {
-                                ErrorUtils.handleError(getLogger(), e, record, ProcessError.RUNTIME_ERROR.getName());
+                            .doOnError(t -> {
+                                ErrorUtils.handleError(getLogger(), t, record, ProcessError.RUNTIME_ERROR.getName());
                             })
                             .doOnSuccess(recordO -> {
                                 recordO.ifPresent(rsp -> {
@@ -206,6 +207,7 @@ public class AsyncCallRequest extends AbstractHttpProcessor
                             });
                 }).collect(Collectors.toList());
         Maybe.<Optional<Record>, Integer>zip(responses, (opts) -> { return 0; }).blockingGet();//wait until all request are done
+        stop();
         return records;
     }
 
