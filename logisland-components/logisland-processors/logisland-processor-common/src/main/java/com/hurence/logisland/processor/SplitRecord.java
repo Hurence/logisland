@@ -5,6 +5,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
@@ -87,7 +88,7 @@ public class SplitRecord extends AbstractProcessor {
         final boolean keepParent = context.getPropertyValue(KEEP_PARENT_RECORD).asBoolean();
         final boolean keepParentType = context.getPropertyValue(KEEP_PARENT_RECORD_TYPE).asBoolean();
         final boolean keepParentTime = context.getPropertyValue(KEEP_PARENT_RECORD_TIME).asBoolean();
-        Collection<Record> oringinRecods = new ArrayList<>();
+        Collection<Record> oringinRecords = new ArrayList<>();
         try {
             init(context);
         } catch (Throwable t) {
@@ -104,10 +105,15 @@ public class SplitRecord extends AbstractProcessor {
                     List<String> fieldNames = getFieldsNames(fieldName);
                     Map<String, Field> map = new HashMap<>();
                     Set<Map.Entry<String, Field>> fields = record.getFieldsEntrySet();
+                    boolean errorField = false;
+                    String errorList = "";
                     for (String field : fieldNames) {
                         if (record.hasField(field))
                             map.put(field, record.getField(field));
-                        else throw new IllegalArgumentException("there is no field " + field);
+                        else {
+                            errorField = true;
+                            errorList = errorList.concat(String.format("there is no field %s \n",field));
+                        }
                     }
                     Field idField = new Field(record.getId());
                     map.put("parent_record_id", idField);
@@ -119,17 +125,21 @@ public class SplitRecord extends AbstractProcessor {
                     if (keepParentType) {
                         recordType = record.getType();
                     } else {recordType = newRecordType;}
-                    Record newRecord = new StandardRecord().setFields(map).setType(recordType).setTime(recordTime).setId(newRecordType);
-                    oringinRecods.add(newRecord);
+                    if (errorField) {
+                        oringinRecords.add(new StandardRecord().setFields(map).addError("there are some field(s) that don't exist : \n" + errorList).setType(recordType).setTime(recordTime).setId(UUID.randomUUID().toString()));
+                    } else {
+                        Record newRecord = new StandardRecord().setFields(map).setType(recordType).setTime(recordTime).setId(UUID.randomUUID().toString());
+                        oringinRecords.add(newRecord);
+                    }
                 }
                 if (keepParent) {
-                    oringinRecods.add(record);
+                    oringinRecords.add(record);
                 }
             }
         } catch (Throwable t) {
             getLogger().error("error while processing records ", t);
         }
-        return oringinRecods;
+        return oringinRecords;
     }
 
     private List<String> getFieldsNames (String fields) {

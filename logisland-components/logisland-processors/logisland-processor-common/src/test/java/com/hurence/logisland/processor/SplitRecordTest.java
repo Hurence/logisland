@@ -186,13 +186,124 @@ public class SplitRecordTest {
         record1.setField("field3", FieldType.INT, 1000);
 
         TestRunner testRunner = TestRunners.newTestRunner(new SplitRecord());
-        testRunner.setProperty(SplitRecord.KEEP_PARENT_RECORD, "false");
-        testRunner.setProperty(SplitRecord.KEEP_PARENT_RECORD_TIME, "true");
-        testRunner.setProperty(SplitRecord.KEEP_PARENT_RECORD_TYPE, "false");
-        testRunner.setProperty("record_type1", "field5, field2");
+        testRunner.setProperty("record_type1", "field1, field2");
         testRunner.setProperty("record_type2", "field3");
-        testRunner.setProperty("record_type3", "field5, field3");
+        testRunner.setProperty("record_type3", "field1, field3");
         testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(3);
+
+        MockRecord out = testRunner.getOutputRecords().get(2);
+        out.assertRecordSizeEquals(3);
+        out.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out.assertFieldEquals("record_type", "record_type1");
+        out.assertFieldEquals("record_time", record1.getTime().getTime());
+
+        MockRecord out1 = testRunner.getOutputRecords().get(0);
+        out1.assertRecordSizeEquals(2);
+        out1.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out1.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out1.assertFieldEquals("record_type", "record_type2");
+        out1.assertFieldEquals("record_time", record1.getTime().getTime());
+
+        MockRecord out2 = testRunner.getOutputRecords().get(1);
+        out2.assertRecordSizeEquals(3);
+        out2.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out2.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out2.assertFieldEquals("record_type", "record_type3");
+        out2.assertFieldEquals("record_time", record1.getTime().getTime());
+
+        Record record2 = new StandardRecord();
+        record2.setField("field1", FieldType.STRING, "Hello World");
+        record2.setField("field2", FieldType.STRING, "Logisland");
+        record2.setField("field3", FieldType.INT, 1000);
+
+        TestRunner testRunner1 = TestRunners.newTestRunner(new SplitRecord());
+        testRunner1.setProperty(SplitRecord.KEEP_PARENT_RECORD, "true");
+        testRunner1.setProperty(SplitRecord.KEEP_PARENT_RECORD_TIME, "false");
+        testRunner1.setProperty(SplitRecord.KEEP_PARENT_RECORD_TYPE, "true");
+        testRunner1.setProperty("record_type1", "field1, field2");
+        testRunner1.setProperty("record_type2", "field3");
+        testRunner1.setProperty("record_type3", "field1, field3");
+        testRunner1.assertValid();
+        testRunner1.enqueue(record2);
+        testRunner1.run();
+        testRunner1.assertAllInputRecordsProcessed();
+        testRunner1.assertOutputRecordsCount(4);
+
+        MockRecord out4 = testRunner1.getOutputRecords().get(2);
+        out4.assertRecordSizeEquals(3);
+        out4.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out4.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out4.assertFieldEquals("record_type", record2.getType());
+
+        MockRecord out5 = testRunner1.getOutputRecords().get(0);
+        out5.assertRecordSizeEquals(2);
+        out5.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out5.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out5.assertFieldEquals("record_type", record2.getType());
+
+        MockRecord out6 = testRunner1.getOutputRecords().get(1);
+        out6.assertRecordSizeEquals(3);
+        out6.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out6.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out6.assertFieldEquals("record_type", record2.getType());
+
+        MockRecord out3 = testRunner1.getOutputRecords().get(3);
+        out3.assertRecordSizeEquals(3);
+
+        out3.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out3.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out3.assertFieldEquals("record_type", record2.getType());
+    }
+    @Test
+    public void testRecordsError() {
+        Record record1 = new StandardRecord();
+        record1.setField("field1", FieldType.STRING, "Hello World");
+        record1.setField("field2", FieldType.STRING, "Logisland");
+        record1.setField("field3", FieldType.INT, 1000);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new SplitRecord());
+        testRunner.setProperty("record_type1", "field5, field2");
+        testRunner.setProperty("record_type2", "field789");
+        testRunner.setProperty("record_type3", "field1, field3");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(2);
+        out.assertRecordSizeEquals(3);
+        out.assertFieldTypeEquals("field2", FieldType.STRING);
+        out.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out.assertFieldTypeEquals("record_errors", FieldType.ARRAY);
+        out.assertFieldEquals("field2", "Logisland");
+        out.assertFieldEquals("record_type", "record_type1");
+        out.assertFieldEquals("record_time", record1.getTime().getTime());
+
+        MockRecord out1 = testRunner.getOutputRecords().get(0);
+        out1.assertRecordSizeEquals(2);
+        out1.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out1.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out1.assertFieldTypeEquals("record_errors", FieldType.ARRAY);
+        out1.assertFieldEquals("record_type", "record_type2");
+        out1.assertFieldEquals("record_time", record1.getTime().getTime());
+
+        MockRecord out2 = testRunner.getOutputRecords().get(1);
+        out2.assertRecordSizeEquals(3);
+        out2.assertFieldTypeEquals("field1", FieldType.STRING);
+        out2.assertFieldTypeEquals("field3", FieldType.INT);
+        out2.assertFieldTypeEquals("record_time", FieldType.LONG);
+        out2.assertFieldTypeEquals("record_type", FieldType.STRING);
+        out2.assertFieldEquals("field1", "Hello World");
+        out2.assertFieldEquals("field3", 1000);
+        out2.assertFieldEquals("record_type", "record_type3");
+        out2.assertFieldEquals("record_time", record1.getTime().getTime());
     }
 
 
