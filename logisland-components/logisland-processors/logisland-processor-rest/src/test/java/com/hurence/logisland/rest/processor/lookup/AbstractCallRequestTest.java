@@ -338,9 +338,38 @@ public abstract class AbstractCallRequestTest {
                         "}");
     }
 
+    @Test
+    public void keep_only_response_body() throws InitializationException, IOException, LookupFailureException {
+        String fakebody = "HELLO WORLD";
+        final TestRunner runner = getRunnerInitialized(fakebody);
+        final RestClientService service = (RestClientService) runner.getControllerService(SERVICE_ID);
+        runner.setProperty(REQUEST_BODY, "body");
+        runner.setProperty(KEEP_ONLY_BODY_RESPONSE, "true");
+        runner.assertValid();
+
+        //test queries
+        StandardRecord record = new StandardRecord();
+        record.setField("employeeId", FieldType.STRING, "hello");
+        runner.enqueue(new StandardRecord(record));
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(1);
+
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(2);
+        out.assertFieldEquals("employeeId", "hello");
+        out.assertFieldTypeEquals("employeeId", FieldType.STRING);
+        out.assertFieldTypeEquals("response", FieldType.STRING);
+        out.assertFieldEquals("response", fakebody);
+    }
+
     private TestRunner getRunnerInitialized() throws InitializationException {
+        return getRunnerInitialized(null);
+    }
+
+    private TestRunner getRunnerInitialized(String fakeBody) throws InitializationException {
         final TestRunner runner = TestRunners.newTestRunner(newProc());
-        MockRestClientService service = new MockRestClientService();
+        MockRestClientService service = new MockRestClientService(fakeBody);
         //enable service
         runner.addControllerService("restLookupService", service);
         runner.enableControllerService(service);

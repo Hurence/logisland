@@ -18,30 +18,20 @@ package com.hurence.logisland.rest.processor.lookup;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.component.AllowableValue;
-import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.error.ErrorUtils;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.serializer.ExtendedJsonSerializer;
-import com.hurence.logisland.serializer.RecordSerializer;
-import com.hurence.logisland.serializer.SerializerProvider;
-import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
-import com.hurence.logisland.validator.ValidationResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.Collection;
 
 @Tags({"rest", "record", "http", "request", "call", "server"})
 @CapabilityDescription("Execute an http request with specified verb, body and mime type. Then stock result as a Record in the specified field")
 //@ExtraDetailFile("./details/common-processors/BulkPut-Detail.rst")
-public class CallRequest extends AbstractCallRequest
-{
+public class CallRequest extends AbstractCallRequest {
     /**
      * process events
      *
@@ -71,7 +61,7 @@ public class CallRequest extends AbstractCallRequest
             }
             try {
                 restClientService.lookup(coordinates).ifPresent(rsp -> {
-                    record.setRecordField(responseFieldName, rsp);
+                    modifyRecord(record, rsp);
                 });
             } catch (Exception ex) { //There is other errors than LookupException, The proxyWrapper does wrap those into Reflection exceptions...
                 ErrorUtils.handleError(getLogger(), ex, record, ProcessError.RUNTIME_ERROR.getName());

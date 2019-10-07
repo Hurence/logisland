@@ -34,12 +34,12 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.service.rest.RestClientService;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.lookup.LookupFailureException;
 import com.hurence.logisland.service.proxy.ProxyConfiguration;
 import com.hurence.logisland.service.proxy.ProxyConfigurationService;
 import com.hurence.logisland.service.proxy.ProxySpec;
+import com.hurence.logisland.service.rest.RestClientService;
 import com.hurence.logisland.util.string.StringUtils;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.Validator;
@@ -69,36 +69,32 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 })
 public class RestLookupService extends AbstractControllerService implements RestClientService {
 
+    public static final AllowableValue NO_DESERIALIZER =
+            new AllowableValue("none", "no deserialization", "get body as raw string");
 
-    public static final AllowableValue AVRO_SERIALIZER =
-            new AllowableValue(AvroSerializer.class.getName(), "avro serialization", "serialize events as avro blocs");
+    public static final AllowableValue AVRO_DESERIALIZER =
+            new AllowableValue(AvroSerializer.class.getName(), "avro deserialization", "deserialize body as avro blocs");
 
-    public static final AllowableValue JSON_SERIALIZER =
-            new AllowableValue(JsonSerializer.class.getName(), "json serialization", "serialize events as json blocs");
+    public static final AllowableValue JSON_DESERIALIZER =
+            new AllowableValue(JsonSerializer.class.getName(), "json deserialization", "deserialize body as json blocs");
 
-    public static final AllowableValue EXTENDEND_JSON_SERIALIZER =
-            new AllowableValue(ExtendedJsonSerializer.class.getName(), "extended json serialization", "serialize events as json blocs");
+    public static final AllowableValue EXTENDED_JSON_DESERIALIZER =
+            new AllowableValue(ExtendedJsonSerializer.class.getName(), "extended json deserialization", "deserialize body as json blocs");
 
-    public static final AllowableValue STRING_SERIALIZER =
-            new AllowableValue(StringSerializer.class.getName(), "json serialization", "serialize events as json blocs");
+    public static final AllowableValue KRYO_DESERIALIZER =
+            new AllowableValue(KryoSerializer.class.getName(), "kryo deserialization", "deserialize body with kryo");
 
-    public static final AllowableValue KRYO_SERIALIZER =
-            new AllowableValue(KryoSerializer.class.getName(), "kryo serialization", "serialize events as json blocs");
-
-    public static final AllowableValue NO_SERIALIZER =
-            new AllowableValue("none", "no serialization", "send events as bytes");
-
-    public static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
-            .name("record.serializer")
+    public static final PropertyDescriptor RECORD_DESERIALIZER = new PropertyDescriptor.Builder()
+            .name("record.deserializer.for.body")
             .description("the serializer needed for loading the payload and handling it as a record set.")
             .expressionLanguageSupported(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, STRING_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER, EXTENDEND_JSON_SERIALIZER)
-            .defaultValue(EXTENDEND_JSON_SERIALIZER.getValue())
+            .allowableValues(KRYO_DESERIALIZER, JSON_DESERIALIZER, AVRO_DESERIALIZER, NO_DESERIALIZER, EXTENDED_JSON_DESERIALIZER)
+            .defaultValue(EXTENDED_JSON_DESERIALIZER.getValue())
             .build();
 
     static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
-            .name("record.schema")
+            .name("record.schema.for.body")
             .description("the schema definition for the deserializer (for response payload). You can limit data to retrieve this way")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -160,12 +156,10 @@ public class RestLookupService extends AbstractControllerService implements Rest
 
     public static final List VALID_VERBS = Arrays.asList("delete", "get", "post", "put");
 
-    private final static RecordSerializer BACKUP_SERIALIZER;
-
     static {
         DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
                 URL,
-                RECORD_SERIALIZER,
+                RECORD_DESERIALIZER,
                 RECORD_SCHEMA,
 //                SSL_CONTEXT_SERVICE,//TODO
                 PROXY_CONFIGURATION_SERVICE,
@@ -174,7 +168,6 @@ public class RestLookupService extends AbstractControllerService implements Rest
                 PROP_DIGEST_AUTH
         ));
         KEYS = Collections.emptySet();
-        BACKUP_SERIALIZER = SerializerProvider.getSerializer(STRING_SERIALIZER.getValue(), null);;
     }
 
     @Override
@@ -199,10 +192,15 @@ public class RestLookupService extends AbstractControllerService implements Rest
         try {
             if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
                 serializer = SerializerProvider.getSerializer(
-                        context.getPropertyValue(RECORD_SERIALIZER).asString(),
+                        context.getPropertyValue(RECORD_DESERIALIZER).asString(),
                         context.getPropertyValue(RECORD_SCHEMA).asString());
             } else {
-                serializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_SERIALIZER).asString(), null);
+                String serializerCanonicName = context.getPropertyValue(RECORD_DESERIALIZER).asString();
+                if (!serializerCanonicName.equals(NO_DESERIALIZER.getValue())) {
+                    serializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_DESERIALIZER).asString(), null);
+                } else {
+                    serializer = null;
+                }
             }
 
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -353,18 +351,13 @@ public class RestLookupService extends AbstractControllerService implements Rest
             return Optional.of(r);
         }
         try (InputStream is = responseBody.byteStream()) {
-            r.setRecordField(RESPONSE_BODY_FIELD, serializer.deserialize(is));
+            r.setRecordField(RESPONSE_BODY_FIELD, serializer.deserialize(is));//npe in case of NO_DESERIALISATION so just raw string
         } catch (RecordSerializationException ex) {
             try (InputStream is = responseBody.byteStream()) {
                 is.reset();
-                r.setRecordField(RESPONSE_BODY_FIELD, BACKUP_SERIALIZER.deserialize(is));
+                r.setStringField(RESPONSE_BODY_FIELD, responseBody.string());
             } catch (IOException ex2) {
-                try (InputStream is = responseBody.byteStream()) {
-                    is.reset();
-                    r.setStringField(RESPONSE_BODY_FIELD, responseBody.string());
-                } catch (IOException ex3) {
-                    r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not deserialize body inputstream of http response");
-                }
+                r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not deserialize body inputstream of http response");
             }
         } catch (IOException ex) {
             r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not read body inputstream of http response");
@@ -462,5 +455,20 @@ public class RestLookupService extends AbstractControllerService implements Rest
     @Override
     public String getbodyKey() {
         return BODY_KEY;
+    }
+
+    @Override
+    public String getResponseCodeKey() {
+        return RESPONSE_CODE_FIELD;
+    }
+
+    @Override
+    public String getResponseMsgCodeKey() {
+        return RESPONSE_MESSAGE_CODE_FIELD;
+    }
+
+    @Override
+    public String getResponseBodyKey() {
+        return RESPONSE_BODY_FIELD;
     }
 }

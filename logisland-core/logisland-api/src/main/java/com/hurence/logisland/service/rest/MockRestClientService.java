@@ -16,6 +16,14 @@ import java.util.Set;
  */
 public class MockRestClientService extends AbstractControllerService implements RestClientService {
 
+    public static String fakeBody;
+
+    public MockRestClientService() {
+    }
+
+    public MockRestClientService(String fakeBody) {
+        this.fakeBody = fakeBody;
+    }
 
     @Override
     public String getMimeTypeKey() {
@@ -33,8 +41,27 @@ public class MockRestClientService extends AbstractControllerService implements 
     }
 
     @Override
+    public String getResponseCodeKey() {
+        return "code";
+    }
+
+    @Override
+    public String getResponseMsgCodeKey() {
+        return "code.message";
+    }
+
+    @Override
+    public String getResponseBodyKey() {
+        return "body";
+    }
+
+    @Override
     public Optional<Record> lookup(Record coordinates) throws LookupFailureException {
-        return Optional.of(new StandardRecord(coordinates));
+        Record response = new StandardRecord(coordinates);
+        if (fakeBody != null) {
+            response.setStringField(getResponseBodyKey(), fakeBody);
+        }
+        return Optional.of(response);
     }
 
     @Override

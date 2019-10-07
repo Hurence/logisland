@@ -18,20 +18,12 @@ package com.hurence.logisland.rest.processor.lookup;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.error.ErrorUtils;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.serializer.ExtendedJsonSerializer;
-import com.hurence.logisland.serializer.RecordSerializer;
-import com.hurence.logisland.serializer.SerializerProvider;
-import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
-import com.hurence.logisland.validator.ValidationResult;
 import io.reactivex.Maybe;
 import io.vertx.core.Handler;
 import io.vertx.reactivex.core.Promise;
@@ -39,7 +31,9 @@ import io.vertx.reactivex.core.Vertx;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Tags({"rest", "record", "http", "request", "call", "server"})
@@ -106,10 +100,8 @@ public class AsyncCallRequest extends AbstractCallRequest
                             .doOnError(t -> {
                                 ErrorUtils.handleError(getLogger(), t, record, ProcessError.RUNTIME_ERROR.getName());
                             })
-                            .doOnSuccess(recordO -> {
-                                recordO.ifPresent(rsp -> {
-                                    record.setRecordField(responseFieldName, rsp);
-                                });
+                            .doOnSuccess(rspOpt -> {
+                                rspOpt.ifPresent(rsp ->  modifyRecord(record, rsp));
                             });
                 }).collect(Collectors.toList());
         Maybe.<Optional<Record>, Integer>zip(responses, (opts) -> { return 0; }).blockingGet();//wait until all request are done

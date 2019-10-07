@@ -15,10 +15,22 @@ public interface RestClientService extends RecordLookupService {
             .addValidator(StandardValidators.URL_VALIDATOR)
             .build();
 
+    /*
+    Request keys
+    */
     String getMimeTypeKey();
 
     String getMethodKey();
 
     String getbodyKey();
+
+    /*
+    Response keys
+    */
+    String getResponseCodeKey();
+
+    String getResponseMsgCodeKey();
+
+    String getResponseBodyKey();
 }
 
