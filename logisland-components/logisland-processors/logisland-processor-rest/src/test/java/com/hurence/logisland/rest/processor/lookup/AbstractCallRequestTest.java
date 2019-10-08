@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static com.hurence.logisland.rest.processor.lookup.AbstractCallRequest.*;
 import static com.hurence.logisland.rest.processor.lookup.CallRequest.*;
 
 public abstract class AbstractCallRequestTest {
@@ -288,6 +289,54 @@ public abstract class AbstractCallRequestTest {
         coordinates.assertFieldEquals("employeeId", "hello");
         coordinates.assertFieldEquals(service.getbodyKey(), "body_hello");
         coordinates.assertFieldTypeEquals("employeeId", FieldType.STRING);
+    }
+
+    @Test
+    public void adding_body_coordinates_expression_language_2() throws InitializationException, IOException, LookupFailureException {
+        final TestRunner runner = getRunnerInitialized();
+        final RestClientService service = (RestClientService) runner.getControllerService(SERVICE_ID);
+        runner.setProperty(REQUEST_BODY, "${http_query}");
+        runner.assertValid();
+
+        //test queries
+        StandardRecord record = new StandardRecord();
+        record.setField("http_query", FieldType.STRING, "my query");
+        runner.enqueue(new StandardRecord(record));
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(1);
+
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(2);
+        out.assertFieldEquals("http_query", "my query");
+        out.assertFieldTypeEquals("http_query", FieldType.STRING);
+        out.assertFieldTypeEquals("response", FieldType.RECORD);
+        MockRecord coordinates = new MockRecord(out.getField("response").asRecord());
+        coordinates.assertRecordSizeEquals(2);
+        coordinates.assertFieldEquals("http_query", "my query");
+        coordinates.assertFieldEquals(service.getbodyKey(), "my query");
+        coordinates.assertFieldTypeEquals("http_query", FieldType.STRING);
+    }
+
+    @Test
+    public void adding_body_coordinates_expression_language_3() throws InitializationException, IOException, LookupFailureException {
+        final TestRunner runner = getRunnerInitialized();
+        final RestClientService service = (RestClientService) runner.getControllerService(SERVICE_ID);
+        runner.setProperty(REQUEST_BODY, "${http_query}");
+        runner.assertValid();
+
+        //test queries
+        StandardRecord record = new StandardRecord();
+        runner.enqueue(new StandardRecord(record));
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(1);
+
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(1);
+        out.assertFieldTypeEquals("response", FieldType.RECORD);
+        MockRecord coordinates = new MockRecord(out.getField("response").asRecord());
+        coordinates.assertRecordSizeEquals(0);
     }
 
     @Test

@@ -65,6 +65,11 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
         throw new RuntimeException("When reading a property with expression language enabled, you must call the evaluate(record) method");
     }
 
+    @Override
+    public boolean isSet() {
+        return rawValue != null;
+    }
+
     /**
      * Method that applies a record to an expression language
      * @param record
