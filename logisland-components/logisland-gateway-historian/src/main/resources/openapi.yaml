@@ -1,0 +1,118 @@
+openapi: "3.0.2"
+info:
+  description: "A simple search engine API that finds documents according to a query or another document"
+  version: "1.0.0"
+  title: "Document search engine"
+servers:
+  - url: http://localhost:8080/v1
+    description: Local Server
+tags:
+  - name: "document"
+    description: "Everything about documents"
+paths:
+  "/doc":
+    "get":
+      tags:
+        - document
+      "description": Returns documents matching the query
+      "operationId": "getDocumentsMatchingQuery"
+      "parameters":
+        - "name": query
+          "in": query
+          "description": the query to use to find documents
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: How many documents to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      "responses":
+        "200":
+          "description": A paged list of matching documents
+#          "headers":
+#            x-next:
+#              description: A link to the next page of responses
+#              schema:
+#                type: string
+          "content":
+            "application/json":
+              "schema":
+                "$ref": '#/components/schemas/Documents'
+        "500":
+          "description": "Something wrong happened"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  "/doc/similarTo/{id}":
+    "get":
+      tags:
+        - document
+      description: Returns all documents which are similar to a certain document
+      operationId: getSimilarDocumentsViaId
+      parameters:
+        - name: id
+          in: path
+          description: the id of the document which we will find others similar to it
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of similar documents
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+                  docs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Document:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        author:
+          type: string
+        description:
+          type: string
+    Documents:
+      type: array
+      items:
+        $ref: "#/components/schemas/Document"
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+#security:
+#externalDocs:
+

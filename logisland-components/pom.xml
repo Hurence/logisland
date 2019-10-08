@@ -23,6 +23,7 @@
         <module>logisland-connectors</module>
         <module>logisland-services</module>
         <module>logisland-processors</module>
+        <module>logisland-gateway-historian</module>
     </modules>
 
     <build>
