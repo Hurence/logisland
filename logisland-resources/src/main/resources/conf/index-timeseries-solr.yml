@@ -10,6 +10,15 @@ engine:
     spark.streaming.kafka.maxRatePerPartition: 10000
   controllerServiceConfigurations:
 
+    - controllerService: datastore_service
+      component: com.hurence.logisland.service.solr.Solr8ClientService
+      configuration:
+        solr.cloud: false
+        solr.connection.string: http://localhost:8983/solr
+        solr.collection: historian
+        solr.concurrent.requests: 4
+        flush.interval: 2000
+        batch.size: 1000
 
     - controllerService: kafka_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
@@ -83,17 +92,27 @@ engine:
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         write.stream.service.provider: kafka_service_out
         groupby: tagname
-        chunk.size: 50
+        chunk.size: 100
         state.timeout.ms: 30000
 
       processorConfigurations:
 
-#        - processor: debug_1
-#          component: com.hurence.logisland.processor.DebugStream
+
         # Make one chronix chunk from all records
         - processor: timeseries_converter
           component: com.hurence.logisland.processor.ConvertToTimeseries
           configuration:
             groupby: tagname
-            metric: avg;max;min;trend;sax:7,0.01,10
+            metric: avg;max;min;trend;sax:7,0.01,20
 
+        - processor: create_aliases
+          component: com.hurence.logisland.processor.NormalizeFields
+          configuration:
+            conflict.resolution.policy: keep_both_fields
+            chunk_value: record_value
+
+        # all the parsed records are added to solr by bulk
+        - processor: solr_publisher
+          component: com.hurence.logisland.processor.datastore.BulkPut
+          configuration:
+            datastore.client.service: datastore_service

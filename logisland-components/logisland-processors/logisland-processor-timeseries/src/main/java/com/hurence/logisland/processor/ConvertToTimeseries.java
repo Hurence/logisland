@@ -145,19 +145,19 @@ public class ConvertToTimeseries extends AbstractProcessor {
                         for (int i = 0; i < functionValueMap.sizeOfAggregations(); i++) {
                             String name = functionValueMap.getAggregation(i).getQueryName();
                             double value = functionValueMap.getAggregationValue(i);
-                            tsRecord.setField(name, FieldType.DOUBLE, value);
+                            tsRecord.setField("chunk_" + name, FieldType.DOUBLE, value);
                         }
 
                         for (int i = 0; i < functionValueMap.sizeOfAnalyses(); i++) {
                             String name = functionValueMap.getAnalysis(i).getQueryName();
                             boolean value = functionValueMap.getAnalysisValue(i);
-                            tsRecord.setField(name, FieldType.BOOLEAN, value);
+                            tsRecord.setField("chunk_" + name, FieldType.BOOLEAN, value);
                         }
 
                         for (int i = 0; i < functionValueMap.sizeOfEncodings(); i++) {
                             String name = functionValueMap.getEncoding(i).getQueryName();
                             String value = functionValueMap.getEncodingValue(i);
-                            tsRecord.setField(name, FieldType.STRING, value);
+                            tsRecord.setField("chunk_" + name, FieldType.STRING, value);
                         }
 
                         return tsRecord;
