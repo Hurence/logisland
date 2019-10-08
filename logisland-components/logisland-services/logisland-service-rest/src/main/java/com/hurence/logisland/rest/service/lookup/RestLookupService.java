@@ -176,7 +176,7 @@ public class RestLookupService extends AbstractControllerService implements Rest
     }
 
     private volatile ProxyConfigurationService proxyConfigurationService;
-    private volatile RecordSerializer serializer;
+    private volatile RecordSerializer deserializer;
     private volatile OkHttpClient client;
     private volatile Map<String, String> headers;
     private volatile String urlTemplate;
@@ -191,15 +191,15 @@ public class RestLookupService extends AbstractControllerService implements Rest
         super.init(context);
         try {
             if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
-                serializer = SerializerProvider.getSerializer(
+                deserializer = SerializerProvider.getSerializer(
                         context.getPropertyValue(RECORD_DESERIALIZER).asString(),
                         context.getPropertyValue(RECORD_SCHEMA).asString());
             } else {
                 String serializerCanonicName = context.getPropertyValue(RECORD_DESERIALIZER).asString();
                 if (!serializerCanonicName.equals(NO_DESERIALIZER.getValue())) {
-                    serializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_DESERIALIZER).asString(), null);
+                    deserializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_DESERIALIZER).asString(), null);
                 } else {
-                    serializer = null;
+                    deserializer = null;
                 }
             }
 
@@ -343,26 +343,34 @@ public class RestLookupService extends AbstractControllerService implements Rest
 
 
     private Optional<Record> handleResponse(Response response) {
-        final ResponseBody responseBody = response.body();
         Record r = new StandardRecord(RESPONSE_TYPE_RECORD);
         r.setIntField(RESPONSE_CODE_FIELD, response.code());
         r.setStringField(RESPONSE_MESSAGE_CODE_FIELD, response.message());
-        if (responseBody == null) {
-            return Optional.of(r);
-        }
-        try (InputStream is = responseBody.byteStream()) {
-            r.setRecordField(RESPONSE_BODY_FIELD, serializer.deserialize(is));//npe in case of NO_DESERIALISATION so just raw string
-        } catch (RecordSerializationException ex) {
-            try (InputStream is = responseBody.byteStream()) {
-                is.reset();
-                r.setStringField(RESPONSE_BODY_FIELD, responseBody.string());
+        if (deserializer == null) {//raw string
+            try {
+                ResponseBody body = response.body();
+                if (body == null) return Optional.of(r);
+                r.setStringField(RESPONSE_BODY_FIELD, body.string());
             } catch (IOException ex2) {
                 r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not deserialize body inputstream of http response");
             }
-        } catch (IOException ex) {
-            r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not read body inputstream of http response");
+        } else {//using deserializer
+            //make a copy so we can reread the body if needed
+            //Here we put the whole body in memory.
+            try (InputStream is = response.peekBody(Long.MAX_VALUE).byteStream()) {
+                r.setRecordField(RESPONSE_BODY_FIELD, deserializer.deserialize(is));
+            } catch (RecordSerializationException|NullPointerException ex) {
+                try {//try as raw string instead (server may hjave returned an error)
+                    ResponseBody body = response.body();
+                    if (body == null) return Optional.of(r);
+                    r.setStringField(RESPONSE_BODY_FIELD, body.string());
+                } catch (IOException ex2) {
+                    r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not deserialize body inputstream of http response");
+                }
+            } catch (IOException ex) {
+                r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not read body inputstream of http response");
+            }
         }
-
         return Optional.of(r);
     }
 
