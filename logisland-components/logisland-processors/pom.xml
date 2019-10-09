@@ -46,7 +46,7 @@
         -->
         <module>logisland-processor-cyber-security</module>
         <module>logisland-processor-timeseries</module>
-
+        <module>logisland-processor-rest</module>
 
 
         <!--

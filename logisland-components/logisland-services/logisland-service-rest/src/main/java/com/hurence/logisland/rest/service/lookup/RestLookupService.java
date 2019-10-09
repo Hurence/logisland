@@ -31,13 +31,15 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.lookup.LookupFailureException;
-import com.hurence.logisland.service.lookup.RecordLookupService;
 import com.hurence.logisland.service.proxy.ProxyConfiguration;
 import com.hurence.logisland.service.proxy.ProxyConfigurationService;
 import com.hurence.logisland.service.proxy.ProxySpec;
+import com.hurence.logisland.service.rest.RestClientService;
 import com.hurence.logisland.util.string.StringUtils;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.Validator;
@@ -65,45 +67,34 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
         @DynamicProperty(name = "*", value = "*", description = "All dynamic properties are added as HTTP headers with the name " +
                 "as the header name and the value as the header value.")
 })
-public class RestLookupService extends AbstractControllerService implements RecordLookupService {
-    static final PropertyDescriptor URL = new PropertyDescriptor.Builder()
-            .name("rest.lookup.url")
-            .displayName("URL")
-            .description("The URL for the REST endpoint. Expression language is evaluated against the lookup key/value pairs")
-            .expressionLanguageSupported(false)
-            .required(true)
-            .addValidator(StandardValidators.URL_VALIDATOR)
-            .build();
+public class RestLookupService extends AbstractControllerService implements RestClientService {
 
-    public static final AllowableValue AVRO_SERIALIZER =
-            new AllowableValue(AvroSerializer.class.getName(), "avro serialization", "serialize events as avro blocs");
+    public static final AllowableValue NO_DESERIALIZER =
+            new AllowableValue("none", "no deserialization", "get body as raw string");
 
-    public static final AllowableValue JSON_SERIALIZER =
-            new AllowableValue(JsonSerializer.class.getName(), "json serialization", "serialize events as json blocs");
+    public static final AllowableValue AVRO_DESERIALIZER =
+            new AllowableValue(AvroSerializer.class.getName(), "avro deserialization", "deserialize body as avro blocs");
 
-    public static final AllowableValue EXTENDEND_JSON_SERIALIZER =
-            new AllowableValue(ExtendedJsonSerializer.class.getName(), "extended json serialization", "serialize events as json blocs");
+    public static final AllowableValue JSON_DESERIALIZER =
+            new AllowableValue(JsonSerializer.class.getName(), "json deserialization", "deserialize body as json blocs");
 
-    public static final AllowableValue STRING_SERIALIZER =
-            new AllowableValue(StringSerializer.class.getName(), "json serialization", "serialize events as json blocs");
+    public static final AllowableValue EXTENDED_JSON_DESERIALIZER =
+            new AllowableValue(ExtendedJsonSerializer.class.getName(), "extended json deserialization", "deserialize body as json blocs");
 
-    public static final AllowableValue KRYO_SERIALIZER =
-            new AllowableValue(KryoSerializer.class.getName(), "kryo serialization", "serialize events as json blocs");
+    public static final AllowableValue KRYO_DESERIALIZER =
+            new AllowableValue(KryoSerializer.class.getName(), "kryo deserialization", "deserialize body with kryo");
 
-    public static final AllowableValue NO_SERIALIZER =
-            new AllowableValue("none", "no serialization", "send events as bytes");
-
-    public static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
-            .name("record.serializer")
+    public static final PropertyDescriptor RECORD_DESERIALIZER = new PropertyDescriptor.Builder()
+            .name("record.deserializer.for.body")
             .description("the serializer needed for loading the payload and handling it as a record set.")
             .expressionLanguageSupported(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, STRING_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER, EXTENDEND_JSON_SERIALIZER)
-            .defaultValue(EXTENDEND_JSON_SERIALIZER.getValue())
+            .allowableValues(KRYO_DESERIALIZER, JSON_DESERIALIZER, AVRO_DESERIALIZER, NO_DESERIALIZER, EXTENDED_JSON_DESERIALIZER)
+            .defaultValue(EXTENDED_JSON_DESERIALIZER.getValue())
             .build();
 
     static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
-            .name("record.schema")
+            .name("record.schema.for.body")
             .description("the schema definition for the deserializer (for response payload). You can limit data to retrieve this way")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -150,19 +141,25 @@ public class RestLookupService extends AbstractControllerService implements Reco
     public static final PropertyDescriptor PROXY_CONFIGURATION_SERVICE
             = ProxyConfiguration.createProxyConfigPropertyDescriptor(true, PROXY_SPECS);
 
-    static final String MIME_TYPE_KEY = "mime.type";
-    static final String BODY_KEY = "request.body";
-    static final String METHOD_KEY = "request.method";
+    public static final String MIME_TYPE_KEY = "mime.type";
+    public static final String BODY_KEY = "request.body";
+    public static final String METHOD_KEY = "request.method";
+
+    public final static String RESPONSE_CODE_FIELD = "code";
+    public final static String RESPONSE_MESSAGE_CODE_FIELD = "message_code";
+    public final static String RESPONSE_BODY_FIELD = "body";
+    public final static String RESPONSE_TYPE_RECORD = "http_response";
+
 
     static final List<PropertyDescriptor> DESCRIPTORS;
     static final Set<String> KEYS;
 
-    static final List VALID_VERBS = Arrays.asList("delete", "get", "post", "put");
+    public static final List VALID_VERBS = Arrays.asList("delete", "get", "post", "put");
 
     static {
         DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
                 URL,
-                RECORD_SERIALIZER,
+                RECORD_DESERIALIZER,
                 RECORD_SCHEMA,
 //                SSL_CONTEXT_SERVICE,//TODO
                 PROXY_CONFIGURATION_SERVICE,
@@ -179,7 +176,7 @@ public class RestLookupService extends AbstractControllerService implements Reco
     }
 
     private volatile ProxyConfigurationService proxyConfigurationService;
-    private volatile RecordSerializer serializer;
+    private volatile RecordSerializer deserializer;
     private volatile OkHttpClient client;
     private volatile Map<String, String> headers;
     private volatile String urlTemplate;
@@ -187,7 +184,6 @@ public class RestLookupService extends AbstractControllerService implements Reco
     private volatile String basicPass;
     private volatile boolean isDigest;
     private volatile Pattern urlCoordinatePattern = Pattern.compile("\\$\\{([^}]*)\\}");
-    private volatile Matcher matcher;
 
     @Override
     @OnEnabled
@@ -195,11 +191,16 @@ public class RestLookupService extends AbstractControllerService implements Reco
         super.init(context);
         try {
             if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
-                serializer = SerializerProvider.getSerializer(
-                        context.getPropertyValue(RECORD_SERIALIZER).asString(),
+                deserializer = SerializerProvider.getSerializer(
+                        context.getPropertyValue(RECORD_DESERIALIZER).asString(),
                         context.getPropertyValue(RECORD_SCHEMA).asString());
             } else {
-                serializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_SERIALIZER).asString(), null);
+                String serializerCanonicName = context.getPropertyValue(RECORD_DESERIALIZER).asString();
+                if (!serializerCanonicName.equals(NO_DESERIALIZER.getValue())) {
+                    deserializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_DESERIALIZER).asString(), null);
+                } else {
+                    deserializer = null;
+                }
             }
 
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -225,7 +226,6 @@ public class RestLookupService extends AbstractControllerService implements Reco
             buildHeaders(context);
 
             urlTemplate = context.getProperty(URL);
-            matcher = urlCoordinatePattern.matcher(urlTemplate);
         } catch (Exception e) {
             throw new InitializationException(e);
         }
@@ -292,21 +292,11 @@ public class RestLookupService extends AbstractControllerService implements Reco
         Request request = buildRequest(mimeType, method, body, endpoint);
         try {
             Response response = executeRequest(request);
-
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug("Response code {} was returned for coordinate {}",
                         new Object[]{response.code(), coordinates});
             }
-
-            final ResponseBody responseBody = response.body();
-            if (responseBody == null) {
-                return Optional.empty();
-            }
-
-            InputStream is = responseBody.byteStream();
-            Record record = handleResponse(is);
-
-            return Optional.ofNullable(record);
+            return handleResponse(response);
         } catch (Exception e) {
             getLogger().error(String.format("Could not execute lookup at endpoint '%s'.", endpoint), e);
             throw new LookupFailureException(e);
@@ -314,10 +304,11 @@ public class RestLookupService extends AbstractControllerService implements Reco
     }
 
     protected String evaluateEndPoint(Record coordinates) throws LookupFailureException {
+        Matcher matcher = urlCoordinatePattern.matcher(urlTemplate);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             String key = matcher.group(1);
-            if (!coordinates.hasField(key)) {
+            if (!coordinates.hasField(key) || !coordinates.getField(key).isSet()) {
                 throw new LookupFailureException(
                         String.format("coordinates did not contain required '%s' field for evaluating url template '%s'.", key, urlTemplate)
                 );
@@ -349,14 +340,38 @@ public class RestLookupService extends AbstractControllerService implements Reco
         return client.newCall(request).execute();
     }
 
-    private Record handleResponse(InputStream is) throws IOException {
-        try {
-            Record record = serializer.deserialize(is);
-            return record;
-        } catch (Exception ex) {
-            is.close();
-            throw ex;
+
+
+    private Optional<Record> handleResponse(Response response) {
+        Record r = new StandardRecord(RESPONSE_TYPE_RECORD);
+        r.setIntField(RESPONSE_CODE_FIELD, response.code());
+        r.setStringField(RESPONSE_MESSAGE_CODE_FIELD, response.message());
+        if (deserializer == null) {//raw string
+            try {
+                ResponseBody body = response.body();
+                if (body == null) return Optional.of(r);
+                r.setStringField(RESPONSE_BODY_FIELD, body.string());
+            } catch (IOException ex2) {
+                r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not deserialize body inputstream of http response");
+            }
+        } else {//using deserializer
+            //make a copy so we can reread the body if needed
+            //Here we put the whole body in memory.
+            try (InputStream is = response.peekBody(Long.MAX_VALUE).byteStream()) {
+                r.setRecordField(RESPONSE_BODY_FIELD, deserializer.deserialize(is));
+            } catch (RecordSerializationException|NullPointerException ex) {
+                try {//try as raw string instead (server may hjave returned an error)
+                    ResponseBody body = response.body();
+                    if (body == null) return Optional.of(r);
+                    r.setStringField(RESPONSE_BODY_FIELD, body.string());
+                } catch (IOException ex2) {
+                    r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not deserialize body inputstream of http response");
+                }
+            } catch (IOException ex) {
+                r.addError(ProcessError.RUNTIME_ERROR.getName(), "Could not read body inputstream of http response");
+            }
         }
+        return Optional.of(r);
     }
 
     private Request buildRequest(final String mimeType, final String method, final String body, final String endpoint) {
@@ -433,5 +448,35 @@ public class RestLookupService extends AbstractControllerService implements Reco
     @Override
     public Set<String> getRequiredKeys() {
         return KEYS;
+    }
+
+    @Override
+    public String getMimeTypeKey() {
+        return MIME_TYPE_KEY;
+    }
+
+    @Override
+    public String getMethodKey() {
+        return METHOD_KEY;
+    }
+
+    @Override
+    public String getbodyKey() {
+        return BODY_KEY;
+    }
+
+    @Override
+    public String getResponseCodeKey() {
+        return RESPONSE_CODE_FIELD;
+    }
+
+    @Override
+    public String getResponseMsgCodeKey() {
+        return RESPONSE_MESSAGE_CODE_FIELD;
+    }
+
+    @Override
+    public String getResponseBodyKey() {
+        return RESPONSE_BODY_FIELD;
     }
 }
