@@ -64,7 +64,7 @@ class RecordsTimeSeriesConverterTest extends Specification {
 
         then:
         chunkRecord != null
-        chunkRecord.getAllFields().size() == 8
+        chunkRecord.getAllFields().size() == 11
         chunkRecord.getField(FieldDictionary.CHUNK_START).asLong() == start
         chunkRecord.getField(FieldDictionary.CHUNK_END).asLong() == end
         chunkRecord.getField(FieldDictionary.RECORD_NAME).asString() == name
