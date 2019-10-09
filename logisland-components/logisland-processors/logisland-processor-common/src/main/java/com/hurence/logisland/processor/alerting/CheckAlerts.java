@@ -159,7 +159,6 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
 
-
         List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
             try {

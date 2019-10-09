@@ -113,20 +113,14 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-elasticsearch_5_4_0-client</artifactId>
+            <artifactId>logisland-service-elasticsearch_6_6_2-client</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-elasticsearch_6_6_2-client</artifactId>
+            <artifactId>logisland-service-elasticsearch_7_x-client</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
@@ -177,6 +171,12 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-solr_6_6_2-client</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-solr_8-client</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
@@ -453,8 +453,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>org.apache.hadoop:hadoop-core</dependency>
                                     <!--SERVICE-->
                                     <dependency>com.hurence.logisland:logisland-service-hbase_1_1_2-client</dependency>
-                                    <dependency>com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client</dependency>
-                                    <dependency>com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-elasticsearch_7_x-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-redis</dependency>
