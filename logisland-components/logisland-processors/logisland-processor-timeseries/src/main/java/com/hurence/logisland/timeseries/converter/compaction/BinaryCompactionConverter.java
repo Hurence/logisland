@@ -62,7 +62,7 @@ public class BinaryCompactionConverter implements Serializable {
 
         // compress chunk into binaries
         byte[] serializedTimeseries = serializeTimeseries(timeSeries);
-        chunkrecord.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, serializedTimeseries);
+        chunkrecord.setField(FieldDictionary.CHUNK_VALUE, FieldType.BYTES, serializedTimeseries);
         chunkrecord.setField(FieldDictionary.CHUNK_SIZE_BYTES, FieldType.INT, serializedTimeseries.length);
 
         return chunkrecord;
@@ -114,7 +114,7 @@ public class BinaryCompactionConverter implements Serializable {
 
         final long start = record.getTimeSeries().getStart();
         final long end = record.getTimeSeries().getEnd();
-        return unCompressPoints(record.getField(FieldDictionary.RECORD_VALUE).asBytes(), start, end).stream()
+        return unCompressPoints(record.getField(FieldDictionary.CHUNK_VALUE).asBytes(), start, end).stream()
                 .map(m -> {
 
                     long timestamp = m.getTimestamp();
