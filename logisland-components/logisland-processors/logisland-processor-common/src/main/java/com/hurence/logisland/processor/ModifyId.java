@@ -160,7 +160,7 @@ public class ModifyId extends AbstractProcessor {
     private IdBuilder idBuilder = null;
 
     @Override
-    public void init(ProcessContext context) throws InitializationException {
+    public void init(ProcessContext context)   throws InitializationException {
         super.init(context);
         if (context.getPropertyValue(STRATEGY).isSet()) {
             if (context.getPropertyValue(STRATEGY).getRawValue().equals(RANDOM_UUID_STRATEGY.getValue())) {

@@ -117,7 +117,6 @@ public class BulkPut extends AbstractDatastoreProcessor
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
-
         // bail out if init has failed
         if(datastoreClientService == null) {
             return records;

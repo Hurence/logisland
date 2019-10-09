@@ -110,7 +110,7 @@ public class SplitField extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) throws InitializationException {
+    public void init(final ProcessContext context) throws InitializationException{
         super.init(context);
         this.fieldsNameMapping = getFieldsNameMapping(context);
         this.nbSplitLimit = context.getPropertyValue(NB_SPLIT_LIMIT).asInteger();

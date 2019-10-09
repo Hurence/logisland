@@ -163,7 +163,7 @@ public class FetchHBaseRow extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) throws InitializationException {
+    public void init(ProcessContext context) throws InitializationException{
         super.init(context);
         this.clientService = PluginProxy.rewrap(context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService());
         if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {

@@ -68,7 +68,7 @@ public class DebugStream extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) throws InitializationException {
+    public void init(ProcessContext context)  throws InitializationException {
         super.init(context);
         if (memBean == null) {
             memBean = ManagementFactory.getMemoryMXBean();

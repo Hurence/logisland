@@ -125,7 +125,7 @@ public class AddFields extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) throws InitializationException {
+    public void init(ProcessContext context)  throws InitializationException {
         super.init(context);
         initDynamicProperties(context);
         this.conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();

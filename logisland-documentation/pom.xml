@@ -73,12 +73,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
             <version>1.2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-plugin-support</artifactId>
             <version>${project.version}</version>
@@ -127,13 +121,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-elasticsearch_7_x-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-redis</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -156,18 +143,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-solr_8-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-solr_chronix_8-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-solr_6_6_2-client</artifactId>
@@ -229,6 +205,8 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
+
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-scripting</artifactId>
@@ -389,7 +367,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>commons-cli:commons-cli</dependency>
                                     <dependency>commons-io:commons-io</dependency>
                                     <dependency>org.apache.commons:commons-lang3</dependency>
-                                    <dependency>commons-collections:commons-collections</dependency>
                                     <dependency>org.slf4j:slf4j-simple</dependency>
                                     <dependency>org.slf4j:slf4j-api</dependency>
                                     <dependency>com.hurence.logisland:logisland-api</dependency>
@@ -413,7 +390,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>com.hurence.logisland:logisland-processor-cyber-security</dependency>
                                     <dependency>com.hurence.logisland:logisland-processor-enrichment</dependency>
                                     <dependency>com.hurence.logisland:logisland-processor-outlier-detection</dependency>
-                                    <dependency>com.hurence.logisland:logisland-processor-timeseries</dependency>
                                 </classpath>
                                 <argument>com.hurence.logisland.documentation.DocGenerator</argument>
                                 <argument>-d</argument>
@@ -461,8 +437,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>com.hurence.logisland:logisland-service-influxdb-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-solr_6_6_2-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-solr_8-client</dependency>
-                                    <dependency>com.hurence.logisland:logisland-service-solr_chronix_6_4_2-client</dependency>
-                                    <dependency>com.hurence.logisland:logisland-service-solr_chronix_8-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-inmemory-cache</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-ip-to-geo-maxmind</dependency>
                                 </classpath>
@@ -526,7 +501,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
             </activation>
             <properties>
                 <scala.binary.version>2.11</scala.binary.version>
-                <spark.version>2.3.3</spark.version>
+                <spark.version>2.3.0</spark.version>
                 <kafka.version>0.10.2.1</kafka.version>
                 <scala.version>2.11.8</scala.version>
                 <hadooop.version>0.20.2</hadooop.version>
@@ -749,6 +724,50 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                         <argument>${generate-components-dir}/engines</argument>
                                         <argument>-f</argument>
                                         <argument>engine-spark</argument>
+                                    </arguments>
+                                </configuration>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!--MUST be the last profile so it is executed in last-->
+            <id>copyDoc</id>
+            <activation>
+                <property>
+                    <name>!skipGenDoc</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <configuration>
+                            <includeProjectDependencies>true</includeProjectDependencies>
+                            <includePluginDependencies>true</includePluginDependencies>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>copy paste to ressources</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <executable>java</executable>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <classpath>
+                                            <dependency>org.slf4j:slf4j-simple</dependency>
+                                            <dependency>org.slf4j:slf4j-api</dependency>
+                                            <dependency>commons-cli:commons-cli</dependency>
+                                            <dependency>commons-io:commons-io</dependency>
+                                        </classpath>
+                                        <argument>com.hurence.logisland.documentation.CopyPasteDoc</argument>
                                     </arguments>
                                 </configuration>
                                 <goals>
