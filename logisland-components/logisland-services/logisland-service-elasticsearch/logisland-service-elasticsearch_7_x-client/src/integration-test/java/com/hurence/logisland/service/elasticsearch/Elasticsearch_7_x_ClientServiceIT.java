@@ -23,23 +23,29 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,8 +63,25 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
     private static Logger logger = LoggerFactory.getLogger(Elasticsearch_7_x_ClientServiceIT.class);
 
-    @Rule
-    public final ESRule esRule = new ESRule();
+    @ClassRule
+    public static final ESRule esRule = new ESRule();
+
+    @After
+    public void clean() throws IOException {
+//        ClusterHealthRequest is returning nothing... So we are using IndexRequest here
+        GetIndexRequest request = new GetIndexRequest("*");
+        GetIndexResponse response;
+        try {
+            response = esRule.getClient().indices().get(request, RequestOptions.DEFAULT);
+        } catch (ElasticsearchStatusException ex) {
+            return;//should be index not found
+        }
+        String[] indices = response.getIndices();
+        if (indices.length != 0) {
+            DeleteIndexRequest deleteRequest = new DeleteIndexRequest(indices);
+            Assert.assertTrue(esRule.getClient().indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
+        }
+    }
 
     private class MockElasticsearchClientService extends Elasticsearch_7_x_ClientService {
 

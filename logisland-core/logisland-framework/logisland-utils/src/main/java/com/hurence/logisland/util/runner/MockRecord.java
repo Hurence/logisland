@@ -21,17 +21,20 @@ import java.util.Map;
 import java.util.Set;
 
 import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.RecordUtils;
 import org.junit.Assert;
 
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MockRecord extends StandardRecord {
 
 	private static final long serialVersionUID = 7750544989597574120L;
     private static final float floatDelta = 0.000001f;
     private static final double doubleDelta = 0.000001d;
-
+    private static Logger logger = LoggerFactory.getLogger(MockRecord.class);
 
 	//private final Set<String> assertedFields;
 	
@@ -93,6 +96,12 @@ public class MockRecord extends StandardRecord {
        // assertedFields.add(fieldName);
     }
 
+    public void assertFieldEquals(final String fieldName, final Record expectedValue) {
+        Record record = getField(fieldName).asRecord();
+        MockRecord mockRecord = new MockRecord(record);
+        mockRecord.assertContentEqualsExceptTechnicalFields(expectedValue);
+    }
+
     public <K,V> void assertFieldEquals(final String fieldName, final Map<K, V> expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
     }
@@ -140,13 +149,26 @@ public class MockRecord extends StandardRecord {
     }
     
     /**
-     * Asserts that the content of this Record is the same as the content of
-     * the given file
+     * Asserts that the content of this Record is the same as the content one
      *
      * @param record to compare content against
      */
     public void assertContentEquals(final Record record) {
         Assert.assertEquals(this, record);
+    }
+
+    public void assertContentEqualsExceptTechnicalFields(final Record expected) {
+        Assert.assertEquals(expected.size(), this.size());
+        expected.getAllFields().forEach(field -> {
+            if (this.isInternField(field)) return;
+            logger.debug("testing field {}", field);
+            Assert.assertEquals(field, this.getField(field.getName()));
+        });
+        this.getAllFields().forEach(field -> {
+            if (this.isInternField(field)) return;
+            logger.debug("testing field {}", field);
+            Assert.assertEquals(field, expected.getField(field.getName()));
+        });
     }
 
 }

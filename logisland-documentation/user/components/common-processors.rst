@@ -666,7 +666,78 @@ __________________
 .. include:: ./details/common-processors/SelectDistinctRecords-Detail.rst
 ----------
 
-.. _com.hurence.logisland.processor.EvaluateJsonPath: 
+.. _com.hurence.logisland.processor.DecodeBase64: 
+
+DecodeBase64
+------------
+Decodes fields to base64. The fields should be of type string
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.2.0
+
+Class
+_____
+com.hurence.logisland.processor.DecodeBase64
+
+Tags
+____
+decode, base64
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source.fields**", "a comma separated list of fields corresponding to the fields to decode. Please note than the fields should be of type string", "", "null", "false", "false"
+   "**destination.fields**", "a comma separated list of fields corresponding to the decoded content according to the fields provided as input. Those fields will be of type bytes", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/DecodeBase64-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.EncodeBase64: 
+
+EncodeBase64
+------------
+Encodes fields to base64. The fields should be of type array of bytes
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.2.0
+
+Class
+_____
+com.hurence.logisland.processor.EncodeBase64
+
+Tags
+____
+encode, base64
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source.fields**", "a comma separated list of fields corresponding to the fields to encode. Please note than the fields should be of type bytes", "", "null", "false", "false"
+   "**destination.fields**", "a comma separated list of fields corresponding to the encoded content according to the fields provided as input. Those fields will be of type string", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/EncodeBase64-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.EncryptField: 
+
 
 EvaluateJsonPath
 ----------------

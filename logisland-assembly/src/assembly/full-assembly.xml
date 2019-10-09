@@ -50,6 +50,7 @@
                 <include>com.hurence.logisland:logisland-service-cassandra-client</include>
                 <include>com.hurence.logisland:logisland-service-influxdb-client</include>
                 <include>com.hurence.logisland:logisland-service-redis</include>
+                <include>com.hurence.logisland:logisland-service-rest</include>
                 <!--                PROCESSORS          -->
                 <include>com.hurence.logisland:logisland-processor-common</include>
                 <include>com.hurence.logisland:logisland-processor-xml</include>
@@ -64,6 +65,7 @@
                 <include>com.hurence.logisland:logisland-processor-elasticsearch</include>
                 <include>com.hurence.logisland:logisland-processor-excel</include>
                 <include>com.hurence.logisland:logisland-processor-scripting</include>
+                <include>com.hurence.logisland:logisland-processor-rest</include>
                 <!--                CONNECTORS          -->
                 <include>com.hurence.logisland:logisland-connector-opc</include>
             </includes>
