@@ -19,7 +19,7 @@ public class WebApiServiceMainVerticle extends AbstractVerticle {
   private static final String CONFIG_INSTANCE_NUMBER_HISTORIAN = " historian.verticles.instance.number";
 
   @Override
-  public void start(Promise<Void> promise) {
+  public void start(Promise<Void> promise) throws Exception {
     vertx.getOrCreateContext();
     Single<String> dbVerticleDeployment = deployDocMatcherVerticle();
     dbVerticleDeployment

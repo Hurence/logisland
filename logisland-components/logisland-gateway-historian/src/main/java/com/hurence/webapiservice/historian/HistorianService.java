@@ -9,6 +9,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import org.apache.solr.client.solrj.SolrClient;
 
 
 /**
@@ -20,8 +21,8 @@ import io.vertx.core.json.JsonObject;
 public interface HistorianService {
 
   @GenIgnore
-  static HistorianService create(Handler<AsyncResult<HistorianService>> readyHandler) {
-    return new SolrHistorianServiceImpl(readyHandler);
+  static HistorianService create(SolrClient client, Handler<AsyncResult<HistorianService>> readyHandler) {
+    return new SolrHistorianServiceImpl(client, readyHandler);
   }
 
   @GenIgnore

@@ -19,10 +19,19 @@ package com.hurence.webapiservice.historian;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
+import org.apache.solr.client.solrj.impl.LBHttp2SolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="https://julien.ponge.org/">Julien Ponge</a>
@@ -34,20 +43,44 @@ public class HistorianVerticle extends AbstractVerticle {
   public static final String CONFIG_HISTORIAN_ADDRESS = "address";
   public static final String CONFIG_ROOT_SOLR = "solr";
 //  public static final String CONFIG_ES_CLUSTER_NAME = "cluster.name";
-//  public static final String CONFIG_ES_NODE_HOST_NAME = "node.host";
-//  public static final String CONFIG_ES_NODE_PORT_ONE = "node.port_one";
-//  public static final String CONFIG_ES_NODE_PORT_TWO = "node.port_two";
-//  public static final String CONFIG_ES_SCHEME = "scheme";
-//  public static final String CONFIG_ES_INDEX = "index";
 
-  public static String DEFAULT_HISTORIAN_ADDRESS = "historian";
+  public static final String CONFIG_SOLR_URLS = "urls";
+  public static final String CONFIG_SOLR_USE_ZOOKEEPER = "use_zookeeper";
+  public static final String CONFIG_SOLR_ZOOKEEPER_ROOT = "zookeeper_root";
+  public static final String CONFIG_SOLR_ZOOKEEPER_URLS = "zookeeper_urls";
+  public static final String CONFIG_SOLR_CONNECTION_TIMEOUT = "connection_timeout";
+  public static final String CONFIG_SOLR_SOCKET_TIMEOUT = "socket_timeout";
+//  public static final String CONFIG_SOLR_HOST_NAME = "host";
+//  public static final String CONFIG_SOLR_PORT = "port";
+//  public static final String CONFIG_SOLR_COLLECTION = "collection";
+  private SolrClient client;
 
   @Override
   public void start(Promise<Void> promise) throws Exception {
-    String address = config().getString(CONFIG_HISTORIAN_ADDRESS, DEFAULT_HISTORIAN_ADDRESS);
-    JsonObject slrConfig = config().getJsonObject(CONFIG_ROOT_SOLR);
+    final String address = config().getString(CONFIG_HISTORIAN_ADDRESS, "historian");
+    final JsonObject slrConfig = config().getJsonObject(CONFIG_ROOT_SOLR);
+    final int connectionTimeout = slrConfig.getInteger(CONFIG_SOLR_CONNECTION_TIMEOUT, 10000);
+    final int socketTimeout = slrConfig.getInteger(CONFIG_SOLR_SOCKET_TIMEOUT, 60000);
+    final boolean useZookeeper = slrConfig.getBoolean(CONFIG_SOLR_USE_ZOOKEEPER, false);
 
-    HistorianService.create(ready -> {
+    CloudSolrClient.Builder clientBuilder;
+    if (useZookeeper) {
+      clientBuilder = new CloudSolrClient.Builder(
+              getStringListIfExist(config(), CONFIG_SOLR_ZOOKEEPER_URLS).orElseThrow(IllegalArgumentException::new),
+              Optional.ofNullable(config().getString(CONFIG_SOLR_ZOOKEEPER_ROOT))
+      );
+    } else {
+      clientBuilder = new CloudSolrClient.Builder(
+              getStringListIfExist(config(), CONFIG_SOLR_URLS).orElseThrow(IllegalArgumentException::new)
+      );
+    }
+
+    this.client = clientBuilder
+            .withConnectionTimeout(connectionTimeout)
+            .withSocketTimeout(socketTimeout)
+            .build();
+
+    HistorianService.create(client, ready -> {
       if (ready.succeeded()) {
         ServiceBinder binder = new ServiceBinder(vertx);
         binder.setAddress(address)
@@ -60,8 +93,19 @@ public class HistorianVerticle extends AbstractVerticle {
     });
   }
 
+  private Optional<List<String>> getStringListIfExist(JsonObject config, String key) {
+    JsonArray array = config.getJsonArray(key);
+    if (array == null) return Optional.empty();
+    return Optional.of(array.stream()
+            .map(Object::toString)
+            .collect(Collectors.toList()));
+  }
+
   @Override
   public void stop(Promise<Void> promise) throws Exception {
+    if (client != null) {
+      client.close();
+    }
     promise.complete();
   }
 }

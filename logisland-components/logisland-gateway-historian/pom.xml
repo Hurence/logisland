@@ -15,6 +15,7 @@
         <main.verticle>com.hurence.webapiservice.WebApiServiceMainVerticle</main.verticle>
         <vertx.version>3.8.1</vertx.version>
         <vertx-swagger-router.version>1.5.0</vertx-swagger-router.version>
+        <solr.version>8.1.0</solr.version>
     </properties>
 
     <dependencyManagement>
@@ -65,7 +66,12 @@
             <version>${vertx.version}</version>
             <scope>compile</scope>
         </dependency>
-
+        <!--SOLR IMPLEMENTATION OF HISTORIAN DEPENDENCIES-->
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>${solr.version}</version>
+        </dependency>
         <!--        TEST-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
