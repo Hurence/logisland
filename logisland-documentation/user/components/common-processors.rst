@@ -1518,6 +1518,54 @@ _________
 
 ----------
 
+.. _com.hurence.logisland.processor.SplitRecord: 
+
+SplitRecord
+-----------
+This processor is used to create a new set of records from one record.
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.2.0
+
+Class
+_____
+com.hurence.logisland.processor.SplitRecord
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "keep.parent.record", "Specify if the parent record should exist", "", "false", "false", "false"
+   "keep.parent.record_time", "Specify whether to use the processing_time as record_time or not", "", "true", "false", "false"
+   "keep.parent.record_type", "Specify whether to use the dynamic property name as record_type or not", "", "false", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "new record name", "fields to have", "the new record", "", "null", **true**
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
 .. _com.hurence.logisland.processor.SplitText: 
 
 SplitText
