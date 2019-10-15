@@ -113,6 +113,7 @@
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
 
+        <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <!-- Package to use when relocating shaded classes. -->
         <logisland.shade.packageName>shade.logisland</logisland.shade.packageName>
         <shade-plugin.version>2.4.3</shade-plugin.version>
@@ -239,7 +240,6 @@
                 <version>5.5.0-M1</version>
                 <scope>test</scope>
             </dependency>
-
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -276,20 +276,27 @@
 
     <dependencies>
         <!-- test dependencies -->
+        <!--    To use junit4 framework -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-
+        <!--    To use junit5 framework -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.5.0-M1</version>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <!--   Engine that can run junit3 junit4 and junit5 tests ! -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>runtime</scope>
+        </dependency>
         <!--log dependencies-->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -304,7 +311,6 @@
     <build>
         <pluginManagement>
             <plugins>
-
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
