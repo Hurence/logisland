@@ -20,17 +20,14 @@ import com.hurence.logisland.record.*;
 import com.hurence.logisland.timeseries.MetricTimeSeries;
 import com.hurence.logisland.timeseries.converter.common.Compression;
 import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
-import com.hurence.logisland.timeseries.dts.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BinaryCompactionConverter implements Serializable {
 

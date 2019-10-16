@@ -35,8 +35,6 @@ import static org.junit.Assert.assertEquals;
 
 public class ConvertToTimeseriesTest {
 
-    static String RAW_DATA1 = "/data/raw-data1.txt";
-    static String RAW_DATA2 = "/data/raw-data2.txt";
     static String SAMPLED_RECORD = "sampled_record";
 
     private static Logger logger = LoggerFactory.getLogger(ConvertToTimeseriesTest.class);

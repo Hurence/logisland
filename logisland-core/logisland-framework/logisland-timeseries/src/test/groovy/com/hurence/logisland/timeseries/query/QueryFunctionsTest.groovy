@@ -55,7 +55,7 @@ class QueryFunctionsTest extends Specification {
 
     def "test empty query functions"() {
         when:
-        def queryFunctions = new QueryFunctions<>()
+        def queryFunctions = new QueryFunctions()
 
         then:
         queryFunctions.isEmpty()

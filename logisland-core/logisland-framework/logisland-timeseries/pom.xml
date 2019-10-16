@@ -13,6 +13,8 @@
     <packaging>jar</packaging>
     <properties>
         <protobuf.version>2.6.1</protobuf.version>
+        <spock.core.version>1.1-groovy-2.0</spock.core.version>
+        <groovy.version>2.0.6</groovy.version>
     </properties>
 
     <dependencies>
@@ -21,7 +23,6 @@
             <artifactId>logisland-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
@@ -40,11 +41,7 @@
             <version>4.1.0</version>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.spockframework</groupId>
-            <artifactId>spock-core</artifactId>
-            <version>0.7-groovy-2.0</version>
-        </dependency>
+
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -67,59 +64,24 @@
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--        Unneeded dependencies ?-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.commons</groupId>-->
-<!--            <artifactId>commons-lang3</artifactId>-->
-<!--            <version>3.7</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>joda-time</groupId>-->
-<!--            <artifactId>joda-time</artifactId>-->
-<!--            <version>2.9.9</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>commons-cli</groupId>-->
-<!--            <artifactId>commons-cli</artifactId>-->
-<!--            <version>1.4</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>commons-io</groupId>-->
-<!--            <artifactId>commons-io</artifactId>-->
-<!--            <version>2.6</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.jayway.jsonpath</groupId>-->
-<!--            <artifactId>json-path</artifactId>-->
-<!--            <version>2.0.0</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.commons</groupId>-->
-<!--            <artifactId>commons-email</artifactId>-->
-<!--            <version>1.5</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.googlecode.json-simple</groupId>-->
-<!--            <artifactId>json-simple</artifactId>-->
-<!--            <version>1.1.1</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.google.guava</groupId>-->
-<!--            <artifactId>guava</artifactId>-->
-<!--            <version>19.0</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
+        </dependency>
+<!--        TEST-->
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <version>${spock.core.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>${groovy.version}</version>
+            <type>pom</type> <!-- required JUST since Groovy 2.5.0 -->
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -152,35 +114,93 @@
                     </execution>
                 </executions>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.groovy.maven</groupId>-->
+<!--                <artifactId>gmaven-plugin</artifactId>-->
+<!--                <version>1.0</version>-->
+<!--                <dependencies>-->
+<!--                    <dependency>-->
+<!--                        <groupId>org.codehaus.groovy</groupId>-->
+<!--                        <artifactId>groovy-all</artifactId>-->
+<!--                        <version>${groovy.version}</version>-->
+<!--                    </dependency>-->
+<!--                </dependencies>-->
+<!--                <extensions>true</extensions>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>testCompile</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <sources>-->
+<!--                                <fileset>-->
+<!--                                    <directory>${pom.basedir}/src/test/groovy</directory>-->
+<!--                                    <includes>-->
+<!--                                        <include>**/*.groovy</include>-->
+<!--                                    </includes>-->
+<!--                                </fileset>-->
+<!--                            </sources>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
-                <groupId>org.codehaus.groovy.maven</groupId>
-                <artifactId>gmaven-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-all</artifactId>
-                        <version>2.0.6</version>
-                    </dependency>
-                </dependencies>
-                <extensions>true</extensions>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>1.4</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>testCompile</goal>
+<!--                            <goal>addTestSources</goal>-->
+<!--                            <goal>addTestStubSources</goal>-->
+<!--                            <goal>compile</goal>-->
+
+
+
+
+<!--                            <goal>addTestSources</goal>-->
+<!--                            <goal>generateTestStubs</goal>-->
+<!--                            <goal>compileTests</goal>-->
+<!--                            <goal>removeTestStubs</goal>-->
                         </goals>
-                        <configuration>
-                            <sources>
-                                <fileset>
-                                    <directory>${pom.basedir}/src/test/groovy</directory>
-                                    <includes>
-                                        <include>**/*.groovy</include>
-                                    </includes>
-                                </fileset>
-                            </sources>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+<!--            <plugin>-->
+<!--                <artifactId>maven-surefire-plugin</artifactId>-->
+<!--                <version>${maven-surefire-plugin}</version>-->
+<!--                <dependencies>-->
+<!--&lt;!&ndash;                    <dependency>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <groupId>org.junit.platform</groupId>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <artifactId>junit-platform-surefire-provider</artifactId>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <version>${junit-platform.version}</version>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </dependency>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <dependency>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <groupId>org.junit.jupiter</groupId>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <artifactId>junit-jupiter-engine</artifactId>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <version>${junit.jupiter.version}</version>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </dependency>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <dependency>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <groupId>org.junit.vintage</groupId>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <artifactId>junit-vintage-engine</artifactId>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <version>${junit.jupiter.version}</version>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </dependency>&ndash;&gt;-->
+<!--                </dependencies>-->
+<!--                <configuration>-->
+<!--                    <useFile>false</useFile>-->
+<!--                    <includes>-->
+<!--                        <include>**/*Test.java</include>-->
+<!--                        <include>**/*Spec.java</include>-->
+<!--                    </includes>-->
+<!--                </configuration>-->
+<!--&lt;!&ndash;                <configuration>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <detail>true</detail>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <includes>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <include>%regex[.*]</include>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </includes>&ndash;&gt;-->
+<!--&lt;!&ndash;                </configuration>&ndash;&gt;-->
+<!--            </plugin>-->
         </plugins>
     </build>
 </project>
