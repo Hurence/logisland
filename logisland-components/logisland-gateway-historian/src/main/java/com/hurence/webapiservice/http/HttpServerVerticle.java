@@ -2,7 +2,6 @@ package com.hurence.webapiservice.http;
 
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.http.HttpServer;
 import io.vertx.reactivex.ext.web.Router;
@@ -11,9 +10,7 @@ import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author <a href="https://julien.ponge.org/">Julien Ponge</a>
- */
+
 public class HttpServerVerticle extends AbstractVerticle {
 
   public static final String CONFIG_HTTP_SERVER_PORT = "port";
@@ -57,7 +54,7 @@ public class HttpServerVerticle extends AbstractVerticle {
   }
 
   private void getTimeSeries(RoutingContext context)  {
-    //TODO
 
+    //TODO
   }
 }

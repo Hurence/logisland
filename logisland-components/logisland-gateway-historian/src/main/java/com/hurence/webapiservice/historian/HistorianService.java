@@ -8,8 +8,11 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.solr.client.solrj.SolrClient;
+
+import java.io.IOException;
 
 
 /**
@@ -21,8 +24,8 @@ import org.apache.solr.client.solrj.SolrClient;
 public interface HistorianService {
 
   @GenIgnore
-  static HistorianService create(SolrClient client, Handler<AsyncResult<HistorianService>> readyHandler) {
-    return new SolrHistorianServiceImpl(client, readyHandler);
+  static HistorianService create(Vertx vertx, SolrClient client, String collection, Handler<AsyncResult<HistorianService>> readyHandler) {
+    return new SolrHistorianServiceImpl(vertx, client, collection, readyHandler);
   }
 
   @GenIgnore
@@ -40,5 +43,14 @@ public interface HistorianService {
    */
   @Fluent
   HistorianService getTimeSeries(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   *
+   * @param params
+   * @param resultHandler
+   * @return
+   */
+  @Fluent
+  HistorianService unCompressTimeSeries(JsonObject params, Handler<AsyncResult<JsonArray>> resultHandler);
 
 }

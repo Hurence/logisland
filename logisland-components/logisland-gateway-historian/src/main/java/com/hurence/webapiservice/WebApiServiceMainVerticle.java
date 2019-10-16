@@ -21,7 +21,7 @@ public class WebApiServiceMainVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> promise) throws Exception {
     vertx.getOrCreateContext();
-    Single<String> dbVerticleDeployment = deployDocMatcherVerticle();
+    Single<String> dbVerticleDeployment = deployHistorianVerticle();
     dbVerticleDeployment
             .flatMap(id -> deployHttpVerticle())
             .doOnError(promise::fail)
@@ -29,7 +29,7 @@ public class WebApiServiceMainVerticle extends AbstractVerticle {
             .subscribe();
   }
 
-  private Single<String> deployDocMatcherVerticle() {
+  private Single<String> deployHistorianVerticle() {
     int instances = config().getInteger(CONFIG_INSTANCE_NUMBER_HISTORIAN, 1);
     DeploymentOptions opts = new DeploymentOptions().setInstances(instances).setConfig(config().getJsonObject(CONFIG_HISTORIAN_ROOT));
     return vertx.rxDeployVerticle(HistorianVerticle::new, opts);

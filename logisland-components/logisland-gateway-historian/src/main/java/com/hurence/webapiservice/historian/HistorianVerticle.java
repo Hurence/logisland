@@ -24,8 +24,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.impl.LBHttp2SolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +31,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * @author <a href="https://julien.ponge.org/">Julien Ponge</a>
- */
+
 public class HistorianVerticle extends AbstractVerticle {
 
   private static Logger logger = LoggerFactory.getLogger(HistorianVerticle.class);
+
 
   public static final String CONFIG_HISTORIAN_ADDRESS = "address";
   public static final String CONFIG_ROOT_SOLR = "solr";
@@ -52,7 +49,7 @@ public class HistorianVerticle extends AbstractVerticle {
   public static final String CONFIG_SOLR_SOCKET_TIMEOUT = "socket_timeout";
 //  public static final String CONFIG_SOLR_HOST_NAME = "host";
 //  public static final String CONFIG_SOLR_PORT = "port";
-//  public static final String CONFIG_SOLR_COLLECTION = "collection";
+  public static final String CONFIG_SOLR_COLLECTION = "collection";
   private SolrClient client;
 
   @Override
@@ -62,16 +59,18 @@ public class HistorianVerticle extends AbstractVerticle {
     final int connectionTimeout = slrConfig.getInteger(CONFIG_SOLR_CONNECTION_TIMEOUT, 10000);
     final int socketTimeout = slrConfig.getInteger(CONFIG_SOLR_SOCKET_TIMEOUT, 60000);
     final boolean useZookeeper = slrConfig.getBoolean(CONFIG_SOLR_USE_ZOOKEEPER, false);
+    final String collection = slrConfig.getString(CONFIG_SOLR_COLLECTION, "historian");
 
     CloudSolrClient.Builder clientBuilder;
     if (useZookeeper) {
       clientBuilder = new CloudSolrClient.Builder(
-              getStringListIfExist(config(), CONFIG_SOLR_ZOOKEEPER_URLS).orElseThrow(IllegalArgumentException::new),
-              Optional.ofNullable(config().getString(CONFIG_SOLR_ZOOKEEPER_ROOT))
+              getStringListIfExist(slrConfig, CONFIG_SOLR_ZOOKEEPER_URLS).orElseThrow(IllegalArgumentException::new),
+              Optional.ofNullable(slrConfig.getString(CONFIG_SOLR_ZOOKEEPER_ROOT))
       );
     } else {
       clientBuilder = new CloudSolrClient.Builder(
-              getStringListIfExist(config(), CONFIG_SOLR_URLS).orElseThrow(IllegalArgumentException::new)
+              getStringListIfExist(slrConfig, CONFIG_SOLR_URLS)
+                      .orElseThrow(IllegalArgumentException::new)
       );
     }
 
@@ -80,7 +79,8 @@ public class HistorianVerticle extends AbstractVerticle {
             .withSocketTimeout(socketTimeout)
             .build();
 
-    HistorianService.create(client, ready -> {
+
+    HistorianService.create(vertx, client, collection, ready -> {
       if (ready.succeeded()) {
         ServiceBinder binder = new ServiceBinder(vertx);
         binder.setAddress(address)
