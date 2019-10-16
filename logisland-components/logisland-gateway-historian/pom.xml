@@ -94,6 +94,12 @@
             <version>3.4.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-junit5</artifactId>
+            <version>${vertx.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- LOGS -->
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->

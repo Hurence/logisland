@@ -44,13 +44,4 @@ public interface HistorianService {
   @Fluent
   HistorianService getTimeSeries(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler);
 
-  /**
-   *
-   * @param params
-   * @param resultHandler
-   * @return
-   */
-  @Fluent
-  HistorianService unCompressTimeSeries(JsonObject params, Handler<AsyncResult<JsonArray>> resultHandler);
-
 }

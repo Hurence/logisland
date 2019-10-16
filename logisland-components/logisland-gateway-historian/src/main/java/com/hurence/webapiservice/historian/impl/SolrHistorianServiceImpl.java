@@ -91,12 +91,6 @@ public class SolrHistorianServiceImpl implements HistorianService {
                 .map(this::convertDoc)
                 .collect(Collectors.toList())
         );
-//        JsonArray docs = new JsonArray(documents.stream()
-//                .map(SolrDocument::jsonStr)
-//                .map(JsonObject::new)
-//                .collect(Collectors.toList())
-//        );
-//        documents.get(0).get("chunk_value");
         p.complete(new JsonObject()
                 .put(TOTAL_FOUND, documents.getNumFound())
                 .put(DOCS, docs)
@@ -109,29 +103,6 @@ public class SolrHistorianServiceImpl implements HistorianService {
       }
     };
     vertx.executeBlocking(getTimeSeriesHandler, resultHandler);
-    return this;
-  }
-
-  @Override
-  public HistorianService unCompressTimeSeries(JsonObject params, Handler<AsyncResult<JsonArray>> resultHandler) {
-    byte[] chunk = params.getBinary(CHUNK);
-    if (chunk == null) throw new IllegalArgumentException("field "+ CHUNK + " is mandatory");
-    long start = params.getLong(START, -1L);
-    long end = params.getLong(END, -1L);
-
-    Handler<Promise<JsonArray>> unCompressChunk = p -> {
-      try {
-        List<Point> points = compacter.unCompressPoints(chunk, start, end);
-        p.complete(new JsonArray(points.stream()
-                .map(point -> new JsonObject()
-                        .put(TIMESTAMP, point.getTimestamp())
-                        .put(VALUE, point.getValue()))
-                .collect(Collectors.toList())));
-      } catch (IOException e) {
-        p.fail(e);
-      }
-    };
-    vertx.executeBlocking(unCompressChunk, resultHandler);
     return this;
   }
 

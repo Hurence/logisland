@@ -54,7 +54,6 @@ public class HttpServerVerticle extends AbstractVerticle {
   }
 
   private void getTimeSeries(RoutingContext context)  {
-
     //TODO
   }
 }
