@@ -6,7 +6,6 @@ import com.hurence.webapiservice.timeseries.TimeseriesService;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,7 @@ public class TimeseriesServiceImpl implements TimeseriesService {
     if (chunk == null) throw new IllegalArgumentException("field "+ CHUNK + " is mandatory");
     Long start = params.getLong(START);
     if (start == null) throw new IllegalArgumentException("field "+ START + " is mandatory");
-    long end = params.getLong(END, -1L);
+    long end = params.getLong(END, Long.MAX_VALUE);
 
     Handler<Promise<JsonArray>> unCompressChunk = p -> {
       try {

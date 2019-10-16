@@ -1,6 +1,5 @@
 package com.hurence.webapiservice.historian.impl;
 
-import com.hurence.logisland.record.Point;
 import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
 import com.hurence.webapiservice.historian.HistorianService;
 import io.vertx.core.*;
@@ -19,19 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class SolrHistorianServiceImpl implements HistorianService {
 
   private static Logger logger = LoggerFactory.getLogger(SolrHistorianServiceImpl.class);
-//  UNCOMPRESSION
-  public static String TIMESTAMP = "timestamp";
-  public static String VALUE = "value";
-  public static String CHUNK = "chunk";
-  public static String START = "start";
-  public static String END = "end";
-//   SEARCH
+  //   SEARCH KEYWORDS
   public static String DOCS = "docs";
   public static String TOTAL_FOUND = "total_hit";
 

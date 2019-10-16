@@ -90,6 +90,7 @@ public class TimeseriesService {
     });
   }
 
+  public static final String DEFAULT_ADRESS = com.hurence.webapiservice.timeseries.TimeseriesService.DEFAULT_ADRESS;
 
   public static  TimeseriesService newInstance(com.hurence.webapiservice.timeseries.TimeseriesService arg) {
     return arg != null ? new TimeseriesService(arg) : null;

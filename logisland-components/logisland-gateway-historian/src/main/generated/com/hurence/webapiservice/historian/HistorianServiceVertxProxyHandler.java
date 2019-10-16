@@ -41,7 +41,6 @@ import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.HelperUtils;
 
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -118,11 +117,6 @@ public class HistorianServiceVertxProxyHandler extends ProxyHandler {
       switch (action) {
         case "getTimeSeries": {
           service.getTimeSeries((io.vertx.core.json.JsonObject)json.getValue("params"),
-                        HelperUtils.createHandler(msg));
-          break;
-        }
-        case "unCompressTimeSeries": {
-          service.unCompressTimeSeries((io.vertx.core.json.JsonObject)json.getValue("params"),
                         HelperUtils.createHandler(msg));
           break;
         }

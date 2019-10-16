@@ -22,7 +22,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -87,26 +86,6 @@ public class HistorianService {
   public Single<JsonObject> rxGetTimeSeries(JsonObject params) { 
     return io.vertx.reactivex.impl.AsyncResultSingle.toSingle(handler -> {
       getTimeSeries(params, handler);
-    });
-  }
-
-  /**
-   * @param params 
-   * @param resultHandler 
-   * @return 
-   */
-  public com.hurence.webapiservice.historian.reactivex.HistorianService unCompressTimeSeries(JsonObject params, Handler<AsyncResult<JsonArray>> resultHandler) { 
-    delegate.unCompressTimeSeries(params, resultHandler);
-    return this;
-  }
-
-  /**
-   * @param params 
-   * @return 
-   */
-  public Single<JsonArray> rxUnCompressTimeSeries(JsonObject params) { 
-    return io.vertx.reactivex.impl.AsyncResultSingle.toSingle(handler -> {
-      unCompressTimeSeries(params, handler);
     });
   }
 

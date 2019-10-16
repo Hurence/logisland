@@ -158,20 +158,20 @@ public final class ProtoBufMetricTimeSeriesSerializer {
 
             for (int i = 0; i < size; i++) {
                 MetricProtocolBuffers.Point p = pList.get(i);
-
                 //Decode the time
                 if (i > 0) {
                     lastDelta = getTimestamp(p, lastDelta);
                     calculatedPointDate += lastDelta;
                 }
-
                 //Check if the point refers to an index
                 if (p.hasVIndex()) {
                     value = pList.get(p.getVIndex()).getV();
                 } else {
                     value = p.getV();
                 }
-
+                if (calculatedPointDate > timeSeriesEnd) {
+                    return pointsToReturn;
+                }
                 pointsToReturn.add(new Point(i, calculatedPointDate, value));
             }
             return pointsToReturn;
