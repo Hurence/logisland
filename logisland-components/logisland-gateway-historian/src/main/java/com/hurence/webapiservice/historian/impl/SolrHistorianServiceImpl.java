@@ -23,9 +23,6 @@ import java.util.stream.Collectors;
 public class SolrHistorianServiceImpl implements HistorianService {
 
   private static Logger logger = LoggerFactory.getLogger(SolrHistorianServiceImpl.class);
-  //   SEARCH KEYWORDS
-  public static String DOCS = "docs";
-  public static String TOTAL_FOUND = "total_hit";
 
   private final SolrClient client;
   private final Vertx vertx;

@@ -71,9 +71,9 @@ public class TimeseriesService {
   }
 
   /**
-   * @param params 
+   * @param params as a json object <pre> {  : "a byte array encoded as base64 to uncompress to timeseries",  : "a long value"  : "a long value" (optional) } </pre>
    * @param resultHandler 
-   * @return 
+   * @return uncompressed timeseries as an array of <pre> {  : "a_timestamp",  : "a double value" } </pre>
    */
   public com.hurence.webapiservice.timeseries.reactivex.TimeseriesService unCompressTimeSeries(JsonObject params, Handler<AsyncResult<JsonArray>> resultHandler) { 
     delegate.unCompressTimeSeries(params, resultHandler);
@@ -81,8 +81,8 @@ public class TimeseriesService {
   }
 
   /**
-   * @param params 
-   * @return 
+   * @param params as a json object <pre> {  : "a byte array encoded as base64 to uncompress to timeseries",  : "a long value"  : "a long value" (optional) } </pre>
+   * @return uncompressed timeseries as an array of <pre> {  : "a_timestamp",  : "a double value" } </pre>
    */
   public Single<JsonArray> rxUnCompressTimeSeries(JsonObject params) { 
     return io.vertx.reactivex.impl.AsyncResultSingle.toSingle(handler -> {
@@ -91,6 +91,11 @@ public class TimeseriesService {
   }
 
   public static final String DEFAULT_ADRESS = com.hurence.webapiservice.timeseries.TimeseriesService.DEFAULT_ADRESS;
+  public static final String TIMESTAMP = com.hurence.webapiservice.timeseries.TimeseriesService.TIMESTAMP;
+  public static final String VALUE = com.hurence.webapiservice.timeseries.TimeseriesService.VALUE;
+  public static final String CHUNK = com.hurence.webapiservice.timeseries.TimeseriesService.CHUNK;
+  public static final String START = com.hurence.webapiservice.timeseries.TimeseriesService.START;
+  public static final String END = com.hurence.webapiservice.timeseries.TimeseriesService.END;
 
   public static  TimeseriesService newInstance(com.hurence.webapiservice.timeseries.TimeseriesService arg) {
     return arg != null ? new TimeseriesService(arg) : null;

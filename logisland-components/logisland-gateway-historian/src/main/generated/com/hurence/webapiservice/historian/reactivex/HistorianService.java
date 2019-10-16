@@ -70,9 +70,9 @@ public class HistorianService {
   }
 
   /**
-   * @param params 
+   * @param params as a json object <pre> { TODO } </pre>
    * @param resultHandler 
-   * @return 
+   * @return uncompressed timeseries as an array of <pre> {  : "content of chunks as an array",  : "total chunk matching query" } </pre>
    */
   public com.hurence.webapiservice.historian.reactivex.HistorianService getTimeSeries(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) { 
     delegate.getTimeSeries(params, resultHandler);
@@ -80,8 +80,8 @@ public class HistorianService {
   }
 
   /**
-   * @param params 
-   * @return 
+   * @param params as a json object <pre> { TODO } </pre>
+   * @return uncompressed timeseries as an array of <pre> {  : "content of chunks as an array",  : "total chunk matching query" } </pre>
    */
   public Single<JsonObject> rxGetTimeSeries(JsonObject params) { 
     return io.vertx.reactivex.impl.AsyncResultSingle.toSingle(handler -> {
@@ -89,6 +89,8 @@ public class HistorianService {
     });
   }
 
+  public static final String DOCS = com.hurence.webapiservice.historian.HistorianService.DOCS;
+  public static final String TOTAL_FOUND = com.hurence.webapiservice.historian.HistorianService.TOTAL_FOUND;
 
   public static  HistorianService newInstance(com.hurence.webapiservice.historian.HistorianService arg) {
     return arg != null ? new HistorianService(arg) : null;

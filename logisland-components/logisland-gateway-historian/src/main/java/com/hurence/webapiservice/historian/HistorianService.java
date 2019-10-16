@@ -8,11 +8,8 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.solr.client.solrj.SolrClient;
-
-import java.io.IOException;
 
 
 /**
@@ -22,6 +19,9 @@ import java.io.IOException;
 @ProxyGen
 @VertxGen
 public interface HistorianService {
+
+  public static String DOCS = "docs";
+  public static String TOTAL_FOUND = "total_hit";
 
   @GenIgnore
   static HistorianService create(Vertx vertx, SolrClient client, String collection, Handler<AsyncResult<HistorianService>> readyHandler) {
@@ -37,9 +37,20 @@ public interface HistorianService {
 
   /**
    *
-   * @param params
+   * @param params as a json object
+   * <pre>
+   * {
+   *     TODO
+   * }
+   * </pre>
    * @param resultHandler
-   * @return
+   * @return uncompressed timeseries as an array of
+   * <pre>
+   * {
+   *     {@value DOCS} : "content of chunks as an array",
+   *     {@value TOTAL_FOUND} : "total chunk matching query"
+   * }
+   * </pre>
    */
   @Fluent
   HistorianService getTimeSeries(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler);

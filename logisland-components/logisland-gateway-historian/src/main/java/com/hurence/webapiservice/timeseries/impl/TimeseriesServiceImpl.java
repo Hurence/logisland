@@ -17,12 +17,6 @@ public class TimeseriesServiceImpl implements TimeseriesService {
 
   private static Logger logger = LoggerFactory.getLogger(TimeseriesServiceImpl.class);
 
-  public static String TIMESTAMP = "timestamp";
-  public static String VALUE = "value";
-  public static String CHUNK = "chunk";
-  public static String START = "start";
-  public static String END = "end";
-
   private final Vertx vertx;
   private final BinaryCompactionConverter compacter;
 
