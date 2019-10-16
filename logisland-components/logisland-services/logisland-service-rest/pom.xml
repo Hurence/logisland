@@ -78,6 +78,23 @@
                     </execution>
                 </executions>
             </plugin>
+<!--            Used to make a test jar. But this can not be used in plugin as their class loader are isolated. If you want-->
+<!--            To use the jar in plugin module (processor for example) you need to find a way to add this jar to the classpath-->
+<!--            thanks to the logisland-maven-plugin, or the logisland plugin mechanism. Did not had time for this so I choose instead-->
+<!--            to decorralate my test processor from this service implementation using a Mock that I created inside logisland-api module
+                which is available inside plugin modules -->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jar-plugin</artifactId>-->
+<!--                <version>${maven-jar-plugin}</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>test-jar</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 </project>

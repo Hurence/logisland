@@ -25,6 +25,9 @@ import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -32,14 +35,13 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class Elasticsearch_2_4_0_ClientServiceIT {
 
@@ -50,9 +52,20 @@ public class Elasticsearch_2_4_0_ClientServiceIT {
 
     private static Logger logger = LoggerFactory.getLogger(Elasticsearch_2_4_0_ClientServiceIT.class);
 
-    @Rule
-    public final ESRule esRule = new ESRule();
+    @ClassRule
+    public static final ESRule esRule = new ESRule();
 
+    @Before
+    public void clean() throws IOException, ExecutionException, InterruptedException {
+        ClusterHealthRequest clHealtRequest = new ClusterHealthRequest();
+        ClusterHealthResponse response = esRule.getClient().admin().cluster().health(clHealtRequest).get();
+        Set<String> indices = response.getIndices().keySet();
+
+        if (!indices.isEmpty()) {
+            DeleteIndexRequest deleteRequest = new DeleteIndexRequest(indices.toArray(new String[0]));
+            Assert.assertTrue(esRule.getClient().admin().indices().delete(deleteRequest).get().isAcknowledged());
+        }
+    }
 
     private class MockElasticsearchClientService extends Elasticsearch_2_4_0_ClientService {
 

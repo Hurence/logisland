@@ -16,26 +16,19 @@
 package com.hurence.logisland.rest.service.lookup;
 
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.RecordUtils;
 import com.hurence.logisland.service.lookup.LookupFailureException;
 import com.hurence.logisland.service.lookup.RecordLookupService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import okhttp3.Protocol;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okio.BufferedSource;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -79,18 +72,26 @@ public class TestRestLookupService {
         assertThat(lookupService, instanceOf(RestLookupService.class));
 
         MockRecord record1 = new MockRecord(lookupService.lookup(Collections.emptyMap()).get());
-        record1.assertFieldExists("name");
-        record1.assertFieldEquals("name", "greg");
-        record1.assertRecordSizeEquals(1);
+        record1.assertFieldEquals(service.getResponseCodeKey(), 200);
+        record1.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        record1.assertRecordSizeEquals(3);
+        MockRecord bodyRecord1 = new MockRecord(record1.getField(service.getResponseBodyKey()).asRecord());
+        bodyRecord1.assertFieldEquals("name", "greg");
+        bodyRecord1.assertRecordSizeEquals(1);
 
         runner.disableControllerService(service);
         runner.setProperty(service, MockRestLookUpService.URL, "http://hurence.com/employee/2");
         runner.enableControllerService(service);
 
         MockRecord record2 = new MockRecord(lookupService.lookup(Collections.emptyMap()).get());
-        record2.assertFieldExists("name");
-        record2.assertFieldEquals("name", "jésus");
-        record2.assertRecordSizeEquals(1);
+        record2.assertFieldEquals(service.getResponseCodeKey(), 200);
+        record2.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        record2.assertRecordSizeEquals(3);
+        MockRecord bodyRecord2 = new MockRecord(record2.getField(service.getResponseBodyKey()).asRecord());
+        bodyRecord2.assertFieldEquals("name", "jésus");
+        bodyRecord2.assertRecordSizeEquals(1);
+
+
     }
 
     @Test
@@ -122,62 +123,72 @@ public class TestRestLookupService {
         runner.assertAllInputRecordsProcessed();
 
         final MockRecord outputRecord1 = runner.getOutputRecords().get(0);
-        outputRecord1.assertFieldExists("name");
-        outputRecord1.assertFieldEquals("name", "greg");
-        outputRecord1.assertRecordSizeEquals(1);
+        outputRecord1.assertFieldEquals(service.getResponseCodeKey(), 200);
+        outputRecord1.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        outputRecord1.assertRecordSizeEquals(3);
+        MockRecord bodyRecord1 = new MockRecord(outputRecord1.getField(service.getResponseBodyKey()).asRecord());
+        bodyRecord1.assertFieldEquals("name", "greg");
+        bodyRecord1.assertRecordSizeEquals(1);
 
         final MockRecord outputRecord2 = runner.getOutputRecords().get(1);
-        outputRecord2.assertFieldExists("name");
-        outputRecord2.assertFieldEquals("name", "jésus");
-        outputRecord2.assertRecordSizeEquals(1);
+        outputRecord2.assertFieldEquals(service.getResponseCodeKey(), 200);
+        outputRecord2.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        outputRecord2.assertRecordSizeEquals(3);
+        MockRecord bodyRecord2 = new MockRecord(outputRecord2.getField(service.getResponseBodyKey()).asRecord());
+        bodyRecord2.assertFieldEquals("name", "jésus");
+        bodyRecord2.assertRecordSizeEquals(1);
+    }
+
+    @Test(expected = Throwable.class)
+    public void testNotRequestedFieldInCoordinates() throws InitializationException, IOException, LookupFailureException {
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
+        MockRestLookUpService service = new MockRestLookUpService();
+        //build mock urls
+        service.addServerResponse("http://192.168.99.100:31112/function/id1",
+                "{ \"name\" : \"greg\" }".getBytes(StandardCharsets.UTF_8));
+        //enable service
+        runner.addControllerService("restLookupService", service);
+        runner.setProperty(service, MockRestLookUpService.URL, "http://192.168.99.100:31112/function/${function_name}");
+        runner.enableControllerService(service);
+        runner.assertValid(service);
+
+        runner.setProperty(TestProcessor.LOOKUP_SERVICE, "restLookupService");
+
+        runner.enqueue(RecordUtils.getRecordOfString("function_name", "id1"));
+        runner.enqueue(RecordUtils.getRecordOfString("function_name",  null));//here should not work
+        runner.run();
+    }
+
+    @Test
+    public void testResponseSerialization() throws InitializationException, IOException, LookupFailureException {
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
+        MockRestLookUpService service = new MockRestLookUpService();
+        //build mock urls
+        service.addServerResponse("http://192.168.99.100:31112/function/id1",
+                "Hello world !".getBytes(StandardCharsets.UTF_8));
+        //enable service
+        runner.addControllerService("restLookupService", service);
+        runner.setProperty(service, MockRestLookUpService.URL, "http://192.168.99.100:31112/function/${function_name}");
+        runner.enableControllerService(service);
+        runner.assertValid(service);
+
+        runner.setProperty(TestProcessor.LOOKUP_SERVICE, "restLookupService");
+
+        runner.enqueue(RecordUtils.getRecordOfString("function_name", "id1"));
+        runner.run();
+
+        runner.assertAllInputRecordsProcessed();
+
+        final MockRecord outputRecord1 = runner.getOutputRecords().get(0);
+        outputRecord1.assertFieldEquals(service.getResponseCodeKey(), 200);
+        outputRecord1.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        outputRecord1.assertFieldEquals(service.getResponseBodyKey(), "Hello world !");
+        outputRecord1.assertRecordSizeEquals(3);
     }
 
     //TODO test with a proxy
     //TODO test with SSL
+    //TODO testConcurrency
 
 
-    // Override methods to create a mock service that can return staged data
-    private class MockRestLookUpService extends RestLookupService {
-
-        //matching a url to a payload
-        private Map<String, byte[]> fakeServer;
-
-        public MockRestLookUpService() {
-            fakeServer = new HashMap<>();
-        }
-
-        public MockRestLookUpService(final Map<String, byte[]> fakeServer) {
-            this.fakeServer = fakeServer;
-        }
-
-        public void addServerResponse(final String url, final byte[] payload) {
-            this.fakeServer.put(url, payload);
-        }
-
-        @Override
-        protected Response executeRequest(Request request) throws IOException {
-            super.executeRequest(request);
-            String url = request.url().toString();
-            if (!fakeServer.containsKey(url)) {
-                throw new IllegalArgumentException(String.format("Please add a fake payload for url : '%s'", url));
-            }
-            byte[] payload = fakeServer.get(url);
-
-            //mock Source
-            final BufferedSource source = Mockito.mock(BufferedSource.class);
-            Mockito.when(source.inputStream())
-                    .thenReturn(new ByteArrayInputStream(payload));
-            //ResponseBody mock
-            final ResponseBody restResponseBody = Mockito.mock(ResponseBody.class);
-            Mockito.when(restResponseBody.source()).thenReturn(source);
-
-            return new Response.Builder()
-                    .request(request)
-                    .body(restResponseBody)
-                    .code(200)
-                    .protocol(Protocol.HTTP_2)
-                    .message("ok")
-                    .build();
-        }
-    }
 }
