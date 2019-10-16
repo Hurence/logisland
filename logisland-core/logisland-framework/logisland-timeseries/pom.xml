@@ -13,8 +13,9 @@
     <packaging>jar</packaging>
     <properties>
         <protobuf.version>2.6.1</protobuf.version>
-        <spock.core.version>1.1-groovy-2.0</spock.core.version>
-        <groovy.version>2.0.6</groovy.version>
+<!--        To use a newer version of groovy we must upgrade spock core as well but api changed and test code would have to be changed-->
+        <spock.core.version>1.1-groovy-2.4</spock.core.version>
+        <groovy.version>2.4.17</groovy.version>
     </properties>
 
     <dependencies>
@@ -114,93 +115,21 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.groovy.maven</groupId>-->
-<!--                <artifactId>gmaven-plugin</artifactId>-->
-<!--                <version>1.0</version>-->
-<!--                <dependencies>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.codehaus.groovy</groupId>-->
-<!--                        <artifactId>groovy-all</artifactId>-->
-<!--                        <version>${groovy.version}</version>-->
-<!--                    </dependency>-->
-<!--                </dependencies>-->
-<!--                <extensions>true</extensions>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>testCompile</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <sources>-->
-<!--                                <fileset>-->
-<!--                                    <directory>${pom.basedir}/src/test/groovy</directory>-->
-<!--                                    <includes>-->
-<!--                                        <include>**/*.groovy</include>-->
-<!--                                    </includes>-->
-<!--                                </fileset>-->
-<!--                            </sources>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.4</version>
+                <version>1.8.0</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>testCompile</goal>
-<!--                            <goal>addTestSources</goal>-->
-<!--                            <goal>addTestStubSources</goal>-->
-<!--                            <goal>compile</goal>-->
-
-
-
-
-<!--                            <goal>addTestSources</goal>-->
-<!--                            <goal>generateTestStubs</goal>-->
-<!--                            <goal>compileTests</goal>-->
-<!--                            <goal>removeTestStubs</goal>-->
+                            <goal>addTestSources</goal>
+                            <goal>generateTestStubs</goal>
+                            <goal>compileTests</goal>
+                            <goal>removeTestStubs</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <artifactId>maven-surefire-plugin</artifactId>-->
-<!--                <version>${maven-surefire-plugin}</version>-->
-<!--                <dependencies>-->
-<!--&lt;!&ndash;                    <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <groupId>org.junit.platform</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <artifactId>junit-platform-surefire-provider</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <version>${junit-platform.version}</version>&ndash;&gt;-->
-<!--&lt;!&ndash;                    </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;                    <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <groupId>org.junit.jupiter</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <artifactId>junit-jupiter-engine</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <version>${junit.jupiter.version}</version>&ndash;&gt;-->
-<!--&lt;!&ndash;                    </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;                    <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <groupId>org.junit.vintage</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <artifactId>junit-vintage-engine</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <version>${junit.jupiter.version}</version>&ndash;&gt;-->
-<!--&lt;!&ndash;                    </dependency>&ndash;&gt;-->
-<!--                </dependencies>-->
-<!--                <configuration>-->
-<!--                    <useFile>false</useFile>-->
-<!--                    <includes>-->
-<!--                        <include>**/*Test.java</include>-->
-<!--                        <include>**/*Spec.java</include>-->
-<!--                    </includes>-->
-<!--                </configuration>-->
-<!--&lt;!&ndash;                <configuration>&ndash;&gt;-->
-<!--&lt;!&ndash;                    <detail>true</detail>&ndash;&gt;-->
-<!--&lt;!&ndash;                    <includes>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <include>%regex[.*]</include>&ndash;&gt;-->
-<!--&lt;!&ndash;                    </includes>&ndash;&gt;-->
-<!--&lt;!&ndash;                </configuration>&ndash;&gt;-->
-<!--            </plugin>-->
         </plugins>
     </build>
 </project>
