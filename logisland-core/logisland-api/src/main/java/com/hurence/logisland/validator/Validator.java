@@ -28,6 +28,10 @@ public interface Validator extends Serializable {
      */
     Validator INVALID = new Validator() {
         @Override
+        public ValidationResult validate(final String subject, final String input, ValidationContext context) {
+            return new ValidationResult.Builder().subject(subject).explanation(String.format("'%s' is not a supported property", subject)).input(input).build();
+        }
+        @Override
         public ValidationResult validate(final String subject, final String input) {
             return new ValidationResult.Builder().subject(subject).explanation(String.format("'%s' is not a supported property", subject)).input(input).build();
         }
@@ -38,6 +42,10 @@ public interface Validator extends Serializable {
      * passes
      */
     Validator VALID = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String input, ValidationContext context) {
+            return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+        }
         @Override
         public ValidationResult validate(final String subject, final String input) {
             return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
@@ -50,5 +58,6 @@ public interface Validator extends Serializable {
      * @return ValidationResult
      * @throws NullPointerException of given input is null
      */
+    ValidationResult validate(String subject, String input, ValidationContext context);
     ValidationResult validate(String subject, String input);
 }

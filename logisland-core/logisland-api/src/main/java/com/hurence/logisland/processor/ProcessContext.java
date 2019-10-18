@@ -19,8 +19,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerServiceLookup;
-
-import java.io.Closeable;
+import com.hurence.logisland.processor.state.StateManager;
 
 public interface ProcessContext extends ComponentContext {
 
@@ -34,4 +33,24 @@ public interface ProcessContext extends ComponentContext {
     void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException;
 
     Processor getProcessor();
+
+    /**
+     * @return the StateManager that can be used to store and retrieve state for this component
+     */
+    StateManager getStateManager();
+
+    /**
+     * <p>
+     * Causes the Processor not to be scheduled for some pre-configured amount
+     * of time. The duration of time for which the processor will not be
+     * scheduled is configured in the same manner as the processor's scheduling
+     * period.
+     * </p>
+     *
+     * <p>
+     * <b>Note: </b>This is NOT a blocking call and does not suspend execution
+     * of the current thread.
+     * </p>
+     */
+    void yield();
 }

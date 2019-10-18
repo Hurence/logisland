@@ -20,6 +20,7 @@ import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.processor.state.DataUnit;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -90,6 +91,16 @@ public class MockPropertyValue extends AbstractPropertyValue implements Property
         }
 
         return serviceLookup.getControllerService(asString());
+    }
+
+    @Override
+    public <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException {
+        return null;
+    }
+
+    @Override
+    public Double asDataSize(DataUnit dataUnit) {
+        return null;
     }
 
 

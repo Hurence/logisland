@@ -26,6 +26,7 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.processor.StandardValidationContext;
+import com.hurence.logisland.processor.state.MockStateManager;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
@@ -463,6 +464,11 @@ public class StandardProcessorTestRunner implements TestRunner {
                     .build();
         }
         return setProperty(service, descriptor, value);
+    }
+
+    @Override
+    public MockStateManager getStateManager() {
+        return null;
     }
 
 }

@@ -17,6 +17,7 @@ package com.hurence.logisland.component;
 
 
 import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
@@ -485,6 +486,11 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
             for (final AllowableValue value : validValues) {
                 this.validValues.add(value.getValue());
             }
+        }
+
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
         }
 
         @Override

@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.service.cassandra;
 
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
@@ -27,6 +28,11 @@ public class Validation {
      * This validator ensures the cassandra hosts property is a valid list of hosts in a comma separated values format
      */
     public static final Validator HOSTS_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String input) {
             final List<String> hostsList = Arrays.asList(input.split(" ,"));

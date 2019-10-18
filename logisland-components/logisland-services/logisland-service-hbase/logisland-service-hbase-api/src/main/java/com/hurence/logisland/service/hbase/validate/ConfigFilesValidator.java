@@ -17,10 +17,16 @@ package com.hurence.logisland.service.hbase.validate;
 
 
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
 public class ConfigFilesValidator implements Validator {
+
+    @Override
+    public ValidationResult validate(String subject, String input, ValidationContext context) {
+        return null;
+    }
 
     @Override
     public ValidationResult validate(final String subject, final String value) {

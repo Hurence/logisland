@@ -24,6 +24,11 @@ public class Validation {
     public static final Validator DOCUMENT_VALIDATOR = new Validator() {
 
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(String subject, String value/*, ValidationContext context*/) {
             final ValidationResult.Builder builder = new ValidationResult.Builder();
             builder.subject(subject).input(value);

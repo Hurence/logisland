@@ -46,6 +46,11 @@ public class StandardValidators {
         }
 
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(String subject, String input) {
             String reason = null;
             try {
@@ -65,35 +70,54 @@ public class StandardValidators {
         return new TypeValidator(clz);
     }
 
-    public static final Validator DOUBLE_VALIDATOR = (Validator) (subject, value) -> {
-        String reason = null;
-        try {
-            final double val = Double.parseDouble(value);
-
-        } catch (final NumberFormatException e) {
-            reason = "not a valid double";
-        } catch (final NullPointerException e) {
-            reason = "null is not a valid double";
+    public static final Validator DOUBLE_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
         }
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                final double val = Double.parseDouble(value);
 
-        return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+            } catch (final NumberFormatException e) {
+                reason = "not a valid double";
+            } catch (final NullPointerException e) {
+                reason = "null is not a valid double";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
     };
 
-    public static final Validator FLOAT_VALIDATOR = (Validator) (subject, value) -> {
-        String reason = null;
-        try {
-            final float val = Float.parseFloat(value);
-
-        } catch (final NumberFormatException e) {
-            reason = "not a valid double";
-        } catch (final NullPointerException e) {
-            reason = "null is not a valid double";
+    public static final Validator FLOAT_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
         }
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                final float val = Float.parseFloat(value);
 
-        return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+            } catch (final NumberFormatException e) {
+                reason = "not a valid double";
+            } catch (final NullPointerException e) {
+                reason = "null is not a valid double";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
     };
 
     public static final Validator POSITIVE_INTEGER_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String value) {
 
@@ -118,6 +142,11 @@ public class StandardValidators {
 
     public static final Validator POSITIVE_DOUBLE_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
             String reason = null;
             try {
@@ -138,6 +167,11 @@ public class StandardValidators {
     };
 
     public static final Validator POSITIVE_LONG_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String value) {
 
@@ -165,6 +199,11 @@ public class StandardValidators {
 
     public static final Validator NON_EMPTY_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
             return new ValidationResult.Builder().subject(subject).input(value).valid(value != null && !value.isEmpty()).explanation(subject + " cannot be empty").build();
         }
@@ -172,6 +211,11 @@ public class StandardValidators {
 
 
     public static final Validator BOOLEAN_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String value) {
 
@@ -182,6 +226,11 @@ public class StandardValidators {
     };
 
     public static final Validator INTEGER_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String value) {
 
@@ -203,6 +252,11 @@ public class StandardValidators {
 
     public static final Validator LONG_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
 
 
@@ -222,6 +276,11 @@ public class StandardValidators {
     };
 
     public static final Validator NON_NEGATIVE_INTEGER_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String value) {
 
@@ -248,6 +307,11 @@ public class StandardValidators {
 
     public static final Validator SEMICOLON_SEPARATED_LIST_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
 
 
@@ -263,6 +327,11 @@ public class StandardValidators {
     };
 
     public static final Validator COMMA_SEPARATED_LIST_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String value) {
 
@@ -316,6 +385,11 @@ public class StandardValidators {
 
     public static final Validator CHARACTER_SET_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
 
 
@@ -336,6 +410,11 @@ public class StandardValidators {
 
     public static final Validator HASH_ALGORITHM_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
 
 
@@ -353,6 +432,11 @@ public class StandardValidators {
     };
 
     public static final Validator LANGUAGE_TAG_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String value) {
 
@@ -373,6 +457,11 @@ public class StandardValidators {
 
     public static final Validator URI_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String input) {
 
 
@@ -391,6 +480,11 @@ public class StandardValidators {
      */
     public static final Validator TIMEZONE_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
             String reason = null;
             if (!Arrays.asList(TimeZone.getAvailableIDs()).contains(value)) reason = "not a valid timezone";
@@ -404,6 +498,11 @@ public class StandardValidators {
      */
     public static final Validator NON_BLANK_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
             return new ValidationResult.Builder().subject(subject).input(value)
                     .valid(value != null && !value.trim().isEmpty())
@@ -414,6 +513,11 @@ public class StandardValidators {
 
     public static final Validator TIME_PERIOD_VALIDATOR = new Validator() {
         private final Pattern TIME_DURATION_PATTERN = Pattern.compile(FormatUtils.TIME_DURATION_REGEX);
+
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
 
         @Override
         public ValidationResult validate(final String subject, final String input) {
@@ -451,6 +555,11 @@ public class StandardValidators {
     private static Validator createURLValidator() {
         return new Validator() {
             @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                return null;
+            }
+
+            @Override
             public ValidationResult validate(final String subject, final String input) {
 
                 try {
@@ -465,6 +574,11 @@ public class StandardValidators {
 
     public static Validator createRegexMatchingValidator(final Pattern pattern) {
         return new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                return null;
+            }
+
             @Override
             public ValidationResult validate(final String subject, final String input) {
 
@@ -483,6 +597,11 @@ public class StandardValidators {
 
     public static Validator createLongValidator(final long minimum, final long maximum, final boolean inclusive) {
         return new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                return null;
+            }
+
             @Override
             public ValidationResult validate(final String subject, final String input) {
 
@@ -511,6 +630,11 @@ public class StandardValidators {
         public StringLengthValidator(int minimum, int maximum) {
             this.minimum = minimum;
             this.maximum = maximum;
+        }
+
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
         }
 
         @Override
@@ -544,6 +668,11 @@ public class StandardValidators {
         }
 
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String value) {
 
 
@@ -566,6 +695,11 @@ public class StandardValidators {
         public DirectoryExistsValidator(final boolean allowExpressionLanguage, final boolean create) {
             this.allowEL = allowExpressionLanguage;
             this.create = create;
+        }
+
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
         }
 
         @Override
@@ -604,6 +738,11 @@ public class StandardValidators {
         public EnumValidator(final Class<E> enumClass) {
             Objects.requireNonNull(enumClass);
             this.enumClass = enumClass;
+        }
+
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
         }
 
         @Override

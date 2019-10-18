@@ -15,10 +15,12 @@
  */
 package com.hurence.logisland.component;
 
+import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.expressionlanguage.InterpreterEngine;
 import com.hurence.logisland.expressionlanguage.InterpreterEngineException;
 import com.hurence.logisland.expressionlanguage.InterpreterEngineFactory;
+import com.hurence.logisland.processor.state.DataUnit;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.registry.VariableRegistry;
 
@@ -68,6 +70,15 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
     @Override
     public boolean isSet() {
         return rawValue != null;
+    }
+
+    public <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException {
+        return null;
+    }
+
+    @Override
+    public Double asDataSize(DataUnit dataUnit) {
+        return null;
     }
 
     /**
