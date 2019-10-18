@@ -1,0 +1,30 @@
+version: "2.0"
+
+services:
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+
+  solr1:
+    image: solr:8
+#    volumes:
+#      - ./historian/solr.xml:/opt/solr/server/solr/solr.xml
+#      - ./historian/create-historian.sh:/opt/create-historian.sh
+    command: >
+      /bin/bash -c "/opt/solr/bin/solr -c -z zookeeper:2181 -m 1g; tail -f /var/solr/logs/solr.log"
+#            /opt/create-historian.sh;
+    links:
+      - zookeeper
+
+  solr2:
+    image: solr:8
+#    volumes:
+#      - ./historian/wait-for-it.sh:/usr/bin/wait-for-it.sh
+#      - ./historian/solr.xml:/opt/solr/server/solr/solr.xml
+    command: >
+      /bin/bash -c "/opt/solr/bin/solr -c -f -z zookeeper:2181 -m 1g"
+#    command: >
+#      /bin/bash -c "/usr/bin/wait-for-it.sh -h zookeeper -p 2181 -t 0; /opt/solr/bin/solr -c -f -z zookeeper:2181 -m 1g"
+    links:
+      - solr1
+      - zookeeper
