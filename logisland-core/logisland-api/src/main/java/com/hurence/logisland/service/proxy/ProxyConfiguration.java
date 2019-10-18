@@ -16,11 +16,16 @@
 package com.hurence.logisland.service.proxy;
 
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 
@@ -76,6 +81,56 @@ public class ProxyConfiguration {
             specs.remove(SOCKS);
         }
         return specs;
+    }
+
+    public static void validateProxySpec(ValidationContext context, Collection<ValidationResult> results, final ProxySpec ... _specs) {
+
+        final Set<ProxySpec> specs = getUniqueProxySpecs(_specs);
+        final Set<Proxy.Type> supportedProxyTypes = specs.stream().map(ProxySpec::getProxyType).collect(Collectors.toSet());
+
+        if (!context.getPropertyValue(PROXY_CONFIGURATION_SERVICE).isSet()) {
+            return;
+        }
+
+        final ProxyConfigurationService proxyService = context.getPropertyValue(PROXY_CONFIGURATION_SERVICE).asControllerService(ProxyConfigurationService.class);
+        final ProxyConfiguration proxyConfiguration = proxyService.getConfiguration();
+        final Proxy.Type proxyType = proxyConfiguration.getProxyType();
+
+        if (proxyType.equals(Proxy.Type.DIRECT)) {
+            return;
+        }
+
+        if (!supportedProxyTypes.contains(proxyType)) {
+            results.add(new ValidationResult.Builder()
+                    .explanation(String.format("Proxy type %s is not supported.", proxyType))
+                    .valid(false)
+                    .subject(PROXY_CONFIGURATION_SERVICE.getDisplayName())
+                    .build());
+
+            // If the proxy type is not supported, no need to do further validation.
+            return;
+        }
+
+        if (proxyConfiguration.hasCredential()) {
+            // If credential is set, check whether the component is capable to use it.
+            if (!specs.contains(Proxy.Type.HTTP.equals(proxyType) ? HTTP_AUTH : SOCKS_AUTH)) {
+                results.add(new ValidationResult.Builder()
+                        .explanation(String.format("Proxy type %s with Authentication is not supported.", proxyType))
+                        .valid(false)
+                        .subject(PROXY_CONFIGURATION_SERVICE.getDisplayName())
+                        .build());
+            }
+        }
+
+
+    }
+    public static ProxyConfiguration getConfiguration(ProcessContext context, Supplier<ProxyConfiguration> perComponentSetting) {
+        if (context.getPropertyValue(PROXY_CONFIGURATION_SERVICE).isSet()) {
+            final ProxyConfigurationService proxyService = context.getPropertyValue(PROXY_CONFIGURATION_SERVICE).asControllerService(ProxyConfigurationService.class);
+            return proxyService.getConfiguration();
+        } else {
+            return perComponentSetting.get();
+        }
     }
 
     private Proxy.Type proxyType = Proxy.Type.DIRECT;

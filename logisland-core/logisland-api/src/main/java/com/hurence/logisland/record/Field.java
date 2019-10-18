@@ -18,8 +18,7 @@ package com.hurence.logisland.record;
 import com.hurence.logisland.component.AbstractPropertyValue;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerService;
-import com.hurence.logisland.util.FormatUtils;
-import org.apache.commons.lang3.BooleanUtils;
+import com.hurence.logisland.processor.state.DataUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Primitive Types
@@ -177,6 +175,16 @@ public class Field extends AbstractPropertyValue implements PropertyValue, Seria
         } catch (Exception ex) {
             throw new IllegalArgumentException("unable to convert field" + rawValue.toString() + " as a ControllerService");
         }
+    }
+
+    @Override
+    public <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException {
+        return null;
+    }
+
+    @Override
+    public Double asDataSize(DataUnit dataUnit) {
+        return null;
     }
 
 

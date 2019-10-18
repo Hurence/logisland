@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.service.influxdb;
 
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
@@ -26,6 +27,11 @@ public class Validation {
      * This validator ensures the influxdb tags property is valid
      */
     public static final Validator TAGS_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String input) {
             String trimmedValue = input.trim();
@@ -89,6 +95,11 @@ public class Validation {
      */
     public static final Validator FIELDS_VALIDATOR = new Validator() {
         @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
+        @Override
         public ValidationResult validate(final String subject, final String input) {
             String trimmedValue = input.trim();
             if (trimmedValue.length() == 0)
@@ -150,6 +161,11 @@ public class Validation {
      * This validator ensures the influxdb timefield property is valid
      */
     public static final Validator TIME_FIELD_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String input) {
             String trimmedValue = input.trim();

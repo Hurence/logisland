@@ -25,9 +25,9 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.processor.state.MockStateManager;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.Record;
 
 import java.io.InputStream;
@@ -444,4 +444,9 @@ public interface TestRunner {
      *
      */
     ValidationResult setProperty(ControllerService service, String propertyName, String value);
+
+    /**
+     * @return the State Manager that is used to stored and retrieve state
+     */
+    MockStateManager getStateManager();
 }

@@ -18,8 +18,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerServiceLookup;
-
-import java.io.IOException;
+import com.hurence.logisland.processor.state.StateManager;
 
 public class StandardProcessContext extends AbstractConfiguredComponent implements ProcessContext {
 
@@ -37,6 +36,16 @@ public class StandardProcessContext extends AbstractConfiguredComponent implemen
     @Override
     public Processor getProcessor() {
         return (Processor) component;
+    }
+
+    @Override
+    public StateManager getStateManager() {
+        return null;
+    }
+
+    @Override
+    public void yield() {
+
     }
 
     @Override

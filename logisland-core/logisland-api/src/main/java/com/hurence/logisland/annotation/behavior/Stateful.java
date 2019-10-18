@@ -19,6 +19,9 @@ import com.hurence.logisland.processor.Processor;
 
 import java.lang.annotation.*;
 
+import com.hurence.logisland.processor.state.Scope;
+import com.hurence.logisland.processor.state.StateManager;
+
 /**
  * Annotation that may be placed on a
  * {@link Processor} indicating that this
@@ -30,5 +33,14 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Stateful {
+    /**
+     * Provides a description of what information is being stored in the {@link StateManager}
+     */
+    String description();
+
+    /**
+     * Indicates the Scope(s) associated with the State that is stored and retrieved.
+     */
+    Scope[] scopes();
 
 }

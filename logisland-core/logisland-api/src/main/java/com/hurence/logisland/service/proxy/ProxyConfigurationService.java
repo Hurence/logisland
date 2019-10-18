@@ -28,6 +28,15 @@ import com.hurence.logisland.controller.ControllerService;
  */
 public interface ProxyConfigurationService extends ControllerService {
 
+    PropertyDescriptor PROXY_CONFIGURATION_SERVICE = new PropertyDescriptor.Builder()
+            .name("proxy.configuration.service")
+            .displayName("Proxy Configuration Service")
+            .description("Specifies the Proxy Configuration Controller Service to proxy network requests." +
+                    " If set, it supersedes proxy settings configured per component.")
+            .identifiesControllerService(ProxyConfigurationService.class)
+            .required(false)
+            .build();
+
     /**
      * Returns proxy configurations.
      * Implementations should return a non-null ProxyConfiguration instance which returns DIRECT proxy type instead of returning null,

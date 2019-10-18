@@ -17,6 +17,7 @@ package com.hurence.logisland.component;
 
 
 import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.processor.state.DataUnit;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 
@@ -133,8 +134,20 @@ public interface PropertyValue extends Serializable {
      * <code>this</code>, or <code>null</code> if either the value is not set or
      * the value does not identify a ControllerService
      */
+
     ControllerService asControllerService();
 
+    <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException;
+
+
+    /**
+     *
+     * @param dataUnit specifies the DataUnit to convert the data size into
+     * @return a Long value representing the value of the configured data size
+     * in terms of the specified DataUnit; if hte property is not set, returns
+     * <code>null</code>
+     */
+    Double asDataSize(DataUnit dataUnit);
 
     /**
      * In the case of PropertyDescriptors that do support expression language, the fill method allows to
