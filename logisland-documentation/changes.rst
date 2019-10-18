@@ -2,6 +2,8 @@ What's new in logisland ?
 =========================
 
 
+- S3 support
+
 v1.2.0
 ------
 
