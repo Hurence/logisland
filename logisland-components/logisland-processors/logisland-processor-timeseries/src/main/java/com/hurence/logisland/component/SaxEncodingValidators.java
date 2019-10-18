@@ -16,6 +16,7 @@
 package com.hurence.logisland.component;
 
 import com.hurence.logisland.timeseries.sax.SaxConverter;
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import net.seninp.jmotif.sax.SAXException;
@@ -23,6 +24,11 @@ import net.seninp.jmotif.sax.SAXException;
 public class SaxEncodingValidators {
 
     public static final Validator ALPHABET_SIZE_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String value) {
             String reason = null;

@@ -19,6 +19,19 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <dependencies>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+            <version>1.2.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>1.11.599</version>
+        </dependency>
+    </dependencies>
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-components</artifactId>
@@ -47,6 +60,7 @@
         <module>logisland-processor-cyber-security</module>
         <module>logisland-processor-timeseries</module>
         <module>logisland-processor-rest</module>
+        <module>logisland-processor-aws</module>
 
 
         <!--

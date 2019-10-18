@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 
-@Stateful
 @Tags({"analytic", "outlier", "record", "iot", "timeseries"})
 @CapabilityDescription("Outlier Analysis: A Hybrid Approach\n" +
         "\n" +

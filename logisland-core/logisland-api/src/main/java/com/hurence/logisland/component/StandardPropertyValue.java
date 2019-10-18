@@ -15,10 +15,9 @@
  */
 package com.hurence.logisland.component;
 
+import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.processor.state.DataUnit;
 import com.hurence.logisland.registry.VariableRegistry;
 
 public class StandardPropertyValue extends AbstractPropertyValue {
@@ -55,4 +54,13 @@ public class StandardPropertyValue extends AbstractPropertyValue {
         this(rawValue, null, VariableRegistry.EMPTY_REGISTRY);
     }
 
+    @Override
+    public <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException {
+        return null;
+    }
+
+    @Override
+    public Double asDataSize(DataUnit dataUnit) {
+        return null;
+    }
 }

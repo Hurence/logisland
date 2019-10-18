@@ -28,6 +28,7 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import net.sf.saxon.lib.NamespaceConstant;
@@ -254,6 +255,11 @@ public class EvaluateXPath extends AbstractProcessor {
     }
 
     private static class XPathValidator implements Validator {
+
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
 
         @Override
         public ValidationResult validate(final String subject, final String input) {

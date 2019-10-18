@@ -23,6 +23,7 @@ import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.processor.StandardValidationContext;
+import com.hurence.logisland.processor.state.StateManager;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
@@ -241,6 +242,16 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
     @Override
     public Processor getProcessor() {
         return (Processor) component;
+    }
+
+    @Override
+    public StateManager getStateManager() {
+        return null;
+    }
+
+    @Override
+    public void yield() {
+
     }
 
 

@@ -28,6 +28,7 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import nl.basjes.parse.useragent.UserAgent;
@@ -176,6 +177,11 @@ public class ParseUserAgent extends AbstractProcessor {
             .name(KEY_FIELDS_TO_RETURN)
             .description("Defines the fields to be returned.")
             .addValidator(new Validator() {
+                @Override
+                public ValidationResult validate(String subject, String input, ValidationContext context) {
+                    return null;
+                }
+
                 @Override
                 public ValidationResult validate(final String subject, final String value) {
 

@@ -23,6 +23,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
@@ -104,6 +105,11 @@ public interface ElasticsearchClientService extends DatastoreClientService {
      * This validator ensures the Elasticsearch hosts property is a valid list of hostname:port entries
      */
     Validator HOSTNAME_PORT_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            return null;
+        }
+
         @Override
         public ValidationResult validate(final String subject, final String input) {
             final List<String> esList = Arrays.asList(input.split(","));

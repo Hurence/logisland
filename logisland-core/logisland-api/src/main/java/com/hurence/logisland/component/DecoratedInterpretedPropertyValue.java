@@ -15,7 +15,9 @@
  */
 package com.hurence.logisland.component;
 
+import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.expressionlanguage.InterpreterEngineException;
+import com.hurence.logisland.processor.state.DataUnit;
 import com.hurence.logisland.record.Record;
 
 /**
@@ -31,4 +33,13 @@ class DecoratedInterpretedPropertyValue extends AbstractPropertyValue {
         }
     }
 
+    @Override
+    public <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException {
+        return null;
+    }
+
+    @Override
+    public Double asDataSize(DataUnit dataUnit) {
+        return null;
+    }
 }

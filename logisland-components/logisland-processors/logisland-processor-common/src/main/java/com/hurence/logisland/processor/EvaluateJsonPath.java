@@ -127,6 +127,11 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
         return new PropertyDescriptor.Builder().name(propertyDescriptorName).expressionLanguageSupported(false).addValidator(new JsonPathValidator() {
             @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                return null;
+            }
+
+            @Override
             public void cacheComputedValue(String subject, String input, JsonPath computedJsonPath) {
                 cachedJsonPathMap.put(input, computedJsonPath);
             }

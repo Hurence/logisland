@@ -18,6 +18,7 @@ package com.hurence.logisland.service.hbase.security;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import org.apache.hadoop.conf.Configuration;
@@ -54,6 +55,11 @@ public class KerberosProperties {
         this.kerberosConfigFile = kerberosConfigFile;
 
         this.kerberosConfigValidator = new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                return null;
+            }
+
             @Override
             public ValidationResult validate(String subject, String input) {
                 // Check that the Kerberos configuration is set
