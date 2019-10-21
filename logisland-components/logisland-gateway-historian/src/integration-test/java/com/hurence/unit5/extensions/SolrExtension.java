@@ -18,6 +18,8 @@ package com.hurence.unit5.extensions;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.common.cloud.SolrZkClient;
+import org.apache.solr.common.cloud.ZkConfigManager;
 import org.junit.jupiter.api.extension.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,7 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -39,6 +42,7 @@ import java.util.Optional;
 public class SolrExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
 
     private static Logger logger = LoggerFactory.getLogger(SolrExtension.class);
+    public final static String SOLR2_SERVICE_NAME = "solr2_1";
     public final static String SOLR1_SERVICE_NAME = "solr1_1";
     public final static int PORT = 8983;
     public final static String ZOOKEEPER_SERVICE_NAME = "zookeeper_1";
@@ -78,6 +82,7 @@ public class SolrExtension implements BeforeAllCallback, AfterAllCallback, Param
         )
                 .withExposedService(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT, Wait.forListeningPort())
                 .withExposedService(SOLR1_SERVICE_NAME, PORT, Wait.forListeningPort());
+//                .withExposedService(SOLR2_SERVICE_NAME, PORT, Wait.forListeningPort());
         this.dockerComposeContainer.start();
 
         String zkUrl = dockerComposeContainer.getServiceHost(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT)
@@ -90,15 +95,23 @@ public class SolrExtension implements BeforeAllCallback, AfterAllCallback, Param
                 dockerComposeContainer.getServicePort(SOLR1_SERVICE_NAME, PORT);
         logger.info("url of solr http://" + slrUrl);
 
+//        String slrUrl2 = dockerComposeContainer.getServiceHost(SOLR2_SERVICE_NAME, PORT)
+//                + ":" +
+//                dockerComposeContainer.getServicePort(SOLR2_SERVICE_NAME, PORT);
+//        logger.info("url of solr http://" + slrUrl2);
         CloudSolrClient.Builder clientBuilder = new CloudSolrClient.Builder(
                 Arrays.asList(zkUrl),
                     Optional.empty());
-
 
         this.client = clientBuilder
                 .withConnectionTimeout(10000)
                 .withSocketTimeout(60000)
                 .build();
+
+        try (SolrZkClient zkClient = new SolrZkClient(zkUrl, 10000)) {
+            ZkConfigManager manager = new ZkConfigManager(zkClient);
+            manager.uploadConfigDir(Paths.get(getClass().getResource("/solr/configsets/historian/conf").getFile()), "historian");
+        }
     }
 
     @Override
