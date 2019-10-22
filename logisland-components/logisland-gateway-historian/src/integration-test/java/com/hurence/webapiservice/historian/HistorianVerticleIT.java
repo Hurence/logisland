@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.hurence.logisland.record.FieldDictionary.*;
 import static com.hurence.unit5.extensions.SolrExtension.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,7 +57,7 @@ public class HistorianVerticleIT {
     @BeforeAll
     static void beforeAll(SolrClient client) throws IOException, SolrServerException {
         logger.debug("creating collection {}", COLLECTION);
-        final SolrRequest createrequest = CollectionAdminRequest.createCollection(COLLECTION, "historian",2,1);
+        final SolrRequest createrequest = CollectionAdminRequest.createCollection(COLLECTION, "historian", 2, 1);
         client.request(createrequest);
         logger.debug("verify collection {} exist and is ready", COLLECTION);
         final SolrRequest request = CollectionAdminRequest.collectionStatus(COLLECTION);
@@ -74,14 +75,28 @@ public class HistorianVerticleIT {
         logger.debug("Indexing some documents in {} collection", COLLECTION);
         final SolrInputDocument doc = new SolrInputDocument();
         doc.addField("id", "id1");
-        doc.addField("chunk_start", 157062L);
-        doc.addField("chunk_size", 50);
-        doc.addField("chunk_end", 157062L);
-        doc.addField("chunk_sax", "eebcddedcd");
+        doc.addField(CHUNK_START, 1571129378946L);
+        doc.addField(CHUNK_SIZE, 50);
+        doc.addField(CHUNK_END, 1571129390801L);
+        doc.addField(CHUNK_SAX, "edeebcccdf");
+        doc.addField(CHUNK_VALUE, "H4sIAAAAAAAAAOPi1HzSd1wgLSvQgYtH4Ryj5nujP96La/wduLgFGDXXMgU8iLrmAZQSOMmoqVe44pJBnTtEitklrrKrxwskNYVZ01G7Nk/uhStIiknTf+ONlze1PUEcBs0Ne+2bqtabQzRpCGwtfprgCdI0kVkzR9jg8k+/YIgmwZNNH2v/OIGkTjNqpp7mPrA7zwrEO8WouSbZl3VCV5ADF6dm3rGQCfNWBkDMjm7gzl/72gNido9oxz0DRj+oAV9YPhzPv+EP0nL9ZsIdL35joCoFRk2OiNu/r7IFgFTdYdFMndd8cAKnD4g3lVnTMiPi9nUna4jZFsq7bK0VHEFSy9k0H2yRXtY4XQzqHnvThAmS/p4Qe4tdM4uypwZA7d3j9U/k+nUraIhNe/Zxr7KkBUSh7o9DvJdegRXeY9HcdOzNFE0bB4jnLYofT3fi8oIaPzvYtkrLzRSiyybm74+vDx1AUpOZNV3O1pyOWO8DcSLLgj4bMRFnkNRMZs0PvBM1d0Y7g6TYNKc/C562LMQeJHWLRdM1RqvkgDbYUZ/ZNXW9dKTqeNxBvFZWzZTCkNhbp8C8t0ya/9K0g3LinaH6JvyMX+18wQ0aPAeztf+c5vKGuuTH7pI996+6QhzpHehwxFvFFyR1hlFz0hSnxTuqbSFSQgyXmAu9AqABYnef0/KibRCIdxYYZSLCjzOqQiG+SRXjKXv/COyQ2eyaj6ef/JSdYOcgwAAAPXZ5iqICAAA=");
+        doc.addField(CHUNK_AVG, 46.921143756280124d);
+        doc.addField(CHUNK_MIN, 5.647955508652757d);
+        doc.addField(CHUNK_WINDOW_MS, 11855);
+        doc.addField(RECORD_NAME, "temp_b");
+        doc.addField("tagname", "temp_b");//TODO look where it come froms
+        doc.addField(CHUNK_TREND, false);
+        doc.addField(CHUNK_MAX, 85.91265179503733d);
+        doc.addField(CHUNK_SIZE_BYTES, 563);
+        doc.addField(CHUNK_SUM, 45888);
         client.add(COLLECTION, doc);
         doc.getField("id").setValue("id2");
+        doc.getField(CHUNK_START).setValue(1571129390801L);
+        doc.getField(CHUNK_END).setValue(1571129490801L);
         client.add(COLLECTION, doc);
         doc.getField("id").setValue("id3");
+        doc.getField(CHUNK_START).setValue(1571129490801L);
+        doc.getField(CHUNK_END).setValue(1571130490801L);
         client.add(COLLECTION, doc);
         UpdateResponse updateRsp = client.commit(COLLECTION);
         logger.debug("Indexed some documents in {} collection", COLLECTION);
@@ -97,7 +112,7 @@ public class HistorianVerticleIT {
     }
 
     @BeforeEach
-    public void prepare(Vertx vertx, VertxTestContext context) throws InterruptedException {
+    public void prepare(Vertx vertx, VertxTestContext context) {
         JsonObject solrConf = new JsonObject()
                 .put(HistorianVerticle.CONFIG_SOLR_COLLECTION, COLLECTION)
                 .put(HistorianVerticle.CONFIG_SOLR_USE_ZOOKEEPER, true)
@@ -129,71 +144,44 @@ public class HistorianVerticleIT {
         assertEquals("historian", schemaRepresentation.getName());
         assertEquals(1.6, schemaRepresentation.getVersion(), 0.001f);
         assertEquals("id", schemaRepresentation.getUniqueKey());
-        assertEquals(18, schemaRepresentation.getFields().size());
+        assertEquals(19, schemaRepresentation.getFields().size());
         assertEquals(69, schemaRepresentation.getDynamicFields().size());
         assertEquals(68, schemaRepresentation.getFieldTypes().size());
         assertEquals(0, schemaRepresentation.getCopyFields().size());
     }
 
-//    @Test
-//    public void testAddFieldAccuracy(SolrClient client) throws Exception {
-////        CloudSolrClient.Builder clientBuilder = new CloudSolrClient.Builder(
-////                Arrays.asList(slrUrl));
-////
-////        SolrClient client = clientBuilder
-////                .withConnectionTimeout(10000)
-////                .withSocketTimeout(60000)
-////                .build();
-//        SchemaRequest.Fields fieldsSchemaRequest = new SchemaRequest.Fields();
-//        SchemaResponse.FieldsResponse initialFieldsResponse = fieldsSchemaRequest.process(client, COLLECTION);
-//        assertValidSchemaResponse(initialFieldsResponse);
-//
-//        List<Map<String, Object>> initialFields = initialFieldsResponse.getFields();
-//
-//        String fieldName = "accuracyField";
-//        Map<String, Object> fieldAttributes = new LinkedHashMap<>();
-//        fieldAttributes.put("name", fieldName);
-//        fieldAttributes.put("type", "string");
-//        fieldAttributes.put("stored", false);
-////        fieldAttributes.put("indexed", true);
-////        fieldAttributes.put("default", "accuracy");
-////        fieldAttributes.put("required", true);
-//
-//        SchemaRequest.AddField addFieldUpdateSchemaRequest =
-//                new SchemaRequest.AddField(fieldAttributes);
-//        try {
-//            SchemaResponse.UpdateResponse addFieldResponse = addFieldUpdateSchemaRequest.process(client, COLLECTION);
-//            assertValidSchemaResponse(addFieldResponse);
-//        } catch (Exception e) {
-//            logger.error("error", e);
-//            logger.error("error", e);
-//        }
-//
-//
-//
-//        SchemaResponse.FieldsResponse currentFieldsResponse = fieldsSchemaRequest.process(client, COLLECTION);
-//        assertEquals(0, currentFieldsResponse.getStatus());
-//        List<Map<String, Object>> currentFields = currentFieldsResponse.getFields();
-//        assertEquals(initialFields.size() + 1, currentFields.size());
-//
-//
-//        SchemaRequest.Field fieldSchemaRequest = new SchemaRequest.Field(fieldName);
-//        SchemaResponse.FieldResponse newFieldResponse = fieldSchemaRequest.process(client, COLLECTION);
-//        assertValidSchemaResponse(newFieldResponse);
-//        Map<String, Object> newFieldAttributes = newFieldResponse.getField();
-//        assertThat(fieldName, is(equalTo(newFieldAttributes.get("name"))));
-//        assertThat("string", is(equalTo(newFieldAttributes.get("type"))));
-//        assertThat(false, is(equalTo(newFieldAttributes.get("stored"))));
-//        assertThat(true, is(equalTo(newFieldAttributes.get("indexed"))));
-//        assertThat("accuracy", is(equalTo(newFieldAttributes.get("default"))));
-//        assertThat(true, is(equalTo(newFieldAttributes.get("required"))));
-//    }
+    @Test
+    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+    void getTimeSeriesChunkTestWithoutParameter(VertxTestContext testContext) {
 
-
-
-    private static void assertValidSchemaResponse(SolrResponseBase schemaResponse) {
-        assertEquals(0, schemaResponse.getStatus(), "Response contained errors: " + schemaResponse.toString());
-        assertNull(schemaResponse.getResponse().get("errors"), "Response contained errors: " + schemaResponse.toString());
+        JsonObject params = new JsonObject();
+        historian.rxGetTimeSeriesChunk(params)
+                .doOnError(testContext::failNow)
+                .doOnSuccess(rsp -> {
+                    testContext.verify(() -> {
+                        long totalHit = rsp.getLong(HistorianService.TOTAL_FOUND);
+                        assertEquals(3, totalHit);
+                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        assertEquals(3, docs.size());
+                        JsonObject doc1 = docs.getJsonObject(0);
+                        assertEquals(16, doc1.size());
+                        assertEquals("id1", doc1.getString("id"));
+                        assertEquals(1571129378946L, doc1.getLong(CHUNK_START));
+                        assertEquals(1571129390801L, doc1.getLong(CHUNK_END));
+                        JsonObject doc2 = docs.getJsonObject(1);
+                        assertEquals(16, doc2.size());
+                        assertEquals("id2", doc2.getString("id"));
+                        assertEquals(1571129390801L, doc2.getLong(CHUNK_START));
+                        assertEquals(1571129490801L, doc2.getLong(CHUNK_END));
+                        JsonObject doc3 = docs.getJsonObject(2);
+                        assertEquals(16, doc3.size());
+                        assertEquals("id3", doc3.getString("id"));
+                        assertEquals(1571129490801L, doc3.getLong(CHUNK_START));
+                        assertEquals(1571130490801L, doc3.getLong(CHUNK_END));
+                        testContext.completeNow();
+                    });
+                })
+                .subscribe();
     }
 
     @Test
@@ -214,58 +202,11 @@ public class HistorianVerticleIT {
         }
 
     }
-//    @Test
-//    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
-//    void getSimilarDocumentsViaIdTest(VertxTestContext testContext) throws Throwable {
-//        JsonObject params = new JsonObject()
-//                .put("id", "2");
-//        historian.rxGetTimeSeries(params)
-//                .doOnError(testContext::failNow)
-//                .doOnSuccess(rsp -> {
-//                    testContext.verify(() -> {
-//                        long totalHit = rsp.getLong("total_hit");
-//                        assertEquals(107, totalHit);
-//                        JsonArray docs = rsp.getJsonArray("docs");
-//                        assertEquals(10, docs.size());
-//                        JsonObject doc1 = docs.getJsonObject(0);
-//                        assertEquals(new JsonObject()
-//                                .put("author", "author1")
-//                                .put("title", "title1")
-//                                .put("description", "descriptionShared with guitar"), doc1);
-//                        JsonObject doc2 = docs.getJsonObject(1);
-//                        assertEquals(new JsonObject()
-//                                .put("author", "author3")
-//                                .put("title", "title3")
-//                                .put("description", "descriptionShared"), doc2);
-//                        testContext.completeNow();
-//                    });
-//                })
-//                .subscribe();
-//    }
-//
-//    @Test
-//    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
-//    void getDocumentsMatchingQueryTest(VertxTestContext testContext) throws Throwable {
-//        JsonObject params = new JsonObject()
-//                .put("query", "guitar");
-//        docService.getDocumentsMatchingQuery(params, testContext.succeeding(docs -> {
-//            testContext.verify(() -> {
-//                assertEquals(2, docs.size());
-//                JsonObject doc1 = docs.getJsonObject(0);
-//                assertEquals(new JsonObject()
-//                        .put("author", "author1")
-//                        .put("title", "title1")
-//                        .put("description", "descriptionShared with guitar"), doc1);
-//                JsonObject doc2 = docs.getJsonObject(1);
-//                assertEquals(new JsonObject()
-//                        .put("author", "author2")
-//                        .put("title", "title2")
-//                        .put("description", "descriptionShared without guitar"), doc2);
-//                testContext.completeNow();
-//            });
-//        }));
-//    }
 
+    private static void assertValidSchemaResponse(SolrResponseBase schemaResponse) {
+        assertEquals(0, schemaResponse.getStatus(), "Response contained errors: " + schemaResponse.toString());
+        assertNull(schemaResponse.getResponse().get("errors"), "Response contained errors: " + schemaResponse.toString());
+    }
 
 }
 

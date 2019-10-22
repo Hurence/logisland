@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+import static com.hurence.logisland.record.FieldDictionary.CHUNK_START;
+
 public class SolrHistorianServiceImpl implements HistorianService {
 
   private static Logger logger = LoggerFactory.getLogger(SolrHistorianServiceImpl.class);
@@ -64,13 +66,45 @@ public class SolrHistorianServiceImpl implements HistorianService {
     vertx.executeBlocking(colPinghandler, statusHandler);
   }
 
-
   @Override
-  public HistorianService getTimeSeries(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
-    String queryStr = "*:*";//TODO build correct string depending on params (or query should be given as param ?
-    SolrQuery query = new SolrQuery(queryStr);
-//    query.addField("chunk_value");//TODO change default ? can select what we want
+  public HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
+    //    SEARCH
+    StringBuilder queryBuilder = new StringBuilder(CHUNK_START).append(":[");
+    if (params.getLong(FROM) != null) {
+      queryBuilder.append(params.getLong(FROM));
+    } else {
+      queryBuilder.append("*");
+    }
+    queryBuilder.append(" TO ");
+    if (params.getLong(TO) != null) {
+      queryBuilder.append(params.getLong(TO));
+    } else {
+      queryBuilder.append("*");
+    }
+    queryBuilder.append("]");
+    SolrQuery query = new SolrQuery(queryBuilder.toString());
+    //    FILTER
+    if (params.getJsonArray(TAGS) != null) {
+      logger.error("TODO there is tags");//TODO
+    }
+    if (params.getString(RECORD_NAME) != null) {
+      query.addFilterQuery(RECORD_NAME + ":" + params.getString(RECORD_NAME));
+    }
+    //    FIELDS_TO_FETCH
+    if (params.getJsonArray(FIELDS_TO_FETCH) != null) {
+      JsonArray fields = params.getJsonArray(FIELDS_TO_FETCH);
+      fields.stream().forEach(field -> {
+        if (field instanceof String) {
+          query.addField((String) field);
+        } else {
+          logger.error("agg {} should be a string but was {} instead", field, field.getClass());
+        }
+      });
+    }
+    //    SORT
+    query.setSort(CHUNK_START, SolrQuery.ORDER.asc);
 
+    //  EXECUTE REQUEST
     Handler<Promise<JsonObject>> getTimeSeriesHandler = p -> {
       try {
         final QueryResponse response = client.query(collection, query);

@@ -82,7 +82,7 @@ public class SolrExtension implements BeforeAllCallback, AfterAllCallback, Param
         )
                 .withExposedService(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT, Wait.forListeningPort())
                 .withExposedService(SOLR1_SERVICE_NAME, PORT, Wait.forListeningPort());
-//                .withExposedService(SOLR2_SERVICE_NAME, PORT, Wait.forListeningPort());
+
         this.dockerComposeContainer.start();
 
         String zkUrl = dockerComposeContainer.getServiceHost(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT)
@@ -95,10 +95,6 @@ public class SolrExtension implements BeforeAllCallback, AfterAllCallback, Param
                 dockerComposeContainer.getServicePort(SOLR1_SERVICE_NAME, PORT);
         logger.info("url of solr http://" + slrUrl);
 
-//        String slrUrl2 = dockerComposeContainer.getServiceHost(SOLR2_SERVICE_NAME, PORT)
-//                + ":" +
-//                dockerComposeContainer.getServicePort(SOLR2_SERVICE_NAME, PORT);
-//        logger.info("url of solr http://" + slrUrl2);
         CloudSolrClient.Builder clientBuilder = new CloudSolrClient.Builder(
                 Arrays.asList(zkUrl),
                     Optional.empty());

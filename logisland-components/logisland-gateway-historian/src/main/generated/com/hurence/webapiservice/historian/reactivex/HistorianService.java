@@ -70,27 +70,32 @@ public class HistorianService {
   }
 
   /**
-   * @param params as a json object <pre> { TODO } </pre>
+   * @param params as a json object <pre> {  : "content of chunks as an array",  : "total chunk matching query",  : ["field1", "field2"...],  : "total chunk matching query",  : "content of chunks as an array", } </pre> explanation : if  not specified will search from 0 if  not specified will search to Max.Long use  if you want to retrieve some of the precalculated aggs. If not specified retrieve all. use  to search for specific timeseries having one of those tags use  to search a specific timeseries name
    * @param resultHandler 
-   * @return uncompressed timeseries as an array of <pre> {  : "content of chunks as an array",  : "total chunk matching query" } </pre>
+   * @return uncompressed timeseries as an array of <pre> {  : "content of chunks as an array",  : "total chunk matching query" } DOCS contains at minimum chunk_value, chunk_start </pre>
    */
-  public com.hurence.webapiservice.historian.reactivex.HistorianService getTimeSeries(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    delegate.getTimeSeries(params, resultHandler);
+  public com.hurence.webapiservice.historian.reactivex.HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    delegate.getTimeSeriesChunk(params, resultHandler);
     return this;
   }
 
   /**
-   * @param params as a json object <pre> { TODO } </pre>
-   * @return uncompressed timeseries as an array of <pre> {  : "content of chunks as an array",  : "total chunk matching query" } </pre>
+   * @param params as a json object <pre> {  : "content of chunks as an array",  : "total chunk matching query",  : ["field1", "field2"...],  : "total chunk matching query",  : "content of chunks as an array", } </pre> explanation : if  not specified will search from 0 if  not specified will search to Max.Long use  if you want to retrieve some of the precalculated aggs. If not specified retrieve all. use  to search for specific timeseries having one of those tags use  to search a specific timeseries name
+   * @return uncompressed timeseries as an array of <pre> {  : "content of chunks as an array",  : "total chunk matching query" } DOCS contains at minimum chunk_value, chunk_start </pre>
    */
-  public Single<JsonObject> rxGetTimeSeries(JsonObject params) { 
+  public Single<JsonObject> rxGetTimeSeriesChunk(JsonObject params) { 
     return io.vertx.reactivex.impl.AsyncResultSingle.toSingle(handler -> {
-      getTimeSeries(params, handler);
+      getTimeSeriesChunk(params, handler);
     });
   }
 
   public static final String DOCS = com.hurence.webapiservice.historian.HistorianService.DOCS;
   public static final String TOTAL_FOUND = com.hurence.webapiservice.historian.HistorianService.TOTAL_FOUND;
+  public static final String FROM = com.hurence.webapiservice.historian.HistorianService.FROM;
+  public static final String TO = com.hurence.webapiservice.historian.HistorianService.TO;
+  public static final String FIELDS_TO_FETCH = com.hurence.webapiservice.historian.HistorianService.FIELDS_TO_FETCH;
+  public static final String TAGS = com.hurence.webapiservice.historian.HistorianService.TAGS;
+  public static final String RECORD_NAME = com.hurence.webapiservice.historian.HistorianService.RECORD_NAME;
 
   public static  HistorianService newInstance(com.hurence.webapiservice.historian.HistorianService arg) {
     return arg != null ? new HistorianService(arg) : null;
