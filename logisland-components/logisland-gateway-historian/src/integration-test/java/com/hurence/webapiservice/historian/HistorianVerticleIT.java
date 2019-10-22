@@ -98,6 +98,9 @@ public class HistorianVerticleIT {
         doc.getField(CHUNK_START).setValue(1571129490801L);
         doc.getField(CHUNK_END).setValue(1571130490801L);
         client.add(COLLECTION, doc);
+        doc.getField("id").setValue("id4");
+        doc.getField(RECORD_NAME).setValue("temp_a");
+        client.add(COLLECTION, doc);
         UpdateResponse updateRsp = client.commit(COLLECTION);
         logger.debug("Indexed some documents in {} collection", COLLECTION);
     }
@@ -160,9 +163,9 @@ public class HistorianVerticleIT {
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
                         long totalHit = rsp.getLong(HistorianService.TOTAL_FOUND);
-                        assertEquals(3, totalHit);
+                        assertEquals(4, totalHit);
                         JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
-                        assertEquals(3, docs.size());
+                        assertEquals(4, docs.size());
                         JsonObject doc1 = docs.getJsonObject(0);
                         assertEquals(16, doc1.size());
                         assertEquals("id1", doc1.getString("id"));
@@ -186,22 +189,114 @@ public class HistorianVerticleIT {
 
     @Test
     @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
-    void verifyIndexState(SolrClient client) throws Throwable {
-        SolrQuery query = new SolrQuery("*:*");
-        try {
-            final QueryResponse response = client.query(COLLECTION, query);
-            final SolrDocumentList documents = response.getResults();
+    void getTimeSeriesChunkTestWithStart(VertxTestContext testContext) {
 
-            logger.info("Found " + documents.getNumFound() + " documents");
-            for(SolrDocument document : documents) {
-                logger.info("doc : " + document.jsonStr());
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-
+        JsonObject params = new JsonObject()
+                .put(HistorianService.FROM, 1571129390801L);
+        historian.rxGetTimeSeriesChunk(params)
+                .doOnError(testContext::failNow)
+                .doOnSuccess(rsp -> {
+                    testContext.verify(() -> {
+                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        JsonObject doc2 = docs.getJsonObject(0);
+                        assertEquals("id2", doc2.getString("id"));
+                        JsonObject doc3 = docs.getJsonObject(1);
+                        assertEquals("id3", doc3.getString("id"));
+                        testContext.completeNow();
+                    });
+                })
+                .subscribe();
     }
+
+    @Test
+    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+    void getTimeSeriesChunkTestWithEnd(VertxTestContext testContext) {
+
+        JsonObject params = new JsonObject()
+                .put(HistorianService.TO, 1571129390801L);
+        historian.rxGetTimeSeriesChunk(params)
+                .doOnError(testContext::failNow)
+                .doOnSuccess(rsp -> {
+                    testContext.verify(() -> {
+                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        JsonObject doc1 = docs.getJsonObject(0);
+                        assertEquals("id1", doc1.getString("id"));
+                        JsonObject doc2 = docs.getJsonObject(1);
+                        assertEquals("id2", doc2.getString("id"));
+                        testContext.completeNow();
+                    });
+                })
+                .subscribe();
+    }
+
+    @Test
+    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+    void getTimeSeriesChunkTestWithSelectedFields(VertxTestContext testContext) {
+        JsonObject params = new JsonObject()
+                .put(HistorianService.FIELDS_TO_FETCH, new JsonArray()
+                    .add(CHUNK_VALUE).add(CHUNK_START).add(CHUNK_MAX).add("id")
+                );
+        historian.rxGetTimeSeriesChunk(params)
+                .doOnError(testContext::failNow)
+                .doOnSuccess(rsp -> {
+                    testContext.verify(() -> {
+                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        JsonObject doc1 = docs.getJsonObject(0);
+                        assertEquals(4, doc1.size());
+                        assertEquals("id1", doc1.getString("id"));
+                        assertEquals(1571129378946L, doc1.getLong(CHUNK_START));
+                        assertEquals(85.91265179503733d, doc1.getDouble(CHUNK_MAX));
+                        assertEquals("H4sIAAAAAAAAAOPi1HzSd1wgLSvQgYtH4Ryj5nujP96La/wduLgFGDXXMgU8iLrmAZQSOMmoqVe44pJBnTtEitklrrKrxwskNYVZ01G7Nk/uhStIiknTf+ONlze1PUEcBs0Ne+2bqtabQzRpCGwtfprgCdI0kVkzR9jg8k+/YIgmwZNNH2v/OIGkTjNqpp7mPrA7zwrEO8WouSbZl3VCV5ADF6dm3rGQCfNWBkDMjm7gzl/72gNido9oxz0DRj+oAV9YPhzPv+EP0nL9ZsIdL35joCoFRk2OiNu/r7IFgFTdYdFMndd8cAKnD4g3lVnTMiPi9nUna4jZFsq7bK0VHEFSy9k0H2yRXtY4XQzqHnvThAmS/p4Qe4tdM4uypwZA7d3j9U/k+nUraIhNe/Zxr7KkBUSh7o9DvJdegRXeY9HcdOzNFE0bB4jnLYofT3fi8oIaPzvYtkrLzRSiyybm74+vDx1AUpOZNV3O1pyOWO8DcSLLgj4bMRFnkNRMZs0PvBM1d0Y7g6TYNKc/C562LMQeJHWLRdM1RqvkgDbYUZ/ZNXW9dKTqeNxBvFZWzZTCkNhbp8C8t0ya/9K0g3LinaH6JvyMX+18wQ0aPAeztf+c5vKGuuTH7pI996+6QhzpHehwxFvFFyR1hlFz0hSnxTuqbSFSQgyXmAu9AqABYnef0/KibRCIdxYYZSLCjzOqQiG+SRXjKXv/COyQ2eyaj6ef/JSdYOcgwAAAPXZ5iqICAAA=",
+                                doc1.getString(CHUNK_VALUE));
+                        testContext.completeNow();
+                    });
+                })
+                .subscribe();
+    }
+
+    @Test
+    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+    void getTimeSeriesChunkTestWithName(VertxTestContext testContext) {
+        JsonObject params = new JsonObject()
+                .put(HistorianService.RECORD_NAME, "temp_b");
+        historian.rxGetTimeSeriesChunk(params)
+                .doOnError(testContext::failNow)
+                .doOnSuccess(rsp -> {
+                    testContext.verify(() -> {
+                        long totalHit = rsp.getLong(HistorianService.TOTAL_FOUND);
+                        assertEquals(3, totalHit);
+                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        assertEquals(3, docs.size());
+                        JsonObject doc1 = docs.getJsonObject(0);
+                        assertEquals(4, doc1.size());
+                        assertEquals("id1", doc1.getString("id"));
+                        assertEquals(1571129378946L, doc1.getLong(CHUNK_START));
+                        assertEquals(85.91265179503733d, doc1.getDouble(CHUNK_MAX));
+                        assertEquals("H4sIAAAAAAAAAOPi1HzSd1wgLSvQgYtH4Ryj5nujP96La/wduLgFGDXXMgU8iLrmAZQSOMmoqVe44pJBnTtEitklrrKrxwskNYVZ01G7Nk/uhStIiknTf+ONlze1PUEcBs0Ne+2bqtabQzRpCGwtfprgCdI0kVkzR9jg8k+/YIgmwZNNH2v/OIGkTjNqpp7mPrA7zwrEO8WouSbZl3VCV5ADF6dm3rGQCfNWBkDMjm7gzl/72gNido9oxz0DRj+oAV9YPhzPv+EP0nL9ZsIdL35joCoFRk2OiNu/r7IFgFTdYdFMndd8cAKnD4g3lVnTMiPi9nUna4jZFsq7bK0VHEFSy9k0H2yRXtY4XQzqHnvThAmS/p4Qe4tdM4uypwZA7d3j9U/k+nUraIhNe/Zxr7KkBUSh7o9DvJdegRXeY9HcdOzNFE0bB4jnLYofT3fi8oIaPzvYtkrLzRSiyybm74+vDx1AUpOZNV3O1pyOWO8DcSLLgj4bMRFnkNRMZs0PvBM1d0Y7g6TYNKc/C562LMQeJHWLRdM1RqvkgDbYUZ/ZNXW9dKTqeNxBvFZWzZTCkNhbp8C8t0ya/9K0g3LinaH6JvyMX+18wQ0aPAeztf+c5vKGuuTH7pI996+6QhzpHehwxFvFFyR1hlFz0hSnxTuqbSFSQgyXmAu9AqABYnef0/KibRCIdxYYZSLCjzOqQiG+SRXjKXv/COyQ2eyaj6ef/JSdYOcgwAAAPXZ5iqICAAA=",
+                                doc1.getString(CHUNK_VALUE));
+                        testContext.completeNow();
+                    });
+                })
+                .subscribe();
+    }
+//    @Test
+//    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+//    void verifyIndexState(SolrClient client) throws Throwable {
+//        SolrQuery query = new SolrQuery("*:*");
+//        try {
+//            final QueryResponse response = client.query(COLLECTION, query);
+//            final SolrDocumentList documents = response.getResults();
+//
+//            logger.info("Found " + documents.getNumFound() + " documents");
+//            for(SolrDocument document : documents) {
+//                logger.info("doc : " + document.jsonStr());
+//            }
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//            throw new RuntimeException(ex);
+//        }
+//
+//    }
 
     private static void assertValidSchemaResponse(SolrResponseBase schemaResponse) {
         assertEquals(0, schemaResponse.getStatus(), "Response contained errors: " + schemaResponse.toString());
