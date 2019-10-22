@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>logisland-processor-computer-vision</artifactId>
-    <packaging>jar</packaging>
+    <packaging>clojure</packaging>
 
     <name>Computer Vision Processor</name>
     <repositories>
@@ -64,9 +64,31 @@
             <version>1.2.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>compile</scope>
+            <version>2.6</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.theoryinpractise</groupId>
+                <artifactId>clojure-maven-plugin</artifactId>
+                <version>1.8.3</version>
+                <extensions>true</extensions>
+
+                <configuration>
+                    <sourceDirectories>
+                        <sourceDirectory>src/main/clojure</sourceDirectory>
+                    </sourceDirectories>
+                    <testSourceDirectories>
+                        <testSourceDirectory>src/test/clojure</testSourceDirectory>
+                    </testSourceDirectories>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
