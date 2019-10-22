@@ -89,7 +89,7 @@
         <maven.min-version>3.1.0</maven.min-version>
         <maven-jar-plugin>3.1.2</maven-jar-plugin>
         <maven-surefire-plugin>2.22.1</maven-surefire-plugin>
-        <maven-failsafe-plugin>2.22.2</maven-failsafe-plugin>
+        <maven-failsafe-plugin>2.18.1</maven-failsafe-plugin>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2014</inceptionYear>
@@ -834,6 +834,18 @@
                     <plugin> <!-- Failsafe plugin is maven plugin for integration tests -->
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <!-- Force *IT.java naming pattern. Otherwise it would allow to have someone create a
+                            *Test.java test in the integration tests and it would also be executed by the surefire plugin
+                            in unit tests phase (test phase) and this would fail as by definition integration tests
+                            require additional resources (for instance docker container) that would not be launched.
+                             The surefire plugin de facto ignores *IT.java files as they are integration tests. We just
+                             want here to also use a separate folder from unit tests for integration tests using the
+                             build-helper-maven-plugin plugin -->
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                        </configuration>
                         <executions>
                             <execution>
                                 <goals>

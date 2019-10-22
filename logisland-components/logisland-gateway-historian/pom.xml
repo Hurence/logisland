@@ -211,4 +211,32 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <!-- Profile for Integration tests run mechanism and separation from unit tests. Inspired from this page:
+            https://www.baeldung.com/maven-integration-test
+            If you need additional stuff like resources for the integration tests, please this page to know how to do it.
+            To run integration tests, run: mvn -Pintegration-tests clean verify -->
+            <id>integration-tests</id>
+            <build>
+                <plugins>
+                    <plugin> <!-- Failsafe plugin is maven plugin for integration tests -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+<!--                        OLDER VERSION of the plugin does not see tests but when upgrating version on root pom
+                            some integration test no longer works...-->
+                        <version>2.22.2</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
