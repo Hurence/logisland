@@ -21,6 +21,12 @@ import com.hurence.logisland.component.InitializationException;
 
 public abstract class AbstractProcessor extends AbstractConfigurableComponent implements Processor {
 
+    protected boolean isInitialized = false;
+
+    public boolean isInitialized() {
+        return isInitialized;
+    }
+
     @Override
     public void init(ProcessContext context) throws InitializationException {
         super.init(context);
