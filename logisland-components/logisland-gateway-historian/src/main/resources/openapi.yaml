@@ -10,29 +10,63 @@ tags:
   - name: "document"
     description: "Everything about documents"
 paths:
-  "/doc":
+  "/timeseries":
     "get":
       tags:
-        - document
-      "description": Returns documents matching the query
-      "operationId": "getDocumentsMatchingQuery"
+        - timeseries
+      "description": Returns desired timeseries, with or without sampling, with or without agregations
+      "operationId": "getTimeseries"
       "parameters":
-        - "name": query
+        - "name": from
           "in": query
-          "description": the query to use to find documents
+          "description": the start of timeseries to look for
           required: true
           schema:
-            type: string
-        - name: limit
-          in: query
-          description: How many documents to return at one time (max 100)
+            type: integer
+            format: int64
+        - "name": to
+          "in": query
+          "description": the end of timeseries to look for. If not specified look for all data until Long.MAX
           required: false
           schema:
             type: integer
-            format: int32
+            format: int64
+        - "name": name
+          "in": query
+          "description": the name of the timeserie to look for. If not specified look for all type of timeseries
+          required: false
+          schema:
+            type: integer
+            format: int64
+#        - "name": tags TODO ????
+#          "in": query
+#          "description": Filter out timeseries with none of the given tags.
+#          required: false
+#          schema:
+#            type: array
+#              items:
+#                type: string
+        - "name": aggs
+          "in": query
+          "description": the agregations to calculate for the timeserie. If not specified no agregations is calculated.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string #TODO enum
+        - "name": sampling
+          #TODO something like that : bucket:100:avg, bucket:50:max ? or maybe specify a max number of pount ?
+          #TODO avg:10000 -> moyenn pour le sampling et retourne un maximum de 10000 points
+          "in": query
+          "description": the algorithm to use to sample data.
+          required: false
+          schema:
+            type: string
+
       "responses":
         "200":
-          "description": A paged list of matching documents
+          "description": A list of timeseries. Maximum number of point returned is 10000 ???
+          #TODO is pagination really needed there ? Maybe if user wants to scroll ? But really not sure this is pertinent here
 #          "headers":
 #            x-next:
 #              description: A link to the next page of responses
@@ -41,7 +75,7 @@ paths:
           "content":
             "application/json":
               "schema":
-                "$ref": '#/components/schemas/Documents'
+                "$ref": '#/components/schemas/TimeseriesResponse'
         "500":
           "description": "Something wrong happened"
         default:
@@ -50,58 +84,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  "/doc/similarTo/{id}":
-    "get":
-      tags:
-        - document
-      description: Returns all documents which are similar to a certain document
-      operationId: getSimilarDocumentsViaId
-      parameters:
-        - name: id
-          in: path
-          description: the id of the document which we will find others similar to it
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: A list of similar documents
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - success
-                properties:
-                  success:
-                    type: boolean
-                  docs:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Document"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 components:
   schemas:
-    Document:
+    Aggs: #TODO sax encoding ? CHUNK_WINDOW_MS ? CHUNK_TREND ? CHUNK_SIZE_BYTES ?
+      type: object
+      properties:
+        min:
+          type: number
+          format: double
+        max:
+          type: number
+          format: double
+        avg:
+          type: number
+          format: double
+        count:
+          type: integer
+          format: int64
+        sum:
+          type: number
+          format: double
+    Point:
       type: object
       required:
-        - id
+        - timestamp
+        - value
       properties:
-        id:
+        timestamp:
+          type: integer
+          format: int64
+        value:
+          type: number
+          format: double
+    Timeserie:
+      type: object
+      required:
+        - name
+      properties:
+        name:
           type: string
-        author:
-          type: string
-        description:
-          type: string
-    Documents:
-      type: array
-      items:
-        $ref: "#/components/schemas/Document"
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/Point"
+        aggs:
+          $ref: "#/components/schemas/Aggs"
+    TimeseriesResponse:
+      type: object
+      required:
+        - query
+        - total_timeseries
+        - timeseries
+      properties:
+        query:
+          type: string #TODO return query as requested
+        total_timeseries:
+          type: integer
+          format: int64
+        timeseries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Timeserie"
     Error:
       type: object
       required:
