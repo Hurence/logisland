@@ -89,7 +89,7 @@ public class HistorianService {
     });
   }
 
-  public static final String DOCS = com.hurence.webapiservice.historian.HistorianService.DOCS;
+  public static final String CHUNKS = com.hurence.webapiservice.historian.HistorianService.CHUNKS;
   public static final String TOTAL_FOUND = com.hurence.webapiservice.historian.HistorianService.TOTAL_FOUND;
   public static final String FROM = com.hurence.webapiservice.historian.HistorianService.FROM;
   public static final String TO = com.hurence.webapiservice.historian.HistorianService.TO;

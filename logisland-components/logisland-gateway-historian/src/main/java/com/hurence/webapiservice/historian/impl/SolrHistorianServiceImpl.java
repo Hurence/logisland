@@ -116,7 +116,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         );
         p.complete(new JsonObject()
                 .put(TOTAL_FOUND, documents.getNumFound())
-                .put(DOCS, docs)
+                .put(CHUNKS, docs)
         );
       } catch (IOException | SolrServerException e) {
         p.fail(e);

@@ -13,11 +13,11 @@ public class TimeseriesVerticle extends AbstractVerticle {
   private static Logger logger = LoggerFactory.getLogger(TimeseriesVerticle.class);
 
 
-  public static final String CONFIG_HISTORIAN_ADDRESS = "address";
+  public static final String CONFIG_TIMESERIES_ADDRESS = "address";
 
   @Override
   public void start(Promise<Void> promise) throws Exception {
-    final String address = config().getString(CONFIG_HISTORIAN_ADDRESS, "timeseries");
+    final String address = config().getString(CONFIG_TIMESERIES_ADDRESS, "timeseries");
 
     TimeseriesService.create(vertx, ready -> {
       if (ready.succeeded()) {

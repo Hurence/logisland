@@ -9,18 +9,14 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
 import org.junit.jupiter.api.*;
@@ -164,7 +160,7 @@ public class HistorianVerticleIT {
                     testContext.verify(() -> {
                         long totalHit = rsp.getLong(HistorianService.TOTAL_FOUND);
                         assertEquals(4, totalHit);
-                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
                         assertEquals(4, docs.size());
                         JsonObject doc1 = docs.getJsonObject(0);
                         assertEquals(16, doc1.size());
@@ -197,7 +193,7 @@ public class HistorianVerticleIT {
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
-                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
                         JsonObject doc2 = docs.getJsonObject(0);
                         assertEquals("id2", doc2.getString("id"));
                         JsonObject doc3 = docs.getJsonObject(1);
@@ -218,7 +214,7 @@ public class HistorianVerticleIT {
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
-                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
                         JsonObject doc1 = docs.getJsonObject(0);
                         assertEquals("id1", doc1.getString("id"));
                         JsonObject doc2 = docs.getJsonObject(1);
@@ -240,7 +236,7 @@ public class HistorianVerticleIT {
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
-                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
                         JsonObject doc1 = docs.getJsonObject(0);
                         assertEquals(4, doc1.size());
                         assertEquals("id1", doc1.getString("id"));
@@ -265,7 +261,7 @@ public class HistorianVerticleIT {
                     testContext.verify(() -> {
                         long totalHit = rsp.getLong(HistorianService.TOTAL_FOUND);
                         assertEquals(3, totalHit);
-                        JsonArray docs = rsp.getJsonArray(HistorianService.DOCS);
+                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
                         assertEquals(3, docs.size());
                         testContext.completeNow();
                     });

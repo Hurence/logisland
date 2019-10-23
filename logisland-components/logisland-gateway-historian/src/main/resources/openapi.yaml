@@ -15,7 +15,7 @@ paths:
       tags:
         - timeseries
       "description": Returns desired timeseries, with or without sampling, with or without agregations
-      "operationId": "getTimeseries"
+      "operationId": "getTimeSeries"
       "parameters":
         - "name": from
           "in": query

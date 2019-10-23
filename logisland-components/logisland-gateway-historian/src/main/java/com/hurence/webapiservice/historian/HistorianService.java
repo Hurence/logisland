@@ -20,7 +20,7 @@ import org.apache.solr.client.solrj.SolrClient;
 @VertxGen
 public interface HistorianService {
 
-  public static String DOCS = "docs";
+  public static String CHUNKS = "chunks";
   public static String TOTAL_FOUND = "total_hit";
   public static String FROM = "from";
   public static String TO = "to";
@@ -63,7 +63,7 @@ public interface HistorianService {
    * @return uncompressed timeseries as an array of
    * <pre>
    * {
-   *     {@value DOCS} : "content of chunks as an array",
+   *     {@value CHUNKS} : "content of chunks as an array",
    *     {@value TOTAL_FOUND} : "total chunk matching query"
    * }
    * DOCS contains at minimum chunk_value, chunk_start
