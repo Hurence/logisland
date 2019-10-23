@@ -20,6 +20,7 @@ package com.hurence.logisland.util.runner;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.StandardValidationContext;
+import com.hurence.logisland.processor.state.StateManager;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationContext;
 
@@ -28,18 +29,20 @@ public class MockValidationContext extends StandardValidationContext implements 
 
     final MockProcessContext context;
     final VariableRegistry variableRegistry;
+    private final StateManager stateManager;
 
-    public MockValidationContext(final MockProcessContext processContext, final VariableRegistry variableRegistry) {
+    public MockValidationContext(final MockProcessContext processContext, final StateManager stateManager, final VariableRegistry variableRegistry) {
         super(processContext.getProperties());
         this.context = processContext;
         this.variableRegistry = variableRegistry;
+        this.stateManager = stateManager;
     }
 
     @Override
     public ValidationContext getControllerServiceValidationContext(final ControllerService controllerService) {
-        final MockProcessContext serviceProcessContext = new MockProcessContext(controllerService, context, variableRegistry);
+        final MockProcessContext serviceProcessContext = new MockProcessContext(controllerService, stateManager, context, variableRegistry);
 
-        return new MockValidationContext(serviceProcessContext, variableRegistry);
+        return new MockValidationContext(serviceProcessContext, stateManager, variableRegistry);
     }
 
     @Override

@@ -54,6 +54,7 @@ public class TestDeleteS3Object {
 
         runner.setProperty(DeleteS3Object.REGION, "us-west-2");
         runner.setProperty(DeleteS3Object.BUCKET_FIELD, "test-bucket");
+
         /*final Map<String, String> attrs = new HashMap<>();
         attrs.put("filename", "delete-key");*/
         record1.setField("filename", FieldType.STRING, "delete-key");
@@ -120,13 +121,15 @@ public class TestDeleteS3Object {
         runner.setProperty(DeleteS3Object.REGION, "us-west-2");
         runner.setProperty(DeleteS3Object.BUCKET_FIELD, "${s3.bucket}");
         runner.setProperty(DeleteS3Object.VERSION_ID_FIELD, "${s3.version}");
+        runner.setProperty(DeleteS3Object.KEY_FEILD, "${filename1}");
         /*final Map<String, String> attrs = new HashMap<>();
         attrs.put("filename", "test-key");
         attrs.put("s3.bucket", "test-bucket");
         attrs.put("s3.version", "test-version");*/
-        record1.setField("filename", FieldType.STRING, "test-key");
+        record1.setField("filename1", FieldType.STRING, "test-key");
         record1.setField("s3.bucket", FieldType.STRING, "test-bucket");
         record1.setField("s3.version", FieldType.STRING, "test-version");
+        // TODO why context.getPropertyValue(BUCKET_FIELD).evaluate(record).asString() returns null !
         runner.enqueue(record1);
 
         runner.run();

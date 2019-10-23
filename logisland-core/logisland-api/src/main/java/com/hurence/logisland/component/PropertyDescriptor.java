@@ -118,6 +118,41 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
      * only checked against the allowable getAllFields.
      *
      * @param input the value to validate
+     * @param context the context of validation
+     * @return the result of validating the input
+     */
+    public ValidationResult validate(final String input, final ValidationContext context) {
+        ValidationResult lastResult = Validator.VALID.validate(this.name, input, context);
+
+
+        if (allowableValues != null && !allowableValues.isEmpty()) {
+            final ConstrainedSetValidator csValidator = new ConstrainedSetValidator(allowableValues);
+            final ValidationResult csResult = csValidator.validate(this.name, input, context);
+            if (csResult.isValid()) {
+                lastResult = csResult;
+            } else {
+                return csResult;
+            }
+        }
+
+        for (final Validator validator : validators) {
+            if(null == validator.validate(this.name, input, context)) {
+                lastResult = validator.validate(this.name, input);
+            } else {
+                lastResult = validator.validate(this.name, input, context);
+            }
+            if (!lastResult.isValid()) {
+                break;
+            }
+        }
+        return lastResult;
+    }
+    /**
+     * Validates the given input against this property descriptor's validator.
+     * If this descriptor has a set of allowable getAllFields then the given value is
+     * only checked against the allowable getAllFields.
+     *
+     * @param input the value to validate
      * @return the result of validating the input
      */
     public ValidationResult validate(final String input) {
@@ -490,7 +525,17 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
 
         @Override
         public ValidationResult validate(String subject, String input, ValidationContext context) {
-            return null;
+            final ValidationResult.Builder builder = new ValidationResult.Builder();
+            builder.input(input);
+            builder.subject(subject);
+            if (validValues.contains(input)) {
+                builder.valid(true);
+                builder.explanation(POSITIVE_EXPLANATION);
+            } else {
+                builder.valid(false);
+                builder.explanation(String.format(NEGATIVE_EXPLANATION, validStrings));
+            }
+            return builder.build();
         }
 
         @Override

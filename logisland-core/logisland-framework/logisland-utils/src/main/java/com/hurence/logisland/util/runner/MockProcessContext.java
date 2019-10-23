@@ -36,6 +36,7 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
     private String identifier;
     private final ConfigurableComponent component;
     private final Map<PropertyDescriptor, String> properties = new HashMap<>();
+    private final StateManager stateManager;
     private final VariableRegistry variableRegistry;
     private final MockControllerServiceLookup serviceLookup;
 
@@ -47,14 +48,17 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
      * @param variableRegistry variableRegistry
      */
     public MockProcessContext(final ConfigurableComponent component,
+                              final StateManager stateManager,
                               final VariableRegistry variableRegistry) {
-        this(component, variableRegistry, new MockControllerServiceLookup());
+        this(component, stateManager, variableRegistry, new MockControllerServiceLookup());
     }
 
     private MockProcessContext(final ConfigurableComponent component,
+                               final StateManager stateManager,
                                final VariableRegistry variableRegistry,
                                MockControllerServiceLookup serviceLookup) {
         this.component = Objects.requireNonNull(component);
+        this.stateManager = stateManager;
         this.variableRegistry = variableRegistry;
         this.identifier = component.getIdentifier() == null ? "mock_processor" : component.getIdentifier();
         this.serviceLookup = serviceLookup;
@@ -65,8 +69,8 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
      *
      * @param component being mocked
      */
-    public MockProcessContext(final Processor component) {
-        this(component, VariableRegistry.EMPTY_REGISTRY);
+    public MockProcessContext(final Processor component,final StateManager stateManager) {
+        this(component, stateManager, VariableRegistry.EMPTY_REGISTRY);
     }
 
     /**
@@ -74,12 +78,12 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
      *
      * @param component being mocked
      */
-    public MockProcessContext(final Processor component, MockControllerServiceLookup serviceLookup) {
-        this(component, VariableRegistry.EMPTY_REGISTRY, serviceLookup);
+    public MockProcessContext(final Processor component, final StateManager stateManager, MockControllerServiceLookup serviceLookup) {
+        this(component, stateManager, VariableRegistry.EMPTY_REGISTRY, serviceLookup);
     }
 
-    public MockProcessContext(final ControllerService component, final MockProcessContext context, final VariableRegistry variableRegistry) {
-        this(component, variableRegistry);
+    public MockProcessContext(final ControllerService component, final StateManager stateManager, final MockProcessContext context, final VariableRegistry variableRegistry) {
+        this(component, stateManager, variableRegistry);
 
         try {
             final Map<PropertyDescriptor, String> props = context.getProperties();
@@ -150,7 +154,7 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
         requireNonNull(value, "Cannot set property to null value; if the intent is to remove the property, call removeProperty instead");
         final PropertyDescriptor fullyPopulatedDescriptor = component.getPropertyDescriptor(descriptor.getName());
 
-        final ValidationResult result = fullyPopulatedDescriptor.validate(value);
+        final ValidationResult result = fullyPopulatedDescriptor.validate(value, new MockValidationContext(this, stateManager, variableRegistry));
         String oldValue = properties.put(fullyPopulatedDescriptor, value);
         if (oldValue == null) {
             oldValue = fullyPopulatedDescriptor.getDefaultValue();
@@ -246,7 +250,7 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
 
     @Override
     public StateManager getStateManager() {
-        return null;
+        return stateManager;
     }
 
     @Override

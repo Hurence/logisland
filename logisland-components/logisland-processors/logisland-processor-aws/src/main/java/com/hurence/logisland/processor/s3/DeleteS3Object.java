@@ -32,7 +32,7 @@ public class DeleteS3Object extends AbstractS3Processor {
             .name("version.field")
             .description("The Version of the Object to delete")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true/*ExpressionLanguageScope.FLOWFILE_ATTRIBUTES*/)
+            .expressionLanguageSupported(true)
             .required(false)
             .build();
 

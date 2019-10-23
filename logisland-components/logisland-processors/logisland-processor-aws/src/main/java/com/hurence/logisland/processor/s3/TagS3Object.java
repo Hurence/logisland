@@ -14,7 +14,9 @@ import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.string.StringUtils;
 import com.hurence.logisland.validator.StandardValidators;
 
@@ -40,7 +42,7 @@ public class TagS3Object extends AbstractS3Processor {
             .displayName("Tag Key")
             .description("The key of the tag that will be set on the S3 Object")
             .addValidator(new StandardValidators.StringLengthValidator(1, 127))
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .expressionLanguageSupported(true)
             .required(true)
             .build();
 
@@ -49,7 +51,7 @@ public class TagS3Object extends AbstractS3Processor {
             .displayName("Tag Value")
             .description("The value of the tag that will be set on the S3 Object")
             .addValidator(new StandardValidators.StringLengthValidator(1, 255))
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .expressionLanguageSupported(true)
             .required(true)
             .build();
 
@@ -61,7 +63,7 @@ public class TagS3Object extends AbstractS3Processor {
                     "set to false, the existing tags will be removed and the new tag will be set on the S3 object.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .allowableValues("true", "false")
-            /*.expressionLanguageSupported(ExpressionLanguageScope.NONE)*/
+            .expressionLanguageSupported(false)
             .required(true)
             .defaultValue("true")
             .build();
@@ -71,7 +73,7 @@ public class TagS3Object extends AbstractS3Processor {
             .displayName("Version ID")
             .description("The Version of the Object to tag")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .expressionLanguageSupported(true)
             .required(false)
             .build();
 
@@ -153,7 +155,7 @@ public class TagS3Object extends AbstractS3Processor {
                     return records;
                 }
 
-                /*flowFile = setTagAttributes(session, flowFile, tags);*/
+                record = setTagAttributes(record, tags);
 
                 /*session.transfer(flowFile, REL_SUCCESS);*/
                 final long transferMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
@@ -171,12 +173,14 @@ public class TagS3Object extends AbstractS3Processor {
         session.transfer(flowFile, REL_FAILURE);*/
     }
 
-    /*private FlowFile setTagAttributes(ProcessSession session, FlowFile flowFile, List<Tag> tags) {
-        flowFile = session.removeAllAttributes(flowFile, Pattern.compile("^s3\\.tag\\..*"));
-
-        final Map<String, String> tagAttrs = new HashMap<>();
-        tags.stream().forEach(t -> tagAttrs.put("s3.tag." + t.getKey(), t.getValue()));
-        flowFile = session.putAllAttributes(flowFile, tagAttrs);
-        return flowFile;
-    }*/
+    private Record setTagAttributes(Record record, List<Tag> tags) {
+        Record record1 = new StandardRecord(record);
+        for (String name : record1.getAllFieldNames()) {
+            if (name.matches("^s3\\.tag\\..*")) record.removeField(name);
+        }
+        for (Tag tag : tags) {
+            record.setField(new Field("s3.tag." + tag.getKey(), tag.getValue()));
+        }
+        return record;
+    }
 }

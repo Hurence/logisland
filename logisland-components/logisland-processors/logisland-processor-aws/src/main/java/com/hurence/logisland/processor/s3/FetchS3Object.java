@@ -14,6 +14,7 @@ import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
@@ -53,7 +54,7 @@ public class FetchS3Object extends AbstractS3Processor {
             .name("Version")
             .description("The Version of the Object to download")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .expressionLanguageSupported(true)
             .required(false)
             .build();
     public static final PropertyDescriptor REQUESTER_PAYS = new PropertyDescriptor.Builder()
@@ -112,7 +113,8 @@ public class FetchS3Object extends AbstractS3Processor {
                 final long startNanos = System.nanoTime();
                 final String bucket = context.getPropertyValue(BUCKET_FIELD).evaluate(record).asString();
                 final String key = context.getPropertyValue(KEY_FEILD).evaluate(record).asString();
-                final String versionId = context.getPropertyValue(VERSION_ID_FEILD).evaluate(record).asString();
+                final PropertyValue versionId_Prop = context.getPropertyValue(VERSION_ID_FEILD).evaluate(record);
+                final String versionId = versionId_Prop.asString();
                 final boolean requesterPays = context.getPropertyValue(REQUESTER_PAYS).asBoolean();
 
                 final AmazonS3 client = getClient();
@@ -124,12 +126,12 @@ public class FetchS3Object extends AbstractS3Processor {
                 }
                 request.setRequesterPays(requesterPays);
 
-                final Map<String, Field> attributes = new HashMap<>();
+                /*final Map<String, Field> attributes = new HashMap<>();*/
 
                 AmazonS3EncryptionService encryptionService = context.getPropertyValue(ENCRYPTION_SERVICE).asControllerService(AmazonS3EncryptionService.class);
                 if (encryptionService != null) {
                     encryptionService.configureGetObjectRequest(request, new ObjectMetadata());
-                    attributes.put("s3.encryptionStrategy", new Field(encryptionService.getStrategyName()));
+                    record.setField(new Field("s3.encryptionStrategy",encryptionService.getStrategyName()));
                 }
 
                 try (final S3Object s3Object = client.getObject(request)) {
@@ -137,55 +139,55 @@ public class FetchS3Object extends AbstractS3Processor {
                         throw new IOException("AWS refused to execute this request.");
                     }
                     /*flowFile = session.importFrom(s3Object.getObjectContent(), flowFile);*/
+                    // TODO see how to replace session.importFrom
                     record.setField("s3Object", FieldType.ARRAY, s3Object.getObjectContent());
-                    attributes.put("s3.bucket", new Field(s3Object.getBucketName()));
+                    record.setField(new Field("s3.bucket", s3Object.getBucketName()));
 
                     final ObjectMetadata metadata = s3Object.getObjectMetadata();
                     if (metadata.getContentDisposition() != null) {
                         final String fullyQualified = metadata.getContentDisposition();
                         final int lastSlash = fullyQualified.lastIndexOf("/");
                         if (lastSlash > -1 && lastSlash < fullyQualified.length() - 1) {
-                            attributes.put("path"/*CoreAttributes.PATH.key()*/, new Field(fullyQualified.substring(0, lastSlash)));
-                            attributes.put("absolute.path"/*CoreAttributes.ABSOLUTE_PATH.key()*/, new Field(fullyQualified));
-                            attributes.put("filename"/*CoreAttributes.FILENAME.key()*/, new Field(fullyQualified.substring(lastSlash + 1)));
+                            record.setField(new Field("path", fullyQualified.substring(0, lastSlash)));
+                            record.setField(new Field("absolute.path", fullyQualified));
+                            record.setField(new Field("filename", fullyQualified.substring(lastSlash + 1)));
                         } else {
-                            attributes.put("filename"/*CoreAttributes.FILENAME.key()*/, new Field(metadata.getContentDisposition()));
+                            record.setField(new Field("filename", metadata.getContentDisposition()));
                         }
                     }
                     if (metadata.getContentMD5() != null) {
-                        attributes.put("hash.value", new Field(metadata.getContentMD5()));
-                        attributes.put("hash.algorithm", new Field("MD5"));
+                        record.setField(new Field("hash.value", metadata.getContentMD5()));
+                        record.setField(new Field("hash.algorithm", "MD5"));
                     }
                     if (metadata.getContentType() != null) {
-                        attributes.put("mime.type"/*CoreAttributes.MIME_TYPE.key()*/, new Field(metadata.getContentType()));
+                        record.setField(new Field("mime.type", metadata.getContentType()));
                     }
                     if (metadata.getETag() != null) {
-                        attributes.put("s3.etag", new Field(metadata.getETag()));
+                        record.setField(new Field("s3.etag", metadata.getETag()));
                     }
                     if (metadata.getExpirationTime() != null) {
-                        attributes.put("s3.expirationTime", new Field(String.valueOf(metadata.getExpirationTime().getTime())));
+                        record.setField(new Field("s3.expirationTime", String.valueOf(metadata.getExpirationTime().getTime())));
                     }
                     if (metadata.getExpirationTimeRuleId() != null) {
-                        attributes.put("s3.expirationTimeRuleId", new Field(metadata.getExpirationTimeRuleId()));
+                        record.setField(new Field("s3.expirationTimeRuleId", metadata.getExpirationTimeRuleId()));
                     }
                     if (metadata.getUserMetadata() != null) {
-                        Map<String, Field> userMetadata = new HashMap<>();
+
                         for (Map.Entry<String, String> entry : metadata.getUserMetadata().entrySet()){
-                            userMetadata.put(entry.getKey(), new Field(entry.getValue()));
+                            record.setField(new Field(entry.getKey(), entry.getValue()));
                         }
-                        attributes.putAll(userMetadata);
                     }
                     if (metadata.getSSEAlgorithm() != null) {
                         String sseAlgorithmName = metadata.getSSEAlgorithm();
-                        attributes.put("s3.sseAlgorithm", new Field(sseAlgorithmName));
+                        record.setField(new Field("s3.sseAlgorithm", sseAlgorithmName));
                         if (sseAlgorithmName.equals(SSEAlgorithm.AES256.getAlgorithm())) {
-                            attributes.put("s3.encryptionStrategy", new Field(AmazonS3EncryptionService.STRATEGY_NAME_SSE_S3));
+                            record.setField(new Field("s3.encryptionStrategy", AmazonS3EncryptionService.STRATEGY_NAME_SSE_S3));
                         } else if (sseAlgorithmName.equals(SSEAlgorithm.KMS.getAlgorithm())) {
-                            attributes.put("s3.encryptionStrategy", new Field(AmazonS3EncryptionService.STRATEGY_NAME_SSE_KMS));
+                            record.setField(new Field("s3.encryptionStrategy", AmazonS3EncryptionService.STRATEGY_NAME_SSE_KMS));
                         }
                     }
                     if (metadata.getVersionId() != null) {
-                        attributes.put("s3.version", new Field(metadata.getVersionId()));
+                        record.setField(new Field("s3.version", metadata.getVersionId()));
                     }
                 } catch (final IOException | AmazonClientException ioe) {
                     getLogger().error("Failed to retrieve S3 Object for {}; routing to failure", new Object[]{record, ioe});
@@ -202,11 +204,6 @@ public class FetchS3Object extends AbstractS3Processor {
                     throw ffae;
                 }*/
 
-                if (!attributes.isEmpty()) {
-                    /*flowFile = session.putAllAttributes(flowFile, attributes);*/
-
-                    record.addFields(attributes);
-                }
 
                 /*session.transfer(flowFile, REL_SUCCESS);*/
                 final long transferMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);

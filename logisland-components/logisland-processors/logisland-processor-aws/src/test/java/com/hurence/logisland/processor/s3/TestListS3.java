@@ -20,6 +20,8 @@ import com.amazonaws.services.s3.model.VersionListing;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.state.MockStateManager;
 import com.hurence.logisland.processor.state.Scope;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.proxy.ProxyConfigurationService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -60,6 +62,7 @@ public class TestListS3 {
 
     @Test
     public void testList() {
+
         runner.setProperty(ListS3.REGION, "eu-west-1");
         runner.setProperty(ListS3.BUCKET_FIELD, "test-bucket");
 
@@ -81,6 +84,7 @@ public class TestListS3 {
         objectSummary3.setLastModified(lastModified);
         objectListing.getObjectSummaries().add(objectSummary3);
         Mockito.when(mockS3Client.listObjects(Mockito.any(ListObjectsRequest.class))).thenReturn(objectListing);
+
 
         runner.run();
 

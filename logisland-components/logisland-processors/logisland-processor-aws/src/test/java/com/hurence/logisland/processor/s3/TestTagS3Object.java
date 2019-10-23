@@ -304,6 +304,7 @@ public class TestTagS3Object {
         runner.run();
 
         /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_FAILURE, 1);*/
+        // TODO see hwo to replace the failure
         runner.assertNotValid();
     }
 
@@ -323,6 +324,7 @@ public class TestTagS3Object {
         runner.run();
 
         /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_FAILURE, 1);*/
+        // TODO see hwo to replace the failure
         runner.assertNotValid();
     }
 
@@ -342,6 +344,7 @@ public class TestTagS3Object {
         runner.run();
 
         /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_FAILURE, 1);*/
+        // TODO see hwo to replace the failure
         runner.assertNotValid();
     }
 

@@ -56,6 +56,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     private final MockProcessContext context;
     private final MockVariableRegistry variableRegistry;
     private final MockControllerServiceLookup serviceLookup;
+    private final MockStateManager processorStateManager;
 
     private final List<Record> inputRecordsQueue;
     private final List<Record> outputRecordsList;
@@ -73,7 +74,8 @@ public class StandardProcessorTestRunner implements TestRunner {
         this.outputRecordsList = new ArrayList<>();
         this.variableRegistry = new MockVariableRegistry();
         this.serviceLookup = new MockControllerServiceLookup();
-        this.context = new MockProcessContext(processor, this.serviceLookup);
+        this.processorStateManager = new MockStateManager(processor);
+        this.context = new MockProcessContext(processor, processorStateManager, this.serviceLookup);
     }
 
     @Override
@@ -468,7 +470,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public MockStateManager getStateManager() {
-        return null;
+        return processorStateManager;
     }
 
 }

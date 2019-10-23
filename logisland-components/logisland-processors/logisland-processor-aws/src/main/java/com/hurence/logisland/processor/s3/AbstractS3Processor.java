@@ -82,7 +82,7 @@ public abstract class AbstractS3Processor extends AbstractAWSCredentialsProvider
             .build();
     public static final PropertyDescriptor BUCKET_FIELD = new PropertyDescriptor.Builder()
             .name("bucket.field")
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .expressionLanguageSupported(true)
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -90,7 +90,7 @@ public abstract class AbstractS3Processor extends AbstractAWSCredentialsProvider
             .name("key.field")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .expressionLanguageSupported(true)
             .defaultValue("${filename}")
             .build();
     public static final PropertyDescriptor SIGNER_OVERRIDE = new PropertyDescriptor.Builder()

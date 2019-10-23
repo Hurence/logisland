@@ -25,9 +25,7 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -60,6 +58,9 @@ public class TestPutS3Object {
 
     @Test
     public void testPutSinglePart() {
+        /*Record record1 = new StandardRecord();
+        record1.setField("Logisland", FieldType.STRING, "logisland");*/
+
         runner.setProperty("x-custom-prop", "hello");
         prepareTest();
 
@@ -95,6 +96,7 @@ public class TestPutS3Object {
         runner.run();
 
         /*runner.assertAllFlowFilesTransferred(PutS3Object.REL_FAILURE, 1);*/
+        // TODO see how to replace this failure
         runner.assertNotValid();
     }
 
@@ -184,11 +186,13 @@ public class TestPutS3Object {
         runner.setProperty(PutS3Object.BUCKET_FIELD, "test-bucket");
         runner.assertValid();
 
-        Map<String, String> ffAttributes = new HashMap<>();
+        /*Map<String, String> ffAttributes = new HashMap<>();
         ffAttributes.put("filename", filename);
-        ffAttributes.put("tagS3PII", "true");
+        ffAttributes.put("tagS3PII", "true");*/
         record1.setField("filename", FieldType.STRING, filename);
-        record1.setField("s3.version", FieldType.STRING, "true");
+        record1.setField("tagS3PII", FieldType.STRING, "true");
+        byte[] a = {0, 1, 2, 3, 4, 5};
+        record1.setField(new Field(FieldDictionary.RECORD_VALUE, FieldType.BYTES, a));
         runner.enqueue(record1);
 
         PutObjectResult putObjectResult = new PutObjectResult();

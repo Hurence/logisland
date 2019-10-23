@@ -61,6 +61,6 @@ public class StandardPropertyValue extends AbstractPropertyValue {
 
     @Override
     public Double asDataSize(DataUnit dataUnit) {
-        return null;
+        return rawValue == null ? null : DataUnit.parseDataSize(rawValue.toString().trim(), dataUnit);
     }
 }

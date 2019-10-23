@@ -270,6 +270,7 @@ public class TestFetchS3Object {
         record1.setField("filename", FieldType.STRING, "request-key");
         runner.enqueue(record1);
         Mockito.doThrow(new AmazonS3Exception("NoSuchBucket")).when(mockS3Client).getObject(Mockito.any());
+        // TODO how to replace this failure
 
         runner.run();
         /*runner.assertAllFlowFilesTransferred(FetchS3Object.REL_FAILURE, 1);*/
@@ -287,6 +288,7 @@ public class TestFetchS3Object {
         record1.setField("filename", FieldType.STRING, "request-key");
         runner.enqueue(record1);
         Mockito.when(mockS3Client.getObject(Mockito.any())).thenReturn(null);
+        // TODO how to replace this failure
 
         runner.run();
 
@@ -307,6 +309,7 @@ public class TestFetchS3Object {
 
         AmazonS3Exception amazonException = new AmazonS3Exception("testing");
         /*Mockito.doThrow(new FlowFileAccessException("testing nested", amazonException)).when(mockS3Client).getObject(Mockito.any());*/
+        // TODO how to replace this failure
 
         runner.run();
 

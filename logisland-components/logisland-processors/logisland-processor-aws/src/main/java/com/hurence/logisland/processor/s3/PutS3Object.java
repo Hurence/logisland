@@ -396,10 +396,10 @@ public class PutS3Object extends AbstractS3Processor {
 
                 final AmazonS3Client s3 = getClient();
                 /*final FlowFile ff = flowFile;*/
-                final Map<String, String> attributes = new HashMap<>();
+                /*final Map<String, String> attributes = new HashMap<>();*/
                 final String ffFilename = record.getField("filename").getRawValue().toString();
-                attributes.put(S3_BUCKET_KEY, bucket);
-                attributes.put(S3_OBJECT_KEY, key);
+                record.setField(new Field(S3_BUCKET_KEY, bucket));
+                record.setField(new Field(S3_OBJECT_KEY, key));
 
                 final Long multipartThreshold = context.getPropertyValue(MULTIPART_THRESHOLD).asDataSize(DataUnit.B).longValue();
                 final Long multipartPartSize = context.getPropertyValue(MULTIPART_PART_SIZE).asDataSize(DataUnit.B).longValue();
@@ -419,16 +419,16 @@ public class PutS3Object extends AbstractS3Processor {
                     session.read(flowFile, new InputStreamCallback() {
                         @Override
                         public void process(final InputStream rawIn) throws IOException {*/
-                    try (final InputStream in = new ByteArrayInputStream(record.getField(FieldDictionary.RECORD_VALUE).asBytes())) {
+                    try (final InputStream in = new ByteArrayInputStream((byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue())) {
                         final ObjectMetadata objectMetadata = new ObjectMetadata();
-                        objectMetadata.setContentDisposition(URLEncoder.encode("filename", "UTF-8"));
+                        objectMetadata.setContentDisposition(URLEncoder.encode(ffFilename, "UTF-8"));
                         objectMetadata.setContentLength(record.size());
 
                         final String contentType = context.getPropertyValue(CONTENT_TYPE)
                                 .evaluate(record).asString();
                         if (contentType != null) {
                             objectMetadata.setContentType(contentType);
-                            attributes.put(S3_CONTENT_TYPE, contentType);
+                            record.setField(new Field(S3_CONTENT_TYPE, contentType));
                         }
 
                         final String expirationRule = context.getPropertyValue(EXPIRATION_RULE_ID)
@@ -451,7 +451,7 @@ public class PutS3Object extends AbstractS3Processor {
 
                         if (!serverSideEncryption.equals(NO_SERVER_SIDE_ENCRYPTION)) {
                             objectMetadata.setSSEAlgorithm(serverSideEncryption);
-                            attributes.put(S3_SSE_ALGORITHM, serverSideEncryption);
+                            record.setField(new Field(S3_SSE_ALGORITHM, serverSideEncryption));
                         } else {
                             encryptionService = context.getPropertyValue(ENCRYPTION_SERVICE).asControllerService(AmazonS3EncryptionService.class);
                         }
@@ -467,7 +467,7 @@ public class PutS3Object extends AbstractS3Processor {
                             final PutObjectRequest request = new PutObjectRequest(bucket, key, in, objectMetadata);
                             if (encryptionService != null) {
                                 encryptionService.configurePutObjectRequest(request, objectMetadata);
-                                attributes.put(S3_ENCRYPTION_STRATEGY, encryptionService.getStrategyName());
+                                record.setField(new Field(S3_ENCRYPTION_STRATEGY, encryptionService.getStrategyName()));
                             }
 
                             request.setStorageClass(StorageClass.valueOf(context.getPropertyValue(STORAGE_CLASS).asString()));
@@ -476,10 +476,10 @@ public class PutS3Object extends AbstractS3Processor {
                                 request.setAccessControlList(acl);
                             }
 
-                            final CannedAccessControlList cannedAcl = createCannedACL(context, record);
+                            /*final CannedAccessControlList cannedAcl = createCannedACL(context, record);
                             if (cannedAcl != null) {
                                 request.withCannedAcl(cannedAcl);
-                            }
+                            }*/ // TODO see how to fix this
 
                             if (context.getPropertyValue(OBJECT_TAGS_PREFIX).isSet()) {
                                 request.setTagging(new ObjectTagging(getObjectTags(context, record)));
@@ -488,27 +488,27 @@ public class PutS3Object extends AbstractS3Processor {
                             try {
                                 final PutObjectResult result = s3.putObject(request);
                                 if (result.getVersionId() != null) {
-                                    attributes.put(S3_VERSION_ATTR_KEY, result.getVersionId());
+                                    record.setField(new Field(S3_VERSION_ATTR_KEY, result.getVersionId()));
                                 }
                                 if (result.getETag() != null) {
-                                    attributes.put(S3_ETAG_ATTR_KEY, result.getETag());
+                                    record.setField(new Field(S3_ETAG_ATTR_KEY, result.getETag()));
                                 }
                                 if (result.getExpirationTime() != null) {
-                                    attributes.put(S3_EXPIRATION_ATTR_KEY, result.getExpirationTime().toString());
+                                    record.setField(new Field(S3_EXPIRATION_ATTR_KEY, result.getExpirationTime().toString()));
                                 }
                                 if (result.getMetadata().getStorageClass() != null) {
-                                    attributes.put(S3_STORAGECLASS_ATTR_KEY, result.getMetadata().getStorageClass());
+                                    record.setField(new Field(S3_STORAGECLASS_ATTR_KEY, result.getMetadata().getStorageClass()));
                                 } else {
-                                    attributes.put(S3_STORAGECLASS_ATTR_KEY, StorageClass.Standard.toString());
+                                    record.setField(new Field(S3_STORAGECLASS_ATTR_KEY, StorageClass.Standard.toString()));
                                 }
                                 if (userMetadata.size() > 0) {
                                     StringBuilder userMetaBldr = new StringBuilder();
                                     for (String userKey : userMetadata.keySet()) {
                                         userMetaBldr.append(userKey).append("=").append(userMetadata.get(userKey));
                                     }
-                                    attributes.put(S3_USERMETA_ATTR_KEY, userMetaBldr.toString());
+                                    record.setField(new Field(S3_USERMETA_ATTR_KEY, userMetaBldr.toString()));
                                 }
-                                attributes.put(S3_API_METHOD_ATTR_KEY, S3_API_METHOD_PUTOBJECT);
+                                record.setField(new Field(S3_API_METHOD_ATTR_KEY, S3_API_METHOD_PUTOBJECT));
                             } catch (AmazonClientException e) {
                                 getLogger().info("Failure completing upload flowfile={} bucket={} key={} reason={}",
                                         new Object[]{ffFilename, bucket, key, e.getMessage()});
@@ -569,7 +569,7 @@ public class PutS3Object extends AbstractS3Processor {
                                 final InitiateMultipartUploadRequest initiateRequest = new InitiateMultipartUploadRequest(bucket, key, objectMetadata);
                                 if (encryptionService != null) {
                                     encryptionService.configureInitiateMultipartUploadRequest(initiateRequest, objectMetadata);
-                                    attributes.put(S3_ENCRYPTION_STRATEGY, encryptionService.getStrategyName());
+                                    record.setField(new Field(S3_ENCRYPTION_STRATEGY, encryptionService.getStrategyName()));
                                 }
                                 initiateRequest.setStorageClass(currentState.getStorageClass());
 
@@ -604,7 +604,7 @@ public class PutS3Object extends AbstractS3Processor {
                                                     currentState.getContentLength(), bucket, key,
                                                     currentState.getUploadId()});
                                     if (initiateResult.getUploadId() != null) {
-                                        attributes.put(S3_UPLOAD_ID_ATTR_KEY, initiateResult.getUploadId());
+                                        record.setField(new Field(S3_UPLOAD_ID_ATTR_KEY, initiateResult.getUploadId()));
                                     }
                                 } catch (AmazonClientException e) {
                                     getLogger().info("Failure initiating upload flowfile={} bucket={} key={} reason={}",
@@ -693,26 +693,26 @@ public class PutS3Object extends AbstractS3Processor {
                                 getLogger().info("Success completing upload flowfile={} etag={} uploadId={}",
                                         new Object[]{ffFilename, completeResult.getETag(), currentState.getUploadId()});
                                 if (completeResult.getVersionId() != null) {
-                                    attributes.put(S3_VERSION_ATTR_KEY, completeResult.getVersionId());
+                                    record.setField(new Field(S3_VERSION_ATTR_KEY, completeResult.getVersionId()));
                                 }
                                 if (completeResult.getETag() != null) {
-                                    attributes.put(S3_ETAG_ATTR_KEY, completeResult.getETag());
+                                    record.setField(new Field(S3_ETAG_ATTR_KEY, completeResult.getETag()));
                                 }
                                 if (completeResult.getExpirationTime() != null) {
-                                    attributes.put(S3_EXPIRATION_ATTR_KEY,
-                                            completeResult.getExpirationTime().toString());
+                                    record.setField(new Field(S3_EXPIRATION_ATTR_KEY,
+                                            completeResult.getExpirationTime().toString()));
                                 }
                                 if (currentState.getStorageClass() != null) {
-                                    attributes.put(S3_STORAGECLASS_ATTR_KEY, currentState.getStorageClass().toString());
+                                    record.setField(new Field(S3_STORAGECLASS_ATTR_KEY, currentState.getStorageClass().toString()));
                                 }
                                 if (userMetadata.size() > 0) {
                                     StringBuilder userMetaBldr = new StringBuilder();
                                     for (String userKey : userMetadata.keySet()) {
                                         userMetaBldr.append(userKey).append("=").append(userMetadata.get(userKey));
                                     }
-                                    attributes.put(S3_USERMETA_ATTR_KEY, userMetaBldr.toString());
+                                    record.setField(new Field(S3_USERMETA_ATTR_KEY, userMetaBldr.toString()));
                                 }
-                                attributes.put(S3_API_METHOD_ATTR_KEY, S3_API_METHOD_MULTIPARTUPLOAD);
+                                record.setField(new Field(S3_API_METHOD_ATTR_KEY, S3_API_METHOD_MULTIPARTUPLOAD));
                             } catch (AmazonClientException e) {
                                 getLogger().info("Failure completing upload flowfile={} bucket={} key={} reason={}",
                                         new Object[]{ffFilename, bucket, key, e.getMessage()});
@@ -723,14 +723,14 @@ public class PutS3Object extends AbstractS3Processor {
                     /*    }
                     });*/
 
-                    if (!attributes.isEmpty()) {
-                        /*flowFile = session.putAllAttributes(flowFile, attributes);*/
+                    /*if (!attributes.isEmpty()) {
+                        *//*flowFile = session.putAllAttributes(flowFile, attributes);*//*
                         final Map<String, Field> fields = new HashMap<>();
                         for (Map.Entry<String, String> entry : attributes.entrySet()) {
                             fields.put(entry.getKey(), new Field(entry.getValue()));
                         }
                         record.setFields(fields);
-                    }
+                    }*/
                     /*session.transfer(flowFile, REL_SUCCESS);*/
 
                     final String url = s3.getResourceUrl(bucket, key);
@@ -838,13 +838,11 @@ public class PutS3Object extends AbstractS3Processor {
         final String prefix = context.getPropertyValue(OBJECT_TAGS_PREFIX).evaluate(record).asString();
         final List<Tag> objectTags = new ArrayList<>();
 
-        final Map<String, Field> attributesMap = (Map<String, Field>) record.getFieldsEntrySet();
-
-        attributesMap.entrySet().stream().sequential()
+        record.getFieldsEntrySet().stream().sequential()
                 .filter(attribute -> attribute.getKey().startsWith(prefix))
                 .forEach(attribute -> {
                     String tagKey = attribute.getKey();
-                    Field tagValue = attribute.getValue();
+                    Object tagValue = attribute.getValue().getRawValue();
 
                     if (context.getPropertyValue(REMOVE_TAG_PREFIX).asBoolean()) {
                         tagKey = tagKey.replace(prefix, "");
