@@ -24,6 +24,8 @@ import java.util.Collection;
 
 public interface Processor extends ConfigurableComponent {
 
+    boolean isInitialized();
+
     /**
      * Setup statefull parameters
      *

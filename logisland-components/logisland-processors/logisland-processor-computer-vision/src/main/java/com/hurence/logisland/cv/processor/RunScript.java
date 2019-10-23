@@ -46,21 +46,11 @@ import java.util.*;
 import static com.hurence.logisland.cv.utils.CVUtils.*;
 
 
-@Tags({"scripting", "python"})
+@Tags({"scripting", "clojure", "opencv", "image"})
 @CapabilityDescription(
-        " !!!! WARNING !!!!\n\nThe RunScript processor is currently an experimental feature : it is delivered as is, with the"
-                + " current set of features and is subject to modifications in API or anything else in further logisland releases"
-                + " without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml"
-                + " example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end"
-                + " of the stream should output events in stderr file of the executors from the spark console.\n\n"
-                + "This processor allows to implement and run a processor written in python."
-                + " This can be done in 2 ways. Either directly defining the process method code in the **script.code.process**"
-                + " configuration property or poiting to an external python module script file in the **script.path**"
-                + " configuration property. Directly defining methods is called the inline mode whereas using a script file is"
-                + " called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your"
-                + " python code may depend on some python dependencies. If the set of python dependencies already delivered with"
-                + " the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to"
-                + " give their location. Currently only the nltk python library is delivered with Logisland.")
+        "This processor allows to run a processor written in clojure."
+                + " directly by defining the process method code in the **script.code**"
+                + " Currently only the opencv library is delivered with Logisland.")
 @ExtraDetailFile("./details/RunScript-Detail.rst")
 public class RunScript extends AbstractProcessor {
 
@@ -176,8 +166,6 @@ public class RunScript extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
-        if (isInitialized)
-            return;
 
         try {
             NativeLoader.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -192,10 +180,8 @@ public class RunScript extends AbstractProcessor {
                     context.getPropertyValue(SCRIPT_FUNCTION).asString());
 
             isInitialized = true;
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new InitializationException(e);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
         }
 
 

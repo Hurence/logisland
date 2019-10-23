@@ -23,6 +23,7 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
 
     protected boolean isInitialized = false;
 
+    @Override
     public boolean isInitialized() {
         return isInitialized;
     }
