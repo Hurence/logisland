@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.cv.processor;
 
 
-import com.hurence.logisland.cv.processor.ClojureWrapper;
-import com.hurence.logisland.cv.processor.RunScript;
+import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -34,8 +33,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static com.hurence.logisland.utils.CVUtils.toBI;
-import static com.hurence.logisland.utils.CVUtils.toBytes;
+import static com.hurence.logisland.cv.utils.CVUtils.toBI;
+import static com.hurence.logisland.cv.utils.CVUtils.toBytes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 

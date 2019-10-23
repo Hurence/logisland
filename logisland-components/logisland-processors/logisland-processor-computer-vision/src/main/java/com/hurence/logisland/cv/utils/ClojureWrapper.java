@@ -1,4 +1,4 @@
-package com.hurence.logisland.cv.processor;
+package com.hurence.logisland.cv.utils;
 
 import clojure.lang.RT;
 import clojure.lang.Var;
@@ -12,8 +12,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-import static com.hurence.logisland.utils.CVUtils.toBI;
-import static com.hurence.logisland.utils.CVUtils.toMat;
+import static com.hurence.logisland.cv.utils.CVUtils.toBI;
+import static com.hurence.logisland.cv.utils.CVUtils.toMat;
 
 
 public class ClojureWrapper {

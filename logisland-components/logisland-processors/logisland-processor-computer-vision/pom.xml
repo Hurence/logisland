@@ -29,7 +29,7 @@
     <artifactId>logisland-processor-computer-vision</artifactId>
     <packaging>jar</packaging>
 
-    <name>Computer Vision Processor</name>
+    <name>Computer Vision Module</name>
     <repositories>
         <repository>
             <id>hellonico</id>

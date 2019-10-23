@@ -1,4 +1,4 @@
-package com.hurence.logisland.utils;
+package com.hurence.logisland.cv.utils;
 
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
@@ -65,15 +65,11 @@ public class CVUtils {
     }
 
     public static byte[] toBytes(Mat matrix, String imageFormat) throws IOException {
-
         return toBytes(toBI(matrix), imageFormat);
     }
 
     public static byte[] toBytes(BufferedImage bufferedImage, String imageFormat) throws IOException {
-
-
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
         ImageIO.write(bufferedImage, imageFormat, byteArrayOutputStream);
         byteArrayOutputStream.flush();
         byte[] outputBytes = byteArrayOutputStream.toByteArray();

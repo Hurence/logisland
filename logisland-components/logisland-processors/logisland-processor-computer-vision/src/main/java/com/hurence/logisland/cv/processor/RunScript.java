@@ -32,7 +32,6 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.utils.CVUtils;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
@@ -42,24 +41,10 @@ import org.scijava.nativelib.NativeLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import java.util.*;
 
-import static com.hurence.logisland.utils.CVUtils.*;
-import static java.util.stream.Collectors.joining;
+import static com.hurence.logisland.cv.utils.CVUtils.*;
 
-/**
- * !!! WARNING !!!!
- * The python processor is currently an experimental feature : it is delivered as is, with the current set of features
- * and is subject to modifications in API or anything else in further logisland releases without warnings.
- * <p>
- * So far identified list of things still to be done:
- * - see TODOs here
- * - init code is always called! Remove this!
- * - inline mode: init usage (access context?))
- * - onPropertyModified up to python code (test)
- * - doc for tutorial (inline?, file? , both?)
- */
 
 @Tags({"scripting", "python"})
 @CapabilityDescription(
@@ -106,7 +91,7 @@ public class RunScript extends AbstractProcessor {
             new AllowableValue("overwrite", "overwrite existing value", "the previous value will be overwritten");
 
     public static final AllowableValue NEW =
-            new AllowableValue("new", "new value value", "the previous value will be kept and the new value goes to image.output.field");
+            new AllowableValue("new", "new value value", "the previous value will be kept and the new value will be added to the input list");
 
     public static final PropertyDescriptor OUTPUT_MODE = new PropertyDescriptor.Builder()
             .name("output.mode")
@@ -116,20 +101,6 @@ public class RunScript extends AbstractProcessor {
             .allowableValues(OVERWRITE, NEW)
             .build();
 
-
-    public static final AllowableValue FIELD_BASED =
-            new AllowableValue("field_based", "based on input field value", "the process method will act on field value");
-
-    public static final AllowableValue RECORD_BASED =
-            new AllowableValue("record_based", "based on the whole record", "the process method will act on the whole record");
-
-    public static final PropertyDescriptor PROCESSING_MODE = new PropertyDescriptor.Builder()
-            .name("processing.mode")
-            .description("How does the processor get its data")
-            .required(false)
-            .defaultValue(FIELD_BASED.getValue())
-            .allowableValues(FIELD_BASED, RECORD_BASED)
-            .build();
 
     public static final PropertyDescriptor INPUT_FIELD = new PropertyDescriptor.Builder()
             .name("input.field")
@@ -164,7 +135,6 @@ public class RunScript extends AbstractProcessor {
         descriptors.add(INPUT_FIELD);
         descriptors.add(OUTPUT_FIELD);
         descriptors.add(OUTPUT_MODE);
-        descriptors.add(PROCESSING_MODE);
         descriptors.add(IMAGE_FORMAT);
 
         return Collections.unmodifiableList(descriptors);
@@ -177,7 +147,7 @@ public class RunScript extends AbstractProcessor {
 
         logger.debug("customValidate");
 
-        if (context.getPropertyValue(PROCESSING_MODE).isSet() &&
+       /* if (context.getPropertyValue(PROCESSING_MODE).isSet() &&
                 context.getPropertyValue(PROCESSING_MODE).asString().equals(RECORD_BASED.getValue())) {
 
             if (context.getPropertyValue(INPUT_FIELD).isSet()) {
@@ -197,7 +167,7 @@ public class RunScript extends AbstractProcessor {
                                 .valid(false)
                                 .build());
             }
-        }
+        }*/
 
         return validationResults;
     }
@@ -206,7 +176,7 @@ public class RunScript extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
-        if(isInitialized)
+        if (isInitialized)
             return;
 
         try {
@@ -263,12 +233,11 @@ public class RunScript extends AbstractProcessor {
                 byte[] processedImageBytes = toBytes(processedBufferedImage, imageFormat);
 
 
-                if (context.getPropertyValue(PROCESSING_MODE).asString().equals(FIELD_BASED.getValue())) {
-                    record.setBytesField(imageOutputField, processedImageBytes)
-                            .setIntField(FieldDictionary.IMAGE_HEIGHT, processedBufferedImage.getHeight())
-                            .setIntField(FieldDictionary.IMAGE_WIDTH, processedBufferedImage.getWidth())
-                            .setIntField(FieldDictionary.IMAGE_TYPE, processedBufferedImage.getType());
-                }
+                record.setBytesField(imageOutputField, processedImageBytes)
+                        .setIntField(FieldDictionary.IMAGE_HEIGHT, processedBufferedImage.getHeight())
+                        .setIntField(FieldDictionary.IMAGE_WIDTH, processedBufferedImage.getWidth())
+                        .setIntField(FieldDictionary.IMAGE_TYPE, processedBufferedImage.getType());
+
                 outputRecords.add(record);
 
 
