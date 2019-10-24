@@ -1,6 +1,10 @@
 package com.hurence.webapiservice.http;
 
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.Point;
+import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
+import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SAMPLING;
@@ -20,10 +24,8 @@ import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -44,11 +46,20 @@ public class HttpServerVerticle extends AbstractVerticle {
     public static final String QUERY_PARAM_NAME = "name";
     public static final String QUERY_PARAM_AGGS = "aggs";
     public static final String QUERY_PARAM_SAMPLING = "sampling";
+    /*
+       REST API TIMESERIES RESPONSE
+    */
+    private static String TIMESERIES = "timeseries";
+    private static String TIMESERIES_NAME = "name";
+    private static String TIMESERIES_TIMESTAMPS = "timestamps";
+    private static String TIMESERIES_VALUES = "values";
+    private static String TIMESERIES_AGGS = "aggs";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
 
     private HistorianService historianService;
     private TimeseriesService timeseriesService;
+    private BinaryCompactionConverter compacter = new BinaryCompactionConverter.Builder().build();
 
     @Override
     public void start(Promise<Void> promise) throws Exception {
@@ -92,7 +103,8 @@ public class HttpServerVerticle extends AbstractVerticle {
      */
     private void getTimeSeries(RoutingContext context) {
         MultiMap map = context.queryParams();
-        final long from;
+        final Set<String> names; //TODO add possibility to select some names
+        final long from;//TODO parseFrom, parseTo, parseAggs into methods
         final long to;
         final List<AGG> aggs;
         final SamplingAlgo samplingAlgo;
@@ -110,14 +122,13 @@ public class HttpServerVerticle extends AbstractVerticle {
             } else {
                 aggs = Collections.emptyList();
             }
-            samplingAlgo = new SamplingAlgo(SAMPLING.MAX, 10, 1000);//TODO
+            samplingAlgo = new SamplingAlgo(SamplingAlgorithm.AVERAGE, 10, 1000);//TODO
         } catch (Exception ex) {
             context.response().setStatusCode(500);//TODO correct code
             context.response().putHeader("Content-Type", "application/json");
             context.response().end(ex.getMessage());
             return;
         }
-
 
         //TODO implement customisable args, for the moment only MAX and always calculated
         final JsonObject getTimeSeriesChunkParams = new JsonObject()
@@ -137,49 +148,23 @@ public class HttpServerVerticle extends AbstractVerticle {
         historianService
                 .rxGetTimeSeriesChunk(getTimeSeriesChunkParams)
                 .map(chunkResponse -> {
+                    //TODO groupBy record_name ???
                     final long totalFound = chunkResponse.getLong(HistorianService.TOTAL_FOUND);
                     List<JsonObject> chunks = chunkResponse.getJsonArray(HistorianService.CHUNKS).stream()
                             .map(JsonObject.class::cast)
                             .collect(Collectors.toList());
                     if (totalFound != chunks.size())
-                        throw new UnsupportedOperationException("not yet supported when matching more than 10 chunks");//TODO
-                    chunks = adjustChunk(from, to, aggs, chunks);
-                    JsonObject timeSeriesAggs = calculAggs(aggs, chunks);
-                    JsonArray points = samplePoints(samplingAlgo, chunks);
-
-                    return new JsonObject()
-                            .put("name", "TODO")
-                            .put("points", points)
-                            .put("chunk_aggs", timeSeriesAggs);
-//                        .map(chunk -> {
-//                            final JsonObject unCompressTimeSeriesParam = new JsonObject()
-//                                    .put(TimeseriesService.CHUNK, chunk.getValue(FieldDictionary.CHUNK_VALUE))
-//                                    .put(TimeseriesService.START, chunk.getValue(FieldDictionary.CHUNK_START));
-//                            toOpt.ifPresent(to -> unCompressTimeSeriesParam
-//                                    .put(TimeseriesService.END, chunk.getValue(FieldDictionary.CHUNK_END))
-//                            );
-//                            JsonObject chunkAggs = new JsonObject()
-//                                    .put(AGG.MAX.toString(), chunk.getString(FieldDictionary.CHUNK_MAX));
-//                            return timeseriesService.rxUnCompressTimeSeries(unCompressTimeSeriesParam)
-//                                    .map(points -> new JsonObject()
-//                                            .put("name", chunk.getString(FieldDictionary.RECORD_NAME))
-//                                            .put("points", points)
-//                                            .put("chunk_aggs", chunkAggs));
-//                        });
-
-
-//              return null;
-                    //TODO must return a single
-//              name:
-//                type: string
-//              points:
-                    //              type: array
-                    //              items:
-                    //              $ref: "#/components/schemas/Point"
-//              aggs:
-//                $ref: "#/components/schemas/Aggs"
+                        throw new UnsupportedOperationException("not yet supported when matching more than 10 chunks (total found : " + totalFound +")");//TODO
+                    Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
+                            Collectors.groupingBy(chunk ->  chunk.getString(FieldDictionary.RECORD_NAME))
+                    );
+                    JsonArray timeseries = new JsonArray();
+                    chunksByName.forEach((key, value) -> {
+                        JsonObject agreggatedChunks = agreggateChunks(from, to, aggs, samplingAlgo, value);
+                        timeseries.add(agreggatedChunks);
+                    });
+                    return timeseries;
                 })
-                //TODO chain until end
                 .doOnError(ex -> {
                     context.response().setStatusCode(500);
                     context.response().putHeader("Content-Type", "application/json");
@@ -197,17 +182,52 @@ public class HttpServerVerticle extends AbstractVerticle {
                 }).subscribe();
     }
 
+    private JsonObject agreggateChunks(long from, long to, List<AGG> aggs, SamplingAlgo samplingAlgo, List<JsonObject> chunks) {
+        if (chunks==null || chunks.isEmpty()) throw new IllegalArgumentException("chunks is null or empty !");
+        chunks = adjustChunk(from, to, aggs, chunks);
+        JsonObject timeSeriesAggs = calculAggs(aggs, chunks);
+        JsonObject points = samplePoints(from, to, samplingAlgo, chunks);
+        String name = chunks.stream().findFirst().get().getString(FieldDictionary.RECORD_NAME);
+        return new JsonObject().mergeIn(points)
+                .put(TIMESERIES_NAME, name)
+                .put(TIMESERIES_AGGS, timeSeriesAggs);
+    }
+
     /**
      *
      * @param samplingAlgo how to sample points to retrieve
-     * @param chunks to sample. Should contain the compressed binary points as well as all needed aggs
+     * @param chunks to sample, chunks should be corresponding to the same timeserie !*
+     *               Should contain the compressed binary points as well as all needed aggs.
+     *               Chunks should be ordered as well.
      * @return sampled points as an array
+     * <pre>
+     * {
+     *     {@value TIMESERIES_TIMESTAMPS} : [longs]
+     *     {@value TIMESERIES_VALUES} : [doubles]
+     * }
+     * DOCS contains at minimum chunk_value, chunk_start
+     * </pre>
      */
-    private JsonArray samplePoints(SamplingAlgo samplingAlgo, List<JsonObject> chunks) {
-        //TODO
-        return new JsonArray()
-                .add(new JsonObject().put("timestamp", 10L).put("value", 2d))
-                .add(new JsonObject().put("timestamp", 12L).put("value", 3d));
+    private JsonObject samplePoints(long from, long to, SamplingAlgo samplingAlgo, List<JsonObject> chunks) {
+        List<Point> points = chunks.stream()
+                .flatMap(chunk -> {
+                    byte[] binaryChunk = chunk.getBinary(FieldDictionary.CHUNK_VALUE);
+                    try {
+                        return compacter.unCompressPoints(binaryChunk, from, to).stream();
+                    } catch (IOException ex) {
+                        throw new IllegalArgumentException("error during uncompression of a chunk !", ex);
+                    }
+                })
+                .collect(Collectors.toList());
+        List<Long> timestamps = points.stream()
+                .map(Point::getTimestamp)
+                .collect(Collectors.toList());
+        List<Double> values = points.stream()
+                .map(Point::getValue)
+                .collect(Collectors.toList());
+        return new JsonObject()
+                .put(TIMESERIES_TIMESTAMPS, timestamps)
+                .put(TIMESERIES_VALUES, values);
     }
 
     /**

@@ -36,16 +36,9 @@ paths:
           "description": the name of the timeserie to look for. If not specified look for all type of timeseries
           required: false
           schema:
-            type: integer
-            format: int64
-#        - "name": tags TODO ????
-#          "in": query
-#          "description": Filter out timeseries with none of the given tags.
-#          required: false
-#          schema:
-#            type: array
-#              items:
-#                type: string
+            type: array
+            items:
+              type: string
         - "name": aggs
           "in": query
           "description": the agregations to calculate for the timeserie. If not specified no agregations is calculated.
@@ -104,18 +97,6 @@ components:
         sum:
           type: number
           format: double
-    Point:
-      type: object
-      required:
-        - timestamp
-        - value
-      properties:
-        timestamp:
-          type: integer
-          format: int64
-        value:
-          type: number
-          format: double
     Timeserie:
       type: object
       required:
@@ -123,10 +104,16 @@ components:
       properties:
         name:
           type: string
-        points:
+        timestamps:
           type: array
           items:
-            $ref: "#/components/schemas/Point"
+            type: integer
+            format: int64
+        values:
+          type: array
+          items:
+            type: number
+            format: double
         aggs:
           $ref: "#/components/schemas/Aggs"
     TimeseriesResponse:

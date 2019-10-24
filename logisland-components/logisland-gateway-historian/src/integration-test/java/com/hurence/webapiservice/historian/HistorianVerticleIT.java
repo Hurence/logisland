@@ -67,7 +67,7 @@ public class HistorianVerticleIT {
         SchemaRequest schemaRequest = new SchemaRequest();
         SchemaResponse schemaResponse = schemaRequest.process(client, COLLECTION);
         List<Map<String, Object>> schema = schemaResponse.getSchemaRepresentation().getFields();
-        logger.debug("schema is {}", new JsonArray(schema).encodePrettily());
+        logger.trace("schema is {}", new JsonArray(schema).encodePrettily());
         logger.debug("Indexing some documents in {} collection", COLLECTION);
         final SolrInputDocument doc = new SolrInputDocument();
         doc.addField("id", "id1");
@@ -95,6 +95,8 @@ public class HistorianVerticleIT {
         doc.getField(CHUNK_END).setValue(1571130490801L);
         client.add(COLLECTION, doc);
         doc.getField("id").setValue("id4");
+        doc.getField(CHUNK_START).setValue(1571130490801L);
+        doc.getField(CHUNK_END).setValue(1571130590801L);
         doc.getField(RECORD_NAME).setValue("temp_a");
         client.add(COLLECTION, doc);
         UpdateResponse updateRsp = client.commit(COLLECTION);

@@ -69,6 +69,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
   @Override
   public HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
     //    SEARCH
+    //TODO BUG !!!!! should search chunk before from
     StringBuilder queryBuilder = new StringBuilder(CHUNK_START).append(":[");
     if (params.getLong(FROM) != null) {
       queryBuilder.append(params.getLong(FROM));

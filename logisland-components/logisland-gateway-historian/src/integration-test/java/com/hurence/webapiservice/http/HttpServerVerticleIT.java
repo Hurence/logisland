@@ -30,6 +30,8 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.buffer.Buffer;
+import io.vertx.reactivex.core.file.FileSystem;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -56,7 +58,7 @@ import static com.hurence.logisland.record.FieldDictionary.*;
 import static com.hurence.logisland.record.FieldDictionary.RECORD_NAME;
 import static com.hurence.unit5.extensions.SolrExtension.ZOOKEEPER_PORT;
 import static com.hurence.unit5.extensions.SolrExtension.ZOOKEEPER_SERVICE_NAME;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith({VertxExtension.class, SolrExtension.class})
 public class HttpServerVerticleIT {
@@ -66,6 +68,7 @@ public class HttpServerVerticleIT {
     private static int PORT = 8080;
 
     private static String COLLECTION = "historian";
+
 
     @BeforeAll
     public static void beforeAll(SolrClient client, DockerComposeContainer container, Vertx vertx, VertxTestContext context) throws InterruptedException, IOException, SolrServerException {
@@ -168,8 +171,24 @@ public class HttpServerVerticleIT {
     }
 
     @Test
-    @Timeout(value = 50, timeUnit = TimeUnit.SECONDS)
-    public void test(VertxTestContext testContext) {
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testErrorNoParam(VertxTestContext testContext) {
+        webClient.get("/timeseries")
+                .as(BodyCodec.jsonObject())
+                .send(testContext.succeeding(rsp -> {
+                    testContext.verify(() -> {
+                        assertEquals(500, rsp.statusCode());
+                        assertEquals("Internal Server Error", rsp.statusMessage());
+                        JsonObject body = rsp.body();
+                        assertNull(body);
+                        testContext.completeNow();
+                    });
+                }));
+    }
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testGetAll(Vertx vertx, VertxTestContext testContext) {
         webClient.get("/timeseries?from=0")
                 .as(BodyCodec.jsonObject())
                 .send(testContext.succeeding(rsp -> {
@@ -177,29 +196,10 @@ public class HttpServerVerticleIT {
                         assertEquals(200, rsp.statusCode());
                         assertEquals("OK", rsp.statusMessage());
                         JsonObject body = rsp.body();
-//                        assertEquals(true, body.getBoolean(SUCCESS));
-//                        assertEquals(2, body.size());
-//                        JsonObject doc = body.getJsonObject("docs");
-//                        JsonArray docs = doc.getJsonArray("docs");
-//                        assertEquals(3, docs.size());
-//                        JsonObject doc1 = docs.getJsonObject(0);
-//                        assertEquals(doc1, new JsonObject()
-//                                .put("author", "author1")
-//                                .put("title", "how to play guitar")
-//                                .put("description", "descriptionShared")
-//                        );
-//                        JsonObject doc2 = docs.getJsonObject(1);
-//                        assertEquals(doc2, new JsonObject()
-//                                .put("author", "author3")
-//                                .put("title", "title3 title")
-//                                .put("description", "descriptionShared")
-//                        );
-//                        JsonObject doc3 = docs.getJsonObject(2);
-//                        assertEquals(doc3, new JsonObject()
-//                                .put("author", "author4")
-//                                .put("title", "title4 title")
-//                                .put("description", "descriptionShared")
-//                        );
+                        FileSystem fs = vertx.fileSystem();
+                        Buffer fileContent = fs.readFileBlocking(getClass().getResource("/http/timeseries/testGetAllResponse.json").getFile());
+                        JsonObject expectedBody = new JsonObject(fileContent.getDelegate());
+                        assertEquals(expectedBody, body);
                         testContext.completeNow();
                     });
                 }));
