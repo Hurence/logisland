@@ -13,38 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.timeseries.sampling;
+package com.hurence.logisland.timeseries.sampling.record;
 
 import com.hurence.logisland.record.Record;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FirstItemSampler extends AbstractSampler {
 
-
-    private int numBuckets;
-
-    public FirstItemSampler(String valueFieldName, String timeFieldName, int numBuckets) {
-        super(valueFieldName,timeFieldName);
-        this.numBuckets = numBuckets;
-    }
-
+public class IsoRecordSampler extends AbstractRecordSampler {
 
     /**
-     * divide the points sequence into equally sized buckets
-     * and select the first point of each bucket
+     * do no sample at all => for test or benchmark purpose
      *
-     * @param inputRecords the iput list
-     * @return
+     * @param inputRecords
+     * @return the same list as input
      */
     @Override
     public List<Record> sample(List<Record> inputRecords) {
-        // simple downsample to numBucket data points
-        final int bucketSize = SamplingUtils.fitBucketSize(inputRecords, numBuckets);
-
-        return SamplingUtils.grouped(inputRecords, bucketSize)
-                .map(record -> getTimeValueRecord(record.get(0)))
+        return inputRecords
+                .stream()
+                .map(this::getTimeValueRecord)
                 .collect(Collectors.toList());
     }
 }

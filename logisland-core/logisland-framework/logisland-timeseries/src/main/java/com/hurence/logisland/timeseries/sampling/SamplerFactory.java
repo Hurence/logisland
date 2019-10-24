@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.timeseries.sampling;
 
+import com.hurence.logisland.timeseries.sampling.record.*;
+
 public class SamplerFactory {
 
     /**
@@ -26,25 +28,25 @@ public class SamplerFactory {
      * @param parameter an int parameter
      * @return the sampler
      */
-    public static Sampler getSampler(SamplingAlgorithm algorithm,
-                                     String valueFieldName,
-                                     String timeFieldName,
-                                     int parameter) {
+    public static RecordSampler getRecordSampler(SamplingAlgorithm algorithm,
+                                                 String valueFieldName,
+                                                 String timeFieldName,
+                                                 int parameter) {
 
         switch (algorithm) {
             case LTTB:
-                return new LTTBSampler(valueFieldName, timeFieldName, parameter);
+                return new LTTBRecordSampler(valueFieldName, timeFieldName, parameter);
             case FIRST_ITEM:
-                return new FirstItemSampler(valueFieldName, timeFieldName, parameter);
+                return new FirstItemRecordSampler(valueFieldName, timeFieldName, parameter);
             case AVERAGE:
-                return new AverageSampler(valueFieldName, timeFieldName, parameter);
+                return new AverageRecordSampler(valueFieldName, timeFieldName, parameter);
             case MIN_MAX:
-                return new MinMaxSampler(valueFieldName, timeFieldName, parameter);
+                return new MinMaxRecordSampler(valueFieldName, timeFieldName, parameter);
             case MODE_MEDIAN:
-                return new ModeMedianSampler(valueFieldName, timeFieldName, parameter);
+                return new ModeMedianRecordSampler(valueFieldName, timeFieldName, parameter);
             case NONE:
             default:
-                return new IsoSampler();
+                return new IsoRecordSampler();
         }
     }
 }

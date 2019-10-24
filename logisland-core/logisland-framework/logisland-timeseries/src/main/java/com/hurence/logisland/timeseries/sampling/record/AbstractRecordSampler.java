@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.timeseries.sampling;
+package com.hurence.logisland.timeseries.sampling.record;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
@@ -21,23 +21,23 @@ import com.hurence.logisland.record.StandardRecord;
 
 import java.io.Serializable;
 
-public abstract class AbstractSampler implements Sampler, Serializable {
+public abstract class AbstractRecordSampler implements RecordSampler, Serializable {
 
 
     protected String valueFieldName;
     protected String timeFieldName;
 
-    public AbstractSampler(String valueFieldName, String timeFieldName) {
+    public AbstractRecordSampler(String valueFieldName, String timeFieldName) {
         this.valueFieldName = valueFieldName;
         this.timeFieldName = timeFieldName;
     }
 
-    public AbstractSampler(String valueFieldName) {
+    public AbstractRecordSampler(String valueFieldName) {
         this.valueFieldName = valueFieldName;
         this.timeFieldName = FieldDictionary.RECORD_TIME;
     }
 
-    public AbstractSampler() {
+    public AbstractRecordSampler() {
         this.valueFieldName = FieldDictionary.RECORD_VALUE;
         this.timeFieldName = FieldDictionary.RECORD_TIME;
     }

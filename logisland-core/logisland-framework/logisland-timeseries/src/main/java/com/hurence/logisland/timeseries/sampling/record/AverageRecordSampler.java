@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.timeseries.sampling;
+package com.hurence.logisland.timeseries.sampling.record;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -22,13 +22,13 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AverageSampler extends AbstractSampler {
+public class AverageRecordSampler extends AbstractRecordSampler {
 
 
     private int bucketSize;
 
 
-    public AverageSampler(String valueFieldName, String timeFieldName, int bucketSize) {
+    public AverageRecordSampler(String valueFieldName, String timeFieldName, int bucketSize) {
         super(valueFieldName, timeFieldName);
         this.bucketSize = bucketSize;
     }

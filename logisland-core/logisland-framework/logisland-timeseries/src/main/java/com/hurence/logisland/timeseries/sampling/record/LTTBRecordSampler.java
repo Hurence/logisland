@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.timeseries.sampling;
+package com.hurence.logisland.timeseries.sampling.record;
 
 import com.hurence.logisland.record.Record;
 
@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LTTBSampler extends AbstractSampler {
+public class LTTBRecordSampler extends AbstractRecordSampler {
 
     private int threshold;
 
-    public LTTBSampler(String valueFieldName, String timeFieldName, int threshold) {
+    public LTTBRecordSampler(String valueFieldName, String timeFieldName, int threshold) {
         super(valueFieldName,timeFieldName);
 
         if (threshold <= 2) {

@@ -16,7 +16,6 @@
 package com.hurence.logisland.processor;
 
 
-import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -25,7 +24,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.timeseries.sampling.Sampler;
+import com.hurence.logisland.timeseries.sampling.record.RecordSampler;
 import com.hurence.logisland.timeseries.sampling.SamplerFactory;
 import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.logisland.validator.StandardValidators;
@@ -122,7 +121,7 @@ public class SampleRecords extends AbstractProcessor {
         int parameter = context.getPropertyValue(SAMPLING_PARAMETER).asInteger();
 
 
-        Sampler sampler = SamplerFactory.getSampler(algorithm, valueFieldName, timeFieldName, parameter);
+        RecordSampler sampler = SamplerFactory.getRecordSampler(algorithm, valueFieldName, timeFieldName, parameter);
 
         return sampler.sample(new ArrayList<>(records)).stream()
                 .map(r -> {
