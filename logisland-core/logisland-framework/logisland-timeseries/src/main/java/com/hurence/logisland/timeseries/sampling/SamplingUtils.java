@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.timeseries.sampling.record;
+package com.hurence.logisland.timeseries.sampling;
 
 import com.hurence.logisland.record.Record;
 
@@ -23,7 +23,14 @@ import java.util.stream.Stream;
 
 public class SamplingUtils {
 
-    public static int fitBucketSize(List<Record> rawData, int bucketSize) {
+    /**
+     *
+     * @param rawData elements to bucket
+     * @param bucketSize wanted size of buckets
+     * @return 1 if bucketSize is lesser than 0 or lesser than the size of rawData
+     *         else bucketSize
+     */
+    public static int fitBucketSize(List rawData, int bucketSize) {
         if (bucketSize <= 0 || bucketSize >= rawData.size()) return 1;
         else return bucketSize;
     }
@@ -32,18 +39,19 @@ public class SamplingUtils {
      * group a list of records into fixed size sublist
      *
      * @param source
-     * @param length
+     * @param bucketSize
      * @return
      */
-    public static  Stream<List<Record>> grouped(List<Record> source, int length) {
-        if (length <= 0)
-            throw new IllegalArgumentException("length = " + length);
+    public static <E> Stream<List<E>> grouped(List<E> source, int bucketSize) {
+        if (bucketSize <= 0)
+            throw new IllegalArgumentException("length = " + bucketSize);
         int size = source.size();
         if (size <= 0)
             return Stream.empty();
-        int fullChunks = (size - 1) / length;
-        return IntStream.range(0, fullChunks + 1).mapToObj(
-                n -> source.subList(n * length, n == fullChunks ? size : (n + 1) * length));
+        int numberOfFullBucket = (size - 1) / bucketSize;
+        return IntStream.range(0, numberOfFullBucket + 1).mapToObj(
+                n -> source.subList(n * bucketSize, n == numberOfFullBucket ? size : (n + 1) * bucketSize)
+        );
     }
 
 

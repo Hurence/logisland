@@ -16,6 +16,7 @@
 package com.hurence.logisland.timeseries.sampling.record;
 
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.timeseries.sampling.SamplingUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;

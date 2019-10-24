@@ -17,6 +17,7 @@ package com.hurence.logisland.timeseries.sampling.record;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.timeseries.sampling.SamplingUtils;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import java.util.List;

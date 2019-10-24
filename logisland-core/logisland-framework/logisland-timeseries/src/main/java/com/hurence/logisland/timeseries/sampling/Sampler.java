@@ -13,9 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.timeseries.sampling.record;
+package com.hurence.logisland.timeseries.sampling;
 
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.timeseries.sampling.Sampler;
+import java.util.List;
 
-public interface RecordSampler extends Sampler<Record> { }
+public interface Sampler<SAMPLED> {
+
+
+    /**
+     * Reduce the number of inputs elements accordingly to a sampling strategy
+     *
+     * @param toBeSampled the given elements to sample
+     * @return the sampled elements
+     */
+    List<SAMPLED> sample(List<SAMPLED> toBeSampled);
+}
