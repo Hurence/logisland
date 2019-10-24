@@ -62,8 +62,6 @@ public class TestTagS3Object {
         runner.setProperty(TagS3Object.TAG_KEY, tagKey);
         runner.setProperty(TagS3Object.TAG_VALUE, tagVal);
         runner.setProperty(TagS3Object.APPEND_TAG, "false");
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "object-key");*/
         record1.setField("filename", FieldType.STRING, "object-key");
         runner.enqueue(record1);
 
@@ -77,10 +75,6 @@ public class TestTagS3Object {
         assertEquals("object-key", request.getKey());
         assertNull("test-version", request.getVersionId());
         assertTrue("Expected tag not found in request", request.getTagging().getTagSet().contains(new Tag(tagKey, tagVal)));
-
-        /*List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(ListS3.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals("s3.tag."+tagKey, tagVal);*/
 
         MockRecord out = runner.getOutputRecords().get(0);
         out.assertFieldEquals("s3.tag."+tagKey, tagVal);
@@ -98,8 +92,6 @@ public class TestTagS3Object {
         runner.setProperty(TagS3Object.TAG_KEY, tagKey);
         runner.setProperty(TagS3Object.TAG_VALUE, tagVal);
         runner.setProperty(TagS3Object.APPEND_TAG, "false");
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "object-key");*/
         record1.setField("filename", FieldType.STRING, "object-key");
         runner.enqueue(record1);
 
@@ -129,9 +121,6 @@ public class TestTagS3Object {
         runner.setProperty(TagS3Object.BUCKET_FIELD, "test-bucket");
         runner.setProperty(TagS3Object.TAG_KEY, tagKey);
         runner.setProperty(TagS3Object.TAG_VALUE, tagVal);
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "object-key");
-        attrs.put("s3.tag."+currentTag.getKey(), currentTag.getValue());*/
         record1.setField("filename", FieldType.STRING, "object-key");
         record1.setField("s3.tag."+currentTag.getKey(), FieldType.STRING, currentTag.getValue());
         runner.enqueue(record1);
@@ -146,11 +135,6 @@ public class TestTagS3Object {
         assertEquals("object-key", request.getKey());
         assertTrue("New tag not found in request", request.getTagging().getTagSet().contains(new Tag(tagKey, tagVal)));
         assertTrue("Existing tag not found in request", request.getTagging().getTagSet().contains(currentTag));
-
-        /*List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(ListS3.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals("s3.tag."+tagKey, tagVal);
-        ff0.assertAttributeEquals("s3.tag."+currentTag.getKey(), currentTag.getValue());*/
 
         MockRecord out = runner.getOutputRecords().get(0);
 
@@ -173,8 +157,7 @@ public class TestTagS3Object {
         runner.setProperty(TagS3Object.BUCKET_FIELD, "test-bucket");
         runner.setProperty(TagS3Object.TAG_KEY, tagKey);
         runner.setProperty(TagS3Object.TAG_VALUE, tagVal);
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "object-key");*/
+
         record1.setField("filename", FieldType.STRING, "object-key");
         runner.enqueue(record1);
 
@@ -224,11 +207,6 @@ public class TestTagS3Object {
         assertTrue("New tag not found in request", request.getTagging().getTagSet().contains(new Tag(tagKey, tagVal)));
         assertFalse("Existing tag should be excluded from request", request.getTagging().getTagSet().contains(currentTag));
 
-        /*List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(ListS3.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals("s3.tag."+tagKey, tagVal);
-        ff0.assertAttributeNotExists("s3.tag."+currentTag.getKey());*/
-
         MockRecord out = runner.getOutputRecords().get(0);
 
         out.assertFieldEquals("s3.tag."+tagKey, tagVal);
@@ -249,8 +227,6 @@ public class TestTagS3Object {
         runner.setProperty(TagS3Object.BUCKET_FIELD, "test-bucket");
         runner.setProperty(TagS3Object.TAG_KEY, tagKey);
         runner.setProperty(TagS3Object.TAG_VALUE, tagVal);
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "delete-key");*/
         record1.setField("filename", FieldType.STRING, "delete-key");
         runner.enqueue(record1);
         Mockito.doThrow(new AmazonS3Exception("TagFailure")).when(mockS3Client).setObjectTagging(Mockito.any());

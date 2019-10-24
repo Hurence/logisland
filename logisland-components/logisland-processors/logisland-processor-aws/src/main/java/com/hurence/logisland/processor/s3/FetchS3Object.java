@@ -22,17 +22,14 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-/*@SupportsBatching*/
 @SeeAlso({PutS3Object.class, DeleteS3Object.class, ListS3.class})
-/*@InputRequirement(Requirement.INPUT_REQUIRED)*/
 @Tags({"Amazon", "S3", "AWS", "Get", "Fetch"})
-@CapabilityDescription("Retrieves the contents of an S3 Object and writes it to the content of a FlowFile")
+@CapabilityDescription("Retrieves the contents of an S3 Object and writes it to the content of a Record")
 @WritesAttributes({
         @WritesAttribute(attribute = "s3.bucket", description = "The name of the S3 bucket"),
         @WritesAttribute(attribute = "path", description = "The path of the file"),
@@ -103,10 +100,6 @@ public class FetchS3Object extends AbstractS3Processor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        /*FlowFile flowFile = session.get();
-        if (flowFile == null) {
-            return;
-        }*/
 
         try {
             for (Record record : records) {
@@ -125,8 +118,6 @@ public class FetchS3Object extends AbstractS3Processor {
                     request = new GetObjectRequest(bucket, key, versionId);
                 }
                 request.setRequesterPays(requesterPays);
-
-                /*final Map<String, Field> attributes = new HashMap<>();*/
 
                 AmazonS3EncryptionService encryptionService = context.getPropertyValue(ENCRYPTION_SERVICE).asControllerService(AmazonS3EncryptionService.class);
                 if (encryptionService != null) {
@@ -150,6 +141,7 @@ public class FetchS3Object extends AbstractS3Processor {
                         if (lastSlash > -1 && lastSlash < fullyQualified.length() - 1) {
                             record.setField(new Field("path", fullyQualified.substring(0, lastSlash)));
                             record.setField(new Field("absolute.path", fullyQualified));
+                            // TODO what is the difference between setField(Field) and setField(name, value) ?
                             record.setField(new Field("filename", fullyQualified.substring(lastSlash + 1)));
                         } else {
                             record.setField(new Field("filename", metadata.getContentDisposition()));
@@ -191,24 +183,12 @@ public class FetchS3Object extends AbstractS3Processor {
                     }
                 } catch (final IOException | AmazonClientException ioe) {
                     getLogger().error("Failed to retrieve S3 Object for {}; routing to failure", new Object[]{record, ioe});
-                    /*flowFile = session.penalize(flowFile);
-                    session.transfer(flowFile, REL_FAILURE);*/
+                    // TODO think of adding an error to the record
                     return records;
-                } /*catch (final FlowFileAccessException ffae) {
-                    if (ExceptionUtils.indexOfType(ffae, AmazonClientException.class) != -1) {
-                        getLogger().error("Failed to retrieve S3 Object for {}; routing to failure", new Object[]{flowFile, ffae});
-                        flowFile = session.penalize(flowFile);
-                        session.transfer(flowFile, REL_FAILURE);
-                        return records;
-                    }
-                    throw ffae;
-                }*/
+                }
 
-
-                /*session.transfer(flowFile, REL_SUCCESS);*/
                 final long transferMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
                 getLogger().info("Successfully retrieved S3 Object for {} in {} millis; routing to success", new Object[]{record, transferMillis});
-                /*session.getProvenanceReporter().fetch(flowFile, "http://" + bucket + ".amazonaws.com/" + key, transferMillis);*/
             }
         } catch (Throwable t) {
             getLogger().error("error while processing records ", t);

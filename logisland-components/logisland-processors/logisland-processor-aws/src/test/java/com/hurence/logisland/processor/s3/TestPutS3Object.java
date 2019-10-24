@@ -58,8 +58,6 @@ public class TestPutS3Object {
 
     @Test
     public void testPutSinglePart() {
-        /*Record record1 = new StandardRecord();
-        record1.setField("Logisland", FieldType.STRING, "logisland");*/
 
         runner.setProperty("x-custom-prop", "hello");
         prepareTest();
@@ -73,12 +71,6 @@ public class TestPutS3Object {
 
         /*runner.assertAllFlowFilesTransferred(PutS3Object.REL_SUCCESS, 1);*/
         // TODO see with what to replace that
-
-        /*List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(PutS3Object.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals(CoreAttributes.FILENAME.key(), "testfile.txt");
-        ff0.assertAttributeEquals(PutS3Object.S3_ETAG_ATTR_KEY, "test-etag");
-        ff0.assertAttributeEquals(PutS3Object.S3_VERSION_ATTR_KEY, "test-version");*/
 
         MockRecord out = runner.getOutputRecords().get(0);
 
@@ -186,9 +178,6 @@ public class TestPutS3Object {
         runner.setProperty(PutS3Object.BUCKET_FIELD, "test-bucket");
         runner.assertValid();
 
-        /*Map<String, String> ffAttributes = new HashMap<>();
-        ffAttributes.put("filename", filename);
-        ffAttributes.put("tagS3PII", "true");*/
         record1.setField("filename", FieldType.STRING, filename);
         record1.setField("tagS3PII", FieldType.STRING, "true");
         byte[] a = {0, 1, 2, 3, 4, 5};

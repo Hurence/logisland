@@ -55,14 +55,11 @@ public class TestDeleteS3Object {
         runner.setProperty(DeleteS3Object.REGION, "us-west-2");
         runner.setProperty(DeleteS3Object.BUCKET_FIELD, "test-bucket");
 
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "delete-key");*/
         record1.setField("filename", FieldType.STRING, "delete-key");
         runner.enqueue(record1);
 
         runner.run();
 
-        /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_SUCCESS, 1);*/
         ArgumentCaptor<DeleteObjectRequest> captureRequest = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         Mockito.verify(mockS3Client, Mockito.times(1)).deleteObject(captureRequest.capture());
         DeleteObjectRequest request = captureRequest.getValue();
@@ -77,15 +74,12 @@ public class TestDeleteS3Object {
 
         runner.setProperty(DeleteS3Object.REGION, "us-west-2");
         runner.setProperty(DeleteS3Object.BUCKET_FIELD, "test-bucket");
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "delete-key");*/
         record1.setField("filename", FieldType.STRING, "delete-key");
         runner.enqueue(record1);
         Mockito.doThrow(new AmazonS3Exception("NoSuchBucket")).when(mockS3Client).deleteObject(Mockito.any());
 
         runner.run();
 
-        /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_FAILURE, 1);*/
         ArgumentCaptor<DeleteObjectRequest> captureRequest = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         Mockito.verify(mockS3Client, Mockito.never()).deleteVersion(Mockito.any(DeleteVersionRequest.class));
     }
@@ -97,14 +91,11 @@ public class TestDeleteS3Object {
         runner.setProperty(DeleteS3Object.REGION, "us-west-2");
         runner.setProperty(DeleteS3Object.BUCKET_FIELD, "test-bucket");
         runner.setProperty(DeleteS3Object.VERSION_ID_FIELD, "test-version");
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "test-key");*/
         record1.setField("filename", FieldType.STRING, "test-key");
         runner.enqueue(record1);
 
         runner.run();
 
-        /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_SUCCESS, 1);*/
         ArgumentCaptor<DeleteVersionRequest> captureRequest = ArgumentCaptor.forClass(DeleteVersionRequest.class);
         Mockito.verify(mockS3Client, Mockito.times(1)).deleteVersion(captureRequest.capture());
         DeleteVersionRequest request = captureRequest.getValue();
@@ -122,10 +113,6 @@ public class TestDeleteS3Object {
         runner.setProperty(DeleteS3Object.BUCKET_FIELD, "${s3.bucket}");
         runner.setProperty(DeleteS3Object.VERSION_ID_FIELD, "${s3.version}");
         runner.setProperty(DeleteS3Object.KEY_FEILD, "${filename1}");
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "test-key");
-        attrs.put("s3.bucket", "test-bucket");
-        attrs.put("s3.version", "test-version");*/
         record1.setField("filename1", FieldType.STRING, "test-key");
         record1.setField("s3.bucket", FieldType.STRING, "test-bucket");
         record1.setField("s3.version", FieldType.STRING, "test-version");
@@ -134,7 +121,6 @@ public class TestDeleteS3Object {
 
         runner.run();
 
-        /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_SUCCESS, 1);*/
         ArgumentCaptor<DeleteVersionRequest> captureRequest = ArgumentCaptor.forClass(DeleteVersionRequest.class);
         Mockito.verify(mockS3Client, Mockito.times(1)).deleteVersion(captureRequest.capture());
         DeleteVersionRequest request = captureRequest.getValue();

@@ -26,12 +26,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-/*@PrimaryNodeOnly
-@TriggerSerially
-@TriggerWhenEmpty
-@InputRequirement(Requirement.INPUT_FORBIDDEN)*/
 @Tags({"Amazon", "S3", "AWS", "list"})
-@CapabilityDescription("Retrieves a listing of objects from an S3 bucket. For each object that is listed, creates a FlowFile that represents "
+@CapabilityDescription("Retrieves a listing of objects from an S3 bucket. For each object that is listed, creates a Field that represents "
         + "the object so that it can be fetched in conjunction with FetchS3Object. This Processor is designed to run on Primary Node only "
         + "in a cluster. If the primary node changes, the new Primary Node will pick up where the previous node left off without duplicating "
         + "all of the data.")
@@ -147,8 +143,6 @@ public class ListS3 extends AbstractS3Processor {
                     SIGNER_OVERRIDE, PROXY_CONFIGURATION_SERVICE, PROXY_HOST, PROXY_HOST_PORT, PROXY_USERNAME,
                     PROXY_PASSWORD, DELIMITER, PREFIX, USE_VERSIONS, LIST_TYPE, MIN_AGE, REQUESTER_PAYS));
 
-    /*public static final Set<Relationship> relationships = Collections.unmodifiableSet(
-            new HashSet<>(Collections.singletonList(REL_SUCCESS)));*/
 
     public static final String CURRENT_TIMESTAMP = "currentTimestamp";
     public static final String CURRENT_KEY_PREFIX = "key-";
@@ -184,10 +178,6 @@ public class ListS3 extends AbstractS3Processor {
         return properties;
     }
 
-    /*@Override
-    public Set<Relationship> getRelationships() {
-        return relationships;
-    }*/
 
     private Set<String> extractKeys(final StateMap stateMap) {
         Set<String> keys = new HashSet<>();
@@ -314,12 +304,6 @@ public class ListS3 extends AbstractS3Processor {
                         }
                     }
 
-                    // Create the flowfile
-                    /*FlowFile flowFile = session.create();
-                    flowFile = session.putAllAttributes(flowFile, attributes);
-                    session.transfer(flowFile, REL_SUCCESS);*/
-
-
                     // Track the latest lastModified timestamp and keys having that timestamp.
                     // NOTE: Amazon S3 lists objects in UTF-8 character encoding in lexicographical order. Not ordered by timestamps.
                     if (lastModified > latestListedTimestampInThisCycle) {
@@ -337,7 +321,6 @@ public class ListS3 extends AbstractS3Processor {
                 bucketLister.setNextMarker();
 
                 totalListCount += listCount;
-                /*commit(context, session, listCount);*/
                 listCount = 0;
             } while (bucketLister.isTruncated());
 
@@ -358,21 +341,12 @@ public class ListS3 extends AbstractS3Processor {
                 getLogger().debug("No new objects in S3 bucket {} to list. Yielding.", new Object[]{bucket});
                 context.yield();
             }
-            /*}*/
         } catch (Throwable t) {
             getLogger().error("error while processing records ", t);
         }
         return oringinRecords;
     }
 
-    /*private boolean commit(final ProcessContext context, final ProcessSession session, int listCount) {
-        boolean willCommit = listCount > 0;
-        if (willCommit) {
-            getLogger().info("Successfully listed {} new files from S3; routing to success", new Object[] {listCount});
-            session.commit();
-        }
-        return willCommit;
-    }*/
 
     private Map<String, String> writeObjectTags(AmazonS3 client, S3VersionSummary versionSummary) {
         final GetObjectTaggingResult taggingResult = client.getObjectTagging(new GetObjectTaggingRequest(versionSummary.getBucketName(), versionSummary.getKey()));

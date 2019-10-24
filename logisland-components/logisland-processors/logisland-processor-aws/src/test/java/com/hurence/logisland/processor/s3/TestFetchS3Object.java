@@ -57,8 +57,6 @@ public class TestFetchS3Object {
 
         runner.setProperty(FetchS3Object.REGION, "us-east-1");
         runner.setProperty(FetchS3Object.BUCKET_FIELD, "request-bucket");
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "request-key");*/
         record1.setField("filename", FieldType.STRING, "request-key");
         runner.enqueue(record1);
 
@@ -92,24 +90,6 @@ public class TestFetchS3Object {
         assertFalse(request.isRequesterPays());
         assertNull(request.getVersionId());
 
-        /*runner.assertAllFlowFilesTransferred(FetchS3Object.REL_SUCCESS, 1);*/
-        /*final List<MockFlowFile> ffs = runner.getFlowFilesForRelationship(FetchS3Object.REL_SUCCESS);
-        MockFlowFile ff = ffs.get(0);
-        ff.assertAttributeEquals("s3.bucket", "response-bucket-name");
-        ff.assertAttributeEquals(CoreAttributes.FILENAME.key(), "file.txt");
-        ff.assertAttributeEquals(CoreAttributes.PATH.key(), "key/path/to");
-        ff.assertAttributeEquals(CoreAttributes.ABSOLUTE_PATH.key(), "key/path/to/file.txt");
-        ff.assertAttributeEquals(CoreAttributes.MIME_TYPE.key(), "text/plain");
-        ff.assertAttributeEquals("hash.value", "testMD5hash");
-        ff.assertAttributeEquals("hash.algorithm", "MD5");
-        ff.assertAttributeEquals("s3.etag", "test-etag");
-        ff.assertAttributeEquals("s3.expirationTime", String.valueOf(expiration.getTime()));
-        ff.assertAttributeEquals("s3.expirationTimeRuleId", "testExpirationRuleId");
-        ff.assertAttributeEquals("userKey1", "userValue1");
-        ff.assertAttributeEquals("userKey2", "userValue2");
-        ff.assertAttributeEquals("s3.sseAlgorithm", "testAlgorithm");
-        ff.assertContentEquals("Some Content");*/
-
         MockRecord out = runner.getOutputRecords().get(0);
 
         out.assertFieldEquals("s3.bucket", "response-bucket-name");
@@ -126,6 +106,7 @@ public class TestFetchS3Object {
         out.assertFieldEquals("userKey2", "userValue2");
         out.assertFieldEquals("s3.sseAlgorithm", "testAlgorithm");
         /*out.assertContentEquals("Some Content");*/
+        // TODO see why this don't work
 
     }
 
@@ -136,8 +117,6 @@ public class TestFetchS3Object {
         runner.setProperty(FetchS3Object.REGION, "us-east-1");
         runner.setProperty(FetchS3Object.BUCKET_FIELD, "request-bucket");
         runner.setProperty(FetchS3Object.REQUESTER_PAYS, "true");
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "request-key");*/
         record1.setField("filename", FieldType.STRING, "request-key");
         runner.enqueue(record1);
 
@@ -171,24 +150,6 @@ public class TestFetchS3Object {
         assertTrue(request.isRequesterPays());
         assertNull(request.getVersionId());
 
-        /*runner.assertAllFlowFilesTransferred(FetchS3Object.REL_SUCCESS, 1);
-        final List<MockFlowFile> ffs = runner.getFlowFilesForRelationship(FetchS3Object.REL_SUCCESS);
-        MockFlowFile ff = ffs.get(0);
-        ff.assertAttributeEquals("s3.bucket", "response-bucket-name");
-        ff.assertAttributeEquals(CoreAttributes.FILENAME.key(), "file.txt");
-        ff.assertAttributeEquals(CoreAttributes.PATH.key(), "key/path/to");
-        ff.assertAttributeEquals(CoreAttributes.ABSOLUTE_PATH.key(), "key/path/to/file.txt");
-        ff.assertAttributeEquals(CoreAttributes.MIME_TYPE.key(), "text/plain");
-        ff.assertAttributeEquals("hash.value", "testMD5hash");
-        ff.assertAttributeEquals("hash.algorithm", "MD5");
-        ff.assertAttributeEquals("s3.etag", "test-etag");
-        ff.assertAttributeEquals("s3.expirationTime", String.valueOf(expiration.getTime()));
-        ff.assertAttributeEquals("s3.expirationTimeRuleId", "testExpirationRuleId");
-        ff.assertAttributeEquals("userKey1", "userValue1");
-        ff.assertAttributeEquals("userKey2", "userValue2");
-        ff.assertAttributeEquals("s3.sseAlgorithm", "testAlgorithm");
-        ff.assertContentEquals("Some Content");*/
-
         MockRecord out = runner.getOutputRecords().get(0);
 
         out.assertFieldEquals("s3.bucket", "response-bucket-name");
@@ -213,9 +174,6 @@ public class TestFetchS3Object {
         runner.setProperty(FetchS3Object.REGION, "us-east-1");
         runner.setProperty(FetchS3Object.BUCKET_FIELD, "request-bucket");
         runner.setProperty(FetchS3Object.VERSION_ID_FEILD, "${s3.version}");
-        /*final Map<String, String> attrs = new HashMap<>();
-        attrs.put("filename", "request-key");
-        attrs.put("s3.version", "request-version");*/
         record1.setField("filename", FieldType.STRING, "request-key");
         record1.setField("s3.version", FieldType.STRING, "request-version");
         runner.enqueue(record1);
@@ -238,16 +196,6 @@ public class TestFetchS3Object {
         assertEquals("request-key", request.getKey());
         assertEquals("request-version", request.getVersionId());
 
-        /*runner.assertAllFlowFilesTransferred(FetchS3Object.REL_SUCCESS, 1);
-        final List<MockFlowFile> ffs = runner.getFlowFilesForRelationship(FetchS3Object.REL_SUCCESS);
-        MockFlowFile ff = ffs.get(0);
-        ff.assertAttributeEquals("s3.bucket", "response-bucket-name");
-        ff.assertAttributeEquals(CoreAttributes.FILENAME.key(), "file.txt");
-        ff.assertAttributeEquals(CoreAttributes.PATH.key(), "key/path/to");
-        ff.assertAttributeEquals(CoreAttributes.ABSOLUTE_PATH.key(), "key/path/to/file.txt");
-        ff.assertAttributeEquals("s3.version", "response-version");
-        ff.assertContentEquals("Some Content");*/
-
         MockRecord out = runner.getOutputRecords().get(0);
 
         out.assertFieldEquals("s3.bucket", "response-bucket-name");
@@ -255,6 +203,7 @@ public class TestFetchS3Object {
         out.assertFieldEquals("path", "key/path/to");
         out.assertFieldEquals("absolute.path", "key/path/to/file.txt");
         out.assertFieldEquals("s3.version", "response-version");
+        // TODO see why context.getPropertyValue(VERSION_ID_FEILD).evaluate(record) returns null !
 
     }
 

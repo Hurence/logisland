@@ -158,17 +158,6 @@ public class TestListS3 {
         assertTrue(request.isRequesterPays());
         Mockito.verify(mockS3Client, Mockito.never()).listVersions(Mockito.any());
 
-        /*runner.assertAllFlowFilesTransferred(ListS3.REL_SUCCESS, 3);
-        List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(ListS3.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals("filename", "a");
-        ff0.assertAttributeEquals("s3.bucket", "test-bucket");
-        String lastModifiedTimestamp = String.valueOf(lastModified.getTime());
-        ff0.assertAttributeEquals("s3.lastModified", lastModifiedTimestamp);
-        flowFiles.get(1).assertAttributeEquals("filename", "b/c");
-        flowFiles.get(2).assertAttributeEquals("filename", "d/e");
-        runner.getStateManager().assertStateEquals(ListS3.CURRENT_TIMESTAMP, lastModifiedTimestamp, Scope.CLUSTER);*/
-
         MockRecord out = runner.getOutputRecords().get(0);
 
         out.assertFieldEquals("filename", "a");
@@ -177,7 +166,6 @@ public class TestListS3 {
 
         MockRecord out1 = runner.getOutputRecords().get(1);
         MockRecord out2 = runner.getOutputRecords().get(2);
-
 
         out1.assertFieldEquals("filename", "b/c");
         out2.assertFieldEquals("filename", "d/e");
@@ -189,6 +177,7 @@ public class TestListS3 {
         runner.setProperty(ListS3.BUCKET_FIELD, "test-bucket");
         runner.setProperty(ListS3.USE_VERSIONS, "true"); // requester pays cannot be used with versions
         runner.setProperty(ListS3.REQUESTER_PAYS, "true");
+        // TODO see why the createRequesterPaysValidator() returns null for REQUESTER_PAYS
 
         runner.assertNotValid();
     }
@@ -226,17 +215,6 @@ public class TestListS3 {
         assertEquals("test-bucket", request.getBucketName());
         assertFalse(request.isRequesterPays());
         Mockito.verify(mockS3Client, Mockito.never()).listVersions(Mockito.any());
-
-        /*runner.assertAllFlowFilesTransferred(ListS3.REL_SUCCESS, 3);
-        List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(ListS3.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals("filename", "a");
-        ff0.assertAttributeEquals("s3.bucket", "test-bucket");
-        String lastModifiedTimestamp = String.valueOf(lastModified.getTime());
-        ff0.assertAttributeEquals("s3.lastModified", lastModifiedTimestamp);
-        flowFiles.get(1).assertAttributeEquals("filename", "b/c");
-        flowFiles.get(2).assertAttributeEquals("filename", "d/e");
-        runner.getStateManager().assertStateEquals(ListS3.CURRENT_TIMESTAMP, lastModifiedTimestamp, Scope.CLUSTER);*/
 
         MockRecord out = runner.getOutputRecords().get(0);
 
@@ -287,16 +265,6 @@ public class TestListS3 {
         assertTrue(request.isRequesterPays());
         Mockito.verify(mockS3Client, Mockito.never()).listVersions(Mockito.any());
 
-        /*runner.assertAllFlowFilesTransferred(ListS3.REL_SUCCESS, 3);
-        List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(ListS3.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals("filename", "a");
-        ff0.assertAttributeEquals("s3.bucket", "test-bucket");
-        String lastModifiedTimestamp = String.valueOf(lastModified.getTime());
-        ff0.assertAttributeEquals("s3.lastModified", lastModifiedTimestamp);
-        flowFiles.get(1).assertAttributeEquals("filename", "b/c");
-        flowFiles.get(2).assertAttributeEquals("filename", "d/e");
-        runner.getStateManager().assertStateEquals(ListS3.CURRENT_TIMESTAMP, lastModifiedTimestamp, Scope.CLUSTER);*/
 
         MockRecord out = runner.getOutputRecords().get(0);
 
@@ -306,7 +274,6 @@ public class TestListS3 {
 
         MockRecord out1 = runner.getOutputRecords().get(1);
         MockRecord out2 = runner.getOutputRecords().get(2);
-
 
         out1.assertFieldEquals("filename", "b/c");
         out2.assertFieldEquals("filename", "d/e");
@@ -342,18 +309,6 @@ public class TestListS3 {
         assertEquals("test-bucket", request.getBucketName());
         Mockito.verify(mockS3Client, Mockito.never()).listObjects(Mockito.any(ListObjectsRequest.class));
 
-        /*runner.assertAllFlowFilesTransferred(ListS3.REL_SUCCESS, 2);
-        List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(ListS3.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals("filename", "test-key");
-        ff0.assertAttributeEquals("s3.bucket", "test-bucket");
-        ff0.assertAttributeEquals("s3.lastModified", String.valueOf(lastModified.getTime()));
-        ff0.assertAttributeEquals("s3.version", "1");
-        MockFlowFile ff1 = flowFiles.get(1);
-        ff1.assertAttributeEquals("filename", "test-key");
-        ff1.assertAttributeEquals("s3.bucket", "test-bucket");
-        ff1.assertAttributeEquals("s3.lastModified", String.valueOf(lastModified.getTime()));
-        ff1.assertAttributeEquals("s3.version", "2");*/
 
         MockRecord out = runner.getOutputRecords().get(0);
 
@@ -368,7 +323,6 @@ public class TestListS3 {
         out1.assertFieldEquals("s3.bucket", "test-bucket");
         out1.assertFieldEquals("s3.lastModified", String.valueOf(lastModified.getTime()));
         out1.assertFieldEquals("s3.version", "2");
-
     }
 
     @Test
@@ -405,6 +359,7 @@ public class TestListS3 {
 
         /*runner.assertAllFlowFilesTransferred(ListS3.REL_SUCCESS, 0);*/
         runner.assertValid();
+        // TODO when doing assert there is an issue with createRequesterPaysValidator() returns null for REQUESTER_PAYS
     }
 
 
@@ -448,15 +403,6 @@ public class TestListS3 {
         ListObjectsRequest request = captureRequest.getValue();
         assertEquals("test-bucket", request.getBucketName());
         Mockito.verify(mockS3Client, Mockito.never()).listVersions(Mockito.any());
-
-        /*runner.assertAllFlowFilesTransferred(ListS3.REL_SUCCESS, 1);
-        List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(ListS3.REL_SUCCESS);
-        MockFlowFile ff0 = flowFiles.get(0);
-        ff0.assertAttributeEquals("filename", "minus-1hour");
-        ff0.assertAttributeEquals("s3.bucket", "test-bucket");
-        String lastModifiedTimestamp = String.valueOf(lastModifiedMinus1Hour.getTime());
-        ff0.assertAttributeEquals("s3.lastModified", lastModifiedTimestamp);
-        runner.getStateManager().assertStateEquals(ListS3.CURRENT_TIMESTAMP, lastModifiedTimestamp, Scope.CLUSTER);*/
 
         MockRecord out = runner.getOutputRecords().get(0);
 

@@ -19,11 +19,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/*@SupportsBatching*/
 @SeeAlso({PutS3Object.class, FetchS3Object.class, ListS3.class})
 @Tags({"Amazon", "S3", "AWS", "Archive", "Delete"})
-/*@InputRequirement(Requirement.INPUT_REQUIRED)*/
-@CapabilityDescription("Deletes FlowFiles on an Amazon S3 Bucket. " +
+@CapabilityDescription("Deletes Objects on an Amazon S3 Bucket. " +
         "If attempting to delete a file that does not exist, FlowFile is routed to success.")
 
 public class DeleteS3Object extends AbstractS3Processor {
@@ -48,15 +46,12 @@ public class DeleteS3Object extends AbstractS3Processor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        /*FlowFile flowFile = session.get();
-        if (flowFile == null) {
-            return records;
-        }*/
 
         final long startNanos = System.nanoTime();
 
         try {
             for (Record record : records) {
+                // TODO should we do a for loop !
                 final String bucket = context.getPropertyValue(BUCKET_FIELD).evaluate(record).asString();
                 final String key = context.getPropertyValue(KEY_FEILD).evaluate(record).asString();
                 final String versionId = context.getPropertyValue(VERSION_ID_FIELD).evaluate(record).asString();

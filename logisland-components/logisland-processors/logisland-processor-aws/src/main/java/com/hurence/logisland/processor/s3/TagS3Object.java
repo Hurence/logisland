@@ -22,18 +22,15 @@ import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
-/*@SupportsBatching*/
 @WritesAttributes({
         @WritesAttribute(attribute = "s3.tag.___", description = "The tags associated with the S3 object will be " +
                 "written as part of the FlowFile attributes")})
 @SeeAlso({PutS3Object.class, FetchS3Object.class, ListS3.class})
 @Tags({"Amazon", "S3", "AWS", "Archive", "Tag"})
-/*@InputRequirement(Requirement.INPUT_REQUIRED)*/
-@CapabilityDescription("Sets tags on a FlowFile within an Amazon S3 Bucket. " +
+@CapabilityDescription("Sets tags on a Field within an Amazon S3 Bucket. " +
         "If attempting to tag a file that does not exist, FlowFile is routed to success.")
 public class TagS3Object extends AbstractS3Processor {
 
@@ -90,10 +87,6 @@ public class TagS3Object extends AbstractS3Processor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        /*FlowFile flowFile = session.get();
-        if (flowFile == null) {
-            return;
-        }*/
 
         final long startNanos = System.nanoTime();
 
@@ -152,6 +145,7 @@ public class TagS3Object extends AbstractS3Processor {
                     getLogger().error("Failed to tag S3 Object for {}; routing to failure", new Object[]{record, ase});
                     /*flowFile = session.penalize(flowFile);
                     session.transfer(flowFile, REL_FAILURE);*/
+                    // TODO see how to replace this
                     return records;
                 }
 
@@ -171,6 +165,7 @@ public class TagS3Object extends AbstractS3Processor {
         getLogger().error("{} value is blank after attribute expression language evaluation", new Object[]{pd.getName()});
         /*flowFile = session.penalize(flowFile);
         session.transfer(flowFile, REL_FAILURE);*/
+        // TODO see how to replace this
     }
 
     private Record setTagAttributes(Record record, List<Tag> tags) {

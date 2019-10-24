@@ -16,6 +16,7 @@
 package com.hurence.logisland.validator;
 
 
+import com.hurence.logisland.processor.state.DataUnit;
 import com.hurence.logisland.util.FormatUtils;
 
 import java.io.File;
@@ -763,4 +764,113 @@ public class StandardValidators {
             return builder.build();
         }
     }
+
+    public static final Validator DATA_SIZE_VALIDATOR = new Validator() {
+        private final Pattern DATA_SIZE_PATTERN = Pattern.compile(DataUnit.DATA_SIZE_REGEX);
+
+        @Override
+        public ValidationResult validate(final String subject, final String input, final ValidationContext context) {
+            if (context.isExpressionLanguageSupported(subject) && context.isExpressionLanguagePresent(input)) {
+                return new ValidationResult.Builder().subject(subject).input(input).explanation("Expression Language Present").valid(true).build();
+            }
+
+            if (input == null) {
+                return new ValidationResult.Builder()
+                        .subject(subject)
+                        .input(input)
+                        .valid(false)
+                        .explanation("Data Size cannot be null")
+                        .build();
+            }
+            if (DATA_SIZE_PATTERN.matcher(input.toUpperCase()).matches()) {
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            } else {
+                return new ValidationResult.Builder()
+                        .subject(subject).input(input)
+                        .valid(false)
+                        .explanation("Must be of format <Data Size> <Data Unit> where <Data Size>"
+                                + " is a non-negative integer and <Data Unit> is a supported Data"
+                                + " Unit, such as: B, KB, MB, GB, TB")
+                        .build();
+            }
+        }
+
+        @Override
+        public ValidationResult validate(String subject, String input) {
+            if (input == null) {
+                return new ValidationResult.Builder()
+                        .subject(subject)
+                        .input(input)
+                        .valid(false)
+                        .explanation("Data Size cannot be null")
+                        .build();
+            }
+            if (DATA_SIZE_PATTERN.matcher(input.toUpperCase()).matches()) {
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            } else {
+                return new ValidationResult.Builder()
+                        .subject(subject).input(input)
+                        .valid(false)
+                        .explanation("Must be of format <Data Size> <Data Unit> where <Data Size>"
+                                + " is a non-negative integer and <Data Unit> is a supported Data"
+                                + " Unit, such as: B, KB, MB, GB, TB")
+                        .build();
+            }
+        }
+    };
+
+    public static Validator createDataSizeBoundsValidator(final long minBytesInclusive, final long maxBytesInclusive) {
+        return new Validator() {
+
+            @Override
+            public ValidationResult validate(final String subject, final String input, final ValidationContext context) {
+                if (context.isExpressionLanguageSupported(subject) && context.isExpressionLanguagePresent(input)) {
+                    return new ValidationResult.Builder().subject(subject).input(input).explanation("Expression Language Present").valid(true).build();
+                }
+
+                final ValidationResult vr = DATA_SIZE_VALIDATOR.validate(subject, input, context);
+                if (!vr.isValid()) {
+                    return vr;
+                }
+                final long dataSizeBytes = DataUnit.parseDataSize(input, DataUnit.B).longValue();
+                if (dataSizeBytes < minBytesInclusive) {
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation("Cannot be smaller than " + minBytesInclusive + " bytes").build();
+                }
+                if (dataSizeBytes > maxBytesInclusive) {
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation("Cannot be larger than " + maxBytesInclusive + " bytes").build();
+                }
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+
+            @Override
+            public ValidationResult validate(String subject, String input) {
+                final long dataSizeBytes = DataUnit.parseDataSize(input, DataUnit.B).longValue();
+                if (dataSizeBytes < minBytesInclusive) {
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation("Cannot be smaller than " + minBytesInclusive + " bytes").build();
+                }
+                if (dataSizeBytes > maxBytesInclusive) {
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation("Cannot be larger than " + maxBytesInclusive + " bytes").build();
+                }
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+        };
+
+    }
+    /**
+     * {@link Validator} that ensures that value's length > 0 and that expression language is present
+     */
+    public static final Validator NON_EMPTY_EL_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(String subject, String input, ValidationContext context) {
+            if (context.isExpressionLanguageSupported(subject) && context.isExpressionLanguagePresent(input)) {
+                return new ValidationResult.Builder().subject(subject).input(input).explanation("Expression Language Present").valid(true).build();
+            }
+            return StandardValidators.NON_EMPTY_VALIDATOR.validate(subject, input, context);
+        }
+
+        @Override
+        public ValidationResult validate(String subject, String input) {
+            return StandardValidators.NON_EMPTY_VALIDATOR.validate(subject, input);
+        }
+    };
 }

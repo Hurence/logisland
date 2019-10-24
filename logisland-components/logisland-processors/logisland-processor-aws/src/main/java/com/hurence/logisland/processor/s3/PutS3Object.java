@@ -53,11 +53,10 @@ import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 
-/*@SupportsBatching*/
+
 @SeeAlso({FetchS3Object.class, DeleteS3Object.class, ListS3.class})
-/*@InputRequirement(Requirement.INPUT_REQUIRED)*/
 @Tags({"Amazon", "S3", "AWS", "Archive", "Put"})
-@CapabilityDescription("Puts FlowFiles to an Amazon S3 Bucket.\n" +
+@CapabilityDescription("Puts Fields to an Amazon S3 Bucket.\n" +
         "The upload uses either the PutS3Object method or the PutS3MultipartUpload method.  The PutS3Object method " +
         "sends the file in a single synchronous call, but it has a 5GB size limit.  Larger files are sent using the " +
         "PutS3MultipartUpload method.  This multipart process " +
@@ -77,7 +76,7 @@ import com.amazonaws.services.s3.model.UploadPartResult;
 @DynamicProperty(name = "The name of a User-Defined Metadata field to add to the S3 Object",
         value = "The value of a User-Defined Metadata field to add to the S3 Object",
         description = "Allows user-defined metadata to be added to the S3 object as key/value pairs"
-        /*expressionLanguageScope = ExpressionLanguageScope.FLOWFILE_ATTRIBUTES*/)
+        /*expressionLanguageScope = ExpressionLanguageScope.FLOWFILE_ATTRIBUTES*/) // TODO
 @ReadsAttribute(attribute = "filename", description = "Uses the FlowFile's filename as the filename for the S3 object")
 @WritesAttributes({
         @WritesAttribute(attribute = "s3.bucket", description = "The S3 bucket where the Object was put in S3"),
@@ -102,7 +101,7 @@ public class PutS3Object extends AbstractS3Processor {
     public static final PropertyDescriptor EXPIRATION_RULE_ID = new PropertyDescriptor.Builder()
             .name("Expiration Time Rule")
             .required(false)
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
@@ -116,7 +115,7 @@ public class PutS3Object extends AbstractS3Processor {
                     "no content type is provided and cannot be determined by the filename, the default content type " +
                     "\"application/octet-stream\" will be used.")
             .required(false)
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
@@ -136,7 +135,7 @@ public class PutS3Object extends AbstractS3Processor {
                     "The valid range is 50MB to 5GB.")
             .required(true)
             .defaultValue("5 GB")
-            /*.addValidator(StandardValidators.createDataSizeBoundsValidator(MIN_S3_PART_SIZE, MAX_S3_PUTOBJECT_SIZE))*/
+            .addValidator(StandardValidators.createDataSizeBoundsValidator(MIN_S3_PART_SIZE, MAX_S3_PUTOBJECT_SIZE))
             .build();
 
     public static final PropertyDescriptor MULTIPART_PART_SIZE = new PropertyDescriptor.Builder()
@@ -147,7 +146,7 @@ public class PutS3Object extends AbstractS3Processor {
                     "The valid range is 50MB to 5GB.")
             .required(true)
             .defaultValue("5 GB")
-            /*.addValidator(StandardValidators.createDataSizeBoundsValidator(MIN_S3_PART_SIZE, MAX_S3_PUTOBJECT_SIZE))*/
+            .addValidator(StandardValidators.createDataSizeBoundsValidator(MIN_S3_PART_SIZE, MAX_S3_PUTOBJECT_SIZE))
             .build();
 
     public static final PropertyDescriptor MULTIPART_S3_AGEOFF_INTERVAL = new PropertyDescriptor.Builder()
@@ -185,8 +184,8 @@ public class PutS3Object extends AbstractS3Processor {
                     "name and value would be considered as the outgoing S3 object's Tag name and Tag value respectively. For Ex: If the " +
                     "incoming FlowFile carries the attributes tagS3country, tagS3PII, the tag prefix to be specified would be 'tagS3'")
             .required(false)
-            /*.addValidator(StandardValidators.NON_EMPTY_EL_VALIDATOR)*/
-            /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+            .addValidator(StandardValidators.NON_EMPTY_EL_VALIDATOR)
+            .expressionLanguageSupported(true)
             .build();
 
     public static final PropertyDescriptor REMOVE_TAG_PREFIX = new PropertyDescriptor.Builder()
@@ -235,7 +234,7 @@ public class PutS3Object extends AbstractS3Processor {
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
                 .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                /*.expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)*/
+                .expressionLanguageSupported(true)
                 .dynamic(true)
                 .build();
     }
@@ -381,10 +380,6 @@ public class PutS3Object extends AbstractS3Processor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records){
-        /*FlowFile flowFile = session.get();
-        if (flowFile == null) {
-            return;
-        }*/
 
         final long startNanos = System.nanoTime();
 
@@ -395,8 +390,7 @@ public class PutS3Object extends AbstractS3Processor {
                 final String cacheKey = getIdentifier() + "/" + bucket + "/" + key;
 
                 final AmazonS3Client s3 = getClient();
-                /*final FlowFile ff = flowFile;*/
-                /*final Map<String, String> attributes = new HashMap<>();*/
+
                 final String ffFilename = record.getField("filename").getRawValue().toString();
                 record.setField(new Field(S3_BUCKET_KEY, bucket));
                 record.setField(new Field(S3_OBJECT_KEY, key));
@@ -415,10 +409,7 @@ public class PutS3Object extends AbstractS3Processor {
                  * Then
                  */
                 try {
-                    /*final FlowFile flowFileCopy = flowFile;
-                    session.read(flowFile, new InputStreamCallback() {
-                        @Override
-                        public void process(final InputStream rawIn) throws IOException {*/
+
                     try (final InputStream in = new ByteArrayInputStream((byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue())) {
                         final ObjectMetadata objectMetadata = new ObjectMetadata();
                         objectMetadata.setContentDisposition(URLEncoder.encode(ffFilename, "UTF-8"));
@@ -720,22 +711,12 @@ public class PutS3Object extends AbstractS3Processor {
                             }
                         }
                     }
-                    /*    }
-                    });*/
 
-                    /*if (!attributes.isEmpty()) {
-                        *//*flowFile = session.putAllAttributes(flowFile, attributes);*//*
-                        final Map<String, Field> fields = new HashMap<>();
-                        for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                            fields.put(entry.getKey(), new Field(entry.getValue()));
-                        }
-                        record.setFields(fields);
-                    }*/
-                    /*session.transfer(flowFile, REL_SUCCESS);*/
 
                     final String url = s3.getResourceUrl(bucket, key);
                     final long millis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
                     /*session.getProvenanceReporter().send(flowFile, url, millis);*/
+                    // TODO see how to replcae this
 
                     getLogger().info("Successfully put {} to Amazon S3 in {} milliseconds", new Object[] {record, millis});
                     try {
@@ -748,10 +729,12 @@ public class PutS3Object extends AbstractS3Processor {
                     if (pe.getMessage().contains(S3_PROCESS_UNSCHEDULED_MESSAGE)) {
                         getLogger().info(pe.getMessage());
                         /*session.rollback();*/
+                        // TODO see how to replcae this
                     } else {
                         getLogger().error("Failed to put {} to Amazon S3 due to {}", new Object[]{record, pe});
                         /*flowFile = session.penalize(flowFile);
                         session.transfer(flowFile, REL_FAILURE);*/
+                        // TODO see how to replcae this
                     }
                 }
 
