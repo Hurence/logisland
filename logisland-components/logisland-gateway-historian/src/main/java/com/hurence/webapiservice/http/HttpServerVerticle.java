@@ -1,18 +1,14 @@
 package com.hurence.webapiservice.http;
 
-import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Point;
 import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
 import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.modele.AGG;
-import com.hurence.webapiservice.modele.SAMPLING;
 import com.hurence.webapiservice.modele.SamplingAlgo;
 import com.hurence.webapiservice.timeseries.reactivex.TimeseriesService;
-import io.reactivex.Single;
 import io.vertx.core.Promise;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
@@ -25,7 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
