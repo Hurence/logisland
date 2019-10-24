@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.timeseries.sampling;
 
+import com.hurence.logisland.record.Point;
 import com.hurence.logisland.timeseries.sampling.record.*;
 
 public class SamplerFactory {
@@ -45,8 +46,52 @@ public class SamplerFactory {
             case MODE_MEDIAN:
                 return new ModeMedianRecordSampler(valueFieldName, timeFieldName, parameter);
             case NONE:
-            default:
                 return new IsoRecordSampler(valueFieldName, timeFieldName);
+            default:
+                throw new UnsupportedOperationException("algorithm " + algorithm.name() + " is not yet supported !");
+        }
+    }
+
+    //TODO make this method generic
+    //TODO Find a way to generate TimeSerieHandler with a factory, taking the class as param ?
+    /**
+     * Instanciates a sampler.
+     *
+     * @param algorithm the sampling algorithm
+     * @param bucketSize an int parameter
+     * @return the sampler
+     */
+    public static Sampler<Point> getPointSampler(SamplingAlgorithm algorithm, int bucketSize) {
+
+        switch (algorithm) {
+            case FIRST_ITEM:
+                return new FirstItemSampler<Point>(bucketSize);
+            case AVERAGE:
+                TimeSerieHandler<Point> timeSerieHandler = new TimeSerieHandler<Point>() {
+                    @Override
+                    public Point createTimeserie(long timestamp, double value) {
+                        return new Point(0, timestamp, value);
+                    }
+
+                    @Override
+                    public long getTimeserieTimestamp(Point point) {
+                        return point.getTimestamp();
+                    }
+
+                    @Override
+                    public Double getTimeserieValue(Point point) {
+                        return point.getValue();
+                    }
+                };
+                return new AverageSampler<Point>(timeSerieHandler ,bucketSize);
+            case NONE:
+                return new IsoSampler<Point>();
+            case MIN_MAX:
+            case LTTB:
+            case MODE_MEDIAN:
+            default:
+                throw new UnsupportedOperationException("algorithm " + algorithm.name() + " is not yet supported !");
+
         }
     }
 }
