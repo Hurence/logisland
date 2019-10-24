@@ -227,7 +227,7 @@ public class RunScript extends AbstractProcessor {
                 outputRecords.add(record);
 
 
-            } catch (ProcessException | IOException t) {
+            } catch (Throwable t) {
                 logger.error(t.toString());
             }
 
