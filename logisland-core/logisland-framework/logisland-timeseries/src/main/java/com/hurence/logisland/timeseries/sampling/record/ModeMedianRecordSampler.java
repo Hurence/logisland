@@ -19,6 +19,7 @@ import com.hurence.logisland.record.Record;
 
 import java.util.List;
 
+//TODO
 public class ModeMedianRecordSampler extends AbstractRecordSampler {
 
 

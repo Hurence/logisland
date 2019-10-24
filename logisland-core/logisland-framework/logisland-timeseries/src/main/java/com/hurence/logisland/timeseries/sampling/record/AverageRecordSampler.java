@@ -39,21 +39,16 @@ public class AverageRecordSampler extends AbstractRecordSampler {
      * divide the points sequence into equally sized buckets
      * and select the first point of each bucket
      *
-     * @param inputRecords the iput list
+     * @param inputRecords the input list
      * @return
      */
     @Override
     public List<Record> sample(List<Record> inputRecords) {
-
-
-        SummaryStatistics stats = new SummaryStatistics();
-
-
         // simple average to 100 data points
         final int realBucketSize = SamplingUtils.fitBucketSize(inputRecords, bucketSize);
         return SamplingUtils.grouped(inputRecords, realBucketSize)
                 .map(bucket -> {
-
+                    SummaryStatistics stats = new SummaryStatistics();
                     bucket.forEach(record -> {
                         final Double recordValue = getRecordValue(record);
                         if (recordValue != null)

@@ -31,7 +31,7 @@ public class SamplingUtils {
      *         else bucketSize
      */
     public static int fitBucketSize(List rawData, int bucketSize) {
-        if (bucketSize <= 0 || bucketSize >= rawData.size()) return 1;
+        if (bucketSize <= 0 || bucketSize > rawData.size()) return 1;
         else return bucketSize;
     }
 

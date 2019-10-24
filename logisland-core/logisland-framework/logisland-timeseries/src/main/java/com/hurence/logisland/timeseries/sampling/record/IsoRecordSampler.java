@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 
 public class IsoRecordSampler extends AbstractRecordSampler {
 
+    public IsoRecordSampler(String valueFieldName, String timeFieldName) {
+        super(valueFieldName, timeFieldName);
+    }
+
     /**
      * do no sample at all => for test or benchmark purpose
      *

@@ -19,6 +19,7 @@ import com.hurence.logisland.record.Record;
 
 import java.util.List;
 
+//TODO
 public class MinMaxRecordSampler extends AbstractRecordSampler {
 
 
@@ -39,6 +40,7 @@ public class MinMaxRecordSampler extends AbstractRecordSampler {
      */
     @Override
     public List<Record> sample(List<Record> inputRecords) {
-       return null;
+        //TODO
+        return null;
     }
 }

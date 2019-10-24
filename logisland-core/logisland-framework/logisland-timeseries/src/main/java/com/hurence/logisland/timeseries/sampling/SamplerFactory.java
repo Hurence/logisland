@@ -46,7 +46,7 @@ public class SamplerFactory {
                 return new ModeMedianRecordSampler(valueFieldName, timeFieldName, parameter);
             case NONE:
             default:
-                return new IsoRecordSampler();
+                return new IsoRecordSampler(valueFieldName, timeFieldName);
         }
     }
 }

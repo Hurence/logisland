@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+//TODO
 public class LTTBRecordSampler extends AbstractRecordSampler {
 
     private int threshold;
