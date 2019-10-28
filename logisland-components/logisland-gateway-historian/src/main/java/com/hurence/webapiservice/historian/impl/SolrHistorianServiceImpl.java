@@ -88,8 +88,11 @@ public class SolrHistorianServiceImpl implements HistorianService {
     if (params.getJsonArray(TAGS) != null) {
       logger.error("TODO there is tags");//TODO
     }
-    if (params.getString(RECORD_NAME) != null) {
-      query.addFilterQuery(RECORD_NAME + ":" + params.getString(RECORD_NAME));
+    if (params.getJsonArray(NAMES) != null && !params.getJsonArray(NAMES).isEmpty()) {
+      String orNames = params.getJsonArray(NAMES).stream()
+              .map(String.class::cast)
+              .collect(Collectors.joining(" OR ", "(", ")"));
+      query.addFilterQuery(NAMES + ":" + orNames);
     }
     //    FIELDS_TO_FETCH
     if (params.getJsonArray(FIELDS_TO_FETCH) != null) {

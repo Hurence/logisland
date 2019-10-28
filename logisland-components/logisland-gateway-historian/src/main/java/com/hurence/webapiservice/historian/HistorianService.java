@@ -26,7 +26,7 @@ public interface HistorianService {
   public static String TO = "to";
   public static String FIELDS_TO_FETCH = "fields";
   public static String TAGS = "tags";
-  public static String RECORD_NAME = "record_name";
+  public static String NAMES = "names";
 
   @GenIgnore
   static HistorianService create(Vertx vertx, SolrClient client, String collection, Handler<AsyncResult<HistorianService>> readyHandler) {
@@ -49,7 +49,7 @@ public interface HistorianService {
    *     {@value TO} : "total chunk matching query",
    *     {@value FIELDS_TO_FETCH} : ["field1", "field2"...],
    *     {@value TAGS} : "total chunk matching query",
-   *     {@value RECORD_NAME} : "content of chunks as an array",
+   *     {@value NAMES} : "content of chunks as an array",
    * }
    * </pre>
    * explanation :
@@ -57,7 +57,7 @@ public interface HistorianService {
    *    if {@value TO} not specified will search to Max.Long
    *    use {@value FIELDS_TO_FETCH} if you want to retrieve some of the precalculated aggs. If not specified retrieve all.
    *    use {@value TAGS} to search for specific timeseries having one of those tags
-   *    use {@value RECORD_NAME} to search a specific timeseries name
+   *    use {@value NAMES} to search a specific timeseries name
    *
    * @param resultHandler
    * @return uncompressed timeseries as an array of

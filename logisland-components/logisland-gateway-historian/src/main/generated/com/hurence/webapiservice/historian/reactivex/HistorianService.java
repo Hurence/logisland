@@ -95,7 +95,7 @@ public class HistorianService {
   public static final String TO = com.hurence.webapiservice.historian.HistorianService.TO;
   public static final String FIELDS_TO_FETCH = com.hurence.webapiservice.historian.HistorianService.FIELDS_TO_FETCH;
   public static final String TAGS = com.hurence.webapiservice.historian.HistorianService.TAGS;
-  public static final String RECORD_NAME = com.hurence.webapiservice.historian.HistorianService.RECORD_NAME;
+  public static final String NAMES = com.hurence.webapiservice.historian.HistorianService.NAMES;
 
   public static  HistorianService newInstance(com.hurence.webapiservice.historian.HistorianService arg) {
     return arg != null ? new HistorianService(arg) : null;

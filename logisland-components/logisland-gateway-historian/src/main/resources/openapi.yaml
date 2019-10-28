@@ -24,6 +24,7 @@ paths:
           schema:
             type: integer
             format: int64
+            minimum: 0
         - "name": to
           "in": query
           "description": the end of timeseries to look for. If not specified look for all data until Long.MAX
@@ -31,7 +32,8 @@ paths:
           schema:
             type: integer
             format: int64
-        - "name": name
+            minimum: 0
+        - "name": names
           "in": query
           "description": the name of the timeserie to look for. If not specified look for all type of timeseries
           required: false
@@ -47,24 +49,33 @@ paths:
             type: array
             items:
               type: string #TODO enum
-        - "name": sampling
-          #TODO something like that : bucket:100:avg, bucket:50:max ? or maybe specify a max number of pount ?
-          #TODO avg:10000 -> moyenn pour le sampling et retourne un maximum de 10000 points
+        - "name": samplingAlgo
           "in": query
           "description": the algorithm to use to sample data.
           required: false
           schema:
             type: string
+            default: none #TODO enum
+        - "name": bucketSize
+          "in": query
+          "description": the numbre of point by bucket if using a sampling algorithm.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 100
+        - "name": maxPoints
+          "in": query
+          "description": the max number of point to return for a timeseries, none by default.
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 10000
 
       "responses":
         "200":
-          "description": A list of timeseries. Maximum number of point returned is 10000 ???
-          #TODO is pagination really needed there ? Maybe if user wants to scroll ? But really not sure this is pertinent here
-#          "headers":
-#            x-next:
-#              description: A link to the next page of responses
-#              schema:
-#                type: string
+          "description": Requested timeseries.
           "content":
             "application/json":
               "schema":

@@ -256,7 +256,7 @@ public class HistorianVerticleIT {
     @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
     void getTimeSeriesChunkTestWithName(VertxTestContext testContext) {
         JsonObject params = new JsonObject()
-                .put(HistorianService.RECORD_NAME, "temp_b");
+                .put(HistorianService.NAMES, "temp_b");
         historian.rxGetTimeSeriesChunk(params)
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
