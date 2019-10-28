@@ -21,6 +21,7 @@ import org.apache.solr.client.solrj.SolrClient;
 public interface HistorianService {
 
   public static String CHUNKS = "chunks";
+  public static String METRICS = "metrics";
   public static String TOTAL_FOUND = "total_hit";
   public static String FROM = "from";
   public static String TO = "to";
@@ -59,17 +60,39 @@ public interface HistorianService {
    *    use {@value TAGS} to search for specific timeseries having one of those tags
    *    use {@value NAMES} to search a specific timeseries name
    *
-   * @param resultHandler
-   * @return uncompressed timeseries as an array of
+   * @param resultHandler return chunks of timeseries as an array of
+   *    * <pre>
+   *    * {
+   *    *     {@value CHUNKS} : "content of chunks as an array",
+   *    *     {@value TOTAL_FOUND} : "total chunk matching query"
+   *    * }
+   *    * DOCS contains at minimum chunk_value, chunk_start
+   *    * </pre>
+   * @return himself
+   */
+  @Fluent
+  HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   *
+   * @param params as a json object
    * <pre>
    * {
-   *     {@value CHUNKS} : "content of chunks as an array",
+   *     "target" : "searched metric"
+   * }
+   * </pre>
+   *
+   * @param resultHandler return chunks of timeseries as an array of
+   * <pre>
+   * {
+   *     {@value METRICS} : "all metric name matching the query",
    *     {@value TOTAL_FOUND} : "total chunk matching query"
    * }
    * DOCS contains at minimum chunk_value, chunk_start
    * </pre>
+   * @return himself
    */
   @Fluent
-  HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler);
+  HistorianService getMetricsName(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler);
 
 }

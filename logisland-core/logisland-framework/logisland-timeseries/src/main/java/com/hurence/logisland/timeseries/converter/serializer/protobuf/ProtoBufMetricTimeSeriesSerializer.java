@@ -135,13 +135,33 @@ public final class ProtoBufMetricTimeSeriesSerializer {
     }
 
     /**
-     * return the points (decompressed byte array)
+     * return the uncompressed points (compressed byte array)
      *
      * @param decompressedBytes the compressed bytes holding the data points
      * @param timeSeriesStart   the start of the time series
      * @param timeSeriesEnd     the end of the time series
+     * @param from              including points from
+     * @param to                including points to
      */
-    public static List<Point> from(final InputStream decompressedBytes, long timeSeriesStart, long timeSeriesEnd) throws IOException {
+    public static List<Point> from(final InputStream decompressedBytes, long timeSeriesStart, long timeSeriesEnd, long from, long to) throws IOException, IllegalArgumentException {
+        if (from == -1 || to == -1) {
+            throw new IllegalArgumentException("FROM or TO have to be >= 0");
+        }
+
+        //if to is left of the time series, we have no points to return
+        if (to < timeSeriesStart) {
+            return Collections.emptyList();
+        }
+        //if from is greater  to, we have nothing to return
+        if (from > to) {
+            return Collections.emptyList();
+        }
+
+        //if from is right of the time series we have nothing to return
+        if (from > timeSeriesEnd) {
+            return Collections.emptyList();
+        }
+
         try {
             //TODO add possibility to choose ddcThreshold
             MetricProtocolBuffers.Points protocolBufferPoints = MetricProtocolBuffers.Points.parseFrom(decompressedBytes);
@@ -163,16 +183,19 @@ public final class ProtoBufMetricTimeSeriesSerializer {
                     lastDelta = getTimestamp(p, lastDelta);
                     calculatedPointDate += lastDelta;
                 }
-                //Check if the point refers to an index
-                if (p.hasVIndex()) {
-                    value = pList.get(p.getVIndex()).getV();
-                } else {
-                    value = p.getV();
+                //only add the point if it is within the date
+                if (calculatedPointDate >= from) {
+                    //Check if the point refers to an index
+                    if (p.hasVIndex()) {
+                        value = pList.get(p.getVIndex()).getV();
+                    } else {
+                        value = p.getV();
+                    }
+                    if (calculatedPointDate > to) {
+                        return pointsToReturn;
+                    }
+                    pointsToReturn.add(new Point(i, calculatedPointDate, value));
                 }
-                if (calculatedPointDate > timeSeriesEnd) {
-                    return pointsToReturn;
-                }
-                pointsToReturn.add(new Point(i, calculatedPointDate, value));
             }
             return pointsToReturn;
         } catch (IOException e) {

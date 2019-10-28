@@ -319,4 +319,23 @@ public class HttpServerVerticleSmallChunksIT {
                     });
                 }));
     }
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testGetAllPointsFrom3To10(Vertx vertx, VertxTestContext testContext) {
+        webClient.get("/timeseries?from=3&to=10")
+                .as(BodyCodec.jsonObject())
+                .send(testContext.succeeding(rsp -> {
+                    testContext.verify(() -> {
+                        assertEquals(200, rsp.statusCode());
+                        assertEquals("OK", rsp.statusMessage());
+                        JsonObject body = rsp.body();
+                        FileSystem fs = vertx.fileSystem();
+                        Buffer fileContent = fs.readFileBlocking(getClass().getResource("/http/timeseries/testSmallChunks/testGetAllPointsFrom3To10.json").getFile());
+                        JsonObject expectedBody = new JsonObject(fileContent.getDelegate());
+                        assertEquals(expectedBody, body);
+                        testContext.completeNow();
+                    });
+                }));
+    }
 }

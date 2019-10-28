@@ -6,6 +6,7 @@ import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionCon
 import com.hurence.logisland.timeseries.sampling.Sampler;
 import com.hurence.logisland.timeseries.sampling.SamplerFactory;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
+import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.reactivex.TimeseriesService;
@@ -79,6 +80,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 //    router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
         router.get("/timeseries").handler(this::getTimeSeries);
+        Router graphanaApi = new GrafanaApiImpl(historianService).getGraphanaRouter(vertx);
+        router.mountSubRouter("/api/grafana", graphanaApi);
 //    router.get("/doc/similarTo/:id").handler(this::getSimilarDoc);
 
         int portNumber = config().getInteger(CONFIG_HTTP_SERVER_PORT, 8080);
@@ -253,8 +256,9 @@ public class HttpServerVerticle extends AbstractVerticle {
                 .flatMap(chunk -> {
                     byte[] binaryChunk = chunk.getBinary(FieldDictionary.CHUNK_VALUE);
                     long chunkStart = chunk.getLong(FieldDictionary.CHUNK_START);
+                    long chunkEnd = chunk.getLong(FieldDictionary.CHUNK_END);
                     try {
-                        return compacter.unCompressPoints(binaryChunk, chunkStart, to).stream();
+                        return compacter.unCompressPoints(binaryChunk, chunkStart, chunkEnd, from, to).stream();
                     } catch (IOException ex) {
                         throw new IllegalArgumentException("error during uncompression of a chunk !", ex);
                     }
@@ -299,7 +303,6 @@ public class HttpServerVerticle extends AbstractVerticle {
     }
 
     /**
-     *
      * @param from minimum timestamp for points in chunks.
      *             If a chunk contains a point with a lower timestamp it will be recalculated without those points
      * @param to maximum timestamp for points in chunks.
@@ -311,6 +314,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     private List<JsonObject> adjustChunk(long from, long to, List<AGG> aggs, List<JsonObject> chunks) {
         //TODO only necessary if we want to optimize aggs. But if we have to recompute all chunks this may not be really helpfull.
         //TODO depending on the size of the bucket desired.
+
         return chunks;
     }
 

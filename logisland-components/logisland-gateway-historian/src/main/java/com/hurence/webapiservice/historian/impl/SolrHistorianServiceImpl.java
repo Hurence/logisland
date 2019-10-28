@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+import static com.hurence.logisland.record.FieldDictionary.CHUNK_END;
 import static com.hurence.logisland.record.FieldDictionary.CHUNK_START;
 
 public class SolrHistorianServiceImpl implements HistorianService {
@@ -69,21 +70,19 @@ public class SolrHistorianServiceImpl implements HistorianService {
   @Override
   public HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
     //    SEARCH
-    //TODO BUG !!!!! should search chunk before from
-    StringBuilder queryBuilder = new StringBuilder(CHUNK_START).append(":[");
-    if (params.getLong(FROM) != null) {
-      queryBuilder.append(params.getLong(FROM));
-    } else {
-      queryBuilder.append("*");
-    }
-    queryBuilder.append(" TO ");
+    StringBuilder queryBuilder = new StringBuilder();
     if (params.getLong(TO) != null) {
-      queryBuilder.append(params.getLong(TO));
-    } else {
-      queryBuilder.append("*");
+      queryBuilder.append(CHUNK_START).append(":[* TO ").append(params.getLong(TO)).append("]");
     }
-    queryBuilder.append("]");
-    SolrQuery query = new SolrQuery(queryBuilder.toString());
+    if (params.getLong(FROM) != null) {
+      if (queryBuilder.length() != 0)
+        queryBuilder.append(" AND ");
+      queryBuilder.append(CHUNK_END).append(":[").append(params.getLong(FROM)).append(" TO *]");
+    }
+    //
+    SolrQuery query = new SolrQuery();
+    if (queryBuilder.length() != 0)
+      query.setQuery(queryBuilder.toString());
     //    FILTER
     if (params.getJsonArray(TAGS) != null) {
       logger.error("TODO there is tags");//TODO
@@ -130,6 +129,12 @@ public class SolrHistorianServiceImpl implements HistorianService {
       }
     };
     vertx.executeBlocking(getTimeSeriesHandler, resultHandler);
+    return this;
+  }
+
+  @Override
+  public HistorianService getMetricsName(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
+    //TODO
     return this;
   }
 

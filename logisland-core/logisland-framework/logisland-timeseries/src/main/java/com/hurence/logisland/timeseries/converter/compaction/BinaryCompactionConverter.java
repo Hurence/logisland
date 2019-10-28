@@ -131,12 +131,36 @@ public class BinaryCompactionConverter implements Serializable {
                 }).collect(Collectors.toList());
     }
 
-    public List<Point> unCompressPoints(byte[] chunkOfPoints, long start, long end) throws IOException {
+    /**
+     *
+     * @param chunkOfPoints the compressed points
+     * @param chunkStart timestamp of the first point in the chunk (required)
+     * @param chunkEnd timestamp of the last point in the chunk
+     * @return
+     * @throws IOException
+     */
+    public List<Point> unCompressPoints(byte[] chunkOfPoints, long chunkStart, long chunkEnd) throws IOException {
         try (InputStream decompressed = Compression.decompressToStream(chunkOfPoints)) {
-            return ProtoBufMetricTimeSeriesSerializer.from(decompressed, start, end);
+            return ProtoBufMetricTimeSeriesSerializer.from(decompressed, chunkStart, chunkEnd, chunkStart, chunkEnd);
         }
     }
 
+    /**
+     * return uncompressed points
+     * @param chunkOfPoints the compressed points
+     * @param chunkStart the timestamp of the first point of the chunk (needed to uncompress points)
+     * @param chunkEnd timestamp of the last point in the chunk
+     * @param requestedFrom filter out points with timestamp lower than requestedFrom
+     * @param requestedEnd filter out points with timestamp higher than requestedEnd
+     * @return
+     * @throws IOException
+     */
+    public List<Point> unCompressPoints(byte[] chunkOfPoints, long chunkStart, long chunkEnd,
+                                        long requestedFrom, long requestedEnd) throws IOException {
+        try (InputStream decompressed = Compression.decompressToStream(chunkOfPoints)) {
+            return ProtoBufMetricTimeSeriesSerializer.from(decompressed, chunkStart, chunkEnd, requestedFrom, requestedEnd);
+        }
+    }
 
     public static final class Builder {
 
