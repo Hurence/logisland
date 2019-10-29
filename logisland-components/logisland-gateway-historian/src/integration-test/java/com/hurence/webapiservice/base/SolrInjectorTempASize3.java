@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SolrInjector1 extends AbstractSolrInjector {
+public class SolrInjectorTempASize3 extends AbstractSolrInjector {
 
     @Override
     protected List<ChunkExpected> buildListOfChunks() {

@@ -20,7 +20,7 @@ package com.hurence.webapiservice.http;
 import com.hurence.webapiservice.base.HistorianSolrITHelper;
 import com.hurence.webapiservice.base.HttpWithHistorianSolrAbstractTest;
 import com.hurence.webapiservice.base.SolrInjector;
-import com.hurence.webapiservice.base.SolrInjector1;
+import com.hurence.webapiservice.base.SolrInjectorTempASize3;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.junit5.Timeout;
@@ -52,7 +52,7 @@ public class HttpServerVerticleSmallChunksIT extends HttpWithHistorianSolrAbstra
         HttpWithHistorianSolrAbstractTest
                 .initWebClientAndHistorianSolrCollectionAndHttpVerticleAndHistorianVerticle(client, container, vertx, context);
         LOGGER.info("Indexing some documents in {} collection", HistorianSolrITHelper.COLLECTION);
-        SolrInjector injector = new SolrInjector1();
+        SolrInjector injector = new SolrInjectorTempASize3();
         injector.injectChunks(client);
         LOGGER.info("Indexed some documents in {} collection", HistorianSolrITHelper.COLLECTION);
     }

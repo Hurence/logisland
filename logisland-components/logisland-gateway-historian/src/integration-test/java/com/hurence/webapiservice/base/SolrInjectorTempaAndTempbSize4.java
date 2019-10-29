@@ -1,14 +1,11 @@
 package com.hurence.webapiservice.base;
 
 import com.hurence.logisland.record.Point;
-import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrInputDocument;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SolrInjector2 extends SolrInjector1 {
+public class SolrInjectorTempaAndTempbSize4 extends SolrInjectorTempASize3 {
 
     @Override
     protected List<ChunkExpected> buildListOfChunks() {

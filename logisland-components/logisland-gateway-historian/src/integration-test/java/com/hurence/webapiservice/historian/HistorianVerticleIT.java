@@ -3,7 +3,7 @@ package com.hurence.webapiservice.historian;
 import com.hurence.unit5.extensions.SolrExtension;
 import com.hurence.webapiservice.base.HistorianSolrITHelper;
 import com.hurence.webapiservice.base.SolrInjector;
-import com.hurence.webapiservice.base.SolrInjector2;
+import com.hurence.webapiservice.base.SolrInjectorTempaAndTempbSize4;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -52,7 +52,7 @@ public class HistorianVerticleIT {
                 },
                 t -> context.failNow(t));
         LOGGER.info("Indexing some documents in {} collection", HistorianSolrITHelper.COLLECTION);
-        SolrInjector injector = new SolrInjector2();
+        SolrInjector injector = new SolrInjectorTempaAndTempbSize4();
         injector.injectChunks(client);
         LOGGER.info("Indexed some documents in {} collection", HistorianSolrITHelper.COLLECTION);
     }
