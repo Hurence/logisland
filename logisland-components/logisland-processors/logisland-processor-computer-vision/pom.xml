@@ -54,6 +54,8 @@
             <groupId>opencv</groupId>
             <artifactId>opencv</artifactId>
             <version>4.1.1</version>
+            <scope>system</scope>
+            <systemPath>/usr/local/share/java/opencv4/opencv-411.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>origami</groupId>
