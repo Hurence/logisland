@@ -12,7 +12,9 @@ public interface GrafanaApi {
         Router router = Router.router(vertx);
         router.get("/").handler(this::root);
         router.post("/search").handler(this::search);
-        router.post("/query").handler(this::query);
+        router.post("/query")
+                .produces("application/json")
+                .handler(this::query);
         router.post("/annotations").handler(this::annotations);
         router.post("/tag-keys").handler(this::tagKeys);
         router.post("/tag-values").handler(this::tagValues);

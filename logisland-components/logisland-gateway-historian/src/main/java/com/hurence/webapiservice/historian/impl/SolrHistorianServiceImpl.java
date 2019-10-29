@@ -114,7 +114,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
       try {
         final QueryResponse response = client.query(collection, query);
         final SolrDocumentList documents = response.getResults();
-        logger.info("Found " + documents.getNumFound() + " documents");
+        logger.debug("Found " + documents.getNumFound() + " documents");
         JsonArray docs = new JsonArray(documents.stream()
                 .map(this::convertDoc)
                 .collect(Collectors.toList())
@@ -138,36 +138,29 @@ public class SolrHistorianServiceImpl implements HistorianService {
   public HistorianService getMetricsName(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
     SolrQuery query = new SolrQuery("*:*");
     //TODO search a syntax for metric
-//    //    FIELDS_TO_FETCH
-//    if (params.getJsonArray(FIELDS_TO_FETCH) != null) {
-//      JsonArray fields = params.getJsonArray(FIELDS_TO_FETCH);
-//      fields.stream().forEach(field -> {
-//        if (field instanceof String) {
-//          query.addField((String) field);
-//        } else {
-//          logger.error("agg {} should be a string but was {} instead", field, field.getClass());
-//        }
-//      });
-//    }
     query.setRows(0);//we only need distinct values of metrics
-    query.setFacet(true);
-    query.setFacetSort("index");
-    query.setFacetLimit(0);
+//    query.setFacet(true);
+//    query.setFacetSort("index");
+//    query.setFacetLimit(0);
     query.addFacetField(METRIC_NAME);
     //  EXECUTE REQUEST
     Handler<Promise<JsonObject>> getMetricsNameHandler = p -> {
       try {
         final QueryResponse response = client.query(collection, query);
-        final SolrDocumentList documents = response.getResults();
         FacetField facetField = response.getFacetField(METRIC_NAME);
-        logger.info("Found " + documents.getNumFound() + " documents");
-        JsonArray docs = new JsonArray(documents.stream()
-                .map(this::convertDoc)
+        FacetField.Count count = facetField.getValues().get(0);
+        count.getCount();
+        count.getName();
+        count.getAsFilterQuery();
+        count.getFacetField();
+        logger.debug("Found " + facetField.getValueCount() + " different values");
+        JsonArray metrics = new JsonArray(facetField.getValues().stream()
+                .map(FacetField.Count::getName)
                 .collect(Collectors.toList())
         );
         p.complete(new JsonObject()
-                .put(TOTAL_FOUND, documents.getNumFound())
-                .put(CHUNKS, docs)
+                .put(TOTAL_FOUND, facetField.getValueCount())
+                .put(METRICS, metrics)
         );
       } catch (IOException | SolrServerException e) {
         p.fail(e);

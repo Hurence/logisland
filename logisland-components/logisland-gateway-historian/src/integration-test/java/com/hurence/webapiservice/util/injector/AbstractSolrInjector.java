@@ -16,6 +16,7 @@ import java.util.List;
 
 import static com.hurence.logisland.record.FieldDictionary.*;
 import static com.hurence.logisland.record.FieldDictionary.CHUNK_SUM;
+import static com.hurence.webapiservice.historian.HistorianService.CHUNK_ID;
 import static com.hurence.webapiservice.historian.HistorianService.METRIC_NAME;
 
 public abstract class AbstractSolrInjector implements SolrInjector {
@@ -42,7 +43,7 @@ public abstract class AbstractSolrInjector implements SolrInjector {
 
     private SolrInputDocument buildSolrDocument(ChunkExpected chunk, String id) {
         final SolrInputDocument doc = new SolrInputDocument();
-        doc.addField("id", id);
+        doc.addField(CHUNK_ID, id);
         doc.addField(CHUNK_START, chunk.start);
         doc.addField(CHUNK_SIZE, chunk.points.size());
         doc.addField(CHUNK_END, chunk.end);

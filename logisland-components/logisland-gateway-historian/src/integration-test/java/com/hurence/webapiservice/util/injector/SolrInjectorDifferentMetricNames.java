@@ -7,13 +7,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class SolrInjectorDifferentMetricNames extends AbstractSolrInjector {
 
     private final int size;
+    private final int numberOfChunkByMetric;
 
-    public SolrInjectorDifferentMetricNames(int size) {
+    public SolrInjectorDifferentMetricNames(int size, int numberOfChunkByMetric) {
         this.size = size;
+        this.numberOfChunkByMetric = numberOfChunkByMetric;
     }
 
     @Override
@@ -21,6 +24,7 @@ public class SolrInjectorDifferentMetricNames extends AbstractSolrInjector {
         List<ChunkExpected> chunks = IntStream.range(0, this.size)
                 .mapToObj(i -> "metric_" + i)
                 .map(this::buildChunkWithMetricName)
+                .flatMap(this::createMoreChunkForMetric)
                 .collect(Collectors.toList());
         return chunks;
     }
@@ -43,5 +47,16 @@ public class SolrInjectorDifferentMetricNames extends AbstractSolrInjector {
         chunk.name = metricName;
         chunk.sax = "edeebcccdf";
         return chunk;
+    }
+
+    private Stream<ChunkExpected> createMoreChunkForMetric(ChunkExpected chunk) {
+        List<ChunkExpected> chunks = IntStream.range(0, this.numberOfChunkByMetric)
+                .mapToObj(i -> {
+                    //TODO eventually change chunk content if needed
+                    ChunkExpected cloned = chunk;
+                    return cloned;
+                })
+                .collect(Collectors.toList());
+        return chunks.stream();
     }
 }

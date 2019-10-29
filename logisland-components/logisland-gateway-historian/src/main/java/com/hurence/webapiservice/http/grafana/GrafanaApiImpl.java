@@ -1,20 +1,12 @@
 package com.hurence.webapiservice.http.grafana;
 
 
-import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.MultiMap;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static com.hurence.webapiservice.http.Codes.BAD_REQUEST;
 
 public class GrafanaApiImpl implements GrafanaApi {
 
@@ -44,7 +36,7 @@ public class GrafanaApiImpl implements GrafanaApi {
                     context.response().end(ex.getMessage());
                 })
                 .doOnSuccess(metricResponse -> {
-                    JsonArray metricNames = metricResponse.getJsonArray(HistorianService.NAMES);
+                    JsonArray metricNames = metricResponse.getJsonArray(HistorianService.METRICS);
                     context.response().setStatusCode(200);
                     context.response().putHeader("Content-Type", "application/json");
                     context.response().end(metricNames.encode());
@@ -53,6 +45,7 @@ public class GrafanaApiImpl implements GrafanaApi {
 
     @Override
     public void query(RoutingContext context) {
+
         throw new UnsupportedOperationException("Not implented yet");//TODO
     }
 
