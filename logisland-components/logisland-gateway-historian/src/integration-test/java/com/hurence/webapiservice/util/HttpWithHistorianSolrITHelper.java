@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-package com.hurence.webapiservice.base;
+package com.hurence.webapiservice.util;
 
 import com.hurence.unit5.extensions.SolrExtension;
 import com.hurence.webapiservice.http.HttpServerVerticle;
 import io.reactivex.Single;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.reactivex.core.Vertx;
@@ -36,21 +34,16 @@ import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.IOException;
 
-import static com.hurence.webapiservice.base.HistorianSolrITHelper.HISTORIAN_ADRESS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static com.hurence.webapiservice.util.HistorianSolrITHelper.HISTORIAN_ADRESS;
 
 @ExtendWith({VertxExtension.class, SolrExtension.class})
-public abstract class HttpWithHistorianSolrAbstractTest {
-
-    private static Logger LOGGER = LoggerFactory.getLogger(HttpWithHistorianSolrAbstractTest.class);
-    protected static WebClient webClient;
+public abstract class HttpWithHistorianSolrITHelper {
+    private static Logger LOGGER = LoggerFactory.getLogger(HttpWithHistorianSolrITHelper.class);
     private static int PORT = 8080;
 
+    private HttpWithHistorianSolrITHelper() {}
 
     public static void initWebClientAndHistorianSolrCollectionAndHttpVerticleAndHistorianVerticle(SolrClient client, DockerComposeContainer container, Vertx vertx, VertxTestContext context) throws InterruptedException, IOException, SolrServerException {
-        LOGGER.info("Initializing Web client");
-        initializeWebClient(vertx);
         LOGGER.info("Initializing Historian solr");
         HistorianSolrITHelper.initHistorianSolr(client, container, vertx, context);
         LOGGER.info("Initializing Verticles");
@@ -73,11 +66,5 @@ public abstract class HttpWithHistorianSolrAbstractTest {
                     LOGGER.info("HistorianVerticle with id '{}' deployed", id);
                     return id;
                 });
-    }
-
-    private static void initializeWebClient(Vertx vertx) {
-        webClient = WebClient.create(vertx.getDelegate(), new WebClientOptions()
-                .setDefaultHost("localhost")
-                .setDefaultPort(PORT));
     }
 }

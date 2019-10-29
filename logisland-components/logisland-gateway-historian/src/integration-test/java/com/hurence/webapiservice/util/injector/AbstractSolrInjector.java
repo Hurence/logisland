@@ -1,8 +1,11 @@
-package com.hurence.webapiservice.base;
+package com.hurence.webapiservice.util.injector;
 
 import com.hurence.logisland.record.Point;
 import com.hurence.logisland.timeseries.converter.common.Compression;
 import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
+import com.hurence.webapiservice.util.HistorianSolrITHelper;
+import com.hurence.webapiservice.util.injector.SolrInjector;
+import com.hurence.webapiservice.util.modele.ChunkExpected;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.UpdateResponse;

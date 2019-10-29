@@ -1,4 +1,4 @@
-package com.hurence.webapiservice.base;
+package com.hurence.webapiservice.util.modele;
 
 import com.hurence.logisland.record.Point;
 

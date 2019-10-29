@@ -1,9 +1,9 @@
 package com.hurence.webapiservice.historian;
 
 import com.hurence.unit5.extensions.SolrExtension;
-import com.hurence.webapiservice.base.HistorianSolrITHelper;
-import com.hurence.webapiservice.base.SolrInjector;
-import com.hurence.webapiservice.base.SolrInjectorTempaAndTempbSize4;
+import com.hurence.webapiservice.util.HistorianSolrITHelper;
+import com.hurence.webapiservice.util.injector.SolrInjector;
+import com.hurence.webapiservice.util.injector.SolrInjectorTempaAndTempbSize4;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

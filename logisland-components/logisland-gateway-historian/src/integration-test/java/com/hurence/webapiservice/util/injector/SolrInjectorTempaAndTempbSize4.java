@@ -1,6 +1,7 @@
-package com.hurence.webapiservice.base;
+package com.hurence.webapiservice.util.injector;
 
 import com.hurence.logisland.record.Point;
+import com.hurence.webapiservice.util.modele.ChunkExpected;
 
 import java.util.Arrays;
 import java.util.List;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hurence.webapiservice.base;
+package com.hurence.webapiservice.util;
 
 import com.hurence.unit5.extensions.SolrExtension;
 import com.hurence.webapiservice.historian.HistorianVerticle;
@@ -33,7 +33,6 @@ import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
 import org.apache.solr.common.util.NamedList;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
