@@ -27,6 +27,7 @@ SPARK_MASTER="local[*]"
 VERBOSE_OPTIONS=""
 YARN_CLUSTER_OPTIONS=""
 APP_NAME=""
+OPENCV_NATIVE_LIB_PATH="/usr/local/share/java/opencv4"
 
 # update $app_classpath so that it contains all logisland jars except for engines.
 # we look for jars into specified dir recursively.
@@ -280,6 +281,7 @@ main() {
 
 
 
+        export SPARK_PRINT_LAUNCH_COMMAND=1
         echo "Detected spark version ${SPARK_VERSION}. We'll automatically plug in engine jar ${engine_jar}"
         APP_NAME=`awk '{ if( $1 == "spark.app.name:" ){ print $2 } }' ${CONF_FILE}`
         MODE=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
@@ -321,6 +323,7 @@ main() {
           local*)
 
             ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
+             --driver-library-path ${OPENCV_NATIVE_LIB_PATH} \
              --conf spark.driver.extraJavaOptions="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dlog4j.configuration=\"file:${lib_dir}/../conf/log4j.properties\"" \
              --conf spark.executor.extraJavaOptions="-Dlog4j.configuration=\"file:${lib_dir}/../conf/log4j.properties\"" \
              --conf spark.metrics.namespace="${APP_NAME}"  \
@@ -523,6 +526,7 @@ main() {
 
             export MESOS_NATIVE_JAVA_LIBRARY="${MESOS_NATIVE_JAVA_LIBRARY}"
             ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${MESOS_OPTIONS} \
+            --driver-library-path ${OPENCV_NATIVE_LIB_PATH} \
             --class ${app_mainclass} \
             --jars ${app_classpath} ${engine_jar} \
             -conf ${CONF_FILE}
