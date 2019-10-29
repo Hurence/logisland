@@ -29,7 +29,6 @@ import io.vertx.core.Handler;
 /**
  * This interface describes the Transactions Manager Service. Note that all methods has same name of corresponding operation id
  *
- *
  * <p/>
  * NOTE: This class has been automatically generated from the {@link com.hurence.webapiservice.historian.HistorianService original} non RX-ified interface using Vert.x codegen.
  */
@@ -90,7 +89,7 @@ public class HistorianService {
   }
 
   /**
-   * @param params as a json object <pre> { "target" : "searched metric" } </pre>
+   * @param params as a json object, it is ignored at the moment TODO
    * @param resultHandler return chunks of timeseries as an array of <pre> {  : "all metric name matching the query",  : "total chunk matching query" } DOCS contains at minimum chunk_value, chunk_start </pre>
    * @return himself
    */
@@ -100,7 +99,7 @@ public class HistorianService {
   }
 
   /**
-   * @param params as a json object <pre> { "target" : "searched metric" } </pre>
+   * @param params as a json object, it is ignored at the moment TODO
    * @return himself
    */
   public Single<JsonObject> rxGetMetricsName(JsonObject params) { 
@@ -117,6 +116,21 @@ public class HistorianService {
   public static final String FIELDS_TO_FETCH = com.hurence.webapiservice.historian.HistorianService.FIELDS_TO_FETCH;
   public static final String TAGS = com.hurence.webapiservice.historian.HistorianService.TAGS;
   public static final String NAMES = com.hurence.webapiservice.historian.HistorianService.NAMES;
+  public static final String METRIC_NAME = com.hurence.webapiservice.historian.HistorianService.METRIC_NAME;
+  public static final String CHUNK_ID = com.hurence.webapiservice.historian.HistorianService.CHUNK_ID;
+  public static final String CHUNK_VERSION = com.hurence.webapiservice.historian.HistorianService.CHUNK_VERSION;
+  public static final String CHUNK_VALUE = com.hurence.webapiservice.historian.HistorianService.CHUNK_VALUE;
+  public static final String CHUNK_MAX = com.hurence.webapiservice.historian.HistorianService.CHUNK_MAX;
+  public static final String CHUNK_MIN = com.hurence.webapiservice.historian.HistorianService.CHUNK_MIN;
+  public static final String CHUNK_START = com.hurence.webapiservice.historian.HistorianService.CHUNK_START;
+  public static final String CHUNK_END = com.hurence.webapiservice.historian.HistorianService.CHUNK_END;
+  public static final String CHUNK_AVG = com.hurence.webapiservice.historian.HistorianService.CHUNK_AVG;
+  public static final String CHUNK_SIZE = com.hurence.webapiservice.historian.HistorianService.CHUNK_SIZE;
+  public static final String CHUNK_SUM = com.hurence.webapiservice.historian.HistorianService.CHUNK_SUM;
+  public static final String CHUNK_SAX = com.hurence.webapiservice.historian.HistorianService.CHUNK_SAX;
+  public static final String CHUNK_WINDOW_MS = com.hurence.webapiservice.historian.HistorianService.CHUNK_WINDOW_MS;
+  public static final String CHUNK_TREND = com.hurence.webapiservice.historian.HistorianService.CHUNK_TREND;
+  public static final String CHUNK_SIZE_BYTES = com.hurence.webapiservice.historian.HistorianService.CHUNK_SIZE_BYTES;
 
   public static  HistorianService newInstance(com.hurence.webapiservice.historian.HistorianService arg) {
     return arg != null ? new HistorianService(arg) : null;

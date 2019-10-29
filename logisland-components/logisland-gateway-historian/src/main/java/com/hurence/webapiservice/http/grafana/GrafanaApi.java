@@ -10,12 +10,12 @@ public interface GrafanaApi {
 
     default Router getGraphanaRouter(Vertx vertx) {
         Router router = Router.router(vertx);
-        router.get("/").handler(this::rootHandler);
-        router.get("/search").handler(this::searchHandler);
-        router.get("/query").handler(this::queryHandler);
-        router.get("/annotations").handler(this::annotationsHandler);
-        router.get("/tag-keys").handler(this::tagKeysHandler);
-        router.get("/tag-values").handler(this::tagValuesHandler);
+        router.get("/").handler(this::root);
+        router.post("/search").handler(this::search);
+        router.post("/query").handler(this::query);
+        router.post("/annotations").handler(this::annotations);
+        router.post("/tag-keys").handler(this::tagKeys);
+        router.post("/tag-values").handler(this::tagValues);
         return router;
     }
 
@@ -23,7 +23,7 @@ public interface GrafanaApi {
      * should return 200 ok
      * @param context
      */
-    void rootHandler(RoutingContext context);
+    void root(RoutingContext context);
 
     /**
      *  used by the find metric options on the query tab in panels.
@@ -44,29 +44,29 @@ public interface GrafanaApi {
      *
      *
      */
-    void searchHandler(RoutingContext context);
+    void search(RoutingContext context);
 
     /**
      * should return metrics based on input.
      * @param context
      */
-    void queryHandler(RoutingContext context);
+    void query(RoutingContext context);
 
     /**
      * should return annotations.
      * @param context
      */
-    void annotationsHandler(RoutingContext context);
+    void annotations(RoutingContext context);
 
     /**
      * should return tag keys for ad hoc filters.
      * @param context
      */
-    void tagKeysHandler(RoutingContext context);
+    void tagKeys(RoutingContext context);
 
     /**
      * should return tag values for ad hoc filters.
      * @param context
      */
-    void tagValuesHandler(RoutingContext context);
+    void tagValues(RoutingContext context);
 }

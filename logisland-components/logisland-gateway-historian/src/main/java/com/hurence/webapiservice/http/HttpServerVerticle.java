@@ -1,6 +1,5 @@
 package com.hurence.webapiservice.http;
 
-import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Point;
 import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
 import com.hurence.logisland.timeseries.sampling.Sampler;
@@ -133,7 +132,7 @@ public class HttpServerVerticle extends AbstractVerticle {
                         throw new UnsupportedOperationException("not yet supported when matching more than "+
                                 chunks.size() + " chunks (total found : " + totalFound +")");
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
-                            Collectors.groupingBy(chunk ->  chunk.getString(FieldDictionary.RECORD_NAME))
+                            Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
                     );
                     JsonArray timeseries = new JsonArray();
                     chunksByName.forEach((key, value) -> {
@@ -164,28 +163,28 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     private JsonObject buildHistorianRequest(GetTimeSerieRequestParam request) {
         JsonArray fieldsToFetch = new JsonArray()
-                .add(FieldDictionary.CHUNK_VALUE)
-                .add(FieldDictionary.CHUNK_START)
-                .add(FieldDictionary.CHUNK_END)
-                .add(FieldDictionary.CHUNK_SIZE)
-                .add(FieldDictionary.RECORD_NAME);
+                .add(HistorianService.CHUNK_VALUE)
+                .add(HistorianService.CHUNK_START)
+                .add(HistorianService.CHUNK_END)
+                .add(HistorianService.CHUNK_SIZE)
+                .add(HistorianService.METRIC_NAME);
         request.getAggs().forEach(agg -> {
             final String aggField;
             switch (agg) {
                 case MIN:
-                    aggField = FieldDictionary.CHUNK_MIN;
+                    aggField = HistorianService.CHUNK_MIN;
                     break;
                 case MAX:
-                    aggField = FieldDictionary.CHUNK_MAX;
+                    aggField = HistorianService.CHUNK_MAX;
                     break;
                 case AVG:
-                    aggField = FieldDictionary.CHUNK_AVG;
+                    aggField = HistorianService.CHUNK_AVG;
                     break;
                 case COUNT:
-                    aggField = FieldDictionary.CHUNK_SIZE;
+                    aggField = HistorianService.CHUNK_SIZE;
                     break;
                 case SUM:
-                    aggField = FieldDictionary.CHUNK_SUM;
+                    aggField = HistorianService.CHUNK_SUM;
                     break;
                 default:
                     throw new IllegalStateException("Unsupported aggregation: " + agg);
@@ -202,7 +201,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     private JsonObject agreggateChunks(long from, long to, List<AGG> aggs, SamplingConf samplingConf, List<JsonObject> chunks) {
         if (chunks==null || chunks.isEmpty()) throw new IllegalArgumentException("chunks is null or empty !");
-        String name = chunks.stream().findFirst().get().getString(FieldDictionary.RECORD_NAME);
+        String name = chunks.stream().findFirst().get().getString(HistorianService.METRIC_NAME);
         JsonObject timeserie = new JsonObject()
                 .put(TIMESERIES_NAME, name);
         chunks = adjustChunk(from, to, aggs, chunks);
@@ -254,9 +253,9 @@ public class HttpServerVerticle extends AbstractVerticle {
     private List<Point> getPoints(long from, long to, List<JsonObject> chunks) {
         return chunks.stream()
                 .flatMap(chunk -> {
-                    byte[] binaryChunk = chunk.getBinary(FieldDictionary.CHUNK_VALUE);
-                    long chunkStart = chunk.getLong(FieldDictionary.CHUNK_START);
-                    long chunkEnd = chunk.getLong(FieldDictionary.CHUNK_END);
+                    byte[] binaryChunk = chunk.getBinary(HistorianService.CHUNK_VALUE);
+                    long chunkStart = chunk.getLong(HistorianService.CHUNK_START);
+                    long chunkEnd = chunk.getLong(HistorianService.CHUNK_END);
                     try {
                         return compacter.unCompressPoints(binaryChunk, chunkStart, chunkEnd, from, to).stream();
                     } catch (IOException ex) {

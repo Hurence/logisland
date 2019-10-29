@@ -1,4 +1,4 @@
-package com.hurence.webapiservice.http;
+package com.hurence.webapiservice.base;
 
 import com.hurence.logisland.record.Point;
 
@@ -14,7 +14,7 @@ public class ChunkExpected {
     public double max;
     public double sum;
     public boolean trend;
-    public String recordName;
+    public String name;
     public String sax;
 //    public String recordName;
 }

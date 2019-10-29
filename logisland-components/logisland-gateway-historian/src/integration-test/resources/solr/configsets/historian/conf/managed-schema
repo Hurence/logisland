@@ -474,7 +474,7 @@
   <field name="chunk_window_ms" type="plong"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="tagname" type="text_general"/>
-  <field name="record_name" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="name" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight" indexed="true" stored="true"/>
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
