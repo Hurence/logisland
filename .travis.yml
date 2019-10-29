@@ -21,7 +21,7 @@ before_install:
   - wget https://github.com/Hurence/logisland/releases/download/v1.2.0/opencv-411.jar
   - sudo mv libopencv_java411.so /usr/local/share/java/opencv4/
   - sudo mv opencv-411.jar /usr/local/share/java/opencv4/
-  - sudo chmod u+x /usr/local/share/java/opencv4/*s
+  - sudo chmod u+x /usr/local/share/java/opencv4/*
 
 #
 #  # Upgrade/install docker-compose.
