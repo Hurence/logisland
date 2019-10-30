@@ -135,7 +135,7 @@
             <id>linux</id>
             <activation>
                 <os>
-                    <family>linux</family>
+                    <family>unix</family>
                 </os>
             </activation>
             <build>
