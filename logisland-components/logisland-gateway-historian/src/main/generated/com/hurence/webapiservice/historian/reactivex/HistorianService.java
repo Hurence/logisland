@@ -70,7 +70,7 @@ public class HistorianService {
 
   /**
    * @param params as a json object <pre> {  : "content of chunks as an array",  : "total chunk matching query",  : ["field1", "field2"...],  : "total chunk matching query",  : "content of chunks as an array", } </pre> explanation : if  not specified will search from 0 if  not specified will search to Max.Long use  if you want to retrieve some of the precalculated aggs. If not specified retrieve all. use  to search for specific timeseries having one of those tags use  to search a specific timeseries name
-   * @param resultHandler return chunks of timeseries as an array of <pre> {  : "content of chunks as an array",  : "total chunk matching query" } DOCS contains at minimum chunk_value, chunk_start </pre>
+   * @param resultHandler return chunks of timeseries as an array of <pre> {  : "content of chunks as an array",  : "total chunk matching query" } </pre>
    * @return himself
    */
   public com.hurence.webapiservice.historian.reactivex.HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) { 
@@ -90,7 +90,7 @@ public class HistorianService {
 
   /**
    * @param params as a json object, it is ignored at the moment TODO
-   * @param resultHandler return chunks of timeseries as an array of <pre> {  : "all metric name matching the query",  : "total chunk matching query" } DOCS contains at minimum chunk_value, chunk_start </pre>
+   * @param resultHandler return chunks of timeseries as an array of <pre> {  : "all metric name matching the query",  : "total chunk matching query" } </pre>
    * @return himself
    */
   public com.hurence.webapiservice.historian.reactivex.HistorianService getMetricsName(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) { 

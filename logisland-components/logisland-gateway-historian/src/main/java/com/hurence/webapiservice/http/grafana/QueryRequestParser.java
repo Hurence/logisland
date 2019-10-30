@@ -59,7 +59,7 @@ public class QueryRequestParser {
     }
 
     private long parseDate(JsonObject requestBody, String pointer) {
-        JsonPointer jsonPointer = JsonPointer.from("/range/from");
+        JsonPointer jsonPointer = JsonPointer.from(pointer);
         Object fromObj = jsonPointer.queryJson(requestBody);
         if (fromObj instanceof String) {
             try {

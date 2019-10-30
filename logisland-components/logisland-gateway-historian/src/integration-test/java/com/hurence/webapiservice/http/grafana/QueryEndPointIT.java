@@ -50,12 +50,12 @@ public class QueryEndPointIT {
                 Arrays.asList(
                         Arrays.asList(
                                 new Point(0, 1477895624866L, 622),
-                                new Point(0, 1477917224846L, -3),
+                                new Point(0, 1477916224866L, -3),
                                 new Point(0, 1477917224866L, 365)
                         ),
                         Arrays.asList(
-                                new Point(0, 1450754160000L, 861),
-                                new Point(0, 1450754220000L, 767)
+                                new Point(0, 1477895624866L, 861),
+                                new Point(0, 1477917224866L, 767)
                         )
                 ));
         injector.injectChunks(client);
@@ -72,7 +72,7 @@ public class QueryEndPointIT {
     @Test
     @Timeout(value = 500, timeUnit = TimeUnit.SECONDS)
     public void testQuery(Vertx vertx, VertxTestContext testContext) {
-        FileSystem fs = vertx.fileSystem();
+        final FileSystem fs = vertx.fileSystem();
         Buffer requestBuffer = fs.readFileBlocking(getClass().getResource("/http/grafana/query/test1/request.json").getFile());
         webClient.post("/api/grafana/query")
                 .as(BodyCodec.jsonArray())
