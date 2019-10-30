@@ -76,13 +76,12 @@ public interface HistorianService {
      *                      use {@value TAGS} to search for specific timeseries having one of those tags
      *                      use {@value NAMES} to search a specific timeseries name
      * @param resultHandler return chunks of timeseries as an array of
-     *                      * <pre>
-     *                         * {
-     *                         *     {@value CHUNKS} : "content of chunks as an array",
-     *                         *     {@value TOTAL_FOUND} : "total chunk matching query"
-     *                         * }
-     *                         * DOCS contains at minimum chunk_value, chunk_start
-     *                         * </pre>
+     *                      <pre>
+     *                      {
+     *                          {@value CHUNKS} : "content of chunks as an array",
+     *                          {@value TOTAL_FOUND} : "total chunk matching query"
+     *                      }
+     *                      </pre>
      * @return himself
      */
     @Fluent
@@ -96,7 +95,6 @@ public interface HistorianService {
      *                          {@value METRICS} : "all metric name matching the query",
      *                          {@value TOTAL_FOUND} : "total chunk matching query"
      *                      }
-     *                      DOCS contains at minimum chunk_value, chunk_start
      *                      </pre>
      * @return himself
      */

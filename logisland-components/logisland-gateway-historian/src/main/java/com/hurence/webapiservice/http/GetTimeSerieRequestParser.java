@@ -6,12 +6,10 @@ import com.hurence.webapiservice.modele.SamplingConf;
 import io.vertx.reactivex.core.MultiMap;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-public class GetTimeSerieRequestParser extends RequestParser {
+public class GetTimeSerieRequestParser extends MultiMapRequestParser {
     /*
       REST API PARAMS
      */
@@ -42,14 +40,6 @@ public class GetTimeSerieRequestParser extends RequestParser {
         return builder.build();
     }
 
-    private List<String> parseListOrDefault(MultiMap map, String queryParam, List<String> defaut) {
-        if (map.contains(queryParam)) {
-            return map.getAll(queryParam);
-        } else {
-            return defaut;
-        }
-    }
-
     private SamplingAlgorithm parseSamplingAlgorithmOrDefault(MultiMap map, String queryParam, SamplingAlgorithm defaut) {
         if (map.contains(queryParam)) {
             return SamplingAlgorithm.valueOf(map.get(QUERY_PARAM_SAMPLING));
@@ -58,24 +48,6 @@ public class GetTimeSerieRequestParser extends RequestParser {
         }
     }
 
-    private int parseIntOrDefault(MultiMap map, String queryParam, int defaut) {
-        if (map.contains(queryParam)) {
-            return parseInt(map, queryParam);
-        } else {
-            return defaut;
-        }
-    }
-
-    private int parseInt(MultiMap map, String queryParam) {
-        try {
-            return Integer.parseInt(map.get(queryParam));
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException(
-                    String.format("Could not parse parameter '%s' as a integer. '%s' is not an integer",
-                            queryParam, map.get(queryParam))
-            );
-        }
-    }
 
     private List<AGG> parseAggsOrDefault(MultiMap map, String queryParam, List<AGG> defaut) {
         if (map.contains(queryParam)) {
@@ -85,24 +57,6 @@ public class GetTimeSerieRequestParser extends RequestParser {
         }
     }
 
-    private long parseLong(MultiMap map, String queryParam) throws IllegalArgumentException {
-        try {
-            return Long.parseLong(map.get(queryParam));
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException(
-                    String.format("Could not parse parameter '%s' as a long. '%s' is not a long",
-                            queryParam, map.get(queryParam))
-            );
-        }
-    }
-
-    private long parseLongOrDefault(MultiMap map, String queryParam, long defaut) throws IllegalArgumentException {
-        if (map.contains(queryParam)) {
-            return parseLong(map, queryParam);
-        } else {
-            return defaut;
-        }
-    }
 
     private List<AGG> parseAggs(MultiMap map, String queryParam) throws IllegalArgumentException {
         try {

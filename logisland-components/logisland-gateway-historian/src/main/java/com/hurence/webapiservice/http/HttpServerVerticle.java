@@ -1,14 +1,9 @@
 package com.hurence.webapiservice.http;
 
-import com.hurence.logisland.record.Point;
-import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
-import com.hurence.logisland.timeseries.sampling.Sampler;
-import com.hurence.logisland.timeseries.sampling.SamplerFactory;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
-import com.hurence.webapiservice.modele.AGG;
-import com.hurence.webapiservice.modele.SamplingConf;
-import com.hurence.webapiservice.timeseries.reactivex.TimeseriesService;
+import com.hurence.webapiservice.timeseries.LogislandTimeSeriesModeler;
+import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +16,6 @@ import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,35 +34,19 @@ public class HttpServerVerticle extends AbstractVerticle {
     public static final String CONFIG_TIMESERIES_ADDRESS = "timeseries.address";
 
     private static final GetTimeSerieRequestParser getTimeSerieParser = new GetTimeSerieRequestParser();
-    /*
-       REST API TIMESERIES RESPONSE
-    */
-    private static String TIMESERIES = "timeseries";
-    private static String TIMESERIES_NAME = "name";
-    private static String TIMESERIES_TIMESTAMPS = "timestamps";
-    private static String TIMESERIES_VALUES = "values";
-    private static String TIMESERIES_AGGS = "aggs";
-    private static String TIMESERIES_AGGS_MIN = "min";
-    private static String TIMESERIES_AGGS_MAX = "max";
-    private static String TIMESERIES_AGGS_AVG = "avg";
-    private static String TIMESERIES_AGGS_COUNT = "count";
-    private static String TIMESERIES_AGGS_SUM = "sum";
+    private static TimeSeriesModeler timeserieModeler = new LogislandTimeSeriesModeler();
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
 
     private HistorianService historianService;
-    private TimeseriesService timeseriesService;
-    private BinaryCompactionConverter compacter = new BinaryCompactionConverter.Builder().build();
+
 
     @Override
     public void start(Promise<Void> promise) throws Exception {
 
         String historianServiceAdr = config().getString(CONFIG_HISTORIAN_ADDRESS, "historian");
         historianService = com.hurence.webapiservice.historian.HistorianService.createProxy(vertx.getDelegate(), historianServiceAdr);
-
-        String timeseriesServiceAdr = config().getString(CONFIG_TIMESERIES_ADDRESS, "timeseries");
-        timeseriesService = com.hurence.webapiservice.timeseries.TimeseriesService.createProxy(vertx.getDelegate(), timeseriesServiceAdr);
 
         HttpServer server = vertx.createHttpServer();
 
@@ -136,7 +114,7 @@ public class HttpServerVerticle extends AbstractVerticle {
                     );
                     JsonArray timeseries = new JsonArray();
                     chunksByName.forEach((key, value) -> {
-                        JsonObject agreggatedChunks = agreggateChunks(
+                        JsonObject agreggatedChunks = timeserieModeler.extractTimeSerieFromChunks(
                                 request.getFrom(), request.getTo(),
                                 request.getAggs(), request.getSamplingConf(), value);
                         timeseries.add(agreggatedChunks);
@@ -199,122 +177,8 @@ public class HttpServerVerticle extends AbstractVerticle {
     }
 
 
-    private JsonObject agreggateChunks(long from, long to, List<AGG> aggs, SamplingConf samplingConf, List<JsonObject> chunks) {
-        if (chunks==null || chunks.isEmpty()) throw new IllegalArgumentException("chunks is null or empty !");
-        String name = chunks.stream().findFirst().get().getString(HistorianService.METRIC_NAME);
-        JsonObject timeserie = new JsonObject()
-                .put(TIMESERIES_NAME, name);
-        chunks = adjustChunk(from, to, aggs, chunks);
-        //TODO add possibility to not get points but only aggregation if wanted
-        JsonObject points = samplePoints(from, to, samplingConf, chunks);
-        timeserie.mergeIn(points);
-        JsonObject timeSeriesAggs = calculAggs(aggs, chunks);
-        if (!timeSeriesAggs.isEmpty())
-            timeserie.put(TIMESERIES_AGGS, timeSeriesAggs);
-        return timeserie;
-    }
 
-    /**
-     *
-     * @param samplingConf how to sample points to retrieve
-     * @param chunks to sample, chunks should be corresponding to the same timeserie !*
-     *               Should contain the compressed binary points as well as all needed aggs.
-     *               Chunks should be ordered as well.
-     * @return sampled points as an array
-     * <pre>
-     * {
-     *     {@value TIMESERIES_TIMESTAMPS} : [longs]
-     *     {@value TIMESERIES_VALUES} : [doubles]
-     * }
-     * DOCS contains at minimum chunk_value, chunk_start
-     * </pre>
-     */
-    private JsonObject samplePoints(long from, long to, SamplingConf samplingConf, List<JsonObject> chunks) {
-        Sampler<Point> sampler = SamplerFactory.getPointSampler(samplingConf.getAlgo(), samplingConf.getBucketSize());
-        List<Point> sampledPoints = sampler.sample(getPoints(from, to, chunks));
-        List<Long> timestamps = sampledPoints.stream()
-                .map(Point::getTimestamp)
-                .collect(Collectors.toList());
-        List<Double> values = sampledPoints.stream()
-                .map(Point::getValue)
-                .collect(Collectors.toList());
-        return new JsonObject()
-                .put(TIMESERIES_TIMESTAMPS, timestamps)
-                .put(TIMESERIES_VALUES, values);
-    }
 
-    /**
-     *
-     * @param from
-     * @param to
-     * @param chunks
-     * @return return all points uncompressing chunks
-     */
-    private List<Point> getPoints(long from, long to, List<JsonObject> chunks) {
-        return chunks.stream()
-                .flatMap(chunk -> {
-                    byte[] binaryChunk = chunk.getBinary(HistorianService.CHUNK_VALUE);
-                    long chunkStart = chunk.getLong(HistorianService.CHUNK_START);
-                    long chunkEnd = chunk.getLong(HistorianService.CHUNK_END);
-                    try {
-                        return compacter.unCompressPoints(binaryChunk, chunkStart, chunkEnd, from, to).stream();
-                    } catch (IOException ex) {
-                        throw new IllegalArgumentException("error during uncompression of a chunk !", ex);
-                    }
-                }).collect(Collectors.toList());
-    }
 
-    /**
-     *
-     * @param aggs to calculate
-     * @param chunks to use for calculation, each chunk should already contain needed agg. The chunk should
-     *               reference the same timeserie.
-     * @return a JsonObject containing aggregation over all chunks
-     */
-    private JsonObject calculAggs(List<AGG> aggs, List<JsonObject> chunks) {
-        final JsonObject aggsJson = new JsonObject();
-        aggs.forEach(agg -> {
-            //TODO find a way to not use a switch, indeed this would imply to modify this code every time we add an agg
-            //TODO instead for example use an interface ? And a factory ?
-            final String aggField;
-            switch (agg) {
-                case MIN:
-                    //TODO
-                    aggsJson.put(TIMESERIES_AGGS_MIN, "TODO");
-                    break;
-                case MAX:
-                    aggsJson.put(TIMESERIES_AGGS_MAX, "TODO");
-                    break;
-                case AVG:
-                    aggsJson.put(TIMESERIES_AGGS_AVG, "TODO");
-                    break;
-                case COUNT:
-                    aggsJson.put(TIMESERIES_AGGS_COUNT, "TODO");
-                    break;
-                case SUM:
-                    aggsJson.put(TIMESERIES_AGGS_SUM, "TODO");
-                    break;
-                default:
-                    throw new IllegalStateException("Unsupported aggregation: " + agg);
-            }
-        });
-        return aggsJson;
-    }
-
-    /**
-     * @param from minimum timestamp for points in chunks.
-     *             If a chunk contains a point with a lower timestamp it will be recalculated without those points
-     * @param to maximum timestamp for points in chunks.
-     *           If a chunk contains a point with a higher timestamp it will be recalculated without those points
-     * @param aggs the desired aggs for the chunk, it will be recalculated if needed
-     * @param chunks the current chunks
-     * @return chunks if no points are out of bound otherwise return chunks with recalculated ones.
-     */
-    private List<JsonObject> adjustChunk(long from, long to, List<AGG> aggs, List<JsonObject> chunks) {
-        //TODO only necessary if we want to optimize aggs. But if we have to recompute all chunks this may not be really helpfull.
-        //TODO depending on the size of the bucket desired.
-
-        return chunks;
-    }
 
 }
