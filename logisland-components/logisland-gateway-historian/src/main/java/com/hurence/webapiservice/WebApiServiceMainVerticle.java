@@ -26,7 +26,9 @@ public class WebApiServiceMainVerticle extends AbstractVerticle {
             .flatMap(id -> deployHttpVerticle())
             .doOnError(promise::fail)
             .doOnSuccess(id -> promise.complete())
-            .subscribe();
+            .subscribe(id -> {
+              logger.info("{} finished to deploy verticles", WebApiServiceMainVerticle.class.getSimpleName());
+            });
   }
 
   private Single<String> deployHistorianVerticle() {

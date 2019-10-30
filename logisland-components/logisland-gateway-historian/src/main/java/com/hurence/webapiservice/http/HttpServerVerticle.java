@@ -67,10 +67,12 @@ public class HttpServerVerticle extends AbstractVerticle {
                 .requestHandler(router)
                 .listen(portNumber, host, ar -> {
                     if (ar.succeeded()) {
-                        LOGGER.info("HTTP server running at {}:{}", host, portNumber);
+                        LOGGER.info("HTTP server running at {}:{} (verticle {})", host, portNumber, HttpServerVerticle.class.getSimpleName());
                         promise.complete();
                     } else {
-                        LOGGER.error("Could not start a HTTP server at {}:{}", host, portNumber, ar.cause());
+                        String errorMsg = String.format("Could not start a HTTP server at %s:%s (verticle %s)",
+                                host, portNumber, HttpServerVerticle.class.getSimpleName());
+                        LOGGER.error(errorMsg, ar.cause());
                         promise.fail(ar.cause());
                     }
                 });

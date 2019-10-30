@@ -27,6 +27,7 @@ import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,7 +44,7 @@ public class HistorianVerticle extends AbstractVerticle {
 
   public static final String CONFIG_SOLR_URLS = "urls";
   public static final String CONFIG_SOLR_USE_ZOOKEEPER = "use_zookeeper";
-  public static final String CONFIG_SOLR_ZOOKEEPER_ROOT = "zookeeper_root";
+  public static final String CONFIG_SOLR_ZOOKEEPER_ROOT = "zookeeper_chroot";//see zookeeper documentation about chroot
   public static final String CONFIG_SOLR_ZOOKEEPER_URLS = "zookeeper_urls";
   public static final String CONFIG_SOLR_CONNECTION_TIMEOUT = "connection_timeout";
   public static final String CONFIG_SOLR_SOCKET_TIMEOUT = "socket_timeout";
@@ -63,11 +64,13 @@ public class HistorianVerticle extends AbstractVerticle {
 
     CloudSolrClient.Builder clientBuilder;
     if (useZookeeper) {
+      logger.info("Zookeeper mode");
       clientBuilder = new CloudSolrClient.Builder(
-              getStringListIfExist(slrConfig, CONFIG_SOLR_ZOOKEEPER_URLS).orElseThrow(IllegalArgumentException::new),
-              Optional.ofNullable(slrConfig.getString(CONFIG_SOLR_ZOOKEEPER_ROOT))
+                getStringListIfExist(slrConfig, CONFIG_SOLR_ZOOKEEPER_URLS).orElse(Collections.emptyList()),
+                Optional.ofNullable(slrConfig.getString(CONFIG_SOLR_ZOOKEEPER_ROOT))
       );
     } else {
+      logger.info("Client without zookeeper");
       clientBuilder = new CloudSolrClient.Builder(
               getStringListIfExist(slrConfig, CONFIG_SOLR_URLS)
                       .orElseThrow(IllegalArgumentException::new)
@@ -85,7 +88,7 @@ public class HistorianVerticle extends AbstractVerticle {
         ServiceBinder binder = new ServiceBinder(vertx);
         binder.setAddress(address)
                 .register(HistorianService.class, ready.result());
-        logger.trace("{} deployed on address : '{}'", HistorianService.class.getSimpleName(), address);
+        logger.info("{} deployed on address : '{}'", HistorianService.class.getSimpleName(), address);
         promise.complete();
       } else {
         promise.fail(ready.cause());
