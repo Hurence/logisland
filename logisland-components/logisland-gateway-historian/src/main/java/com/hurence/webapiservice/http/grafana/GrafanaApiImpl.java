@@ -82,14 +82,8 @@ public class GrafanaApiImpl implements GrafanaApi {
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
                             Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
                     );
-                    JsonArray timeseries = new JsonArray();
-                    chunksByName.forEach((key, value) -> {
-                        JsonObject agreggatedChunks = timeserieToolBox.extractTimeSerieFromChunks(
-                                request.getFrom(), request.getTo(),
-                                request.getAggs(), request.getSamplingConf(), value);
-                        timeseries.add(agreggatedChunks);
-                    });
-                    return timeseries;
+                    return TimeSeriesModeler.buildTimeSeries(request.getFrom(), request.getTo(),
+                            request.getAggs(), request.getSamplingConf(), chunksByName, timeserieToolBox);
                 })
                 .doOnError(ex -> {
                     LOGGER.error("Unexpected error : ", ex);

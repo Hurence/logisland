@@ -3,6 +3,8 @@ package com.hurence.webapiservice.http;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
 import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
+import com.hurence.webapiservice.modele.AGG;
+import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.LogislandTimeSeriesModeler;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
 import io.vertx.core.Promise;
@@ -107,14 +109,8 @@ public class HttpServerVerticle extends AbstractVerticle {
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
                             Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
                     );
-                    JsonArray timeseries = new JsonArray();
-                    chunksByName.forEach((key, value) -> {
-                        JsonObject agreggatedChunks = timeserieModeler.extractTimeSerieFromChunks(
-                                request.getFrom(), request.getTo(),
-                                request.getAggs(), request.getSamplingConf(), value);
-                        timeseries.add(agreggatedChunks);
-                    });
-                    return timeseries;
+                    return TimeSeriesModeler.buildTimeSeries(request.getFrom(), request.getTo(),
+                            request.getAggs(), request.getSamplingConf(), chunksByName, timeserieModeler);
                 })
                 .doOnError(ex -> {
                     LOGGER.error("Unexpected error : ", ex);
