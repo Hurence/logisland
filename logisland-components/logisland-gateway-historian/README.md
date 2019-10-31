@@ -15,7 +15,7 @@ mvn -pl :logisland-gateway-historian -am clean install -DskipTests
 
 run :
 ```shell script
-java -jar target/logisland-gateway-historian-<version>-fat.jar -conf target/classes/config.json
+java -jar target/logisland-gateway-historian-1.2.0-fat.jar -conf target/classes/config.json
 ```
 
 #Run server on cluster

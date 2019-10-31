@@ -17,6 +17,7 @@
 
 package com.hurence.webapiservice.historian;
 
+import com.hurence.webapiservice.WebApiServiceMainVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 
 public class HistorianVerticle extends AbstractVerticle {
 
-  private static Logger logger = LoggerFactory.getLogger(HistorianVerticle.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(HistorianVerticle.class);
 
 
   public static final String CONFIG_HISTORIAN_ADDRESS = "address";
@@ -55,6 +56,7 @@ public class HistorianVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> promise) throws Exception {
+    LOGGER.debug("deploying {} verticle with config : {}", HistorianVerticle.class.getSimpleName(), config().encodePrettily());
     final String address = config().getString(CONFIG_HISTORIAN_ADDRESS, "historian");
     final JsonObject slrConfig = config().getJsonObject(CONFIG_ROOT_SOLR);
     final int connectionTimeout = slrConfig.getInteger(CONFIG_SOLR_CONNECTION_TIMEOUT, 10000);
@@ -64,13 +66,13 @@ public class HistorianVerticle extends AbstractVerticle {
 
     CloudSolrClient.Builder clientBuilder;
     if (useZookeeper) {
-      logger.info("Zookeeper mode");
+      LOGGER.info("Zookeeper mode");
       clientBuilder = new CloudSolrClient.Builder(
                 getStringListIfExist(slrConfig, CONFIG_SOLR_ZOOKEEPER_URLS).orElse(Collections.emptyList()),
                 Optional.ofNullable(slrConfig.getString(CONFIG_SOLR_ZOOKEEPER_ROOT))
       );
     } else {
-      logger.info("Client without zookeeper");
+      LOGGER.info("Client without zookeeper");
       clientBuilder = new CloudSolrClient.Builder(
               getStringListIfExist(slrConfig, CONFIG_SOLR_URLS)
                       .orElseThrow(IllegalArgumentException::new)
@@ -88,7 +90,7 @@ public class HistorianVerticle extends AbstractVerticle {
         ServiceBinder binder = new ServiceBinder(vertx);
         binder.setAddress(address)
                 .register(HistorianService.class, ready.result());
-        logger.info("{} deployed on address : '{}'", HistorianService.class.getSimpleName(), address);
+        LOGGER.info("{} deployed on address : '{}'", HistorianService.class.getSimpleName(), address);
         promise.complete();
       } else {
         promise.fail(ready.cause());

@@ -14,6 +14,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.util.NamedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,20 +36,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
     this.vertx = vertx;
     this.collection = collection;
     this.compacter = new BinaryCompactionConverter.Builder().build();
-    Handler<Promise<Integer>> colPinghandler = p -> {
-      try {
-        final SolrRequest request = CollectionAdminRequest.collectionStatus(collection);
-        final NamedList<Object> rsp = client.request(request);
-        final NamedList<Object> responseHeader = (NamedList<Object>) rsp.get("responseHeader");
-        int status = (int) responseHeader.get("status");
-        p.complete(status);
-      } catch (IOException|SolrServerException e) {
-        p.fail(e);
-      } catch (Exception e) {
-        logger.error("unexpected exception");
-        p.fail(e);
-      }
-    };
+    Handler<Promise<Integer>> colPinghandler = createPingHandler(6000,  3);
     Handler<AsyncResult<Integer>> statusHandler = h -> {
       if (h.succeeded()) {
         if (h.result() == 0) {
@@ -63,6 +51,46 @@ public class SolrHistorianServiceImpl implements HistorianService {
       }
     };
     vertx.executeBlocking(colPinghandler, statusHandler);
+  }
+
+  private Handler<Promise<Integer>> createPingHandler(long sleepDurationMilli, int numberOfRetry) {
+    return p -> {
+      try {
+        p.complete(pingSolrServer(6000,  3));
+      } catch (IOException e) {
+        logger.error("IOException while pinging solr",e);
+        p.fail(e);
+      } catch (SolrServerException e) {
+        logger.error("SolrServerException while pinging solr",e);
+        p.fail(e);
+      }
+    };
+  }
+
+  private Integer pingSolrServer(long sleepDurationMilli, int numberOfRetry) throws IOException, SolrServerException {
+    try {
+      final SolrRequest request = CollectionAdminRequest.collectionStatus(collection);
+      final NamedList<Object> rsp = client.request(request);
+      final NamedList<Object> responseHeader = (NamedList<Object>) rsp.get("responseHeader");
+      int status = (int) responseHeader.get("status");
+      return status;
+    } catch (IOException | SolrServerException e) {
+      throw e;
+    } catch (SolrException e) {
+      logger.warn("Could not connect so solr");
+      if (numberOfRetry == 0)
+        throw e;
+      logger.info("waiting {} ms before retrying.", sleepDurationMilli);
+      try {
+        Thread.sleep(sleepDurationMilli);
+      } catch (InterruptedException ex) {
+        logger.error("InterruptedException exception", e);
+        throw e;
+      }
+      int triesLeft = numberOfRetry - 1;
+      logger.info("Retrying to connect to solr, {} {} left.", triesLeft, triesLeft == 1 ? "try" : "tries");
+      return pingSolrServer(sleepDurationMilli, triesLeft);
+    }
   }
 
   @Override

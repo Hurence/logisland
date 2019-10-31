@@ -44,7 +44,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     @Override
     public void start(Promise<Void> promise) throws Exception {
-
+        LOGGER.debug("deploying {} verticle with config : {}", HttpServerVerticle.class.getSimpleName(), config().encodePrettily());
         String historianServiceAdr = config().getString(CONFIG_HISTORIAN_ADDRESS, "historian");
         historianService = com.hurence.webapiservice.historian.HistorianService.createProxy(vertx.getDelegate(), historianServiceAdr);
 

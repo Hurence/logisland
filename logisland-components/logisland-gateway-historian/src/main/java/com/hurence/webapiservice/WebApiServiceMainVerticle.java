@@ -11,7 +11,7 @@ import rx.Single;
 
 public class WebApiServiceMainVerticle extends AbstractVerticle {
 
-  private static Logger logger = LoggerFactory.getLogger(WebApiServiceMainVerticle.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(WebApiServiceMainVerticle.class);
 
   private static final String CONFIG_HTTP_SERVER_ROOT = "server";
   private static final String CONFIG_HISTORIAN_ROOT = "historian";
@@ -21,13 +21,14 @@ public class WebApiServiceMainVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> promise) throws Exception {
     vertx.getOrCreateContext();
+    LOGGER.debug("deploying {} verticle with config : {}", WebApiServiceMainVerticle.class.getSimpleName(), config().encodePrettily());
     Single<String> dbVerticleDeployment = deployHistorianVerticle();
     dbVerticleDeployment
             .flatMap(id -> deployHttpVerticle())
             .doOnError(promise::fail)
             .doOnSuccess(id -> promise.complete())
             .subscribe(id -> {
-              logger.info("{} finished to deploy verticles", WebApiServiceMainVerticle.class.getSimpleName());
+              LOGGER.info("{} finished to deploy verticles", WebApiServiceMainVerticle.class.getSimpleName());
             });
   }
 

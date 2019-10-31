@@ -35,7 +35,7 @@ public class GrafanaApiImpl implements GrafanaApi {
     public void root(RoutingContext context) {
         context.response()
                 .setStatusCode(200)
-                .end();
+                .end("Historian grafana api is Working fine");
     }
 
     @Override

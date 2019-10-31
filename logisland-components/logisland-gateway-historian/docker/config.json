@@ -1,0 +1,17 @@
+{
+  "web.verticles.instance.number": 2,
+  "historian.verticles.instance.number": 1,
+  "server" : {
+    "host": "historian",
+    "port" : 8080,
+    "historian.address": "historian"
+  },
+  "historian": {
+    "address" : "historian",
+    "solr" : {
+      "use_zookeeper": true,
+      "zookeeper_urls": ["zookeeper:2181"],
+      "collection": "historian"
+    }
+  }
+}
