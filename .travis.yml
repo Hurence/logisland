@@ -22,7 +22,7 @@ before_install:
   - sudo mv libopencv_java411.so /usr/local/share/java/opencv4/
   - sudo mv opencv-411.jar /usr/local/share/java/opencv4/
   - sudo chmod 755 /usr/local/share/java/opencv4/*
-  - mvn install:install-file -Dfile=opencv-411.jar -DgroupId=opencv -DartifactId=opencv -Dversion=4.1.1 -Dpackaging=jar
+  - mvn install:install-file -Dfile=/usr/local/share/java/opencv4/opencv-411.jar -DgroupId=opencv -DartifactId=opencv -Dversion=4.1.1 -Dpackaging=jar
 
 #
 #  # Upgrade/install docker-compose.
