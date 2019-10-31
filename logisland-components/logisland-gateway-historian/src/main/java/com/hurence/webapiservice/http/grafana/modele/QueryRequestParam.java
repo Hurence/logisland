@@ -3,11 +3,13 @@ package com.hurence.webapiservice.http.grafana.modele;
 import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
+import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class QueryRequestParam {
+public class QueryRequestParam implements TimeSeriesRequest {
     private List<Target> targets;
     private long from;
     private long to;
@@ -62,6 +64,13 @@ public class QueryRequestParam {
 
     public SamplingConf getSamplingConf() {
         return new SamplingConf(SamplingAlgorithm.NONE, 1000, getMaxDataPoints());
+    }
+
+    @Override
+    public List<String> getNames() {
+        return getTargets().stream()
+                .map(Target::getTarget)
+                .collect(Collectors.toList());
     }
 
 

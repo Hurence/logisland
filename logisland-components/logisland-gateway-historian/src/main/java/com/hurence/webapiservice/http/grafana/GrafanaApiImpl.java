@@ -3,11 +3,8 @@ package com.hurence.webapiservice.http.grafana;
 
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
-import com.hurence.webapiservice.http.GetTimeSerieRequestParam;
-import com.hurence.webapiservice.http.grafana.modele.QueryRequestParam;
-import com.hurence.webapiservice.http.grafana.modele.Target;
-import com.hurence.webapiservice.timeseries.AbstractTimeSeriesModeler;
 import com.hurence.webapiservice.timeseries.GrafanaTimeSeriesModeler;
+import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -60,7 +57,7 @@ public class GrafanaApiImpl implements GrafanaApi {
 
     @Override
     public void query(RoutingContext context) {
-        final QueryRequestParam request;
+        final TimeSeriesRequest request;
         try {
             JsonObject requestBody = context.getBodyAsJson();
             request = queryRequestParser.parseRequest(requestBody);
@@ -82,8 +79,7 @@ public class GrafanaApiImpl implements GrafanaApi {
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
                             Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
                     );
-                    return TimeSeriesModeler.buildTimeSeries(request.getFrom(), request.getTo(),
-                            request.getAggs(), request.getSamplingConf(), chunksByName, timeserieToolBox);
+                    return TimeSeriesModeler.buildTimeSeries(request, chunksByName, timeserieToolBox);
                 })
                 .doOnError(ex -> {
                     LOGGER.error("Unexpected error : ", ex);
@@ -100,16 +96,14 @@ public class GrafanaApiImpl implements GrafanaApi {
 
 
 
-    private JsonObject buildHistorianRequest(QueryRequestParam request) {
+    private JsonObject buildHistorianRequest(TimeSeriesRequest request) {
         JsonArray fieldsToFetch = new JsonArray()
                 .add(HistorianService.CHUNK_VALUE)
                 .add(HistorianService.CHUNK_START)
                 .add(HistorianService.CHUNK_END)
                 .add(HistorianService.CHUNK_SIZE)
                 .add(HistorianService.METRIC_NAME);
-        List<String> metricsToRetrieve = request.getTargets().stream()
-                .map(Target::getTarget)
-                .collect(Collectors.toList());
+        List<String> metricsToRetrieve = request.getNames();
         return new JsonObject()
                 .put(HistorianService.FROM, request.getFrom())
                 .put(HistorianService.TO, request.getTo())

@@ -2,10 +2,11 @@ package com.hurence.webapiservice.http;
 
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
+import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 
 import java.util.List;
 
-public class GetTimeSerieRequestParam {
+public class GetTimeSerieRequestParam implements TimeSeriesRequest {
     private List<String> names;
     private long from;
     private long to;

@@ -11,15 +11,15 @@ import java.util.stream.Collectors;
 
 public interface TimeSeriesModeler {
 
-    public static JsonArray buildTimeSeries(long from, long to,
-                                            List<AGG> aggs, SamplingConf samplingConf,
+
+    public static JsonArray buildTimeSeries(TimeSeriesRequest request,//TODO create an isolated interface with only needed params
                                             Map<String, List<JsonObject>> chunksByName,
                                             TimeSeriesModeler timeserieModeler) {
         List<JsonObject> timeseries = chunksByName.values().stream()
                 .map((chunksOfOneMetric) -> {
                     JsonObject agreggatedChunks = timeserieModeler.extractTimeSerieFromChunks(
-                            from, to,
-                            aggs, samplingConf, chunksOfOneMetric);
+                            request.getFrom(), request.getTo(),
+                            request.getAggs(), request.getSamplingConf(), chunksOfOneMetric);
                     return agreggatedChunks;
                 }).collect(Collectors.toList());
         return new JsonArray(timeseries);

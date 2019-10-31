@@ -3,9 +3,8 @@ package com.hurence.webapiservice.http;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
 import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
-import com.hurence.webapiservice.modele.AGG;
-import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.LogislandTimeSeriesModeler;
+import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -87,7 +86,7 @@ public class HttpServerVerticle extends AbstractVerticle {
      * @param context
      */
     private void getTimeSeries(RoutingContext context) {
-        final GetTimeSerieRequestParam request;
+        final TimeSeriesRequest request;
         try {
             MultiMap map = context.queryParams();
             request = getTimeSerieParser.parseRequest(map);
@@ -109,8 +108,7 @@ public class HttpServerVerticle extends AbstractVerticle {
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
                             Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
                     );
-                    return TimeSeriesModeler.buildTimeSeries(request.getFrom(), request.getTo(),
-                            request.getAggs(), request.getSamplingConf(), chunksByName, timeserieModeler);
+                    return TimeSeriesModeler.buildTimeSeries(request, chunksByName, timeserieModeler);
                 })
                 .doOnError(ex -> {
                     LOGGER.error("Unexpected error : ", ex);
@@ -130,7 +128,7 @@ public class HttpServerVerticle extends AbstractVerticle {
                 }).subscribe();
     }
 
-    private JsonObject buildHistorianRequest(GetTimeSerieRequestParam request) {
+    private JsonObject buildHistorianRequest(TimeSeriesRequest request) {
         JsonArray fieldsToFetch = new JsonArray()
                 .add(HistorianService.CHUNK_VALUE)
                 .add(HistorianService.CHUNK_START)
