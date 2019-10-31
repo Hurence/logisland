@@ -28,6 +28,8 @@ public interface HistorianService {
     public static String FIELDS_TO_FETCH = "fields";
     public static String TAGS = "tags";
     public static String NAMES = "names";
+    public static String MAX_TOTAL_CHUNKS_TO_RETRIEVE = "total_max_chunks";
+
     //Response fields
     public static String METRIC_NAME = "name";
     public static String CHUNK_ID = "id";

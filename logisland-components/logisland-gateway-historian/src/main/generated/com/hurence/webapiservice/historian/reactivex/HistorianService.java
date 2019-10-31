@@ -116,6 +116,7 @@ public class HistorianService {
   public static final String FIELDS_TO_FETCH = com.hurence.webapiservice.historian.HistorianService.FIELDS_TO_FETCH;
   public static final String TAGS = com.hurence.webapiservice.historian.HistorianService.TAGS;
   public static final String NAMES = com.hurence.webapiservice.historian.HistorianService.NAMES;
+  public static final String MAX_TOTAL_CHUNKS_TO_RETRIEVE = com.hurence.webapiservice.historian.HistorianService.MAX_TOTAL_CHUNKS_TO_RETRIEVE;
   public static final String METRIC_NAME = com.hurence.webapiservice.historian.HistorianService.METRIC_NAME;
   public static final String CHUNK_ID = com.hurence.webapiservice.historian.HistorianService.CHUNK_ID;
   public static final String CHUNK_VERSION = com.hurence.webapiservice.historian.HistorianService.CHUNK_VERSION;

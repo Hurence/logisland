@@ -136,7 +136,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
     }
     //    SORT
     query.setSort(CHUNK_START, SolrQuery.ORDER.asc);
-
+    query.setRows(params.getInteger(MAX_TOTAL_CHUNKS_TO_RETRIEVE, 1000));
     //  EXECUTE REQUEST
     Handler<Promise<JsonObject>> getTimeSeriesHandler = p -> {
       try {
