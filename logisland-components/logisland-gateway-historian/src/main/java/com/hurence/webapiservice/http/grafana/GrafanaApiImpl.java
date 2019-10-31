@@ -2,6 +2,7 @@ package com.hurence.webapiservice.http.grafana;
 
 
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
+import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
 import com.hurence.webapiservice.http.GetTimeSerieRequestParam;
 import com.hurence.webapiservice.http.grafana.modele.QueryRequestParam;
 import com.hurence.webapiservice.http.grafana.modele.Target;
@@ -77,15 +78,7 @@ public class GrafanaApiImpl implements GrafanaApi {
         service
                 .rxGetTimeSeriesChunk(getTimeSeriesChunkParams)
                 .map(chunkResponse -> {
-                    final long totalFound = chunkResponse.getLong(HistorianService.TOTAL_FOUND);
-                    List<JsonObject> chunks = chunkResponse.getJsonArray(HistorianService.CHUNKS).stream()
-                            .map(JsonObject.class::cast)
-                            .collect(Collectors.toList());
-                    if (totalFound != chunks.size())
-                        //TODO add a test with more than 10 chunks then implement handling more than default 10 chunks of solr
-                        //TODO should we add initial number of chunk to fetch in query param ?
-                        throw new UnsupportedOperationException("not yet supported when matching more than "+
-                                chunks.size() + " chunks (total found : " + totalFound +")");
+                    List<JsonObject> chunks = HistorianResponseHelper.extractChunks(chunkResponse);
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
                             Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
                     );
@@ -111,6 +104,8 @@ public class GrafanaApiImpl implements GrafanaApi {
                 }).subscribe();
     }
 
+
+
     private JsonObject buildHistorianRequest(QueryRequestParam request) {
         JsonArray fieldsToFetch = new JsonArray()
                 .add(HistorianService.CHUNK_VALUE)
@@ -131,16 +126,16 @@ public class GrafanaApiImpl implements GrafanaApi {
 
     @Override
     public void annotations(RoutingContext context) {
-        throw new UnsupportedOperationException("Not implented yet");//TODO
+        throw new UnsupportedOperationException("Not implemented yet");//TODO
     }
 
     @Override
     public void tagKeys(RoutingContext context) {
-        throw new UnsupportedOperationException("Not implented yet");//TODO
+        throw new UnsupportedOperationException("Not implemented yet");//TODO
     }
 
     @Override
     public void tagValues(RoutingContext context) {
-        throw new UnsupportedOperationException("Not implented yet");//TODO
+        throw new UnsupportedOperationException("Not implemented yet");//TODO
     }
 }

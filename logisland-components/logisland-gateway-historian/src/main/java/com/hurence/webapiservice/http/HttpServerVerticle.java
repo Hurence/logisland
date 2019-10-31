@@ -1,6 +1,7 @@
 package com.hurence.webapiservice.http;
 
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
+import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
 import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
 import com.hurence.webapiservice.timeseries.LogislandTimeSeriesModeler;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
@@ -102,15 +103,7 @@ public class HttpServerVerticle extends AbstractVerticle {
         historianService
                 .rxGetTimeSeriesChunk(getTimeSeriesChunkParams)
                 .map(chunkResponse -> {
-                    final long totalFound = chunkResponse.getLong(HistorianService.TOTAL_FOUND);
-                    List<JsonObject> chunks = chunkResponse.getJsonArray(HistorianService.CHUNKS).stream()
-                            .map(JsonObject.class::cast)
-                            .collect(Collectors.toList());
-                    if (totalFound != chunks.size())
-                        //TODO add a test with more than 10 chunks then implement handling more than default 10 chunks of solr
-                        //TODO should we add initial number of chunk to fetch in query param ?
-                        throw new UnsupportedOperationException("not yet supported when matching more than "+
-                                chunks.size() + " chunks (total found : " + totalFound +")");
+                    List<JsonObject> chunks = HistorianResponseHelper.extractChunks(chunkResponse);
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
                             Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
                     );
