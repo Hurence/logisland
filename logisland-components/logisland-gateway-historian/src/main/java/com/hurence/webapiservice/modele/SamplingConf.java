@@ -5,9 +5,9 @@ import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 public class SamplingConf {
     private SamplingAlgorithm algo;
     private int bucketSize;
-    private long maxPoint;
+    private int maxPoint;
 
-    public SamplingConf(SamplingAlgorithm algo, int bucketSize, long maxPoint) {
+    public SamplingConf(SamplingAlgorithm algo, int bucketSize, int maxPoint) {
         this.algo = algo;
         this.bucketSize = bucketSize;
         this.maxPoint = maxPoint;
@@ -21,7 +21,7 @@ public class SamplingConf {
         return bucketSize;
     }
 
-    public long getMaxPoint() {
+    public int getMaxPoint() {
         return maxPoint;
     }
 }

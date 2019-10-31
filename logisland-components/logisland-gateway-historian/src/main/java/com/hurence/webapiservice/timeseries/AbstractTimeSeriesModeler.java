@@ -4,7 +4,9 @@ import com.hurence.logisland.record.Point;
 import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
 import com.hurence.logisland.timeseries.sampling.Sampler;
 import com.hurence.logisland.timeseries.sampling.SamplerFactory;
+import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
+import com.hurence.webapiservice.historian.util.ChunkUtil;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
 import io.vertx.core.json.JsonObject;
@@ -88,12 +90,29 @@ public abstract class AbstractTimeSeriesModeler implements TimeSeriesModeler {
      * </pre>
      */
     protected JsonObject extractPointsThenSortThenSample(long from, long to, SamplingConf samplingConf, List<JsonObject> chunks) {
-        Sampler<Point> sampler = SamplerFactory.getPointSampler(samplingConf.getAlgo(), samplingConf.getBucketSize());
         Stream<Point> extractedPoints = extractPointsAsStream(from, to, chunks);
         Stream<Point> sortedPoints = extractedPoints
                 .sorted(Comparator.comparing(Point::getTimestamp));
-        List<Point> sampledPoints = sampler.sample(sortedPoints.collect(Collectors.toList()));
+        List<Point> sampledPoints = samplePoints(samplingConf, chunks, sortedPoints);
         return formatTimeSeriePointsJson(sampledPoints);
+    }
+
+    private List<Point> samplePoints(SamplingConf samplingConf, List<JsonObject> chunks, Stream<Point> sortedPoints) {
+        SamplingAlgorithm algorithm = samplingConf.getAlgo();
+        int bucketSize = samplingConf.getBucketSize();
+        if (samplingConf.getAlgo() == SamplingAlgorithm.NONE) {//verify there is not too many point to return them all
+            int totalNumberOfPoint = ChunkUtil.countTotalNumberOfPointInChunks(chunks);
+            if (totalNumberOfPoint > samplingConf.getMaxPoint()) {
+                algorithm = SamplingAlgorithm.FIRST_ITEM;
+                bucketSize = calculBucketSize(samplingConf.getMaxPoint(), totalNumberOfPoint);
+            }
+        }
+        Sampler<Point> sampler = SamplerFactory.getPointSampler(algorithm, bucketSize);
+        return sampler.sample(sortedPoints.collect(Collectors.toList()));
+    }
+
+    private int calculBucketSize(int maxPoint, int totalNumberOfPoint) {
+           return Math.floorDiv(totalNumberOfPoint, maxPoint);
     }
 
     protected JsonObject formatTimeSeriePointsJson(List<Point> sampledPoints) {

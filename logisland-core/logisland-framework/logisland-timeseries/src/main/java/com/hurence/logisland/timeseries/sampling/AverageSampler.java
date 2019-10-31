@@ -29,7 +29,7 @@ public class AverageSampler<SAMPLED> extends AbstractSampler<SAMPLED> {
 
     /**
      * divide the points sequence into equally sized buckets
-     * and select the first point of each bucket
+     * and compute average of each bucket
      *
      * @param inputRecords the input list
      * @return

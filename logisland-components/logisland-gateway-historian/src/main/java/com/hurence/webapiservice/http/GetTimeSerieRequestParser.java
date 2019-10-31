@@ -29,7 +29,7 @@ public class GetTimeSerieRequestParser extends MultiMapRequestParser {
         builder.to(to);
         List<AGG> aggs = parseAggsOrDefault(map, QUERY_PARAM_AGGS, Collections.emptyList());
         builder.withAggs(aggs);
-        long maxPoints = parseLongOrDefault(map, QUERY_PARAM_MAX_POINT, 10000);
+        int maxPoints = parseIntOrDefault(map, QUERY_PARAM_MAX_POINT, 10000);
         int bucketSize = parseIntOrDefault(map, QUERY_PARAM_BUCKET_SIZE, 50);
         SamplingAlgorithm algo = parseSamplingAlgorithmOrDefault(map, QUERY_PARAM_SAMPLING, SamplingAlgorithm.NONE);
         SamplingConf samplingConf = new SamplingConf(algo, bucketSize, maxPoints);

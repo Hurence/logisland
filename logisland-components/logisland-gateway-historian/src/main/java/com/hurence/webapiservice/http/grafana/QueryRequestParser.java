@@ -35,7 +35,7 @@ public class QueryRequestParser {
         builder.to(to);
         String format = parseFormat(requestBody);
         builder.withFormat(format);
-        long maxDataPoints = parseMaxDataPoints(requestBody);;
+        int maxDataPoints = parseMaxDataPoints(requestBody);;
         builder.withMaxDataPoints(maxDataPoints);
         List<Target> targets = parseTargets(requestBody);;
         builder.withTargets(targets);
@@ -50,8 +50,8 @@ public class QueryRequestParser {
                 .collect(Collectors.toList());
     }
 
-    private long parseMaxDataPoints(JsonObject requestBody) {
-        return requestBody.getLong("maxDataPoints");
+    private int parseMaxDataPoints(JsonObject requestBody) {
+        return requestBody.getInteger("maxDataPoints");
     }
 
     private String parseFormat(JsonObject requestBody) {

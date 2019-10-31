@@ -14,7 +14,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
     private long from;
     private long to;
     private String format;
-    private long maxDataPoints;
+    private int maxDataPoints;
 
     private QueryRequestParam() { }
 
@@ -50,11 +50,11 @@ public class QueryRequestParam implements TimeSeriesRequest {
         this.format = format;
     }
 
-    public long getMaxDataPoints() {
+    public int getMaxDataPoints() {
         return maxDataPoints;
     }
 
-    private void setMaxDataPoints(long maxDataPoints) {
+    private void setMaxDataPoints(int maxDataPoints) {
         this.maxDataPoints = maxDataPoints;
     }
 
@@ -79,7 +79,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
         private long from;
         private long to;
         private String format;
-        private long maxDataPoints;
+        private int maxDataPoints;
 
         public Builder() { }
 
@@ -103,7 +103,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
             return this;
         }
 
-        public Builder withMaxDataPoints(long maxDataPoints) {
+        public Builder withMaxDataPoints(int maxDataPoints) {
             this.maxDataPoints = maxDataPoints;
             return this;
         }

@@ -1,7 +1,9 @@
 package com.hurence.webapiservice.timeseries;
 
 import com.hurence.logisland.record.Point;
+import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
+import com.hurence.webapiservice.historian.util.ChunkUtil;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
 import io.vertx.core.json.JsonArray;
@@ -38,7 +40,7 @@ public class GrafanaTimeSeriesModeler extends AbstractTimeSeriesModeler {
         String name = chunks.stream().findFirst().get().getString(HistorianService.METRIC_NAME);
         JsonObject timeserie = new JsonObject()
                 .put(TIMESERIE_NAME, name);
-        chunks = adjustChunk(from, to, aggs, chunks);
+//        chunks = adjustChunk(from, to, aggs, chunks);
         //TODO add possibility to not get points but only aggregation if wanted
         JsonObject points = extractPointsThenSortThenSample(from, to, samplingConf, chunks);
         timeserie.mergeIn(points);

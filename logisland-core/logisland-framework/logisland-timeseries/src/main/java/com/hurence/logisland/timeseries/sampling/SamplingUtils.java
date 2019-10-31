@@ -15,8 +15,6 @@
  */
 package com.hurence.logisland.timeseries.sampling;
 
-import com.hurence.logisland.record.Record;
-
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -31,7 +29,11 @@ public class SamplingUtils {
      *         else bucketSize
      */
     public static int fitBucketSize(List rawData, int bucketSize) {
-        if (bucketSize <= 0 || bucketSize > rawData.size()) return 1;
+        return fitBucketSize(rawData.size(), bucketSize);
+    }
+
+    private static int fitBucketSize(int numberOfPoint, int bucketSize) {
+        if (bucketSize <= 0 || bucketSize > numberOfPoint) return 1;
         else return bucketSize;
     }
 

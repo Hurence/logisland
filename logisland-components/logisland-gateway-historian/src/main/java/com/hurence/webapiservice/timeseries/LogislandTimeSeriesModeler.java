@@ -34,7 +34,7 @@ public class LogislandTimeSeriesModeler extends AbstractTimeSeriesModeler {
         String name = chunks.stream().findFirst().get().getString(HistorianService.METRIC_NAME);
         JsonObject timeserie = new JsonObject()
                 .put(TIMESERIES_NAME, name);
-        chunks = adjustChunk(from, to, aggs, chunks);
+//        chunks = adjustChunk(from, to, aggs, chunks);
         //TODO add possibility to not get points but only aggregation if wanted
         JsonObject points = extractPointsThenSortThenSample(from, to, samplingConf, chunks);
         timeserie.mergeIn(points);

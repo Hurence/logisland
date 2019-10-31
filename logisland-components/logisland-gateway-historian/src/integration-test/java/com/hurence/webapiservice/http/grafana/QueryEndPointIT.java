@@ -46,7 +46,7 @@ public class QueryEndPointIT {
                 .initWebClientAndHistorianSolrCollectionAndHttpVerticleAndHistorianVerticle(client, container, vertx, context);
         LOGGER.info("Indexing some documents in {} collection", HistorianSolrITHelper.COLLECTION);
         SolrInjector injector = new SolrInjectorMultipleMetricSpecificPoints(
-                Arrays.asList("temp_a", "temp_b"),
+                Arrays.asList("temp_a", "temp_b", "maxDataPoints"),
                 Arrays.asList(
                         Arrays.asList(
                                 new Point(0, 1477895624866L, 622),
@@ -56,6 +56,48 @@ public class QueryEndPointIT {
                         Arrays.asList(
                                 new Point(0, 1477895624866L, 861),
                                 new Point(0, 1477917224866L, 767)
+                        ),
+                        Arrays.asList(//maxDataPoints
+                                new Point(0, 1477895624866L, 55),
+                                new Point(0, 1477895624867L, 1767),
+                                new Point(0, 1477895624868L, 861),
+                                new Point(0, 1477895624869L, 767),
+                                new Point(0, 1477895624870L, 44),
+                                new Point(0, 1477895624871L, 767),
+                                new Point(0, 1477895624872L, 3861),
+                                new Point(0, 1477895624873L, 767),
+                                new Point(0, 1477895624874L, -6),
+                                new Point(0, 1477895624875L, 767),
+                                new Point(0, 1477895624876L, 861),
+                                new Point(0, 1477895624877L, -767),
+                                new Point(0, 1477895624878L, 14),
+                                new Point(0, 1477895624879L, 767),
+                                new Point(0, 1477895624880L, 861),
+                                new Point(0, 1477895624881L, 767),
+                                new Point(0, 1477895624882L, 4861),
+                                new Point(0, 1477895624883L, 767),
+                                new Point(0, 1477895624884L, 861),
+                                new Point(0, 1477895624885L, 767),
+                                new Point(0, 1477895624886L, 864),
+                                new Point(0, 1477895624887L, 767),
+                                new Point(0, 1477895624888L, 861),
+                                new Point(0, 1477895624889L, 767),
+                                new Point(0, 1477895624890L, 861),
+                                new Point(0, 1477895624891L, 767),
+                                new Point(0, 1477895624892L, 861),
+                                new Point(0, 1477895624893L, 767),
+                                new Point(0, 1477895624894L, 861),
+                                new Point(0, 1477895624895L, 4767),
+                                new Point(0, 1477895624896L, 861),
+                                new Point(0, 1477895624897L, -767),
+                                new Point(0, 1477895624898L, 861),
+                                new Point(0, 1477895624899L, 767),
+                                new Point(0, 1477895624900L, 861),
+                                new Point(0, 1477895624901L, 767),
+                                new Point(0, 1477895624902L, 9861),
+                                new Point(0, 1477895624903L, -767),
+                                new Point(0, 1477895624904L, 861),
+                                new Point(0, 1477895624905L, 7674)
                         )
                 ));
         injector.injectChunks(client);
@@ -70,7 +112,7 @@ public class QueryEndPointIT {
     }
 
     @Test
-    @Timeout(value = 500, timeUnit = TimeUnit.SECONDS)
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
     public void testQuery(Vertx vertx, VertxTestContext testContext) {
         final FileSystem fs = vertx.fileSystem();
         Buffer requestBuffer = fs.readFileBlocking(getClass().getResource("/http/grafana/query/test1/request.json").getFile());
@@ -82,6 +124,26 @@ public class QueryEndPointIT {
                         assertEquals("OK", rsp.statusMessage());
                         JsonArray body = rsp.body();
                         Buffer fileContent = fs.readFileBlocking(getClass().getResource("/http/grafana/query/test1/expectedResponse.json").getFile());
+                        JsonArray expectedBody = new JsonArray(fileContent.getDelegate());
+                        assertEquals(expectedBody, body);
+                        testContext.completeNow();
+                    });
+                }));
+    }
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testMaxDataPoints(Vertx vertx, VertxTestContext testContext) {
+        final FileSystem fs = vertx.fileSystem();
+        Buffer requestBuffer = fs.readFileBlocking(getClass().getResource("/http/grafana/query/testMaxDataPoints/request.json").getFile());
+        webClient.post("/api/grafana/query")
+                .as(BodyCodec.jsonArray())
+                .sendBuffer(requestBuffer.getDelegate(), testContext.succeeding(rsp -> {
+                    testContext.verify(() -> {
+                        assertEquals(200, rsp.statusCode());
+                        assertEquals("OK", rsp.statusMessage());
+                        JsonArray body = rsp.body();
+                        Buffer fileContent = fs.readFileBlocking(getClass().getResource("/http/grafana/query/testMaxDataPoints/expectedResponse.json").getFile());
                         JsonArray expectedBody = new JsonArray(fileContent.getDelegate());
                         assertEquals(expectedBody, body);
                         testContext.completeNow();
