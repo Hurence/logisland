@@ -16,8 +16,10 @@
 package com.hurence.logisland.timeseries.sampling;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public interface Sampler<SAMPLED> {
+public interface Sampler<ELEMENT> {
 
 
     /**
@@ -26,5 +28,16 @@ public interface Sampler<SAMPLED> {
      * @param toBeSampled the given elements to sample
      * @return the sampled elements
      */
-    List<SAMPLED> sample(List<SAMPLED> toBeSampled);
+    List<ELEMENT> sample(List<ELEMENT> toBeSampled);
+
+    /**
+     * Reduce the number of inputs elements accordingly to a sampling strategy
+     *
+     * @param toBeSampled the given elements to sample
+     * @return the sampled elements
+     */
+    default Stream<ELEMENT> sample(Stream<ELEMENT> toBeSampled) {
+        List<ELEMENT> toBeSampledList = toBeSampled.collect(Collectors.toList());
+        return sample(toBeSampledList).stream();
+    }
 }

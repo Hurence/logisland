@@ -10,8 +10,10 @@ import com.hurence.webapiservice.modele.SamplingConf;
 import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractTimeSeriesModeler implements TimeSeriesModeler {
     protected static String TIMESERIES_TIMESTAMPS = "timestamps";
@@ -31,7 +33,11 @@ public abstract class AbstractTimeSeriesModeler implements TimeSeriesModeler {
      * @param chunks
      * @return return all points uncompressing chunks
      */
-    protected List<Point> getPoints(long from, long to, List<JsonObject> chunks) {
+    protected List<Point> extractPoints(long from, long to, List<JsonObject> chunks) {
+        return extractPointsAsStream(from, to, chunks).collect(Collectors.toList());
+    }
+
+    protected Stream<Point> extractPointsAsStream(long from, long to, List<JsonObject> chunks) {
         return chunks.stream()
                 .flatMap(chunk -> {
                     byte[] binaryChunk = chunk.getBinary(HistorianService.CHUNK_VALUE);
@@ -42,7 +48,7 @@ public abstract class AbstractTimeSeriesModeler implements TimeSeriesModeler {
                     } catch (IOException ex) {
                         throw new IllegalArgumentException("error during uncompression of a chunk !", ex);
                     }
-                }).collect(Collectors.toList());
+                });
     }
 
     /**
@@ -60,9 +66,33 @@ public abstract class AbstractTimeSeriesModeler implements TimeSeriesModeler {
      * DOCS contains at minimum chunk_value, chunk_start
      * </pre>
      */
-    protected JsonObject samplePoints(long from, long to, SamplingConf samplingConf, List<JsonObject> chunks) {
+    protected JsonObject extractPointsThenSample(long from, long to, SamplingConf samplingConf, List<JsonObject> chunks) {
         Sampler<Point> sampler = SamplerFactory.getPointSampler(samplingConf.getAlgo(), samplingConf.getBucketSize());
-        List<Point> sampledPoints = sampler.sample(getPoints(from, to, chunks));
+        List<Point> sampledPoints = sampler.sample(extractPoints(from, to, chunks));
+        return formatTimeSeriePointsJson(sampledPoints);
+    }
+
+    /**
+     *
+     * @param samplingConf how to sample points to retrieve
+     * @param chunks to sample, chunks should be corresponding to the same timeserie !*
+     *               Should contain the compressed binary points as well as all needed aggs.
+     *               Chunks should be ordered as well.
+     * @return sampled points as an array
+     * <pre>
+     * {
+     *     {@value TIMESERIES_TIMESTAMPS} : [longs]
+     *     {@value TIMESERIES_VALUES} : [doubles]
+     * }
+     * DOCS contains at minimum chunk_value, chunk_start
+     * </pre>
+     */
+    protected JsonObject extractPointsThenSortThenSample(long from, long to, SamplingConf samplingConf, List<JsonObject> chunks) {
+        Sampler<Point> sampler = SamplerFactory.getPointSampler(samplingConf.getAlgo(), samplingConf.getBucketSize());
+        Stream<Point> extractedPoints = extractPointsAsStream(from, to, chunks);
+        Stream<Point> sortedPoints = extractedPoints
+                .sorted(Comparator.comparing(Point::getTimestamp));
+        List<Point> sampledPoints = sampler.sample(sortedPoints.collect(Collectors.toList()));
         return formatTimeSeriePointsJson(sampledPoints);
     }
 

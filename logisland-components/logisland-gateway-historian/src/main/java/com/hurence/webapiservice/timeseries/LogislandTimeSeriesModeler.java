@@ -36,7 +36,7 @@ public class LogislandTimeSeriesModeler extends AbstractTimeSeriesModeler {
                 .put(TIMESERIES_NAME, name);
         chunks = adjustChunk(from, to, aggs, chunks);
         //TODO add possibility to not get points but only aggregation if wanted
-        JsonObject points = samplePoints(from, to, samplingConf, chunks);
+        JsonObject points = extractPointsThenSortThenSample(from, to, samplingConf, chunks);
         timeserie.mergeIn(points);
         JsonObject timeSeriesAggs = calculAggs(aggs, chunks);
         if (!timeSeriesAggs.isEmpty())
