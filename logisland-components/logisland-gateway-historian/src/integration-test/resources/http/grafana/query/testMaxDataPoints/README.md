@@ -32,7 +32,8 @@ so we do not have to be very accurate. If a user wants exactly a number of point
 
 # Current Choice
 
-Here the current behaviour defined in the tests (which is improvable in my opinion) :
+Here the current behaviour defined in the tests (which is improvable in my opinion), 
+we focus on the homogenues size of buckets here even if it imply to return less point than max asked :
 
 maxDataPoints: 39 -> 20 points from buckets of size 2
 maxDataPoints: 35 -> 20 points from buckets of size 2
@@ -60,11 +61,13 @@ maxDataPoints: 7 -> 5 points from buckets of size 8
 maxDataPoints: 6 -> 5 points from buckets of size 8
 maxDataPoints: 5 -> 5 points from buckets of size 8
 
+The advantage would be to return more point even if one bucket may be oversized.
+
 # Best solution in my opinion
 
 I think the better choice is to uniform buckets if possible and if not defined buckets of different size but with few difference in size.
 Unless maybe the user ask for a specific bucket size. This is not yet implemented for simplicity.
-This would give something like that :
+This would give something like that (I did not implement this yet) :
 
 maxDataPoints: 39 -> 1 points from buckets of size 2, 38 points from buckets of size 1
 maxDataPoints: 35 -> 5 points from buckets of size 2, 30 points from buckets of size 1 
