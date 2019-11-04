@@ -89,7 +89,8 @@ public class TestPutS3Object {
 
         /*runner.assertAllFlowFilesTransferred(PutS3Object.REL_FAILURE, 1);*/
         // TODO see how to replace this failure
-        runner.assertNotValid();
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertFieldExists(FieldDictionary.RECORD_ERRORS);
     }
 
     @Test

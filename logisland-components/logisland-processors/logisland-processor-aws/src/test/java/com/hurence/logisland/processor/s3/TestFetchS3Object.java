@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.StringInputStream;
 
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -223,7 +224,9 @@ public class TestFetchS3Object {
 
         runner.run();
         /*runner.assertAllFlowFilesTransferred(FetchS3Object.REL_FAILURE, 1);*/
-        runner.assertNotValid();
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertFieldExists(FieldDictionary.RECORD_ERRORS);
+
     }
 
     @Test
@@ -242,7 +245,9 @@ public class TestFetchS3Object {
         runner.run();
 
         /*runner.assertAllFlowFilesTransferred(FetchS3Object.REL_FAILURE, 1);*/
-        runner.assertNotValid();
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertFieldExists(FieldDictionary.RECORD_ERRORS);
+
     }
 
     @Test
@@ -263,6 +268,8 @@ public class TestFetchS3Object {
         runner.run();
 
         /*runner.assertAllFlowFilesTransferred(FetchS3Object.REL_FAILURE, 1);*/
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertFieldExists(FieldDictionary.RECORD_ERRORS);
     }
     @Test
     public void testGetPropertyDescriptors() throws Exception {

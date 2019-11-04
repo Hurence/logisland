@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.SetObjectTaggingRequest;
 import com.amazonaws.services.s3.model.Tag;
 
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -281,7 +282,8 @@ public class TestTagS3Object {
 
         /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_FAILURE, 1);*/
         // TODO see hwo to replace the failure
-        runner.assertNotValid();
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertFieldExists(FieldDictionary.RECORD_ERRORS);
     }
 
     @Test
@@ -301,7 +303,8 @@ public class TestTagS3Object {
 
         /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_FAILURE, 1);*/
         // TODO see hwo to replace the failure
-        runner.assertNotValid();
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertFieldExists(FieldDictionary.RECORD_ERRORS);
     }
 
     @Test
@@ -321,7 +324,8 @@ public class TestTagS3Object {
 
         /*runner.assertAllFlowFilesTransferred(DeleteS3Object.REL_FAILURE, 1);*/
         // TODO see hwo to replace the failure
-        runner.assertNotValid();
+        MockRecord out = runner.getOutputRecords().get(0);
+        out.assertFieldExists(FieldDictionary.RECORD_ERRORS);
     }
 
     private void mockGetExistingTags(Tag... currentTag) {

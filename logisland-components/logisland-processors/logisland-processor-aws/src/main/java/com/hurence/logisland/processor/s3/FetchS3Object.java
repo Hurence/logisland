@@ -184,6 +184,7 @@ public class FetchS3Object extends AbstractS3Processor {
                 } catch (final IOException | AmazonClientException ioe) {
                     getLogger().error("Failed to retrieve S3 Object for {}; routing to failure", new Object[]{record, ioe});
                     // TODO think of adding an error to the record
+                    record.addError("Failed to retrieve S3 Object for {}; routing to failure", getLogger(),"Failed to retrieve S3 Object for {}; routing to failure", new Object[]{ioe});
                     return records;
                 }
 

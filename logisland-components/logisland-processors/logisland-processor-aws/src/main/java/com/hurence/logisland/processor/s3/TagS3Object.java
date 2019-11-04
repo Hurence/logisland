@@ -146,6 +146,7 @@ public class TagS3Object extends AbstractS3Processor {
                     /*flowFile = session.penalize(flowFile);
                     session.transfer(flowFile, REL_FAILURE);*/
                     // TODO see how to replace this
+                    record.addError("Failed to tag S3 Object for {}; routing to failure", getLogger(),"Failed to tag S3 Object for {}; routing to failure", new Object[]{ase});
                     return records;
                 }
 

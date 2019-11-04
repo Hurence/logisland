@@ -70,6 +70,7 @@ public class DeleteS3Object extends AbstractS3Processor {
                     }
                 } catch (final AmazonServiceException ase) {
                     getLogger().error("Failed to delete S3 Object for {}; routing to failure", new Object[]{record, ase});
+                    record.addError(ase.getErrorType().toString(), getLogger(),"Failed to delete the S3 Object for {}; routing to failure", new Object[]{ase});
                     return records;
                 }
 
