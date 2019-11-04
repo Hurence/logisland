@@ -112,8 +112,9 @@ public abstract class AbstractTimeSeriesModeler implements TimeSeriesModeler {
     }
 
     private int calculBucketSize(int maxPoint, int totalNumberOfPoint) {
-           return Math.floorDiv(totalNumberOfPoint, maxPoint);
+        return BucketUtils.calculBucketSize(totalNumberOfPoint, maxPoint);
     }
+
 
     protected JsonObject formatTimeSeriePointsJson(List<Point> sampledPoints) {
         List<Long> timestamps = sampledPoints.stream()

@@ -57,47 +57,47 @@ public class QueryEndPointIT {
                                 new Point(0, 1477895624866L, 861),
                                 new Point(0, 1477917224866L, 767)
                         ),
-                        Arrays.asList(//maxDataPoints
-                                new Point(0, 1477895624866L, 55),
-                                new Point(0, 1477895624867L, 1767),
-                                new Point(0, 1477895624868L, 861),
-                                new Point(0, 1477895624869L, 767),
-                                new Point(0, 1477895624870L, 44),
-                                new Point(0, 1477895624871L, 767),
-                                new Point(0, 1477895624872L, 3861),
-                                new Point(0, 1477895624873L, 767),
-                                new Point(0, 1477895624874L, -6),
-                                new Point(0, 1477895624875L, 767),
-                                new Point(0, 1477895624876L, 861),
-                                new Point(0, 1477895624877L, -767),
-                                new Point(0, 1477895624878L, 14),
-                                new Point(0, 1477895624879L, 767),
-                                new Point(0, 1477895624880L, 861),
-                                new Point(0, 1477895624881L, 767),
-                                new Point(0, 1477895624882L, 4861),
-                                new Point(0, 1477895624883L, 767),
-                                new Point(0, 1477895624884L, 861),
-                                new Point(0, 1477895624885L, 767),
-                                new Point(0, 1477895624886L, 864),
-                                new Point(0, 1477895624887L, 767),
-                                new Point(0, 1477895624888L, 861),
-                                new Point(0, 1477895624889L, 767),
-                                new Point(0, 1477895624890L, 861),
-                                new Point(0, 1477895624891L, 767),
-                                new Point(0, 1477895624892L, 861),
-                                new Point(0, 1477895624893L, 767),
-                                new Point(0, 1477895624894L, 861),
-                                new Point(0, 1477895624895L, 4767),
-                                new Point(0, 1477895624896L, 861),
-                                new Point(0, 1477895624897L, -767),
-                                new Point(0, 1477895624898L, 861),
-                                new Point(0, 1477895624899L, 767),
-                                new Point(0, 1477895624900L, 861),
-                                new Point(0, 1477895624901L, 767),
-                                new Point(0, 1477895624902L, 9861),
-                                new Point(0, 1477895624903L, -767),
-                                new Point(0, 1477895624904L, 861),
-                                new Point(0, 1477895624905L, 7674)
+                        Arrays.asList(//maxDataPoints we are not testing value only sampling
+                                new Point(0, 1477895624866L, 1),
+                                new Point(0, 1477895624867L, 1),
+                                new Point(0, 1477895624868L, 1),
+                                new Point(0, 1477895624869L, 1),
+                                new Point(0, 1477895624870L, 1),
+                                new Point(0, 1477895624871L, 1),
+                                new Point(0, 1477895624872L, 1),
+                                new Point(0, 1477895624873L, 1),
+                                new Point(0, 1477895624874L, 1),
+                                new Point(0, 1477895624875L, 1),
+                                new Point(0, 1477895624876L, 1),
+                                new Point(0, 1477895624877L, 1),
+                                new Point(0, 1477895624878L, 1),
+                                new Point(0, 1477895624879L, 1),
+                                new Point(0, 1477895624880L, 1),
+                                new Point(0, 1477895624881L, 1),
+                                new Point(0, 1477895624882L, 1),
+                                new Point(0, 1477895624883L, 1),
+                                new Point(0, 1477895624884L, 1),
+                                new Point(0, 1477895624885L, 1),
+                                new Point(0, 1477895624886L, 1),
+                                new Point(0, 1477895624887L, 1),
+                                new Point(0, 1477895624888L, 1),
+                                new Point(0, 1477895624889L, 1),
+                                new Point(0, 1477895624890L, 1),
+                                new Point(0, 1477895624891L, 1),
+                                new Point(0, 1477895624892L, 1),
+                                new Point(0, 1477895624893L, 1),
+                                new Point(0, 1477895624894L, 1),
+                                new Point(0, 1477895624895L, 1),
+                                new Point(0, 1477895624896L, 1),
+                                new Point(0, 1477895624897L, 1),
+                                new Point(0, 1477895624898L, 1),
+                                new Point(0, 1477895624899L, 1),
+                                new Point(0, 1477895624900L, 1),
+                                new Point(0, 1477895624901L, 1),
+                                new Point(0, 1477895624902L, 1),
+                                new Point(0, 1477895624903L, 1),
+                                new Point(0, 1477895624904L, 1),
+                                new Point(0, 1477895624905L, 1)
                         )
                 ));
         injector.injectChunks(client);
@@ -114,28 +114,76 @@ public class QueryEndPointIT {
     @Test
     @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
     public void testQuery(Vertx vertx, VertxTestContext testContext) {
-        final FileSystem fs = vertx.fileSystem();
-        Buffer requestBuffer = fs.readFileBlocking(getClass().getResource("/http/grafana/query/test1/request.json").getFile());
-        webClient.post("/api/grafana/query")
-                .as(BodyCodec.jsonArray())
-                .sendBuffer(requestBuffer.getDelegate(), testContext.succeeding(rsp -> {
-                    testContext.verify(() -> {
-                        assertEquals(200, rsp.statusCode());
-                        assertEquals("OK", rsp.statusMessage());
-                        JsonArray body = rsp.body();
-                        Buffer fileContent = fs.readFileBlocking(getClass().getResource("/http/grafana/query/test1/expectedResponse.json").getFile());
-                        JsonArray expectedBody = new JsonArray(fileContent.getDelegate());
-                        assertEquals(expectedBody, body);
-                        testContext.completeNow();
-                    });
-                }));
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/test1/request.json",
+                "/http/grafana/query/test1/expectedResponse.json");
+    }
+
+    //TODO use parametric tests so that we can add new tests by adding files without touching code
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testMaxDataPoints5(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testMaxDataPoints/testMax5/request.json",
+                "/http/grafana/query/testMaxDataPoints/testMax5/expectedResponse.json");
     }
 
     @Test
     @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
-    public void testMaxDataPoints(Vertx vertx, VertxTestContext testContext) {
+    public void testMaxDataPoints6(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testMaxDataPoints/testMax6/request.json",
+                "/http/grafana/query/testMaxDataPoints/testMax6/expectedResponse.json");
+    }
+
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testMaxDataPoints7(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testMaxDataPoints/testMax7/request.json",
+                "/http/grafana/query/testMaxDataPoints/testMax7/expectedResponse.json");
+    }
+
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testMaxDataPoints8(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testMaxDataPoints/testMax8/request.json",
+                "/http/grafana/query/testMaxDataPoints/testMax8/expectedResponse.json");
+    }
+
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testMaxDataPoints9(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testMaxDataPoints/testMax9/request.json",
+                "/http/grafana/query/testMaxDataPoints/testMax9/expectedResponse.json");
+    }
+
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testMaxDataPoints10(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testMaxDataPoints/testMax10/request.json",
+                "/http/grafana/query/testMaxDataPoints/testMax10/expectedResponse.json");
+    }
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testMaxDataPoints15(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testMaxDataPoints/testMax15/request.json",
+                "/http/grafana/query/testMaxDataPoints/testMax15/expectedResponse.json");
+    }
+
+    public void assertRequestGiveResponseFromFile(Vertx vertx, VertxTestContext testContext,
+                                                  String requestFile, String responseFile) {
         final FileSystem fs = vertx.fileSystem();
-        Buffer requestBuffer = fs.readFileBlocking(getClass().getResource("/http/grafana/query/testMaxDataPoints/request.json").getFile());
+        Buffer requestBuffer = fs.readFileBlocking(getClass().getResource(requestFile).getFile());
         webClient.post("/api/grafana/query")
                 .as(BodyCodec.jsonArray())
                 .sendBuffer(requestBuffer.getDelegate(), testContext.succeeding(rsp -> {
@@ -143,7 +191,7 @@ public class QueryEndPointIT {
                         assertEquals(200, rsp.statusCode());
                         assertEquals("OK", rsp.statusMessage());
                         JsonArray body = rsp.body();
-                        Buffer fileContent = fs.readFileBlocking(getClass().getResource("/http/grafana/query/testMaxDataPoints/expectedResponse.json").getFile());
+                        Buffer fileContent = fs.readFileBlocking(getClass().getResource(responseFile).getFile());
                         JsonArray expectedBody = new JsonArray(fileContent.getDelegate());
                         assertEquals(expectedBody, body);
                         testContext.completeNow();
