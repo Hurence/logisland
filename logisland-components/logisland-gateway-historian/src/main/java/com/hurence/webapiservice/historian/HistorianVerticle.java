@@ -17,7 +17,6 @@
 
 package com.hurence.webapiservice.historian;
 
-import com.hurence.webapiservice.WebApiServiceMainVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
