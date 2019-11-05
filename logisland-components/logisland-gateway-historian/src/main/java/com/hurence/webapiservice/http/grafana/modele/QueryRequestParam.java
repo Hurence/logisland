@@ -1,12 +1,14 @@
 package com.hurence.webapiservice.http.grafana.modele;
 
 import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
+import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class QueryRequestParam implements TimeSeriesRequest {
@@ -15,6 +17,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
     private long to;
     private String format;
     private int maxDataPoints;
+    private List<AdHocFilter> adHocFilters;
 
     private QueryRequestParam() { }
 
@@ -58,12 +61,48 @@ public class QueryRequestParam implements TimeSeriesRequest {
         this.maxDataPoints = maxDataPoints;
     }
 
+    public List<AdHocFilter> getAdHocFilters() {
+        return adHocFilters;
+    }
+
+    private void setAdHocFilters(List<AdHocFilter> adHocFilters) {
+        this.adHocFilters = adHocFilters;
+    }
+
     public List<AGG> getAggs() {
         return Collections.emptyList();
     }
 
     public SamplingConf getSamplingConf() {
-        return new SamplingConf(SamplingAlgorithm.NONE, 1000, getMaxDataPoints());
+        if (containFilter(GrafanaApiImpl.ALGO_TAG_KEY) || containFilter(GrafanaApiImpl.BUCKET_SIZE_TAG_KEY)) {
+            Optional<SamplingAlgorithm> algo = getAlgoFromFilter();
+            Optional<Integer> bucketSize = getBucketSizeFromFilter();
+            return new SamplingConf(
+                    algo.orElse(SamplingAlgorithm.AVERAGE),
+                    bucketSize.orElse(1000),
+                    getMaxDataPoints());
+        } else {
+            return new SamplingConf(SamplingAlgorithm.NONE, 1000, getMaxDataPoints());
+        }
+    }
+
+    private boolean containFilter(String tagKey) {
+        return getAdHocFilters().stream()
+                .anyMatch(adhoc -> tagKey.equals(adhoc.getKey()));
+    }
+
+    private Optional<Integer> getBucketSizeFromFilter() {
+        return getAdHocFilters().stream()
+                .filter(adhoc -> GrafanaApiImpl.BUCKET_SIZE_TAG_KEY.equals(adhoc.getKey()))
+                .map(adhoc -> Integer.parseInt(adhoc.getValue()))
+                .findAny();
+    }
+
+    private Optional<SamplingAlgorithm> getAlgoFromFilter() {
+        return getAdHocFilters().stream()
+                .filter(adhoc -> GrafanaApiImpl.ALGO_TAG_KEY.equals(adhoc.getKey()))
+                .map(adhoc -> SamplingAlgorithm.valueOf(adhoc.getValue()))
+                .findAny();
     }
 
     @Override
@@ -80,6 +119,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
         private long to;
         private String format;
         private int maxDataPoints;
+        private List<AdHocFilter> adHocFilters;
 
         public Builder() { }
 
@@ -108,6 +148,11 @@ public class QueryRequestParam implements TimeSeriesRequest {
             return this;
         }
 
+        public Builder withAdHocFilters(List<AdHocFilter> adHocFilters) {
+            this.adHocFilters = adHocFilters;
+            return this;
+        }
+
         public QueryRequestParam build() {
             QueryRequestParam getTimeSerieRequestParam = new QueryRequestParam();
             getTimeSerieRequestParam.setTargets(targets);
@@ -115,6 +160,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
             getTimeSerieRequestParam.setTo(to);
             getTimeSerieRequestParam.setFormat(format);
             getTimeSerieRequestParam.setMaxDataPoints(maxDataPoints);
+            getTimeSerieRequestParam.setAdHocFilters(adHocFilters);
             return getTimeSerieRequestParam;
         }
     }

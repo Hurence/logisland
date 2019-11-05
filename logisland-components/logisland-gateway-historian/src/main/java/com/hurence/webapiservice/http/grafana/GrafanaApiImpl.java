@@ -87,6 +87,8 @@ public class GrafanaApiImpl implements GrafanaApi {
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
                             Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
                     );
+                    //TODO external this in a service so that is does not block thread
+                    //TODO or use blockExecuting method of vertx. What is the best choice ?
                     return TimeSeriesModeler.buildTimeSeries(request, chunksByName, timeserieToolBox);
                 })
                 .doOnError(ex -> {

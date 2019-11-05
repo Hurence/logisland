@@ -181,9 +181,34 @@ public class QueryEndPointIT {
                 "/http/grafana/query/testMaxDataPoints/testMax15/expectedResponse.json");
     }
 
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testAlgoAverageDefaultBucket(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testWithAlgo/average/default-bucket/request.json",
+                "/http/grafana/query/testWithAlgo/average/default-bucket/expectedResponse.json");
+    }
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testAlgoAverageBucketSize2(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testWithAlgo/average/bucket-2/request.json",
+                "/http/grafana/query/testWithAlgo/average/bucket-2/expectedResponse.json");
+    }
+
+    @Test
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    public void testAlgoAverageBucketSize3(Vertx vertx, VertxTestContext testContext) {
+        assertRequestGiveResponseFromFile(vertx, testContext,
+                "/http/grafana/query/testWithAlgo/average/bucket-3/request.json",
+                "/http/grafana/query/testWithAlgo/average/bucket-3/expectedResponse.json");
+    }
+
     public void assertRequestGiveResponseFromFile(Vertx vertx, VertxTestContext testContext,
                                                   String requestFile, String responseFile) {
-        AssertResponseGivenRequestHelper.assertRequestGiveResponseFromFile(webClient, vertx, testContext, requestFile, responseFile);
+        AssertResponseGivenRequestHelper.assertRequestGiveResponseFromFile(webClient, "/api/grafana/query",
+                vertx, testContext, requestFile, responseFile);
     }
 
 }

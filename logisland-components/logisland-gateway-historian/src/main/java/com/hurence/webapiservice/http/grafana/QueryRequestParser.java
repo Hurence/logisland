@@ -1,5 +1,6 @@
 package com.hurence.webapiservice.http.grafana;
 
+import com.hurence.webapiservice.http.grafana.modele.AdHocFilter;
 import com.hurence.webapiservice.http.grafana.modele.QueryRequestParam;
 import com.hurence.webapiservice.http.grafana.modele.Target;
 import io.vertx.core.json.Json;
@@ -9,6 +10,7 @@ import io.vertx.reactivex.core.json.pointer.JsonPointer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -39,6 +41,8 @@ public class QueryRequestParser {
         builder.withMaxDataPoints(maxDataPoints);
         List<Target> targets = parseTargets(requestBody);;
         builder.withTargets(targets);
+        List<AdHocFilter> adHocFilters = parseAdHocFilters(requestBody);;
+        builder.withAdHocFilters(adHocFilters);
         return builder.build();
     }
 
@@ -50,12 +54,12 @@ public class QueryRequestParser {
                 .collect(Collectors.toList());
     }
 
-    private int parseMaxDataPoints(JsonObject requestBody) {
-        return requestBody.getInteger("maxDataPoints");
+    private long parseFrom(JsonObject requestBody) {
+        return parseDate(requestBody, "/range/from");
     }
 
-    private String parseFormat(JsonObject requestBody) {
-        return requestBody.getString("format");
+    private long parseTo(JsonObject requestBody) {
+        return parseDate(requestBody, "/range/to");
     }
 
     private long parseDate(JsonObject requestBody, String pointer) {
@@ -75,11 +79,21 @@ public class QueryRequestParser {
                         pointer, fromObj));
     }
 
-    private long parseFrom(JsonObject requestBody) {
-        return parseDate(requestBody, "/range/from");
+    private String parseFormat(JsonObject requestBody) {
+        return requestBody.getString("format");
     }
 
-    private long parseTo(JsonObject requestBody) {
-        return parseDate(requestBody, "/range/to");
+    private int parseMaxDataPoints(JsonObject requestBody) {
+        return requestBody.getInteger("maxDataPoints");
+    }
+
+    private List<AdHocFilter> parseAdHocFilters(JsonObject requestBody) {
+        if (!requestBody.containsKey("adhocFilters"))
+            return Collections.emptyList();
+        return requestBody.getJsonArray("adhocFilters").stream()
+                .map(JsonObject.class::cast)
+                .map(JsonObject::encode)
+                .map(json -> Json.decodeValue(json, AdHocFilter.class))
+                .collect(Collectors.toList());
     }
 }

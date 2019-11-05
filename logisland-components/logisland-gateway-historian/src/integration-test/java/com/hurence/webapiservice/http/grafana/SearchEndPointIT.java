@@ -54,7 +54,7 @@ public class SearchEndPointIT {
     }
 
     @Test
-    @Timeout(value = 500, timeUnit = TimeUnit.SECONDS)
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
     public void testSearch(Vertx vertx, VertxTestContext testContext) {
         webClient.post("/api/grafana/search")
                 .as(BodyCodec.jsonArray())

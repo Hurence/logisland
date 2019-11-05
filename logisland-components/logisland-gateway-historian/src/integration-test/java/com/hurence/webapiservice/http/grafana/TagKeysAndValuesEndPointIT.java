@@ -48,7 +48,7 @@ public class TagKeysAndValuesEndPointIT {
     }
 
     @Test
-    @Timeout(value = 500, timeUnit = TimeUnit.SECONDS)
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
     public void testTagKey(Vertx vertx, VertxTestContext testContext) {
         assertRequestGiveResponseFromFileTagKeys(vertx, testContext,
                 "/http/grafana/tagkeys/test1/request.json",
