@@ -1,6 +1,7 @@
 package com.hurence.webapiservice.http.grafana;
 
 
+import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
 import com.hurence.webapiservice.timeseries.GrafanaTimeSeriesModeler;
@@ -16,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.hurence.logisland.timeseries.sampling.SamplingAlgorithm.AVERAGE;
+import static com.hurence.logisland.timeseries.sampling.SamplingAlgorithm.FIRST_ITEM;
 import static com.hurence.webapiservice.http.Codes.BAD_REQUEST;
+import static com.hurence.webapiservice.http.Codes.NOT_FOUND;
 
 public class GrafanaApiImpl implements GrafanaApi {
 
@@ -24,6 +28,10 @@ public class GrafanaApiImpl implements GrafanaApi {
     private HistorianService service;
     private static final QueryRequestParser queryRequestParser = new QueryRequestParser();
     private TimeSeriesModeler timeserieToolBox = new GrafanaTimeSeriesModeler();
+
+    public final static String ALGO_TAG_KEY = "Algo";
+    public final static String BUCKET_SIZE_TAG_KEY = "Bucket size";
+
 
     public GrafanaApiImpl(HistorianService service) {
         this.service = service;
@@ -117,13 +125,79 @@ public class GrafanaApiImpl implements GrafanaApi {
         throw new UnsupportedOperationException("Not implemented yet");//TODO
     }
 
+    /**
+     * return every custom key parameters that can be used to query data.
+     * @param context
+     */
     @Override
     public void tagKeys(RoutingContext context) {
-        throw new UnsupportedOperationException("Not implemented yet");//TODO
+        context.response().setStatusCode(200);
+        context.response().putHeader("Content-Type", "application/json");
+        context.response().end(new JsonArray()
+                .add(new JsonObject().put("type", "string").put("text", ALGO_TAG_KEY))
+                .add(new JsonObject().put("type", "int").put("text", BUCKET_SIZE_TAG_KEY))
+                .encode()
+        );
     }
-
+    /**
+     * return every custom value parameters given a key that can be used to query data.
+     * @param context
+     */
     @Override
     public void tagValues(RoutingContext context) {
-        throw new UnsupportedOperationException("Not implemented yet");//TODO
+        final String keyValue;
+        try {
+            keyValue = parseTagValuesRequest(context);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.error("error parsing request", ex);
+            context.response().setStatusCode(BAD_REQUEST);
+            context.response().setStatusMessage(ex.getMessage());
+            context.response().putHeader("Content-Type", "application/json");
+            context.response().end();
+            return;
+        }
+        final JsonArray response;
+        switch (keyValue) {
+            case ALGO_TAG_KEY:
+                response = getTagValuesOfAlgo();
+                break;
+            case BUCKET_SIZE_TAG_KEY:
+                //TODO verify how to handle integer type
+                response = new JsonArray()
+                        .add(new JsonObject().put("int", 50))
+                        .add(new JsonObject().put("int", 100))
+                        .add(new JsonObject().put("int", 250))
+                        .add(new JsonObject().put("int", 500));
+                break;
+            default:
+                LOGGER.warn("there is no tag with this key !");
+                context.response().setStatusCode(NOT_FOUND);
+                context.response().setStatusMessage("there is no tag with this key !");
+                context.response().putHeader("Content-Type", "application/json");
+                context.response().end();
+                return;
+        }
+        context.response().setStatusCode(200);
+        context.response().putHeader("Content-Type", "application/json");
+        context.response().end(response.encode());
+    }
+
+    public String  parseTagValuesRequest(RoutingContext context) throws IllegalArgumentException {
+        JsonObject body = context.getBodyAsJson();
+        try {
+            return body.getString("key");
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(String.format("body request does not contain a key 'key'. " +
+                    "Request is expected to be the following format : %s \n\n but was %s",
+                    "{ \"key\":\"Algo\"}", body.encodePrettily()));
+        }
+    }
+
+    private JsonArray getTagValuesOfAlgo() {
+        return new JsonArray()
+                .add(new JsonObject().put("text", SamplingAlgorithm.NONE))
+                .add(new JsonObject().put("text", SamplingAlgorithm.AVERAGE))
+                .add(new JsonObject().put("text", SamplingAlgorithm.FIRST_ITEM))
+                .add(new JsonObject().put("text", SamplingAlgorithm.MIN_MAX));
     }
 }

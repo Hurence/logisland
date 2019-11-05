@@ -2,6 +2,7 @@ package com.hurence.webapiservice.http.grafana;
 
 import com.hurence.logisland.record.Point;
 import com.hurence.unit5.extensions.SolrExtension;
+import com.hurence.util.AssertResponseGivenRequestHelper;
 import com.hurence.webapiservice.util.HistorianSolrITHelper;
 import com.hurence.webapiservice.util.HttpITHelper;
 import com.hurence.webapiservice.util.HttpWithHistorianSolrITHelper;
@@ -182,21 +183,7 @@ public class QueryEndPointIT {
 
     public void assertRequestGiveResponseFromFile(Vertx vertx, VertxTestContext testContext,
                                                   String requestFile, String responseFile) {
-        final FileSystem fs = vertx.fileSystem();
-        Buffer requestBuffer = fs.readFileBlocking(getClass().getResource(requestFile).getFile());
-        webClient.post("/api/grafana/query")
-                .as(BodyCodec.jsonArray())
-                .sendBuffer(requestBuffer.getDelegate(), testContext.succeeding(rsp -> {
-                    testContext.verify(() -> {
-                        assertEquals(200, rsp.statusCode());
-                        assertEquals("OK", rsp.statusMessage());
-                        JsonArray body = rsp.body();
-                        Buffer fileContent = fs.readFileBlocking(getClass().getResource(responseFile).getFile());
-                        JsonArray expectedBody = new JsonArray(fileContent.getDelegate());
-                        assertEquals(expectedBody, body);
-                        testContext.completeNow();
-                    });
-                }));
+        AssertResponseGivenRequestHelper.assertRequestGiveResponseFromFile(webClient, vertx, testContext, requestFile, responseFile);
     }
 
 }
