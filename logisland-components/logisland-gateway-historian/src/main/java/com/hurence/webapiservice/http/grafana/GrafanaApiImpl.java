@@ -117,7 +117,7 @@ public class GrafanaApiImpl implements GrafanaApi {
         return new JsonObject()
                 .put(HistorianService.FROM, request.getFrom())
                 .put(HistorianService.TO, request.getTo())
-                .put(HistorianService.MAX_TOTAL_CHUNKS_TO_RETRIEVE, 1000)
+                .put(HistorianService.MAX_TOTAL_CHUNKS_TO_RETRIEVE, 10000)
                 .put(HistorianService.FIELDS_TO_FETCH, fieldsToFetch)
                 .put(HistorianService.NAMES, metricsToRetrieve);
     }
