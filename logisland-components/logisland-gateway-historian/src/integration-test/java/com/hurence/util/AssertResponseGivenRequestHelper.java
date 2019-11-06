@@ -12,10 +12,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AssertResponseGivenRequestHelper {
 
+    private WebClient webClient;
+    private String endpoint;
 
-    public static void assertRequestGiveResponseFromFile(WebClient webClient, String endpoint,
-                                                         Vertx vertx, VertxTestContext testContext,
-                                                        String requestFile, String responseFile) {
+    public AssertResponseGivenRequestHelper(WebClient webClient, String endpoint) {
+        this.webClient = webClient;
+        this.endpoint = endpoint;
+    }
+
+    public void assertRequestGiveResponseFromFile(Vertx vertx, VertxTestContext testContext,
+                                                         String requestFile, String responseFile) {
         final FileSystem fs = vertx.fileSystem();
         Buffer requestBuffer = fs.readFileBlocking(AssertResponseGivenRequestHelper.class.getResource(requestFile).getFile());
         webClient.post(endpoint)

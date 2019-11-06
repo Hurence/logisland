@@ -33,12 +33,16 @@ public class TagKeysAndValuesEndPointIT {
 
     private static Logger LOGGER = LoggerFactory.getLogger(TagKeysAndValuesEndPointIT.class);
     private static WebClient webClient;
+    private static AssertResponseGivenRequestHelper assertTagKeyHelper;
+    private static AssertResponseGivenRequestHelper assertTagValueHelper;
 
     @BeforeAll
     public static void beforeAll(SolrClient client, DockerComposeContainer container, Vertx vertx, VertxTestContext context) throws InterruptedException, IOException, SolrServerException {
         HttpWithHistorianSolrITHelper
                 .initWebClientAndHistorianSolrCollectionAndHttpVerticleAndHistorianVerticle(client, container, vertx, context);
         webClient = HttpITHelper.buildWebClient(vertx);
+        assertTagKeyHelper = new AssertResponseGivenRequestHelper(webClient, "/api/grafana/tag-keys");
+        assertTagValueHelper = new AssertResponseGivenRequestHelper(webClient, "/api/grafana/tag-values");
     }
 
     @AfterAll
@@ -75,13 +79,11 @@ public class TagKeysAndValuesEndPointIT {
 
     public void assertRequestGiveResponseFromFileTagKeys(Vertx vertx, VertxTestContext testContext,
                                                   String requestFile, String responseFile) {
-        AssertResponseGivenRequestHelper.assertRequestGiveResponseFromFile(webClient,"/api/grafana/tag-keys",
-                vertx, testContext, requestFile, responseFile);
+        assertTagKeyHelper.assertRequestGiveResponseFromFile(vertx, testContext, requestFile, responseFile);
     }
 
     public void assertRequestGiveResponseFromFileTagValues(Vertx vertx, VertxTestContext testContext,
                                                   String requestFile, String responseFile) {
-        AssertResponseGivenRequestHelper.assertRequestGiveResponseFromFile(webClient,"/api/grafana/tag-values",
-                vertx, testContext, requestFile, responseFile);
+        assertTagValueHelper.assertRequestGiveResponseFromFile(vertx, testContext, requestFile, responseFile);
     }
 }

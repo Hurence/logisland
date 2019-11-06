@@ -40,6 +40,7 @@ public class QueryEndPointIT {
 
     private static Logger LOGGER = LoggerFactory.getLogger(SearchEndPointIT.class);
     private static WebClient webClient;
+    private static AssertResponseGivenRequestHelper assertHelper;
 
     @BeforeAll
     public static void beforeAll(SolrClient client, DockerComposeContainer container, Vertx vertx, VertxTestContext context) throws InterruptedException, IOException, SolrServerException {
@@ -104,6 +105,7 @@ public class QueryEndPointIT {
         injector.injectChunks(client);
         LOGGER.info("Indexed some documents in {} collection", HistorianSolrITHelper.COLLECTION);
         webClient = HttpITHelper.buildWebClient(vertx);
+        assertHelper = new AssertResponseGivenRequestHelper(webClient, "/api/grafana/query");
     }
 
     @AfterAll
@@ -207,8 +209,7 @@ public class QueryEndPointIT {
 
     public void assertRequestGiveResponseFromFile(Vertx vertx, VertxTestContext testContext,
                                                   String requestFile, String responseFile) {
-        AssertResponseGivenRequestHelper.assertRequestGiveResponseFromFile(webClient, "/api/grafana/query",
-                vertx, testContext, requestFile, responseFile);
+        assertHelper.assertRequestGiveResponseFromFile(vertx, testContext, requestFile, responseFile);
     }
 
 }
