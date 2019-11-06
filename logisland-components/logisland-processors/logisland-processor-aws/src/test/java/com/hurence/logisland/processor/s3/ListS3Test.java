@@ -40,7 +40,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public class TestListS3 {
+public class ListS3Test {
 
     private TestRunner runner = null;
     private ListS3 mockListS3 = null;

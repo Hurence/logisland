@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
-public class TestPutS3Object {
+public class PutS3ObjectTest {
 
     private TestRunner runner;
     private PutS3Object putS3Object;

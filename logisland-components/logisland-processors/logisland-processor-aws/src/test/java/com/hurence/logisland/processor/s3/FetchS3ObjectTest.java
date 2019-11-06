@@ -33,7 +33,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public class TestFetchS3Object {
+public class FetchS3ObjectTest {
 
     private TestRunner runner = null;
     private FetchS3Object mockFetchS3Object = null;

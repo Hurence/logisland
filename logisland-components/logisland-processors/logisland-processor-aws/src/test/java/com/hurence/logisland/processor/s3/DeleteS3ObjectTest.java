@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
-public class TestDeleteS3Object {
+public class DeleteS3ObjectTest {
 
     private TestRunner runner = null;
     private DeleteS3Object mockDeleteS3Object = null;
@@ -110,12 +110,12 @@ public class TestDeleteS3Object {
         Record record1 = new StandardRecord();
 
         runner.setProperty(DeleteS3Object.REGION, "us-west-2");
-        runner.setProperty(DeleteS3Object.BUCKET_FIELD, "${s3.bucket}");
-        runner.setProperty(DeleteS3Object.VERSION_ID_FIELD, "${s3.version}");
+        runner.setProperty(DeleteS3Object.BUCKET_FIELD, "${s3_bucket}");
+        runner.setProperty(DeleteS3Object.VERSION_ID_FIELD, "${s3_version}");
         runner.setProperty(DeleteS3Object.KEY_FEILD, "${filename1}");
         record1.setField("filename1", FieldType.STRING, "test-key");
-        record1.setField("s3.bucket", FieldType.STRING, "test-bucket");
-        record1.setField("s3.version", FieldType.STRING, "test-version");
+        record1.setField("s3_bucket", FieldType.STRING, "test-bucket");
+        record1.setField("s3_version", FieldType.STRING, "test-version");
         // TODO why context.getPropertyValue(BUCKET_FIELD).evaluate(record).asString() returns null !
         runner.enqueue(record1);
 

@@ -168,7 +168,14 @@ public class ListS3 extends AbstractS3Processor {
 
             @Override
             public ValidationResult validate(String subject, String input) {
-                return null;
+                boolean requesterPays = Boolean.valueOf(input);
+                boolean valid = !requesterPays;
+                return new ValidationResult.Builder()
+                        .input(input)
+                        .subject(subject)
+                        .valid(valid)
+                        .explanation(valid ? null : "'Requester Pays' cannot be used when listing object versions.")
+                        .build();
             }
         };
     }
