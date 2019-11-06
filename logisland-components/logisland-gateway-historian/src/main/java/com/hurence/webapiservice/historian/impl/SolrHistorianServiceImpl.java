@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.hurence.webapiservice.historian.HistorianFields.*;
@@ -112,19 +113,10 @@ public class SolrHistorianServiceImpl implements HistorianService {
     if (queryBuilder.length() != 0)
       query.setQuery(queryBuilder.toString());
     //    FILTER
-    if (params.getJsonArray(TAGS) != null) {
-      logger.error("TODO there is tags");//TODO
-    }
-    if (params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD) != null && !params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD).isEmpty()) {
-      if (params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD).size() == 1) {
-        query.addFilterQuery(RESPONSE_METRIC_NAME_FIELD + ":" + params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD).getString(0));
-      } else {
-        String orNames = params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD).stream()
-                .map(String.class::cast)
-                .collect(Collectors.joining(" OR ", "(", ")"));
-        query.addFilterQuery(RESPONSE_METRIC_NAME_FIELD + ":" + orNames);
-      }
-    }
+    buildSolrFilterFromArray(params.getJsonArray(TAGS_TO_FILTER_ON), RESPONSE_TAG_NAME_FIELD)
+            .ifPresent(query::addFilterQuery);
+    buildSolrFilterFromArray(params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD), RESPONSE_METRIC_NAME_FIELD)
+            .ifPresent(query::addFilterQuery);
     //    FIELDS_TO_FETCH
     if (params.getJsonArray(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD) != null) {
       JsonArray fields = params.getJsonArray(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD);
@@ -162,6 +154,19 @@ public class SolrHistorianServiceImpl implements HistorianService {
     };
     vertx.executeBlocking(getTimeSeriesHandler, resultHandler);
     return this;
+  }
+
+  private Optional<String> buildSolrFilterFromArray(JsonArray jsonArray, String responseMetricNameField) {
+    if (jsonArray == null || jsonArray.isEmpty())
+      return Optional.empty();
+    if (jsonArray.size() == 1) {
+      return Optional.of(responseMetricNameField + ":" + jsonArray.getString(0));
+    } else {
+      String orNames = jsonArray.stream()
+              .map(String.class::cast)
+              .collect(Collectors.joining(" OR ", "(", ")"));
+      return Optional.of(responseMetricNameField + ":" + orNames);
+    }
   }
 
   @Override

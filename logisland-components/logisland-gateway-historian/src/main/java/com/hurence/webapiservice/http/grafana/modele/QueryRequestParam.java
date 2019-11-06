@@ -62,6 +62,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
     }
 
     public List<AdHocFilter> getAdHocFilters() {
+        if (adHocFilters == null) return Collections.emptyList();
         return adHocFilters;
     }
 
@@ -105,11 +106,27 @@ public class QueryRequestParam implements TimeSeriesRequest {
                 .findAny();
     }
 
+    private List<String> getTagsFromFilter() {
+        return getAdHocFilters().stream()
+                .filter(adhoc -> GrafanaApiImpl.FILTER_TAG_KEY.equals(adhoc.getKey()))
+                .map(AdHocFilter::getValue)
+                .collect(Collectors.toList());
+    }
+
     @Override
-    public List<String> getNames() {
+    public List<String> getMetricNames() {
         return getTargets().stream()
                 .map(Target::getTarget)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getTags() {
+        if (containFilter(GrafanaApiImpl.FILTER_TAG_KEY)) {
+            return getTagsFromFilter();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
 

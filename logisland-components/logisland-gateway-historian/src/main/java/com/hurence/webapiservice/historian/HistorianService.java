@@ -39,7 +39,7 @@ public interface HistorianService {
      *                          {@value HistorianFields#FROM_REQUEST_FIELD} : "content of chunks as an array",
      *                          {@value HistorianFields#TO_REQUEST_FIELD} : "total chunk matching query",
      *                          {@value HistorianFields#FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD} : ["field1", "field2"...],
-     *                          {@value HistorianFields#TAGS} : "total chunk matching query",
+     *                          {@value HistorianFields#TAGS_TO_FILTER_ON} : "total chunk matching query",
      *                          {@value HistorianFields#METRIC_NAMES_AS_LIST_REQUEST_FIELD} : "content of chunks as an array",
      *                      }
      *                      </pre>
@@ -47,7 +47,7 @@ public interface HistorianService {
      *                      if {@value HistorianFields#FROM_REQUEST_FIELD} not specified will search from 0
      *                      if {@value HistorianFields#TO_REQUEST_FIELD} not specified will search to Max.Long
      *                      use {@value HistorianFields#FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD} if you want to retrieve some of the precalculated aggs. If not specified retrieve all.
-     *                      use {@value HistorianFields#TAGS} to search for specific timeseries having one of those tags
+     *                      use {@value HistorianFields#TAGS_TO_FILTER_ON} to search for specific timeseries having one of those tags
      *                      use {@value HistorianFields#METRIC_NAMES_AS_LIST_REQUEST_FIELD} to search a specific timeseries name
      * @param resultHandler return chunks of timeseries as an array of
      *                      <pre>

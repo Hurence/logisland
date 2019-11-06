@@ -14,5 +14,7 @@ public interface TimeSeriesRequest {
 
     SamplingConf getSamplingConf();
 
-    List<String> getNames();
+    List<String> getMetricNames();
+
+    List<String> getTags();
 }

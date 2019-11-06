@@ -16,5 +16,6 @@ public class ChunkExpected {
     public boolean trend;
     public String name;
     public String sax;
+    public List<String> tags;
 //    public String recordName;
 }

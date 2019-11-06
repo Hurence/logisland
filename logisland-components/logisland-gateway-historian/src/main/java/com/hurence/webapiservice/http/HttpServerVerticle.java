@@ -162,7 +162,8 @@ public class HttpServerVerticle extends AbstractVerticle {
                 .put(FROM_REQUEST_FIELD, request.getFrom())
                 .put(TO_REQUEST_FIELD, request.getTo())
                 .put(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD, fieldsToFetch)
-                .put(METRIC_NAMES_AS_LIST_REQUEST_FIELD, request.getNames());
+                .put(METRIC_NAMES_AS_LIST_REQUEST_FIELD, request.getMetricNames())
+                .put(TAGS_TO_FILTER_ON, request.getTags());
     }
 
 

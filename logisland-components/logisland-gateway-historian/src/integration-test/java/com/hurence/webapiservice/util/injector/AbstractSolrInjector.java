@@ -13,7 +13,6 @@ import org.apache.solr.common.SolrInputDocument;
 import java.io.IOException;
 import java.util.List;
 
-import static com.hurence.logisland.record.FieldDictionary.*;
 import static com.hurence.webapiservice.historian.HistorianFields.*;
 
 public abstract class AbstractSolrInjector implements SolrInjector {
@@ -54,6 +53,7 @@ public abstract class AbstractSolrInjector implements SolrInjector {
         doc.addField(RESPONSE_CHUNK_MAX_FIELD, chunk.max);
         doc.addField(RESPONSE_CHUNK_SIZE_BYTES_FIELD, chunk.compressedPoints.length);
         doc.addField(RESPONSE_CHUNK_SUM_FIELD, chunk.sum);
+        doc.addField(RESPONSE_TAG_NAME_FIELD, chunk.tags);
         return doc;
     }
 }

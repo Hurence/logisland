@@ -4,6 +4,7 @@ import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 
+import java.util.Collections;
 import java.util.List;
 
 public class GetTimeSerieRequestParam implements TimeSeriesRequest {
@@ -15,8 +16,13 @@ public class GetTimeSerieRequestParam implements TimeSeriesRequest {
 
     private GetTimeSerieRequestParam() { }
 
-    public List<String> getNames() {
+    public List<String> getMetricNames() {
         return names;
+    }
+
+    @Override
+    public List<String> getTags() {
+        return Collections.emptyList();
     }
 
     private void setNames(List<String> names) {

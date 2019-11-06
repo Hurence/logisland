@@ -113,15 +113,13 @@ public class GrafanaApiImpl implements GrafanaApi {
                 .add(RESPONSE_CHUNK_END_FIELD)
                 .add(RESPONSE_CHUNK_SIZE_FIELD)
                 .add(RESPONSE_METRIC_NAME_FIELD);
-        List<String> metricsToRetrieve = request.getNames();
-        List<String> customFilters = request.getNames();
         return new JsonObject()
                 .put(FROM_REQUEST_FIELD, request.getFrom())
                 .put(TO_REQUEST_FIELD, request.getTo())
                 .put(MAX_TOTAL_CHUNKS_TO_RETRIEVE_REQUEST_FIELD, 10000)
                 .put(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD, fieldsToFetch)
-                .put(METRIC_NAMES_AS_LIST_REQUEST_FIELD, metricsToRetrieve)
-                .put(TAGS , customFilters);
+                .put(METRIC_NAMES_AS_LIST_REQUEST_FIELD, request.getMetricNames())
+                .put(TAGS_TO_FILTER_ON, request.getTags());
     }
 
     @Override
