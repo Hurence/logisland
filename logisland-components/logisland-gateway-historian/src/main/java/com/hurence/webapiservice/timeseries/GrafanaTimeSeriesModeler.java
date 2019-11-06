@@ -1,9 +1,6 @@
 package com.hurence.webapiservice.timeseries;
 
 import com.hurence.logisland.record.Point;
-import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
-import com.hurence.webapiservice.historian.reactivex.HistorianService;
-import com.hurence.webapiservice.historian.util.ChunkUtil;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
 import io.vertx.core.json.JsonArray;
@@ -11,6 +8,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.hurence.webapiservice.historian.HistorianFields.*;
 
 public class GrafanaTimeSeriesModeler extends AbstractTimeSeriesModeler {
     private static String TIMESERIE_NAME = "target";
@@ -37,7 +36,7 @@ public class GrafanaTimeSeriesModeler extends AbstractTimeSeriesModeler {
      */
     public JsonObject extractTimeSerieFromChunks(long from, long to, List<AGG> aggs, SamplingConf samplingConf, List<JsonObject> chunks) {
         if (chunks==null || chunks.isEmpty()) throw new IllegalArgumentException("chunks is null or empty !");
-        String name = chunks.stream().findFirst().get().getString(HistorianService.METRIC_NAME);
+        String name = chunks.stream().findFirst().get().getString(RESPONSE_METRIC_NAME_FIELD);
         JsonObject timeserie = new JsonObject()
                 .put(TIMESERIE_NAME, name);
 //        chunks = adjustChunk(from, to, aggs, chunks);

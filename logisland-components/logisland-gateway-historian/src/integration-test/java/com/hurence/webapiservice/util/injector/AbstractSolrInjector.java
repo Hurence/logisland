@@ -4,7 +4,6 @@ import com.hurence.logisland.record.Point;
 import com.hurence.logisland.timeseries.converter.common.Compression;
 import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
 import com.hurence.webapiservice.util.HistorianSolrITHelper;
-import com.hurence.webapiservice.util.injector.SolrInjector;
 import com.hurence.webapiservice.util.modele.ChunkExpected;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -15,9 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.hurence.logisland.record.FieldDictionary.*;
-import static com.hurence.logisland.record.FieldDictionary.CHUNK_SUM;
-import static com.hurence.webapiservice.historian.HistorianService.CHUNK_ID;
-import static com.hurence.webapiservice.historian.HistorianService.METRIC_NAME;
+import static com.hurence.webapiservice.historian.HistorianFields.*;
 
 public abstract class AbstractSolrInjector implements SolrInjector {
 
@@ -43,20 +40,20 @@ public abstract class AbstractSolrInjector implements SolrInjector {
 
     private SolrInputDocument buildSolrDocument(ChunkExpected chunk, String id) {
         final SolrInputDocument doc = new SolrInputDocument();
-        doc.addField(CHUNK_ID, id);
-        doc.addField(CHUNK_START, chunk.start);
-        doc.addField(CHUNK_SIZE, chunk.points.size());
-        doc.addField(CHUNK_END, chunk.end);
-        doc.addField(CHUNK_SAX, chunk.sax);
-        doc.addField(CHUNK_VALUE, chunk.compressedPoints);
-        doc.addField(CHUNK_AVG, chunk.avg);
-        doc.addField(CHUNK_MIN, chunk.min);
-        doc.addField(CHUNK_WINDOW_MS, 11855);
-        doc.addField(METRIC_NAME, chunk.name);
-        doc.addField(CHUNK_TREND, chunk.trend);
-        doc.addField(CHUNK_MAX, chunk.max);
-        doc.addField(CHUNK_SIZE_BYTES, chunk.compressedPoints.length);
-        doc.addField(CHUNK_SUM, chunk.sum);
+        doc.addField(RESPONSE_CHUNK_ID_FIELD, id);
+        doc.addField(RESPONSE_CHUNK_START_FIELD, chunk.start);
+        doc.addField(RESPONSE_CHUNK_SIZE_FIELD, chunk.points.size());
+        doc.addField(RESPONSE_CHUNK_END_FIELD, chunk.end);
+        doc.addField(RESPONSE_CHUNK_SAX_FIELD, chunk.sax);
+        doc.addField(RESPONSE_CHUNK_VALUE_FIELD, chunk.compressedPoints);
+        doc.addField(RESPONSE_CHUNK_AVG_FIELD, chunk.avg);
+        doc.addField(RESPONSE_CHUNK_MIN_FIELD, chunk.min);
+        doc.addField(RESPONSE_CHUNK_WINDOW_MS_FIELD, 11855);
+        doc.addField(RESPONSE_METRIC_NAME_FIELD, chunk.name);
+        doc.addField(RESPONSE_CHUNK_TREND_FIELD, chunk.trend);
+        doc.addField(RESPONSE_CHUNK_MAX_FIELD, chunk.max);
+        doc.addField(RESPONSE_CHUNK_SIZE_BYTES_FIELD, chunk.compressedPoints.length);
+        doc.addField(RESPONSE_CHUNK_SUM_FIELD, chunk.sum);
         return doc;
     }
 }

@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
+import static com.hurence.webapiservice.historian.HistorianFields.*;
 public class LogislandTimeSeriesModeler extends AbstractTimeSeriesModeler {
     private static String TIMESERIES_NAME = "name";
     private static String TIMESERIES_AGGS = "aggs";
@@ -31,7 +32,7 @@ public class LogislandTimeSeriesModeler extends AbstractTimeSeriesModeler {
      */
     public JsonObject extractTimeSerieFromChunks(long from, long to, List<AGG> aggs, SamplingConf samplingConf, List<JsonObject> chunks) {
         if (chunks==null || chunks.isEmpty()) throw new IllegalArgumentException("chunks is null or empty !");
-        String name = chunks.stream().findFirst().get().getString(HistorianService.METRIC_NAME);
+        String name = chunks.stream().findFirst().get().getString(RESPONSE_METRIC_NAME_FIELD);
         JsonObject timeserie = new JsonObject()
                 .put(TIMESERIES_NAME, name);
 //        chunks = adjustChunk(from, to, aggs, chunks);

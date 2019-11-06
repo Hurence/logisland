@@ -108,30 +108,6 @@ public class HistorianService {
     });
   }
 
-  public static final String CHUNKS = com.hurence.webapiservice.historian.HistorianService.CHUNKS;
-  public static final String METRICS = com.hurence.webapiservice.historian.HistorianService.METRICS;
-  public static final String TOTAL_FOUND = com.hurence.webapiservice.historian.HistorianService.TOTAL_FOUND;
-  public static final String FROM = com.hurence.webapiservice.historian.HistorianService.FROM;
-  public static final String TO = com.hurence.webapiservice.historian.HistorianService.TO;
-  public static final String FIELDS_TO_FETCH = com.hurence.webapiservice.historian.HistorianService.FIELDS_TO_FETCH;
-  public static final String TAGS = com.hurence.webapiservice.historian.HistorianService.TAGS;
-  public static final String NAMES = com.hurence.webapiservice.historian.HistorianService.NAMES;
-  public static final String MAX_TOTAL_CHUNKS_TO_RETRIEVE = com.hurence.webapiservice.historian.HistorianService.MAX_TOTAL_CHUNKS_TO_RETRIEVE;
-  public static final String METRIC_NAME = com.hurence.webapiservice.historian.HistorianService.METRIC_NAME;
-  public static final String CHUNK_ID = com.hurence.webapiservice.historian.HistorianService.CHUNK_ID;
-  public static final String CHUNK_VERSION = com.hurence.webapiservice.historian.HistorianService.CHUNK_VERSION;
-  public static final String CHUNK_VALUE = com.hurence.webapiservice.historian.HistorianService.CHUNK_VALUE;
-  public static final String CHUNK_MAX = com.hurence.webapiservice.historian.HistorianService.CHUNK_MAX;
-  public static final String CHUNK_MIN = com.hurence.webapiservice.historian.HistorianService.CHUNK_MIN;
-  public static final String CHUNK_START = com.hurence.webapiservice.historian.HistorianService.CHUNK_START;
-  public static final String CHUNK_END = com.hurence.webapiservice.historian.HistorianService.CHUNK_END;
-  public static final String CHUNK_AVG = com.hurence.webapiservice.historian.HistorianService.CHUNK_AVG;
-  public static final String CHUNK_SIZE = com.hurence.webapiservice.historian.HistorianService.CHUNK_SIZE;
-  public static final String CHUNK_SUM = com.hurence.webapiservice.historian.HistorianService.CHUNK_SUM;
-  public static final String CHUNK_SAX = com.hurence.webapiservice.historian.HistorianService.CHUNK_SAX;
-  public static final String CHUNK_WINDOW_MS = com.hurence.webapiservice.historian.HistorianService.CHUNK_WINDOW_MS;
-  public static final String CHUNK_TREND = com.hurence.webapiservice.historian.HistorianService.CHUNK_TREND;
-  public static final String CHUNK_SIZE_BYTES = com.hurence.webapiservice.historian.HistorianService.CHUNK_SIZE_BYTES;
 
   public static  HistorianService newInstance(com.hurence.webapiservice.historian.HistorianService arg) {
     return arg != null ? new HistorianService(arg) : null;

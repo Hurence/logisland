@@ -5,7 +5,6 @@ import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionCon
 import com.hurence.logisland.timeseries.sampling.Sampler;
 import com.hurence.logisland.timeseries.sampling.SamplerFactory;
 import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
-import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.ChunkUtil;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
@@ -16,6 +15,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.hurence.webapiservice.historian.HistorianFields.*;
 
 public abstract class AbstractTimeSeriesModeler implements TimeSeriesModeler {
     protected static String TIMESERIES_TIMESTAMPS = "timestamps";
@@ -42,9 +43,9 @@ public abstract class AbstractTimeSeriesModeler implements TimeSeriesModeler {
     protected Stream<Point> extractPointsAsStream(long from, long to, List<JsonObject> chunks) {
         return chunks.stream()
                 .flatMap(chunk -> {
-                    byte[] binaryChunk = chunk.getBinary(HistorianService.CHUNK_VALUE);
-                    long chunkStart = chunk.getLong(HistorianService.CHUNK_START);
-                    long chunkEnd = chunk.getLong(HistorianService.CHUNK_END);
+                    byte[] binaryChunk = chunk.getBinary(RESPONSE_CHUNK_VALUE_FIELD);
+                    long chunkStart = chunk.getLong(RESPONSE_CHUNK_START_FIELD);
+                    long chunkEnd = chunk.getLong(RESPONSE_CHUNK_END_FIELD);
                     try {
                         return compacter.unCompressPoints(binaryChunk, chunkStart, chunkEnd, from, to).stream();
                     } catch (IOException ex) {

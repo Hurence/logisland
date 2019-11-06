@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.hurence.webapiservice.historian.HistorianService.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static com.hurence.webapiservice.historian.HistorianFields.*;
 
 @ExtendWith({VertxExtension.class, SolrExtension.class})
 public class HistorianVerticleIT {
@@ -91,40 +92,40 @@ public class HistorianVerticleIT {
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
-                        long totalHit = rsp.getLong(HistorianService.TOTAL_FOUND);
+                        long totalHit = rsp.getLong(RESPONSE_TOTAL_FOUND);
                         assertEquals(4, totalHit);
-                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
+                        JsonArray docs = rsp.getJsonArray(RESPONSE_CHUNKS);
                         assertEquals(4, docs.size());
                         JsonObject doc1 = docs.getJsonObject(0);
-                        assertTrue(doc1.containsKey(METRIC_NAME));
-                        assertTrue(doc1.containsKey(CHUNK_START));
-                        assertTrue(doc1.containsKey(CHUNK_END));
-                        assertTrue(doc1.containsKey(CHUNK_AVG));
-                        assertTrue(doc1.containsKey(CHUNK_ID));
-                        assertTrue(doc1.containsKey(CHUNK_SIZE));
-                        assertTrue(doc1.containsKey(CHUNK_SAX));
-                        assertTrue(doc1.containsKey(CHUNK_VALUE));
-                        assertTrue(doc1.containsKey(CHUNK_MIN));
-                        assertTrue(doc1.containsKey(CHUNK_MAX));
-                        assertTrue(doc1.containsKey(CHUNK_WINDOW_MS));
-                        assertTrue(doc1.containsKey(CHUNK_TREND));
-                        assertTrue(doc1.containsKey(CHUNK_SIZE_BYTES));
-                        assertTrue(doc1.containsKey(CHUNK_SUM));
-                        assertTrue(doc1.containsKey(CHUNK_VERSION));
+                        assertTrue(doc1.containsKey(RESPONSE_METRIC_NAME_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_START_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_END_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_AVG_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_ID_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_SIZE_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_SAX_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_VALUE_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_MIN_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_MAX_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_WINDOW_MS_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_TREND_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_SIZE_BYTES_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_SUM_FIELD));
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_VERSION_FIELD));
                         assertEquals(15, doc1.size());
                         assertEquals("id0", doc1.getString("id"));
-                        assertEquals(1L, doc1.getLong(CHUNK_START));
-                        assertEquals(4L, doc1.getLong(CHUNK_END));
+                        assertEquals(1L, doc1.getLong(RESPONSE_CHUNK_START_FIELD));
+                        assertEquals(4L, doc1.getLong(RESPONSE_CHUNK_END_FIELD));
                         JsonObject doc2 = docs.getJsonObject(1);
                         assertEquals(15, doc2.size());
                         assertEquals("id1", doc2.getString("id"));
-                        assertEquals(5L, doc2.getLong(CHUNK_START));
-                        assertEquals(8L, doc2.getLong(CHUNK_END));
+                        assertEquals(5L, doc2.getLong(RESPONSE_CHUNK_START_FIELD));
+                        assertEquals(8L, doc2.getLong(RESPONSE_CHUNK_END_FIELD));
                         JsonObject doc3 = docs.getJsonObject(2);
                         assertEquals(15, doc3.size());
                         assertEquals("id2", doc3.getString("id"));
-                        assertEquals(9L, doc3.getLong(CHUNK_START));
-                        assertEquals(12L, doc3.getLong(CHUNK_END));
+                        assertEquals(9L, doc3.getLong(RESPONSE_CHUNK_START_FIELD));
+                        assertEquals(12L, doc3.getLong(RESPONSE_CHUNK_END_FIELD));
                         testContext.completeNow();
                     });
                 })
@@ -136,12 +137,12 @@ public class HistorianVerticleIT {
     void getTimeSeriesChunkTestWithStart(VertxTestContext testContext) {
 
         JsonObject params = new JsonObject()
-                .put(HistorianService.FROM, 9L);
+                .put(FROM_REQUEST_FIELD, 9L);
         historian.rxGetTimeSeriesChunk(params)
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
-                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
+                        JsonArray docs = rsp.getJsonArray(RESPONSE_CHUNKS);
                         JsonObject doc2 = docs.getJsonObject(0);
                         assertEquals("id2", doc2.getString("id"));
                         JsonObject doc3 = docs.getJsonObject(1);
@@ -157,12 +158,12 @@ public class HistorianVerticleIT {
     void getTimeSeriesChunkTestWithEnd(VertxTestContext testContext) {
 
         JsonObject params = new JsonObject()
-                .put(HistorianService.TO, 1571129390801L);
+                .put(TO_REQUEST_FIELD, 1571129390801L);
         historian.rxGetTimeSeriesChunk(params)
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
-                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
+                        JsonArray docs = rsp.getJsonArray(RESPONSE_CHUNKS);
                         JsonObject doc1 = docs.getJsonObject(0);
                         assertEquals("id0", doc1.getString("id"));
                         JsonObject doc2 = docs.getJsonObject(1);
@@ -177,21 +178,21 @@ public class HistorianVerticleIT {
     @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
     void getTimeSeriesChunkTestWithSelectedFields(VertxTestContext testContext) {
         JsonObject params = new JsonObject()
-                .put(HistorianService.FIELDS_TO_FETCH, new JsonArray()
-                    .add(CHUNK_VALUE).add(CHUNK_START).add(CHUNK_MAX).add("id")
+                .put(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD, new JsonArray()
+                    .add(RESPONSE_CHUNK_VALUE_FIELD).add(RESPONSE_CHUNK_START_FIELD).add(RESPONSE_CHUNK_MAX_FIELD).add("id")
                 );
         historian.rxGetTimeSeriesChunk(params)
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
-                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
+                        JsonArray docs = rsp.getJsonArray(RESPONSE_CHUNKS);
                         JsonObject doc1 = docs.getJsonObject(0);
                         assertEquals(4, doc1.size());
                         assertEquals("id0", doc1.getString("id"));
-                        assertEquals(1L, doc1.getLong(CHUNK_START));
-                        assertEquals(8.0, doc1.getDouble(CHUNK_MAX));
+                        assertEquals(1L, doc1.getLong(RESPONSE_CHUNK_START_FIELD));
+                        assertEquals(8.0, doc1.getDouble(RESPONSE_CHUNK_MAX_FIELD));
                         assertEquals("H4sIAAAAAAAAAOPi1GQAAxEHLm4FRihHwYGLU9MYDD7bc3ELwMSlHAQYANb3vjkyAAAA",
-                                doc1.getString(CHUNK_VALUE));
+                                doc1.getString(RESPONSE_CHUNK_VALUE_FIELD));
                         testContext.completeNow();
                     });
                 })
@@ -202,14 +203,14 @@ public class HistorianVerticleIT {
     @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
     void getTimeSeriesChunkTestWithName(VertxTestContext testContext) {
         JsonObject params = new JsonObject()
-                .put(HistorianService.NAMES, Arrays.asList("temp_a"));
+                .put(METRIC_NAMES_AS_LIST_REQUEST_FIELD, Arrays.asList("temp_a"));
         historian.rxGetTimeSeriesChunk(params)
                 .doOnError(testContext::failNow)
                 .doOnSuccess(rsp -> {
                     testContext.verify(() -> {
-                        long totalHit = rsp.getLong(HistorianService.TOTAL_FOUND);
+                        long totalHit = rsp.getLong(RESPONSE_TOTAL_FOUND);
                         assertEquals(3, totalHit);
-                        JsonArray docs = rsp.getJsonArray(HistorianService.CHUNKS);
+                        JsonArray docs = rsp.getJsonArray(RESPONSE_CHUNKS);
                         assertEquals(3, docs.size());
                         testContext.completeNow();
                     });

@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+import static com.hurence.webapiservice.historian.HistorianFields.*;
+
 public class SolrHistorianServiceImpl implements HistorianService {
 
   private static Logger logger = LoggerFactory.getLogger(SolrHistorianServiceImpl.class);
@@ -97,13 +99,13 @@ public class SolrHistorianServiceImpl implements HistorianService {
   public HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
     //    SEARCH
     StringBuilder queryBuilder = new StringBuilder();
-    if (params.getLong(TO) != null) {
-      queryBuilder.append(CHUNK_START).append(":[* TO ").append(params.getLong(TO)).append("]");
+    if (params.getLong(TO_REQUEST_FIELD) != null) {
+      queryBuilder.append(RESPONSE_CHUNK_START_FIELD).append(":[* TO ").append(params.getLong(TO_REQUEST_FIELD)).append("]");
     }
-    if (params.getLong(FROM) != null) {
+    if (params.getLong(FROM_REQUEST_FIELD) != null) {
       if (queryBuilder.length() != 0)
         queryBuilder.append(" AND ");
-      queryBuilder.append(CHUNK_END).append(":[").append(params.getLong(FROM)).append(" TO *]");
+      queryBuilder.append(RESPONSE_CHUNK_END_FIELD).append(":[").append(params.getLong(FROM_REQUEST_FIELD)).append(" TO *]");
     }
     //
     SolrQuery query = new SolrQuery("*:*");
@@ -113,19 +115,19 @@ public class SolrHistorianServiceImpl implements HistorianService {
     if (params.getJsonArray(TAGS) != null) {
       logger.error("TODO there is tags");//TODO
     }
-    if (params.getJsonArray(NAMES) != null && !params.getJsonArray(NAMES).isEmpty()) {
-      if (params.getJsonArray(NAMES).size() == 1) {
-        query.addFilterQuery(METRIC_NAME + ":" + params.getJsonArray(NAMES).getString(0));
+    if (params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD) != null && !params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD).isEmpty()) {
+      if (params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD).size() == 1) {
+        query.addFilterQuery(RESPONSE_METRIC_NAME_FIELD + ":" + params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD).getString(0));
       } else {
-        String orNames = params.getJsonArray(NAMES).stream()
+        String orNames = params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD).stream()
                 .map(String.class::cast)
                 .collect(Collectors.joining(" OR ", "(", ")"));
-        query.addFilterQuery(METRIC_NAME + ":" + orNames);
+        query.addFilterQuery(RESPONSE_METRIC_NAME_FIELD + ":" + orNames);
       }
     }
     //    FIELDS_TO_FETCH
-    if (params.getJsonArray(FIELDS_TO_FETCH) != null) {
-      JsonArray fields = params.getJsonArray(FIELDS_TO_FETCH);
+    if (params.getJsonArray(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD) != null) {
+      JsonArray fields = params.getJsonArray(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD);
       fields.stream().forEach(field -> {
         if (field instanceof String) {
           query.addField((String) field);
@@ -135,8 +137,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
       });
     }
     //    SORT
-    query.setSort(CHUNK_START, SolrQuery.ORDER.asc);
-    query.setRows(params.getInteger(MAX_TOTAL_CHUNKS_TO_RETRIEVE, 1000));
+    query.setSort(RESPONSE_CHUNK_START_FIELD, SolrQuery.ORDER.asc);
+    query.setRows(params.getInteger(MAX_TOTAL_CHUNKS_TO_RETRIEVE_REQUEST_FIELD, 1000));
     //  EXECUTE REQUEST
     Handler<Promise<JsonObject>> getTimeSeriesHandler = p -> {
       try {
@@ -148,8 +150,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
                 .collect(Collectors.toList())
         );
         p.complete(new JsonObject()
-                .put(TOTAL_FOUND, documents.getNumFound())
-                .put(CHUNKS, docs)
+                .put(RESPONSE_TOTAL_FOUND, documents.getNumFound())
+                .put(RESPONSE_CHUNKS, docs)
         );
       } catch (IOException | SolrServerException e) {
         p.fail(e);
@@ -170,12 +172,12 @@ public class SolrHistorianServiceImpl implements HistorianService {
 //    query.setFacet(true);
 //    query.setFacetSort("index");
 //    query.setFacetLimit(0);
-    query.addFacetField(METRIC_NAME);
+    query.addFacetField(RESPONSE_METRIC_NAME_FIELD);
     //  EXECUTE REQUEST
     Handler<Promise<JsonObject>> getMetricsNameHandler = p -> {
       try {
         final QueryResponse response = client.query(collection, query);
-        FacetField facetField = response.getFacetField(METRIC_NAME);
+        FacetField facetField = response.getFacetField(RESPONSE_METRIC_NAME_FIELD);
         FacetField.Count count = facetField.getValues().get(0);
         count.getCount();
         count.getName();
@@ -187,8 +189,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
                 .collect(Collectors.toList())
         );
         p.complete(new JsonObject()
-                .put(TOTAL_FOUND, facetField.getValueCount())
-                .put(METRICS, metrics)
+                .put(RESPONSE_TOTAL_FOUND, facetField.getValueCount())
+                .put(RESPONSE_METRICS, metrics)
         );
       } catch (IOException | SolrServerException e) {
         p.fail(e);

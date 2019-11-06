@@ -4,8 +4,8 @@ import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
 import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
 import com.hurence.webapiservice.timeseries.LogislandTimeSeriesModeler;
-import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
+import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.hurence.webapiservice.historian.HistorianFields.*;
 import static com.hurence.webapiservice.http.Codes.BAD_REQUEST;
-
 
 public class HttpServerVerticle extends AbstractVerticle {
 
@@ -106,7 +106,7 @@ public class HttpServerVerticle extends AbstractVerticle {
                 .map(chunkResponse -> {
                     List<JsonObject> chunks = HistorianResponseHelper.extractChunks(chunkResponse);
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
-                            Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
+                            Collectors.groupingBy(chunk ->  chunk.getString(RESPONSE_METRIC_NAME_FIELD))
                     );
                     return TimeSeriesModeler.buildTimeSeries(request, chunksByName, timeserieModeler);
                 })
@@ -130,28 +130,28 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     private JsonObject buildHistorianRequest(TimeSeriesRequest request) {
         JsonArray fieldsToFetch = new JsonArray()
-                .add(HistorianService.CHUNK_VALUE)
-                .add(HistorianService.CHUNK_START)
-                .add(HistorianService.CHUNK_END)
-                .add(HistorianService.CHUNK_SIZE)
-                .add(HistorianService.METRIC_NAME);
+                .add(RESPONSE_CHUNK_VALUE_FIELD)
+                .add(RESPONSE_CHUNK_START_FIELD)
+                .add(RESPONSE_CHUNK_END_FIELD)
+                .add(RESPONSE_CHUNK_SIZE_FIELD)
+                .add(RESPONSE_METRIC_NAME_FIELD);
         request.getAggs().forEach(agg -> {
             final String aggField;
             switch (agg) {
                 case MIN:
-                    aggField = HistorianService.CHUNK_MIN;
+                    aggField = RESPONSE_CHUNK_MIN_FIELD;
                     break;
                 case MAX:
-                    aggField = HistorianService.CHUNK_MAX;
+                    aggField = RESPONSE_CHUNK_MAX_FIELD;
                     break;
                 case AVG:
-                    aggField = HistorianService.CHUNK_AVG;
+                    aggField = RESPONSE_CHUNK_AVG_FIELD;
                     break;
                 case COUNT:
-                    aggField = HistorianService.CHUNK_SIZE;
+                    aggField = RESPONSE_CHUNK_SIZE_FIELD;
                     break;
                 case SUM:
-                    aggField = HistorianService.CHUNK_SUM;
+                    aggField = RESPONSE_CHUNK_SUM_FIELD;
                     break;
                 default:
                     throw new IllegalStateException("Unsupported aggregation: " + agg);
@@ -159,10 +159,10 @@ public class HttpServerVerticle extends AbstractVerticle {
             fieldsToFetch.add(aggField);
         });
         return new JsonObject()
-                .put(HistorianService.FROM, request.getFrom())
-                .put(HistorianService.TO, request.getTo())
-                .put(HistorianService.FIELDS_TO_FETCH, fieldsToFetch)
-                .put(HistorianService.NAMES, request.getNames());
+                .put(FROM_REQUEST_FIELD, request.getFrom())
+                .put(TO_REQUEST_FIELD, request.getTo())
+                .put(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD, fieldsToFetch)
+                .put(METRIC_NAMES_AS_LIST_REQUEST_FIELD, request.getNames());
     }
 
 

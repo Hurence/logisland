@@ -5,8 +5,8 @@ import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
 import com.hurence.webapiservice.timeseries.GrafanaTimeSeriesModeler;
-import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
+import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.hurence.logisland.timeseries.sampling.SamplingAlgorithm.AVERAGE;
-import static com.hurence.logisland.timeseries.sampling.SamplingAlgorithm.FIRST_ITEM;
+import static com.hurence.webapiservice.historian.HistorianFields.*;
 import static com.hurence.webapiservice.http.Codes.BAD_REQUEST;
 import static com.hurence.webapiservice.http.Codes.NOT_FOUND;
 
@@ -31,6 +30,7 @@ public class GrafanaApiImpl implements GrafanaApi {
 
     public final static String ALGO_TAG_KEY = "Algo";
     public final static String BUCKET_SIZE_TAG_KEY = "Bucket size";
+    public final static String FILTER_TAG_KEY = "Tag";
 
 
     public GrafanaApiImpl(HistorianService service) {
@@ -56,7 +56,7 @@ public class GrafanaApiImpl implements GrafanaApi {
                     context.response().end(ex.getMessage());
                 })
                 .doOnSuccess(metricResponse -> {
-                    JsonArray metricNames = metricResponse.getJsonArray(HistorianService.METRICS);
+                    JsonArray metricNames = metricResponse.getJsonArray(RESPONSE_METRICS);
                     context.response().setStatusCode(200);
                     context.response().putHeader("Content-Type", "application/json");
                     context.response().end(metricNames.encode());
@@ -85,7 +85,7 @@ public class GrafanaApiImpl implements GrafanaApi {
                 .map(chunkResponse -> {
                     List<JsonObject> chunks = HistorianResponseHelper.extractChunks(chunkResponse);
                     Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
-                            Collectors.groupingBy(chunk ->  chunk.getString(HistorianService.METRIC_NAME))
+                            Collectors.groupingBy(chunk ->  chunk.getString(RESPONSE_METRIC_NAME_FIELD))
                     );
                     //TODO external this in a service so that is does not block thread
                     //TODO or use blockExecuting method of vertx. What is the best choice ?
@@ -108,18 +108,20 @@ public class GrafanaApiImpl implements GrafanaApi {
 
     private JsonObject buildHistorianRequest(TimeSeriesRequest request) {
         JsonArray fieldsToFetch = new JsonArray()
-                .add(HistorianService.CHUNK_VALUE)
-                .add(HistorianService.CHUNK_START)
-                .add(HistorianService.CHUNK_END)
-                .add(HistorianService.CHUNK_SIZE)
-                .add(HistorianService.METRIC_NAME);
+                .add(RESPONSE_CHUNK_VALUE_FIELD)
+                .add(RESPONSE_CHUNK_START_FIELD)
+                .add(RESPONSE_CHUNK_END_FIELD)
+                .add(RESPONSE_CHUNK_SIZE_FIELD)
+                .add(RESPONSE_METRIC_NAME_FIELD);
         List<String> metricsToRetrieve = request.getNames();
+        List<String> customFilters = request.getNames();
         return new JsonObject()
-                .put(HistorianService.FROM, request.getFrom())
-                .put(HistorianService.TO, request.getTo())
-                .put(HistorianService.MAX_TOTAL_CHUNKS_TO_RETRIEVE, 10000)
-                .put(HistorianService.FIELDS_TO_FETCH, fieldsToFetch)
-                .put(HistorianService.NAMES, metricsToRetrieve);
+                .put(FROM_REQUEST_FIELD, request.getFrom())
+                .put(TO_REQUEST_FIELD, request.getTo())
+                .put(MAX_TOTAL_CHUNKS_TO_RETRIEVE_REQUEST_FIELD, 10000)
+                .put(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD, fieldsToFetch)
+                .put(METRIC_NAMES_AS_LIST_REQUEST_FIELD, metricsToRetrieve)
+                .put(TAGS , customFilters);
     }
 
     @Override
@@ -138,6 +140,7 @@ public class GrafanaApiImpl implements GrafanaApi {
         context.response().end(new JsonArray()
                 .add(new JsonObject().put("type", "string").put("text", ALGO_TAG_KEY))
                 .add(new JsonObject().put("type", "int").put("text", BUCKET_SIZE_TAG_KEY))
+                .add(new JsonObject().put("type", "string").put("text", FILTER_TAG_KEY))
                 .encode()
         );
     }
@@ -166,11 +169,15 @@ public class GrafanaApiImpl implements GrafanaApi {
             case BUCKET_SIZE_TAG_KEY:
                 //TODO verify how to handle integer type
                 response = new JsonArray()
-                        .add(new JsonObject().put("int", 50))
-                        .add(new JsonObject().put("int", 100))
-                        .add(new JsonObject().put("int", 250))
-                        .add(new JsonObject().put("int", 500));
+                        .add(new JsonObject().put("int", "50"))
+                        .add(new JsonObject().put("int", "100"))
+                        .add(new JsonObject().put("int", "250"))
+                        .add(new JsonObject().put("int", "500"));
                 break;
+            case FILTER_TAG_KEY:
+                //TODO request tags in historian
+                response = new JsonArray()
+                        .add(new JsonObject().put("text", "type in some text"));
             default:
                 LOGGER.warn("there is no tag with this key !");
                 context.response().setStatusCode(NOT_FOUND);
@@ -184,7 +191,7 @@ public class GrafanaApiImpl implements GrafanaApi {
         context.response().end(response.encode());
     }
 
-    public String  parseTagValuesRequest(RoutingContext context) throws IllegalArgumentException {
+    private String  parseTagValuesRequest(RoutingContext context) throws IllegalArgumentException {
         JsonObject body = context.getBodyAsJson();
         try {
             return body.getString("key");
