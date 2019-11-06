@@ -173,9 +173,8 @@ public class GrafanaApiImpl implements GrafanaApi {
                         .add(new JsonObject().put("int", "500"));
                 break;
             case FILTER_TAG_KEY:
-                //TODO request tags in historian
                 response = new JsonArray()
-                        .add(new JsonObject().put("text", "type in some text"));
+                        .add(new JsonObject().put("text", "your tag"));
             default:
                 LOGGER.warn("there is no tag with this key !");
                 context.response().setStatusCode(NOT_FOUND);
