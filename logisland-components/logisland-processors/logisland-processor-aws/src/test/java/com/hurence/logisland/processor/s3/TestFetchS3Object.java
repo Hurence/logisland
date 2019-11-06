@@ -174,9 +174,9 @@ public class TestFetchS3Object {
 
         runner.setProperty(FetchS3Object.REGION, "us-east-1");
         runner.setProperty(FetchS3Object.BUCKET_FIELD, "request-bucket");
-        runner.setProperty(FetchS3Object.VERSION_ID_FEILD, "${s3.version}");
+        runner.setProperty(FetchS3Object.VERSION_ID_FIELD, "${s3_version}");
         record1.setField("filename", FieldType.STRING, "request-key");
-        record1.setField("s3.version", FieldType.STRING, "request-version");
+        record1.setField("s3_version", FieldType.STRING, "request-version");
         runner.enqueue(record1);
 
         S3Object s3ObjectResponse = new S3Object();
@@ -204,7 +204,7 @@ public class TestFetchS3Object {
         out.assertFieldEquals("path", "key/path/to");
         out.assertFieldEquals("absolute.path", "key/path/to/file.txt");
         out.assertFieldEquals("s3.version", "response-version");
-        // TODO see why context.getPropertyValue(VERSION_ID_FEILD).evaluate(record) returns null !
+        // TODO see why context.getPropertyValue(VERSION_ID_FIELD).evaluate(record) returns null !
 
     }
 
@@ -287,7 +287,7 @@ public class TestFetchS3Object {
         assertTrue(pd.contains(FetchS3Object.SIGNER_OVERRIDE));
         assertTrue(pd.contains(FetchS3Object.SSL_CONTEXT_SERVICE));
         assertTrue(pd.contains(FetchS3Object.TIMEOUT));
-        assertTrue(pd.contains(FetchS3Object.VERSION_ID_FEILD));
+        assertTrue(pd.contains(FetchS3Object.VERSION_ID_FIELD));
         assertTrue(pd.contains(FetchS3Object.ENCRYPTION_SERVICE));
         assertTrue(pd.contains(FetchS3Object.PROXY_CONFIGURATION_SERVICE));
         assertTrue(pd.contains(FetchS3Object.PROXY_HOST));

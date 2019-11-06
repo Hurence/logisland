@@ -47,8 +47,8 @@ import java.util.concurrent.TimeUnit;
 
 public class FetchS3Object extends AbstractS3Processor {
 
-    public static final PropertyDescriptor VERSION_ID_FEILD = new PropertyDescriptor.Builder()
-            .name("Version")
+    public static final PropertyDescriptor VERSION_ID_FIELD = new PropertyDescriptor.Builder()
+            .name("version")
             .description("The Version of the Object to download")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
@@ -68,7 +68,7 @@ public class FetchS3Object extends AbstractS3Processor {
             .build();
 
     public static final List<PropertyDescriptor> properties = Collections.unmodifiableList(
-            Arrays.asList(BUCKET_FIELD, KEY_FEILD, REGION, ACCESS_KEY, SECRET_KEY, CREDENTIALS_FILE, AWS_CREDENTIALS_PROVIDER_SERVICE, TIMEOUT, VERSION_ID_FEILD,
+            Arrays.asList(BUCKET_FIELD, KEY_FEILD, REGION, ACCESS_KEY, SECRET_KEY, CREDENTIALS_FILE, AWS_CREDENTIALS_PROVIDER_SERVICE, TIMEOUT, VERSION_ID_FIELD,
                     SSL_CONTEXT_SERVICE, ENDPOINT_OVERRIDE, SIGNER_OVERRIDE, ENCRYPTION_SERVICE, PROXY_CONFIGURATION_SERVICE, PROXY_HOST,
                     PROXY_HOST_PORT, PROXY_USERNAME, PROXY_PASSWORD, REQUESTER_PAYS));
 
@@ -106,7 +106,7 @@ public class FetchS3Object extends AbstractS3Processor {
                 final long startNanos = System.nanoTime();
                 final String bucket = context.getPropertyValue(BUCKET_FIELD).evaluate(record).asString();
                 final String key = context.getPropertyValue(KEY_FEILD).evaluate(record).asString();
-                final PropertyValue versionId_Prop = context.getPropertyValue(VERSION_ID_FEILD).evaluate(record);
+                final PropertyValue versionId_Prop = context.getPropertyValue(VERSION_ID_FIELD).evaluate(record);
                 final String versionId = versionId_Prop.asString();
                 final boolean requesterPays = context.getPropertyValue(REQUESTER_PAYS).asBoolean();
 
