@@ -17,6 +17,7 @@
         <module>logisland-api</module>
         <module>logisland-framework</module>
         <module>logisland-engines</module>
+        <module>logisland-agent</module>
     </modules>
     <!-- We specify here all version of libraries. Because all these module will share dependencies in runtime.
      They are not isolated like plugins so we must ensure all sub modules use same version of libraries.

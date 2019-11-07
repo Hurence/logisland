@@ -20,9 +20,9 @@ import java.util
 import java.util.Collections
 import java.util.concurrent.{Executors, TimeUnit}
 
+import com.hurence.logisland.agent.api.model.DataFlow
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
-import com.hurence.logisland.engine.spark.remote.model.DataFlow
 import com.hurence.logisland.engine.spark.remote.{RemoteApiClient, RemoteApiComponentFactory}
 import com.hurence.logisland.stream.StandardStreamContext
 import com.hurence.logisland.stream.spark.DummyRecordStream

@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.hurence.logisland.engine.spark.remote.model.DataFlow;
+import com.hurence.logisland.agent.api.model.DataFlow;
 import okhttp3.*;
 import okhttp3.internal.http.HttpDate;
 import org.slf4j.Logger;

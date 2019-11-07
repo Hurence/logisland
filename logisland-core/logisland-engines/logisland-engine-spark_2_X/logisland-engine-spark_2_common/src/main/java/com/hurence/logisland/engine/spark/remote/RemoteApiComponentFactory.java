@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.engine.spark.remote;
 
+import com.hurence.logisland.agent.api.model.*;
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -23,7 +24,6 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.StandardControllerServiceContext;
 import com.hurence.logisland.engine.EngineContext;
-import com.hurence.logisland.engine.spark.remote.model.*;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.StandardProcessContext;
 import com.hurence.logisland.stream.RecordStream;
