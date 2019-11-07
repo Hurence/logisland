@@ -66,6 +66,7 @@
                 <include>com.hurence.logisland:logisland-processor-excel</include>
                 <include>com.hurence.logisland:logisland-processor-scripting</include>
                 <include>com.hurence.logisland:logisland-processor-rest</include>
+                <include>com.hurence.logisland:logisland-processor-aws</include>
                 <!--                CONNECTORS          -->
                 <include>com.hurence.logisland:logisland-connector-opc</include>
             </includes>
