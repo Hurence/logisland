@@ -211,7 +211,7 @@ public class RunScriptTest {
         assertArrayEquals(a1, a2);
 
 
-        testRunner.setProperty(RunScript.OUTPUT_MODE, RunScript.NEW);
+        testRunner.setProperty(RunScript.OUTPUT_MODE, RunScript.APPEND);
         testRunner.assertValid();
         testRunner.clearQueues();
         testRunner.enqueue(inputImage);

@@ -29,11 +29,8 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.ValidationContext;
-import com.hurence.logisland.validator.ValidationResult;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -48,7 +45,7 @@ import static com.hurence.logisland.cv.utils.CVUtils.*;
 
 @Tags({"scripting", "clojure", "opencv", "image"})
 @CapabilityDescription(
-        "This processor allows to run a processor written in clojure."
+        "This processor allows to run an opencv script written in clojure on the image stored as a byte array in a field."
                 + " directly by defining the process method code in the **script.code**"
                 + " Currently only the opencv library is delivered with Logisland.")
 @ExtraDetailFile("./details/RunScript-Detail.rst")
@@ -65,54 +62,51 @@ public class RunScript extends AbstractProcessor {
 
     public static final PropertyDescriptor SCRIPT_NS = new PropertyDescriptor.Builder()
             .name("script.ns")
-            .description("The clojure code to be called to process the records.")
+            .description("The namespace defined in the clojure script code")
             .required(false)
             .defaultValue("com.hurence.logisland")
             .build();
 
     public static final PropertyDescriptor SCRIPT_FUNCTION = new PropertyDescriptor.Builder()
             .name("script.function")
-            .description("The clojure code namespace to be called to process the records.")
+            .description("The clojure function to be called to process the records.")
             .required(true)
             .build();
 
-
     public static final AllowableValue OVERWRITE =
-            new AllowableValue("overwrite", "overwrite existing value", "the previous value will be overwritten");
+            new AllowableValue("overwrite", "overwrite existing images", "the previous images will be overwritten");
 
-    public static final AllowableValue NEW =
-            new AllowableValue("new", "new value value", "the previous value will be kept and the new value will be added to the input list");
+    public static final AllowableValue APPEND =
+            new AllowableValue("append", "append new images", "the previous images will be kept and the new images will be added to the input list");
 
     public static final PropertyDescriptor OUTPUT_MODE = new PropertyDescriptor.Builder()
             .name("output.mode")
-            .description("Where do you want to store the processed image")
+            .description("How do you want to output the processed images: overwrite previous or append to existing list")
             .required(false)
             .defaultValue(OVERWRITE.getValue())
-            .allowableValues(OVERWRITE, NEW)
+            .allowableValues(OVERWRITE, APPEND)
             .build();
-
 
     public static final PropertyDescriptor INPUT_FIELD = new PropertyDescriptor.Builder()
             .name("input.field")
-            .description("The field containing the input value")
+            .description("The field containing the input image")
             .required(false)
             .defaultValue(FieldDictionary.RECORD_VALUE)
             .build();
 
     public static final PropertyDescriptor OUTPUT_FIELD = new PropertyDescriptor.Builder()
             .name("output.field")
-            .description("The field containing the output value")
+            .description("The field containing the output image")
             .required(false)
             .defaultValue(FieldDictionary.RECORD_VALUE)
             .build();
 
     public static final PropertyDescriptor IMAGE_FORMAT = new PropertyDescriptor.Builder()
             .name("image.format")
-            .description("The field containing the output value")
+            .description("The format of the output processed image. can be png or jpg")
             .required(false)
             .defaultValue("jpg")
             .build();
-
 
     Var processFunction = null;
 
@@ -128,38 +122,6 @@ public class RunScript extends AbstractProcessor {
         descriptors.add(IMAGE_FORMAT);
 
         return Collections.unmodifiableList(descriptors);
-    }
-
-
-    @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
-        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
-
-        logger.debug("customValidate");
-
-       /* if (context.getPropertyValue(PROCESSING_MODE).isSet() &&
-                context.getPropertyValue(PROCESSING_MODE).asString().equals(RECORD_BASED.getValue())) {
-
-            if (context.getPropertyValue(INPUT_FIELD).isSet()) {
-                // attempt to use both modes -> error
-                validationResults.add(
-                        new ValidationResult.Builder()
-                                .explanation("You must declare " + PROCESSING_MODE.getName() + " or " + INPUT_FIELD.getName() + " but not both")
-                                .valid(false)
-                                .build());
-            }
-
-            if (context.getPropertyValue(OUTPUT_FIELD).isSet()) {
-                // attempt to use both modes -> error
-                validationResults.add(
-                        new ValidationResult.Builder()
-                                .explanation("You must declare " + PROCESSING_MODE.getName() + " or " + OUTPUT_FIELD.getName() + " but not both")
-                                .valid(false)
-                                .build());
-            }
-        }*/
-
-        return validationResults;
     }
 
 
@@ -183,32 +145,25 @@ public class RunScript extends AbstractProcessor {
         } catch (IOException | ClassNotFoundException e) {
             throw new InitializationException(e);
         }
-
-
     }
 
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        if (!isInitialized) {
-            logger.error("Processor not initialized, returning input records and doing nothing!");
-            return records;
-        }
 
         String imageInputField = context.getPropertyValue(INPUT_FIELD).asString();
         String imageOutputField = context.getPropertyValue(OUTPUT_FIELD).asString();
         String imageFormat = context.getPropertyValue(IMAGE_FORMAT).asString();
 
-        // do we replace existing records or add new ones ?
-        Collection<Record> outputRecords = new ArrayList<>(records);
-        if (context.getPropertyValue(OUTPUT_MODE).asString().equals(OVERWRITE.getValue())) {
-            outputRecords = new ArrayList<>();
+        // do we replace existing records or append new ones ?
+        Collection<Record> outputRecords = new ArrayList<>();
+        if (context.getPropertyValue(OUTPUT_MODE).asString().equals(APPEND.getValue())) {
+            outputRecords = new ArrayList<>(records);
         }
 
         // loop on incoming records
         for (Record record : records) {
             try {
-
 
                 // do the OpenCV processing on a Mat
                 Mat originalImageMat = toMat(record, imageInputField);
@@ -226,25 +181,12 @@ public class RunScript extends AbstractProcessor {
 
                 outputRecords.add(record);
 
-
             } catch (Throwable t) {
                 logger.error(t.toString());
             }
-
         }
 
-
         return outputRecords;
-
-
-    }
-
-    @Override
-    public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
-
-        logger.info("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
-
-
     }
 
 }
