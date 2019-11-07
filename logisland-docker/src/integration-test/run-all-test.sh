@@ -19,7 +19,8 @@ run_test() {
     #go into path
     cd ${my_dir}/${TEST_PATH}
     # build and run the composed services
-    docker-compose -p ci build 1>/dev/null 2>/dev/null && docker-compose -p ci up -d 1>/dev/null 2>/dev/null
+    docker-compose -p ci build 1>/dev/null && docker-compose -p ci up -d 1>/dev/null
+
     if [[ $? -ne 0 ]] ; then
       printf "${RED}Docker Compose Failed in test ${TEST_NAME} ${NC}\n"
       exit -1
