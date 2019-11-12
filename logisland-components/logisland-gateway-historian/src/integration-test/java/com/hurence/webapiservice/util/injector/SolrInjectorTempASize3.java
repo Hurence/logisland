@@ -1,7 +1,7 @@
 package com.hurence.webapiservice.util.injector;
 
 import com.hurence.logisland.record.Point;
-import com.hurence.webapiservice.util.modele.ChunkExpected;
+import com.hurence.util.modele.ChunkModele;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,16 +10,16 @@ import java.util.List;
 public class SolrInjectorTempASize3 extends AbstractSolrInjector {
 
     @Override
-    protected List<ChunkExpected> buildListOfChunks() {
-        List<ChunkExpected> chunks = new ArrayList<>();
+    protected List<ChunkModele> buildListOfChunks() {
+        List<ChunkModele> chunks = new ArrayList<>();
         chunks.add(buildChunk1());
         chunks.add(buildChunk2());
         chunks.add(buildChunk3());
         return chunks;
     }
 
-    private ChunkExpected buildChunk1() {
-        ChunkExpected chunk = new ChunkExpected();
+    private ChunkModele buildChunk1() {
+        ChunkModele chunk = new ChunkModele();
         chunk.points = Arrays.asList(
                 new Point(0, 1L, 5),
                 new Point(0, 2L, 8),
@@ -38,8 +38,8 @@ public class SolrInjectorTempASize3 extends AbstractSolrInjector {
         return chunk;
     }
 
-    private ChunkExpected buildChunk2() {
-        ChunkExpected chunk = new ChunkExpected();
+    private ChunkModele buildChunk2() {
+        ChunkModele chunk = new ChunkModele();
         chunk.points = Arrays.asList(
                 new Point(0, 5L, -2),
                 new Point(0, 6L, 8.8),
@@ -58,8 +58,8 @@ public class SolrInjectorTempASize3 extends AbstractSolrInjector {
         return chunk;
     }
 
-    private ChunkExpected buildChunk3() {
-        ChunkExpected chunk = new ChunkExpected();
+    private ChunkModele buildChunk3() {
+        ChunkModele chunk = new ChunkModele();
         chunk.points = Arrays.asList(
                 new Point(0, 9L, -5),
                 new Point(0, 10L, 80),

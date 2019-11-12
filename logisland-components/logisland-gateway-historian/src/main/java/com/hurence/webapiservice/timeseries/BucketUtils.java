@@ -13,29 +13,35 @@ public class BucketUtils {
     private BucketUtils() {}
     /**
      *
-     * @param totalPoint total number point to sample
+     * @param totalNumberOfPoint total number point to sample
      * @param maxPoint max number of point to return
      * @return the smaller bucket size so that the number of bucket is lesser or equals to maxPoint.
      * @note this is a naive implementation which is not optimal !
      */
+
+    public static int calculBucketSize(int totalNumberOfPoint, int maxPoint) {
+        long totalNumberOfPointLong = totalNumberOfPoint;
+        return calculBucketSize(totalNumberOfPointLong, maxPoint);
+    }
     //TODO optimize this
-    public static int calculBucketSize(int totalPoint, int maxPoint) {
-        LOGGER.debug("total point {}", totalPoint);
+    public static int calculBucketSize(long totalNumberOfPoint, int maxPoint) {
+        LOGGER.debug("total point {}", totalNumberOfPoint);
         LOGGER.debug("max point {}", maxPoint);
-        int bucketSize = BigDecimal.valueOf(totalPoint).divide(BigDecimal.valueOf(maxPoint), RoundingMode.CEILING).intValue();
+        int bucketSize = BigDecimal.valueOf(totalNumberOfPoint).divide(BigDecimal.valueOf(maxPoint), RoundingMode.CEILING).intValue();
         LOGGER.debug("first try {}", bucketSize);
-        while (!testBucketSize(totalPoint, bucketSize)) {
+        while (!testBucketSize(totalNumberOfPoint, bucketSize)) {
             bucketSize++;
         }
         LOGGER.debug("found {}", bucketSize);
-        int numberofPoint = totalPoint / bucketSize;
+        long numberofPoint = totalNumberOfPoint / bucketSize;
         LOGGER.debug("numberofPoint {}", numberofPoint);
         LOGGER.debug("----------------");
         return bucketSize;
     }
 
-    private static boolean testBucketSize(int totalPoint, int bucketSize) {
-        int remain = totalPoint % bucketSize;
+
+    private static boolean testBucketSize(long totalNumberOfPoint, int bucketSize) {
+        long remain = totalNumberOfPoint % bucketSize;
         LOGGER.trace("--------");
         LOGGER.trace("trying bucketSize {}", bucketSize);
         LOGGER.trace("remain {}", remain);

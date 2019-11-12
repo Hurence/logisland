@@ -17,11 +17,17 @@ public class HistorianFields {
     public static String FROM_REQUEST_FIELD = "from";
     public static String TO_REQUEST_FIELD = "to";
     public static String FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD = "fields";
-    public static String TAGS_TO_FILTER_ON = "tags";
+    public static String TAGS_TO_FILTER_ON_REQUEST_FIELD = "tags";
     public static String METRIC_NAMES_AS_LIST_REQUEST_FIELD = "names";
     public static String MAX_TOTAL_CHUNKS_TO_RETRIEVE_REQUEST_FIELD = "total_max_chunks";
+    public static String SAMPLING_ALGO_REQUEST_FIELD = "sampling_algo";
+    public static String BUCKET_SIZE_REQUEST_FIELD = "bucket_size";
+    public static String MAX_POINT_BY_METRIC_REQUEST_FIELD = "max_points_to_return_by_metric";
 
     //Response fields
+    public static String TOTAL_POINTS_RESPONSE_FIELD = "total_points";
+    public static String TIMESERIES_RESPONSE_FIELD = "timeseries";
+
     public static String RESPONSE_CHUNKS = "chunks";
     public static String RESPONSE_METRICS = "metrics";
     public static String RESPONSE_TOTAL_FOUND = "total_hit";

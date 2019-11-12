@@ -4,7 +4,7 @@ import com.hurence.logisland.record.Point;
 import com.hurence.logisland.timeseries.converter.common.Compression;
 import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
 import com.hurence.webapiservice.util.HistorianSolrITHelper;
-import com.hurence.webapiservice.util.modele.ChunkExpected;
+import com.hurence.util.modele.ChunkModele;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -27,17 +27,17 @@ public abstract class AbstractSolrInjector implements SolrInjector {
 
     @Override
     public void injectChunks(SolrClient client) throws SolrServerException, IOException {
-        final List<ChunkExpected> chunks = buildListOfChunks();
+        final List<ChunkModele> chunks = buildListOfChunks();
         for(int i = 0; i < chunks.size(); i++) {
-            ChunkExpected chunkExpected = chunks.get(i);
+            ChunkModele chunkExpected = chunks.get(i);
             client.add(COLLECTION, buildSolrDocument(chunkExpected, "id" + i));
         }
         UpdateResponse updateRsp = client.commit(COLLECTION);
     }
 
-    protected abstract List<ChunkExpected> buildListOfChunks();
+    protected abstract List<ChunkModele> buildListOfChunks();
 
-    private SolrInputDocument buildSolrDocument(ChunkExpected chunk, String id) {
+    private SolrInputDocument buildSolrDocument(ChunkModele chunk, String id) {
         final SolrInputDocument doc = new SolrInputDocument();
         doc.addField(RESPONSE_CHUNK_ID_FIELD, id);
         doc.addField(RESPONSE_CHUNK_START_FIELD, chunk.start);

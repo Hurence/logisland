@@ -115,6 +115,11 @@ public class HistorianServiceVertxProxyHandler extends ProxyHandler {
       if (action == null) throw new IllegalStateException("action not specified");
       accessed();
       switch (action) {
+        case "getTimeSeries": {
+          service.getTimeSeries((io.vertx.core.json.JsonObject)json.getValue("myParams"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
         case "getTimeSeriesChunk": {
           service.getTimeSeriesChunk((io.vertx.core.json.JsonObject)json.getValue("params"),
                         HelperUtils.createHandler(msg));

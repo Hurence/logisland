@@ -21,8 +21,11 @@ public interface HistorianService {
 
 
     @GenIgnore
-    static HistorianService create(Vertx vertx, SolrClient client, String collection, Handler<AsyncResult<HistorianService>> readyHandler) {
-        return new SolrHistorianServiceImpl(vertx, client, collection, readyHandler);
+    static HistorianService create(Vertx vertx, SolrClient client,
+                                   String collection, String streamEndPoint,
+                                   Handler<AsyncResult<HistorianService>> readyHandler) {
+        return new SolrHistorianServiceImpl(vertx, client,
+                collection, streamEndPoint, readyHandler);
     }
 
     @GenIgnore
@@ -32,6 +35,10 @@ public interface HistorianService {
         );
     }
 
+
+    @Fluent
+    HistorianService getTimeSeries(JsonObject myParams, Handler<AsyncResult<JsonObject>> myResult);
+
     /**
      * @param params        as a json object
      *                      <pre>
@@ -39,7 +46,7 @@ public interface HistorianService {
      *                          {@value HistorianFields#FROM_REQUEST_FIELD} : "content of chunks as an array",
      *                          {@value HistorianFields#TO_REQUEST_FIELD} : "total chunk matching query",
      *                          {@value HistorianFields#FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD} : ["field1", "field2"...],
-     *                          {@value HistorianFields#TAGS_TO_FILTER_ON} : "total chunk matching query",
+     *                          {@value HistorianFields#TAGS_TO_FILTER_ON_REQUEST_FIELD} : "total chunk matching query",
      *                          {@value HistorianFields#METRIC_NAMES_AS_LIST_REQUEST_FIELD} : "content of chunks as an array",
      *                      }
      *                      </pre>
@@ -47,13 +54,13 @@ public interface HistorianService {
      *                      if {@value HistorianFields#FROM_REQUEST_FIELD} not specified will search from 0
      *                      if {@value HistorianFields#TO_REQUEST_FIELD} not specified will search to Max.Long
      *                      use {@value HistorianFields#FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD} if you want to retrieve some of the precalculated aggs. If not specified retrieve all.
-     *                      use {@value HistorianFields#TAGS_TO_FILTER_ON} to search for specific timeseries having one of those tags
+     *                      use {@value HistorianFields#TAGS_TO_FILTER_ON_REQUEST_FIELD} to search for specific timeseries having one of those tags
      *                      use {@value HistorianFields#METRIC_NAMES_AS_LIST_REQUEST_FIELD} to search a specific timeseries name
      * @param resultHandler return chunks of timeseries as an array of
      *                      <pre>
      *                      {
      *                          {@value HistorianFields#RESPONSE_CHUNKS} : "content of chunks as an array",
-     *                          {@value HistorianFields#RESPONSE_TOTAL_FOUND} : "total chunk matching query"
+     *                          {@value HistorianFields#RESPONSE_TOTAL_FOUND} : "total chunk matching query",
      *                      }
      *                      </pre>
      * @return himself
@@ -74,5 +81,6 @@ public interface HistorianService {
      */
     @Fluent
     HistorianService getMetricsName(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler);
+
 
 }

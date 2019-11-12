@@ -2,8 +2,10 @@ package com.hurence.webapiservice.http.grafana;
 
 
 import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
+import com.hurence.webapiservice.historian.HistorianFields;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
+import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.GrafanaTimeSeriesModeler;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
 import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
@@ -26,7 +28,6 @@ public class GrafanaApiImpl implements GrafanaApi {
     private static final Logger LOGGER = LoggerFactory.getLogger(GrafanaApiImpl.class);
     private HistorianService service;
     private static final QueryRequestParser queryRequestParser = new QueryRequestParser();
-    private TimeSeriesModeler timeserieToolBox = new GrafanaTimeSeriesModeler();
 
     public final static String ALGO_TAG_KEY = "Algo";
     public final static String BUCKET_SIZE_TAG_KEY = "Bucket size";
@@ -81,15 +82,12 @@ public class GrafanaApiImpl implements GrafanaApi {
         final JsonObject getTimeSeriesChunkParams = buildHistorianRequest(request);
 
         service
-                .rxGetTimeSeriesChunk(getTimeSeriesChunkParams)
-                .map(chunkResponse -> {
-                    List<JsonObject> chunks = HistorianResponseHelper.extractChunks(chunkResponse);
-                    Map<String, List<JsonObject>> chunksByName = chunks.stream().collect(
-                            Collectors.groupingBy(chunk ->  chunk.getString(RESPONSE_METRIC_NAME_FIELD))
-                    );
-                    //TODO external this in a service so that is does not block thread
-                    //TODO or use blockExecuting method of vertx. What is the best choice ?
-                    return TimeSeriesModeler.buildTimeSeries(request, chunksByName, timeserieToolBox);
+                .rxGetTimeSeries(getTimeSeriesChunkParams)
+                .map(sampledTimeSeries -> {
+                    long totalSampledPoint = sampledTimeSeries.getLong(RESPONSE_TOTAL_FOUND, 0L);
+                    JsonArray timeseries = sampledTimeSeries.getJsonArray(TIMESERIES_RESPONSE_FIELD);
+                    LOGGER.debug("sampled a total of {} points", totalSampledPoint);
+                    return timeseries;
                 })
                 .doOnError(ex -> {
                     LOGGER.error("Unexpected error : ", ex);
@@ -113,13 +111,16 @@ public class GrafanaApiImpl implements GrafanaApi {
                 .add(RESPONSE_CHUNK_END_FIELD)
                 .add(RESPONSE_CHUNK_SIZE_FIELD)
                 .add(RESPONSE_METRIC_NAME_FIELD);
+        SamplingConf samplingConf = request.getSamplingConf();
         return new JsonObject()
                 .put(FROM_REQUEST_FIELD, request.getFrom())
                 .put(TO_REQUEST_FIELD, request.getTo())
-                .put(MAX_TOTAL_CHUNKS_TO_RETRIEVE_REQUEST_FIELD, 10000)
                 .put(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD, fieldsToFetch)
                 .put(METRIC_NAMES_AS_LIST_REQUEST_FIELD, request.getMetricNames())
-                .put(TAGS_TO_FILTER_ON, request.getTags());
+                .put(TAGS_TO_FILTER_ON_REQUEST_FIELD, request.getTags())
+                .put(SAMPLING_ALGO_REQUEST_FIELD, samplingConf.getAlgo())
+                .put(BUCKET_SIZE_REQUEST_FIELD, samplingConf.getBucketSize())
+                .put(MAX_POINT_BY_METRIC_REQUEST_FIELD, samplingConf.getMaxPoint());
     }
 
     @Override

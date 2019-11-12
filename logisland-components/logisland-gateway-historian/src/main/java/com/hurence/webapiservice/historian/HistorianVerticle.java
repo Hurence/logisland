@@ -51,6 +51,7 @@ public class HistorianVerticle extends AbstractVerticle {
 //  public static final String CONFIG_SOLR_HOST_NAME = "host";
 //  public static final String CONFIG_SOLR_PORT = "port";
   public static final String CONFIG_SOLR_COLLECTION = "collection";
+  public static final String CONFIG_SOLR_STREAM_ENDPOINT = "stream_url";
   private SolrClient client;
 
   @Override
@@ -62,6 +63,10 @@ public class HistorianVerticle extends AbstractVerticle {
     final int socketTimeout = slrConfig.getInteger(CONFIG_SOLR_SOCKET_TIMEOUT, 60000);
     final boolean useZookeeper = slrConfig.getBoolean(CONFIG_SOLR_USE_ZOOKEEPER, false);
     final String collection = slrConfig.getString(CONFIG_SOLR_COLLECTION, "historian");
+    if (!slrConfig.containsKey(CONFIG_SOLR_STREAM_ENDPOINT))
+      throw new IllegalArgumentException(String.format("key %s is needed in solr config of historian verticle conf.",
+              CONFIG_SOLR_STREAM_ENDPOINT));
+    final String streamEndpoint = slrConfig.getString(CONFIG_SOLR_STREAM_ENDPOINT);
 
     CloudSolrClient.Builder clientBuilder;
     if (useZookeeper) {
@@ -84,7 +89,8 @@ public class HistorianVerticle extends AbstractVerticle {
             .build();
 
 
-    HistorianService.create(vertx, client, collection, ready -> {
+    HistorianService.create(vertx, client,
+            collection, streamEndpoint, ready -> {
       if (ready.succeeded()) {
         ServiceBinder binder = new ServiceBinder(vertx);
         binder.setAddress(address)

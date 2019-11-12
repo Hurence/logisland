@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import static com.hurence.webapiservice.historian.HistorianFields.*;
 
-public class GrafanaTimeSeriesModeler extends AbstractTimeSeriesModeler {
+public class GrafanaTimeSeriesModeler implements TimeSeriesModeler {
     private static String TIMESERIE_NAME = "target";
     private static String TIMESERIE_POINT = "datapoints";
     private static String TIMESERIE_AGGS = "aggs";
@@ -37,21 +37,16 @@ public class GrafanaTimeSeriesModeler extends AbstractTimeSeriesModeler {
     public JsonObject extractTimeSerieFromChunks(long from, long to, List<AGG> aggs, SamplingConf samplingConf, List<JsonObject> chunks) {
         if (chunks==null || chunks.isEmpty()) throw new IllegalArgumentException("chunks is null or empty !");
         String name = chunks.stream().findFirst().get().getString(RESPONSE_METRIC_NAME_FIELD);
-        JsonObject timeserie = new JsonObject()
-                .put(TIMESERIE_NAME, name);
-//        chunks = adjustChunk(from, to, aggs, chunks);
-        //TODO add possibility to not get points but only aggregation if wanted
-        JsonObject points = extractPointsThenSortThenSample(from, to, samplingConf, chunks);
-        timeserie.mergeIn(points);
-        return timeserie;
+        List<JsonArray> points = getPoints(from, to, samplingConf, chunks);
+        return new JsonObject()
+                .put(TIMESERIE_NAME, name)
+                .put(TIMESERIE_POINT, new JsonArray(points));
     }
 
-    @Override
-    protected JsonObject formatTimeSeriePointsJson(List<Point> sampledPoints) {
-        List<JsonArray> points = sampledPoints.stream()
+    public List<JsonArray> getPoints(long from, long to, SamplingConf samplingConf, List<JsonObject> chunks) {
+        List<Point> sampledPoints = TimeSeriesExtracterUtil.extractPointsThenSortThenSample(from, to, samplingConf, chunks);
+        return sampledPoints.stream()
                 .map(p -> new JsonArray().add(p.getValue()).add(p.getTimestamp()))
                 .collect(Collectors.toList());
-        return new JsonObject()
-                .put(TIMESERIE_POINT, new JsonArray(points));
     }
 }

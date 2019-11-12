@@ -1,7 +1,7 @@
 package com.hurence.webapiservice.util.injector;
 
 import com.hurence.logisland.record.Point;
-import com.hurence.webapiservice.util.modele.ChunkExpected;
+import com.hurence.util.modele.ChunkModele;
 
 import java.util.Arrays;
 import java.util.List;
@@ -9,14 +9,14 @@ import java.util.List;
 public class SolrInjectorTempaAndTempbSize4 extends SolrInjectorTempASize3 {
 
     @Override
-    protected List<ChunkExpected> buildListOfChunks() {
-        List<ChunkExpected> chunks = super.buildListOfChunks();
+    protected List<ChunkModele> buildListOfChunks() {
+        List<ChunkModele> chunks = super.buildListOfChunks();
         chunks.add(buildChunk());
         return chunks;
     }
 
-    private ChunkExpected buildChunk() {
-        ChunkExpected chunk = new ChunkExpected();
+    private ChunkModele buildChunk() {
+        ChunkModele chunk = new ChunkModele();
         chunk.points = Arrays.asList(
                 new Point(0, 9L, -5),
                 new Point(0, 10L, 80),

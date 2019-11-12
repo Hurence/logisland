@@ -43,8 +43,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static com.hurence.unit5.extensions.SolrExtension.ZOOKEEPER_PORT;
-import static com.hurence.unit5.extensions.SolrExtension.ZOOKEEPER_SERVICE_NAME;
+import static com.hurence.unit5.extensions.SolrExtension.*;
 
 @ExtendWith({VertxExtension.class, SolrExtension.class})
 public class HistorianSolrITHelper {
@@ -78,11 +77,15 @@ public class HistorianSolrITHelper {
         String zkUrl = container.getServiceHost(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT)
                 + ":" +
                 container.getServicePort(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT);
+        String slr1Url = container.getServiceHost(SOLR1_SERVICE_NAME, SOLR_1_PORT)
+                + ":" +
+                container.getServicePort(SOLR1_SERVICE_NAME, SOLR_1_PORT);
 
         JsonObject solrConf = new JsonObject()
                 .put(HistorianVerticle.CONFIG_SOLR_COLLECTION, COLLECTION)
                 .put(HistorianVerticle.CONFIG_SOLR_USE_ZOOKEEPER, true)
-                .put(HistorianVerticle.CONFIG_SOLR_ZOOKEEPER_URLS, new JsonArray().add(zkUrl));
+                .put(HistorianVerticle.CONFIG_SOLR_ZOOKEEPER_URLS, new JsonArray().add(zkUrl))
+                .put(HistorianVerticle.CONFIG_SOLR_STREAM_ENDPOINT, "http://" + slr1Url + "/solr/" + COLLECTION);
         JsonObject historianConf = new JsonObject()
                 .put(HistorianVerticle.CONFIG_ROOT_SOLR, solrConf)
                 .put(HistorianVerticle.CONFIG_HISTORIAN_ADDRESS, HISTORIAN_ADRESS);

@@ -1,7 +1,7 @@
 package com.hurence.webapiservice.util.injector;
 
 import com.hurence.logisland.record.Point;
-import com.hurence.webapiservice.util.modele.ChunkExpected;
+import com.hurence.util.modele.ChunkModele;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,8 +20,8 @@ public class SolrInjectorDifferentMetricNames extends AbstractSolrInjector {
     }
 
     @Override
-    protected List<ChunkExpected> buildListOfChunks() {
-        List<ChunkExpected> chunks = IntStream.range(0, this.size)
+    protected List<ChunkModele> buildListOfChunks() {
+        List<ChunkModele> chunks = IntStream.range(0, this.size)
                 .mapToObj(i -> "metric_" + i)
                 .map(this::buildChunkWithMetricName)
                 .flatMap(this::createMoreChunkForMetric)
@@ -29,8 +29,8 @@ public class SolrInjectorDifferentMetricNames extends AbstractSolrInjector {
         return chunks;
     }
 
-    private ChunkExpected buildChunkWithMetricName(String metricName) {
-        ChunkExpected chunk = new ChunkExpected();
+    private ChunkModele buildChunkWithMetricName(String metricName) {
+        ChunkModele chunk = new ChunkModele();
         chunk.points = Arrays.asList(
                 new Point(0, 1L, 5),
                 new Point(0, 2L, 8),
@@ -49,11 +49,11 @@ public class SolrInjectorDifferentMetricNames extends AbstractSolrInjector {
         return chunk;
     }
 
-    private Stream<ChunkExpected> createMoreChunkForMetric(ChunkExpected chunk) {
-        List<ChunkExpected> chunks = IntStream.range(0, this.numberOfChunkByMetric)
+    private Stream<ChunkModele> createMoreChunkForMetric(ChunkModele chunk) {
+        List<ChunkModele> chunks = IntStream.range(0, this.numberOfChunkByMetric)
                 .mapToObj(i -> {
                     //TODO eventually change chunk content if needed
-                    ChunkExpected cloned = chunk;
+                    ChunkModele cloned = chunk;
                     return cloned;
                 })
                 .collect(Collectors.toList());
