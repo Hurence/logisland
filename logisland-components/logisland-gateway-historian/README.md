@@ -35,3 +35,9 @@ mvn clean install -Pbuild-integration-tests
 ``` 
 
 to build integration tests source class ! Then you can run the test in your IDE.
+
+
+#TROUBLESHOOT
+
+When code generator fails. It may be because of hidden char ? This is really irritating.
+I fought with javadoc... Sometimes I could not succeed into making it working.

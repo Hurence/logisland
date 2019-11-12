@@ -27,6 +27,7 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,7 +45,7 @@ public class SolrExtension implements BeforeAllCallback, AfterAllCallback, Param
     private static Logger logger = LoggerFactory.getLogger(SolrExtension.class);
     public final static String SOLR2_SERVICE_NAME = "solr2_1";
     public final static String SOLR1_SERVICE_NAME = "solr1_1";
-    public final static int PORT = 8983;
+    public final static int SOLR_1_PORT = 8983;
     public final static String ZOOKEEPER_SERVICE_NAME = "zookeeper_1";
     public final static int ZOOKEEPER_PORT = 2181;
     private final static String IMAGE = "solr:8";
@@ -81,7 +82,7 @@ public class SolrExtension implements BeforeAllCallback, AfterAllCallback, Param
                 new File(getClass().getResource("/docker-compose-test.yml").getFile())
         )
                 .withExposedService(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT, Wait.forListeningPort())
-                .withExposedService(SOLR1_SERVICE_NAME, PORT, Wait.forListeningPort());
+                .withExposedService(SOLR1_SERVICE_NAME, SOLR_1_PORT, Wait.forListeningPort());
 
         this.dockerComposeContainer.start();
 
@@ -90,9 +91,9 @@ public class SolrExtension implements BeforeAllCallback, AfterAllCallback, Param
                 dockerComposeContainer.getServicePort(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT);
         logger.info("url of zookeeper http://" + zkUrl);
 
-        String slrUrl = dockerComposeContainer.getServiceHost(SOLR1_SERVICE_NAME, PORT)
+        String slrUrl = dockerComposeContainer.getServiceHost(SOLR1_SERVICE_NAME, SOLR_1_PORT)
                 + ":" +
-                dockerComposeContainer.getServicePort(SOLR1_SERVICE_NAME, PORT);
+                dockerComposeContainer.getServicePort(SOLR1_SERVICE_NAME, SOLR_1_PORT);
         logger.info("url of solr http://" + slrUrl);
 
         CloudSolrClient.Builder clientBuilder = new CloudSolrClient.Builder(
@@ -104,9 +105,13 @@ public class SolrExtension implements BeforeAllCallback, AfterAllCallback, Param
                 .withSocketTimeout(60000)
                 .build();
 
-        try (SolrZkClient zkClient = new SolrZkClient(zkUrl, 10000)) {
+        try (SolrZkClient zkClient = new SolrZkClient(zkUrl, 15000)) {
             ZkConfigManager manager = new ZkConfigManager(zkClient);
             manager.uploadConfigDir(Paths.get(getClass().getResource("/solr/configsets/historian/conf").getFile()), "historian");
+        } catch (IOException ex) {
+            logger.error("error copying conf of solr" ,ex);
+        } catch (Exception ex) {
+            logger.error("unexpected exception while copying conf of solr" , ex);
         }
     }
 
