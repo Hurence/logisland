@@ -17,10 +17,10 @@ public class MultiTimeSeriesExtracterImpl implements MultiTimeSeriesExtracter {
     private static Logger LOGGER = LoggerFactory.getLogger(MultiTimeSeriesExtracterImpl.class);
 
     private Map<String, TimeSeriesExtracter> bucketerByMetrics = new HashMap<>();
-    private Map<String, Long> totalNumberOfPointByMetrics = new HashMap<>();
-    private final long from;
-    private final long to;
-    private final SamplingConf samplingConf;
+    Map<String, Long> totalNumberOfPointByMetrics = new HashMap<>();
+    final long from;
+    final long to;
+    final SamplingConf samplingConf;
 
     public MultiTimeSeriesExtracterImpl(long from, long to, SamplingConf samplingConf) {
         this.from = from;
@@ -43,7 +43,7 @@ public class MultiTimeSeriesExtracterImpl implements MultiTimeSeriesExtracter {
                 .forEach(TimeSeriesExtracter::flush);
     }
 
-    private TimeSeriesExtracter createTimeSeriesExtractor(String metricName) {
+    protected TimeSeriesExtracter createTimeSeriesExtractor(String metricName) {
         return new TimeSeriesExtracterImpl(metricName, from, to, samplingConf, totalNumberOfPointByMetrics.get(metricName));
     }
 

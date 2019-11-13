@@ -1,11 +1,12 @@
 package com.hurence.webapiservice.historian.impl;
 
 import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
-import com.hurence.webapiservice.historian.HistorianFields;
 import com.hurence.webapiservice.historian.HistorianService;
 import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.MultiTimeSeriesExtracter;
 import com.hurence.webapiservice.timeseries.MultiTimeSeriesExtracterImpl;
+import com.hurence.webapiservice.timeseries.MultiTimeSeriesExtractorUsingPreAgg;
+import com.hurence.webapiservice.timeseries.TimeSeriesExtracterUtil;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -29,8 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.hurence.webapiservice.historian.HistorianFields.*;
@@ -158,16 +161,10 @@ public class SolrHistorianServiceImpl implements HistorianService {
         buildSolrFilterFromArray(params.getJsonArray(METRIC_NAMES_AS_LIST_REQUEST_FIELD), RESPONSE_METRIC_NAME_FIELD)
                 .ifPresent(query::addFilterQuery);
         //    FIELDS_TO_FETCH
-        if (params.getJsonArray(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD) != null) {
-            JsonArray fields = params.getJsonArray(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD);
-            fields.stream().forEach(field -> {
-                if (field instanceof String) {
-                    query.addField((String) field);
-                } else {
-                    LOGGER.error("agg {} should be a string but was {} instead", field, field.getClass());
-                }
-            });
-        }
+        query.setFields(RESPONSE_CHUNK_START_FIELD,
+                RESPONSE_CHUNK_END_FIELD,
+                RESPONSE_CHUNK_SIZE_FIELD,
+                RESPONSE_METRIC_NAME_FIELD);
         //    SORT
         query.setSort(RESPONSE_CHUNK_START_FIELD, SolrQuery.ORDER.asc);
         query.setRows(params.getInteger(MAX_TOTAL_CHUNKS_TO_RETRIEVE_REQUEST_FIELD, 50000));
@@ -228,7 +225,6 @@ public class SolrHistorianServiceImpl implements HistorianService {
 
     @Override
     public HistorianService getTimeSeries(JsonObject myParams, Handler<AsyncResult<JsonObject>> myResult) {
-        //TODO
         /*
             nombre point < LIMIT_TO_DEFINE ==> Extract points from chunk
             nombre point >= LIMIT_TO_DEFINE && nombre de chunk < LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg)
@@ -239,12 +235,15 @@ public class SolrHistorianServiceImpl implements HistorianService {
         Handler<Promise<JsonObject>> getTimeSeriesHandler = p -> {
             MetricsSizeInfo metricsInfo;
             try {
-                metricsInfo = getNumberOfPointsByMetricInRequest(query);
+                metricsInfo = getNumberOfPointsByMetricInRequest(query);//TODO there is two query, split every one in promise
                 LOGGER.debug("metrics info to query : {}", metricsInfo);
                 if (metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint) {
-                    final MultiTimeSeriesExtracter timeSeriesExtracter = createExtractor(myParams, metricsInfo);
+                    LOGGER.debug("QUERY MODE 1: metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint");
+                    query.addField(RESPONSE_CHUNK_VALUE_FIELD);
+                    final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorSamplingAllPoints(myParams, metricsInfo);
 //                   binary fields can not be retrieved using stream api... So we use the search api instead
                     //TODO Test if streaming api works if we use export endpoint ! I do no not think so
+                    // To refactor because we currently are using chunk_value which is a binary fields and is not stream api compatible...
                     try {
                         final QueryResponse response = client.query(collection, query);
                         final SolrDocumentList documents = response.getResults();
@@ -259,22 +258,30 @@ public class SolrHistorianServiceImpl implements HistorianService {
                         LOGGER.error("unexpected exception while executing search with solr", e);
                         p.fail(e);
                     }
-                } else if (metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks) {
-                    //TODO Sample points with chunk aggs depending on alg (min, avg)
-                    // To refactor because we currently are using chunk_value which is a binary fields and is not stream api compatible...
+                } else if (metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks) {//TODO make three different group for each metrics, not globally.
+                    LOGGER.debug("QUERY MODE 2: metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks");
+                    SamplingConf samplingConf = getSamplingConf(myParams);
+                    Set<SamplingAlgorithm> samplingAlgos = determineSamplingAlgoThatWillBeUsed(samplingConf, metricsInfo);
+                    addNecessaryFieldToQuery(query, samplingAlgos);
+                    final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
                     try (JsonStream stream = queryStream(query)) {
-                        JsonObject timeseries = extractTimeSeries(stream, null);
+                        JsonObject timeseries = extractTimeSeries(stream, timeSeriesExtracter);
                         p.complete(timeseries);
                     } catch (Exception e) {
                         LOGGER.error("unexpected exception", e);
                         p.fail(e);
                     }
                 } else {
+                    LOGGER.debug("QUERY MODE 3 : else");
                     //TODO Sample points with chunk aggs depending on alg (min, avg),
                     // but should using agg on solr side (using key partition, by month, daily ? yearly ?)
                     // For the moment we use the stream api without partitionning
+                    SamplingConf samplingConf = getSamplingConf(myParams);
+                    Set<SamplingAlgorithm> samplingAlgos = determineSamplingAlgoThatWillBeUsed(samplingConf, metricsInfo);
+                    addNecessaryFieldToQuery(query, samplingAlgos);
+                    final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
                     try (JsonStream stream = queryStream(query)) {
-                        JsonObject timeseries = extractTimeSeries(stream, null);
+                        JsonObject timeseries = extractTimeSeries(stream, timeSeriesExtracter);
                         p.complete(timeseries);
                     } catch (Exception e) {
                         LOGGER.error("unexpected exception", e);
@@ -290,15 +297,70 @@ public class SolrHistorianServiceImpl implements HistorianService {
         return this;
     }
 
-    private MultiTimeSeriesExtracter createExtractor(JsonObject params, MetricsSizeInfo metricsInfo) {
+    private void addNecessaryFieldToQuery(SolrQuery query, Set<SamplingAlgorithm> samplingAlgos) {
+        samplingAlgos.forEach(algo -> {
+            switch (algo) {
+                case NONE:
+                    query.addField(RESPONSE_CHUNK_VALUE_FIELD);
+                    break;
+                case FIRST_ITEM:
+                    query.addField(RESPONSE_CHUNK_FIRST_VALUE_FIELD);
+                    break;
+                case AVERAGE:
+                    query.addField(RESPONSE_CHUNK_SUM_FIELD);
+                    break;
+                case MIN:
+                    query.addField(RESPONSE_CHUNK_MIN_FIELD);
+                    break;
+                case MAX:
+                    query.addField(RESPONSE_CHUNK_MAX_FIELD);
+                    break;
+                case MODE_MEDIAN:
+                case LTTB:
+                case MIN_MAX:
+                default:
+                    throw new IllegalStateException("algorithm " + algo.name() + " is not yet supported !");
+            }
+        });
+    }
+
+    private Set<SamplingAlgorithm> determineSamplingAlgoThatWillBeUsed(SamplingConf askedSamplingConf, MetricsSizeInfo metricsSizeInfo) {
+        if (askedSamplingConf.getAlgo() != SamplingAlgorithm.NONE) {
+            Set<SamplingAlgorithm> singletonSet = new HashSet<SamplingAlgorithm>();
+            singletonSet.add(askedSamplingConf.getAlgo());
+            return singletonSet;
+        }
+        return metricsSizeInfo.getMetrics().stream()
+                .map(metricName -> {
+                    MetricSizeInfo metricInfo = metricsSizeInfo.getMetricInfo(metricName);
+                    SamplingAlgorithm algo = TimeSeriesExtracterUtil.calculSamplingAlgorithm(askedSamplingConf, metricInfo.totalNumberOfPoints);
+                    return algo;
+                }).collect(Collectors.toSet());
+    }
+
+    private MultiTimeSeriesExtracter createTimeSerieExtractorUsingChunks(JsonObject params, MetricsSizeInfo metricsInfo) {
+        long from = params.getLong(FROM_REQUEST_FIELD);
+        long to = params.getLong(TO_REQUEST_FIELD);
+        SamplingConf samplingConf = getSamplingConf(params);
+        MultiTimeSeriesExtractorUsingPreAgg timeSeriesExtracter = new MultiTimeSeriesExtractorUsingPreAgg(from, to, samplingConf);
+        fillingExtractorWithMetricsSizeInfo(timeSeriesExtracter, metricsInfo);
+        return timeSeriesExtracter;
+    }
+
+    private MultiTimeSeriesExtracter createTimeSerieExtractorSamplingAllPoints(JsonObject params, MetricsSizeInfo metricsInfo) {
         long from = params.getLong(FROM_REQUEST_FIELD);
         long to = params.getLong(TO_REQUEST_FIELD);
         SamplingConf samplingConf = getSamplingConf(params);
         MultiTimeSeriesExtracterImpl timeSeriesExtracter = new MultiTimeSeriesExtracterImpl(from, to, samplingConf);
+        fillingExtractorWithMetricsSizeInfo(timeSeriesExtracter, metricsInfo);
+        return timeSeriesExtracter;
+    }
+
+    private void fillingExtractorWithMetricsSizeInfo(MultiTimeSeriesExtracterImpl timeSeriesExtracter,
+                                                                         MetricsSizeInfo metricsInfo) {
         metricsInfo.getMetrics().forEach(metric ->  {
             timeSeriesExtracter.setTotalNumberOfPointForMetric(metric, metricsInfo.getMetricInfo(metric).totalNumberOfPoints);
         });
-        return timeSeriesExtracter;
     }
 
     private SamplingConf getSamplingConf(JsonObject params) {

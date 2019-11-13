@@ -21,6 +21,8 @@ import static com.hurence.webapiservice.historian.HistorianFields.*;
 public class TimeSeriesExtracterUtil {
     public final static String TIMESERIES_TIMESTAMPS = "timestamps";
     public final static String TIMESERIES_VALUES = "values";
+    public final static SamplingAlgorithm DEFAULT_SAMPLING_ALGORITHM = SamplingAlgorithm.FIRST_ITEM;
+
 
     private TimeSeriesExtracterUtil() {}
 
@@ -99,16 +101,26 @@ public class TimeSeriesExtracterUtil {
     }
 
     public static Sampler<Point> getPointSampler(SamplingConf samplingConf, long totalNumberOfPoint) {
-        SamplingAlgorithm algorithm = samplingConf.getAlgo();
-        int bucketSize = samplingConf.getBucketSize();
-        if (samplingConf.getAlgo() == SamplingAlgorithm.NONE) {//verify there is not too many point to return them all
-            if (totalNumberOfPoint > samplingConf.getMaxPoint()) {
-                algorithm = SamplingAlgorithm.FIRST_ITEM;
-                bucketSize = calculBucketSize(samplingConf.getMaxPoint(), totalNumberOfPoint);
-            }
-        }
-        return SamplerFactory.getPointSampler(algorithm, bucketSize);
+        SamplingConf calculatedConf = calculSamplingConf(samplingConf, totalNumberOfPoint);
+        return SamplerFactory.getPointSampler(calculatedConf.getAlgo(), calculatedConf.getBucketSize());
     }
+
+    public static SamplingConf calculSamplingConf(SamplingConf samplingConf, long totalNumberOfPoint) {
+        SamplingAlgorithm algorithm = calculSamplingAlgorithm(samplingConf, totalNumberOfPoint);
+        int bucketSize = samplingConf.getBucketSize();
+        if (totalNumberOfPoint > samplingConf.getMaxPoint()) {
+            //verify there is not too many point to return them all otherwise recalcul bucket size accordingly.
+            bucketSize = calculBucketSize(samplingConf.getMaxPoint(), totalNumberOfPoint);
+        }
+        return new SamplingConf(algorithm, bucketSize, samplingConf.getMaxPoint());
+    }
+
+    public static SamplingAlgorithm calculSamplingAlgorithm(SamplingConf samplingConf, long totalNumberOfPoint) {
+        if (samplingConf.getAlgo() == SamplingAlgorithm.NONE && totalNumberOfPoint > samplingConf.getMaxPoint())
+            return DEFAULT_SAMPLING_ALGORITHM;
+        return samplingConf.getAlgo();
+    }
+
 
     private static int calculBucketSize(int maxPoint, int totalNumberOfPoint) {
         return BucketUtils.calculBucketSize(totalNumberOfPoint, maxPoint);
