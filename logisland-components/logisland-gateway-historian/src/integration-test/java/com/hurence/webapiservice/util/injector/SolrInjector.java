@@ -8,4 +8,5 @@ import java.io.IOException;
 public interface SolrInjector {
 
     void injectChunks(SolrClient client) throws SolrServerException, IOException;
+
 }

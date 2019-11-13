@@ -17,12 +17,13 @@
 
 package com.hurence.webapiservice.http;
 
+import com.hurence.logisland.record.Point;
 import com.hurence.unit5.extensions.SolrExtension;
 import com.hurence.webapiservice.util.HistorianSolrITHelper;
 import com.hurence.webapiservice.util.HttpITHelper;
 import com.hurence.webapiservice.util.HttpWithHistorianSolrITHelper;
 import com.hurence.webapiservice.util.injector.SolrInjector;
-import com.hurence.webapiservice.util.injector.SolrInjectorTempASize3;
+import com.hurence.webapiservice.util.injector.SolrInjectorOneMetricMultipleChunksSpecificPoints;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
@@ -43,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,7 +62,33 @@ public class HttpServerVerticleSmallChunksIT {
         HttpWithHistorianSolrITHelper
                 .initWebClientAndHistorianSolrCollectionAndHttpVerticleAndHistorianVerticle(client, container, vertx, context);
         LOGGER.info("Indexing some documents in {} collection", HistorianSolrITHelper.COLLECTION);
-        SolrInjector injector = new SolrInjectorTempASize3();
+        SolrInjector injector = new SolrInjectorOneMetricMultipleChunksSpecificPoints(
+                "temp_a",
+                Arrays.asList(
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                ),
+                Arrays.asList(
+                        Arrays.asList(
+                                new Point(0, 1L, 5),
+                                new Point(0, 2L, 8),
+                                new Point(0, 3L, 1.2),
+                                new Point(0, 4L, 6.5)
+                        ),
+                        Arrays.asList(
+                                new Point(0, 5L, -2),
+                                new Point(0, 6L, 8.8),
+                                new Point(0, 7L, 13.3),
+                                new Point(0, 8L, 2)
+                        ),
+                        Arrays.asList(
+                                new Point(0, 9L, -5),
+                                new Point(0, 10L, 80),
+                                new Point(0, 11L, 1.2),
+                                new Point(0, 12L, 5.5)
+                        )
+                ));
         injector.injectChunks(client);
         LOGGER.info("Indexed some documents in {} collection", HistorianSolrITHelper.COLLECTION);
         webClient = HttpITHelper.buildWebClient(vertx);

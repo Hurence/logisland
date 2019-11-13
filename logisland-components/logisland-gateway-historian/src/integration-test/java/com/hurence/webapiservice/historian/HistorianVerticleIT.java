@@ -1,9 +1,9 @@
 package com.hurence.webapiservice.historian;
 
+import com.hurence.logisland.record.Point;
 import com.hurence.unit5.extensions.SolrExtension;
 import com.hurence.webapiservice.util.HistorianSolrITHelper;
-import com.hurence.webapiservice.util.injector.SolrInjector;
-import com.hurence.webapiservice.util.injector.SolrInjectorTempaAndTempbSize4;
+import com.hurence.webapiservice.util.injector.SolrInjectorOneMetricMultipleChunksSpecificPoints;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -18,7 +18,6 @@ import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -30,11 +29,11 @@ import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import static com.hurence.webapiservice.historian.HistorianService.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static com.hurence.webapiservice.historian.HistorianFields.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith({VertxExtension.class, SolrExtension.class})
 public class HistorianVerticleIT {
@@ -55,8 +54,48 @@ public class HistorianVerticleIT {
                 },
                 t -> context.failNow(t));
         LOGGER.info("Indexing some documents in {} collection", HistorianSolrITHelper.COLLECTION);
-        SolrInjector injector = new SolrInjectorTempaAndTempbSize4();
-        injector.injectChunks(client);
+        SolrInjectorOneMetricMultipleChunksSpecificPoints injectorTempA = new SolrInjectorOneMetricMultipleChunksSpecificPoints(
+                "temp_a",
+                Arrays.asList(
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                ),
+                Arrays.asList(
+                        Arrays.asList(
+                                new Point(0, 1L, 5),
+                                new Point(0, 2L, 8),
+                                new Point(0, 3L, 1.2),
+                                new Point(0, 4L, 6.5)
+                        ),
+                        Arrays.asList(
+                                new Point(0, 5L, -2),
+                                new Point(0, 6L, 8.8),
+                                new Point(0, 7L, 13.3),
+                                new Point(0, 8L, 2)
+                        ),
+                        Arrays.asList(
+                                new Point(0, 9L, -5),
+                                new Point(0, 10L, 80),
+                                new Point(0, 11L, 1.2),
+                                new Point(0, 12L, 5.5)
+                        )
+                ));
+        SolrInjectorOneMetricMultipleChunksSpecificPoints injectorTempB = new SolrInjectorOneMetricMultipleChunksSpecificPoints(
+                "temp_b",
+                Arrays.asList(
+                        Collections.emptyList()
+                ),
+                Arrays.asList(
+                        Arrays.asList(
+                                new Point(0, 9L, -5),
+                                new Point(0, 10L, 80),
+                                new Point(0, 11L, 1.2),
+                                new Point(0, 12L, 5.5)
+                        )
+                ));
+        injectorTempA.addChunk(injectorTempB);
+        injectorTempA.injectChunks(client);
         LOGGER.info("Indexed some documents in {} collection", HistorianSolrITHelper.COLLECTION);
     }
 
