@@ -31,4 +31,12 @@ public class MetricsSizeInfoImpl implements MetricsSizeInfo {
     public void setMetricInfo(MetricSizeInfo metricInfo) {
         metricsInfo.put(metricInfo.metricName, metricInfo);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder("MetricsSizeInfoImpl{");
+        metricsInfo.values().forEach(strBuilder::append);
+        strBuilder.append("}");
+        return strBuilder.toString();
+    }
 }

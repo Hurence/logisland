@@ -43,28 +43,59 @@ public abstract class HttpWithHistorianSolrITHelper {
 
     private HttpWithHistorianSolrITHelper() {}
 
-    public static void initWebClientAndHistorianSolrCollectionAndHttpVerticleAndHistorianVerticle(SolrClient client, DockerComposeContainer container, Vertx vertx, VertxTestContext context) throws InterruptedException, IOException, SolrServerException {
+    public static void initWebClientAndHistorianSolrCollectionAndHttpVerticleAndHistorianVerticle(
+            SolrClient client, DockerComposeContainer container,
+            Vertx vertx, VertxTestContext context) throws IOException, SolrServerException {
         LOGGER.info("Initializing Historian solr");
-        HistorianSolrITHelper.initHistorianSolr(client, container, vertx, context);
+        HistorianSolrITHelper.initHistorianSolr(client);
         LOGGER.info("Initializing Verticles");
-        deployHttpAndHistorianVerticle(container, vertx, context).subscribe(id -> {
+        deployHttpAndHistorianVerticle(container, vertx).subscribe(id -> {
                     context.completeNow();
                 },
                 t -> context.failNow(t));
     }
 
-    public static Single<String> deployHttpAndHistorianVerticle(DockerComposeContainer container, Vertx vertx, VertxTestContext context) {
+    private static Single<String> deployHttpAndHistorianVerticle(DockerComposeContainer container, Vertx vertx) {
         JsonObject httpConf = new JsonObject()
                 .put(HttpServerVerticle.CONFIG_HTTP_SERVER_PORT, PORT)
                 .put(HttpServerVerticle.CONFIG_HISTORIAN_ADDRESS, HISTORIAN_ADRESS)
                 .put(HttpServerVerticle.CONFIG_HTTP_SERVER_HOSTNAME, "localhost");
         DeploymentOptions httpOptions = new DeploymentOptions().setConfig(httpConf);
 
-        return HistorianSolrITHelper.deployHistorienVerticle(container, vertx, context)
+        return HistorianSolrITHelper.deployHistorienVerticle(container, vertx)
                 .flatMap(id -> vertx.rxDeployVerticle(new HttpServerVerticle(), httpOptions))
                 .map(id -> {
                     LOGGER.info("HistorianVerticle with id '{}' deployed", id);
                     return id;
                 });
     }
+
+    public static void initWebClientAndHistorianSolrCollectionAndHttpVerticleAndHistorianVerticle(
+            SolrClient client, DockerComposeContainer container,
+            Vertx vertx, VertxTestContext context,
+            JsonObject historianConf) throws IOException, SolrServerException {
+        LOGGER.info("Initializing Historian solr");
+        HistorianSolrITHelper.initHistorianSolr(client);
+        LOGGER.info("Initializing Verticles");
+        deployHttpAndHistorianVerticle(container, vertx, historianConf).subscribe(id -> {
+                    context.completeNow();
+                },
+                t -> context.failNow(t));
+    }
+
+    private static Single<String> deployHttpAndHistorianVerticle(DockerComposeContainer container, Vertx vertx, JsonObject historianConf) {
+        JsonObject httpConf = new JsonObject()
+                .put(HttpServerVerticle.CONFIG_HTTP_SERVER_PORT, PORT)
+                .put(HttpServerVerticle.CONFIG_HISTORIAN_ADDRESS, HISTORIAN_ADRESS)
+                .put(HttpServerVerticle.CONFIG_HTTP_SERVER_HOSTNAME, "localhost");
+        DeploymentOptions httpOptions = new DeploymentOptions().setConfig(httpConf);
+
+        return HistorianSolrITHelper.deployHistorienVerticle(container, vertx, historianConf)
+                .flatMap(id -> vertx.rxDeployVerticle(new HttpServerVerticle(), httpOptions))
+                .map(id -> {
+                    LOGGER.info("HistorianVerticle with id '{}' deployed", id);
+                    return id;
+                });
+    }
+
 }

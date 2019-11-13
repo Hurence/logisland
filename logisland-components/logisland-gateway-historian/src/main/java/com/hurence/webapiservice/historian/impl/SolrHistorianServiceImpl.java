@@ -153,9 +153,11 @@ public class SolrHistorianServiceImpl implements HistorianService {
     private SolrQuery buildTimeSeriesChunkQuery(JsonObject params) {
         StringBuilder queryBuilder = new StringBuilder();
         if (params.getLong(TO_REQUEST_FIELD) != null) {
+            LOGGER.debug("requesting timeseries to {}", params.getLong(TO_REQUEST_FIELD));
             queryBuilder.append(RESPONSE_CHUNK_START_FIELD).append(":[* TO ").append(params.getLong(TO_REQUEST_FIELD)).append("]");
         }
         if (params.getLong(FROM_REQUEST_FIELD) != null) {
+            LOGGER.debug("requesting timeseries from {}", params.getLong(FROM_REQUEST_FIELD));
             if (queryBuilder.length() != 0)
                 queryBuilder.append(" AND ");
             queryBuilder.append(RESPONSE_CHUNK_END_FIELD).append(":[").append(params.getLong(FROM_REQUEST_FIELD)).append(" TO *]");
@@ -247,7 +249,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
                 metricsInfo = getNumberOfPointsByMetricInRequest(query);//TODO there is two query, split every one in promise
                 LOGGER.debug("metrics info to query : {}", metricsInfo);
                 //TODO make three different group for each metrics, not use a single strategy globally for all metrics.
-                if (metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint) {
+                if (metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint ||
+                        metricsInfo.getTotalNumberOfPoints() <= getSamplingConf(myParams).getMaxPoint()) {
                     LOGGER.debug("QUERY MODE 1: metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint");
                     query.addField(RESPONSE_CHUNK_VALUE_FIELD);
                     final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorSamplingAllPoints(myParams, metricsInfo);
@@ -383,7 +386,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
     private JsonObject extractTimeSeries(JsonStream stream, MultiTimeSeriesExtracter timeSeriesExtracter) throws IOException {
         stream.open();
         JsonObject chunk = stream.read();
-        while (!chunk.getBoolean("EOF")) {
+        while (!chunk.containsKey("EOF") || !chunk.getBoolean("EOF")) {
             timeSeriesExtracter.addChunk(chunk);
             chunk = stream.read();
         }

@@ -56,7 +56,8 @@ public class TimeSeriesExtracterImpl implements TimeSeriesExtracter {
 
     @Override
     public void flush() {
-        samplePointsInBufferThenReset();
+        if (!chunks.isEmpty())
+            samplePointsInBufferThenReset();
     }
 
     protected void samplePointsInBufferThenReset() {

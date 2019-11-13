@@ -54,7 +54,7 @@ public class HistorianSolrITHelper {
     public static String COLLECTION = "historian";
     public static String HISTORIAN_ADRESS = "historian_service";
 
-    public static void initHistorianSolr(SolrClient client, DockerComposeContainer container, Vertx vertx, VertxTestContext context) throws InterruptedException, IOException, SolrServerException {
+    public static void initHistorianSolr(SolrClient client) throws IOException, SolrServerException {
         LOGGER.debug("creating collection {}", COLLECTION);
         createHistorianCollection(client);
         LOGGER.debug("verify collection {} exist and is ready", COLLECTION);
@@ -64,16 +64,41 @@ public class HistorianSolrITHelper {
     }
 
     @BeforeAll
-    public static void initHistorianAndDeployVerticle(SolrClient client, DockerComposeContainer container, Vertx vertx, VertxTestContext context) throws InterruptedException, IOException, SolrServerException {
-        initHistorianSolr(client, container, vertx, context);
+    public static void initHistorianAndDeployVerticle(SolrClient client, DockerComposeContainer container, Vertx vertx, VertxTestContext context) throws IOException, SolrServerException {
+        initHistorianSolr(client);
         LOGGER.info("Initializing Verticles");
-        deployHistorienVerticle(container, vertx, context).subscribe(id -> {
+        deployHistorienVerticle(container, vertx).subscribe(id -> {
                     context.completeNow();
                 },
                 t -> context.failNow(t));
     }
 
-    public static Single<String> deployHistorienVerticle(DockerComposeContainer container, Vertx vertx, VertxTestContext context) {
+    public static Single<String> deployHistorienVerticle(DockerComposeContainer container, Vertx vertx) {
+        DeploymentOptions historianOptions = getDeploymentOptions(container);
+        return vertx.rxDeployVerticle(new HistorianVerticle(), historianOptions)
+                .map(id -> {
+                    LOGGER.info("HistorianVerticle with id '{}' deployed", id);
+                    return id;
+                });
+    }
+
+    public static Single<String> deployHistorienVerticle(DockerComposeContainer container,
+                                                         Vertx vertx,
+                                                         JsonObject customHistorianConf) {
+        DeploymentOptions historianOptions = getDeploymentOptions(container, customHistorianConf);
+        return vertx.rxDeployVerticle(new HistorianVerticle(), historianOptions)
+                .map(id -> {
+                    LOGGER.info("HistorianVerticle with id '{}' deployed", id);
+                    return id;
+                });
+    }
+
+    public static DeploymentOptions getDeploymentOptions(DockerComposeContainer container) {
+        JsonObject historianConf = getHistorianConf(container);
+        return new DeploymentOptions().setConfig(historianConf);
+    }
+
+    private static JsonObject getHistorianConf(DockerComposeContainer container) {
         String zkUrl = container.getServiceHost(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT)
                 + ":" +
                 container.getServicePort(ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_PORT);
@@ -86,19 +111,16 @@ public class HistorianSolrITHelper {
                 .put(HistorianVerticle.CONFIG_SOLR_USE_ZOOKEEPER, true)
                 .put(HistorianVerticle.CONFIG_SOLR_ZOOKEEPER_URLS, new JsonArray().add(zkUrl))
                 .put(HistorianVerticle.CONFIG_SOLR_STREAM_ENDPOINT, "http://" + slr1Url + "/solr/" + COLLECTION);
-        JsonObject historianConf = new JsonObject()
+        return new JsonObject()
                 .put(HistorianVerticle.CONFIG_ROOT_SOLR, solrConf)
                 .put(HistorianVerticle.CONFIG_HISTORIAN_ADDRESS, HISTORIAN_ADRESS);
-        DeploymentOptions historianOptions = new DeploymentOptions().setConfig(historianConf);
-
-        return vertx.rxDeployVerticle(new HistorianVerticle(), historianOptions)
-                .map(id -> {
-                    LOGGER.info("HistorianVerticle with id '{}' deployed", id);
-                    return id;
-                });
     }
 
-
+    public static DeploymentOptions getDeploymentOptions(DockerComposeContainer container,
+                                                         JsonObject customHistorianConf) {
+        JsonObject historianConf = getHistorianConf(container);
+        return new DeploymentOptions().setConfig(historianConf.mergeIn(customHistorianConf));
+    }
 
     private static void checkSchema(SolrClient client) throws SolrServerException, IOException {
         SchemaRequest schemaRequest = new SchemaRequest();

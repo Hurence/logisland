@@ -7,21 +7,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class SolrInjectorOneMetricMultipleChunksSpecificPoints extends AbstractSolrInjector {
+public class SolrInjectorOneMetricMultipleChunksSpecificPointsWithTags extends AbstractSolrInjector {
 
     private final String metricName;
     private final List<List<Point>> pointsByChunk;
+    private final List<List<String>> tags;
 
-    public SolrInjectorOneMetricMultipleChunksSpecificPoints(String metricName,
-                                                             List<List<Point>> pointsByChunk) {
+    public SolrInjectorOneMetricMultipleChunksSpecificPointsWithTags(String metricName,
+                                                                     List<List<String>> tags,
+                                                                     List<List<Point>> pointsByChunk) {
         this.metricName = metricName;
         this.pointsByChunk = pointsByChunk;
+        this.tags = tags;
     }
 
     @Override
     protected List<ChunkModele> buildListOfChunks() {
         List<ChunkModele> chunks = IntStream
-                .range(0, pointsByChunk.size())
+                .range(0, Math.min(tags.size(), pointsByChunk.size()))
                 .mapToObj(this::buildChunk)
                 .collect(Collectors.toList());
         return chunks;
@@ -39,6 +42,7 @@ public class SolrInjectorOneMetricMultipleChunksSpecificPoints extends AbstractS
         chunk.max = chunk.points.stream().mapToDouble(Point::getValue).max().getAsDouble();
         chunk.name = metricName;
         chunk.sax = "edeebcccdf";
+        chunk.tags = tags.get(index);
         return chunk;
     }
 }

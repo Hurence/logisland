@@ -3,7 +3,7 @@ package com.hurence.webapiservice.historian;
 import com.hurence.logisland.record.Point;
 import com.hurence.unit5.extensions.SolrExtension;
 import com.hurence.webapiservice.util.HistorianSolrITHelper;
-import com.hurence.webapiservice.util.injector.SolrInjectorOneMetricMultipleChunksSpecificPoints;
+import com.hurence.webapiservice.util.injector.SolrInjectorOneMetricMultipleChunksSpecificPointsWithTags;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -45,16 +45,16 @@ public class HistorianVerticleIT {
 
     @BeforeAll
     public static void beforeAll(SolrClient client, DockerComposeContainer container, io.vertx.reactivex.core.Vertx vertx, VertxTestContext context) throws InterruptedException, IOException, SolrServerException {
-        HistorianSolrITHelper.initHistorianSolr(client, container, vertx, context);
+        HistorianSolrITHelper.initHistorianSolr(client);
         HistorianSolrITHelper
-                .deployHistorienVerticle(container, vertx, context)
+                .deployHistorienVerticle(container, vertx)
                 .subscribe(id -> {
                     historian = com.hurence.webapiservice.historian.HistorianService.createProxy(vertx.getDelegate(), "historian_service");
                     context.completeNow();
                 },
                 t -> context.failNow(t));
         LOGGER.info("Indexing some documents in {} collection", HistorianSolrITHelper.COLLECTION);
-        SolrInjectorOneMetricMultipleChunksSpecificPoints injectorTempA = new SolrInjectorOneMetricMultipleChunksSpecificPoints(
+        SolrInjectorOneMetricMultipleChunksSpecificPointsWithTags injectorTempA = new SolrInjectorOneMetricMultipleChunksSpecificPointsWithTags(
                 "temp_a",
                 Arrays.asList(
                         Collections.emptyList(),
@@ -81,7 +81,7 @@ public class HistorianVerticleIT {
                                 new Point(0, 12L, 5.5)
                         )
                 ));
-        SolrInjectorOneMetricMultipleChunksSpecificPoints injectorTempB = new SolrInjectorOneMetricMultipleChunksSpecificPoints(
+        SolrInjectorOneMetricMultipleChunksSpecificPointsWithTags injectorTempB = new SolrInjectorOneMetricMultipleChunksSpecificPointsWithTags(
                 "temp_b",
                 Arrays.asList(
                         Collections.emptyList()

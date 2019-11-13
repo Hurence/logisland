@@ -26,10 +26,8 @@ public class JsonStreamSolrStreamImpl implements JsonStream {
     }
 
     private JsonObject toJson(Tuple tuple) {
-        final JsonObject json = new JsonObject();
-        tuple.fieldNames.forEach(f -> {
-            json.put(f, tuple.get(f));
-        });
+        @SuppressWarnings("unchecked")
+        final JsonObject json = new JsonObject(tuple.fields);
         return json;
     }
 

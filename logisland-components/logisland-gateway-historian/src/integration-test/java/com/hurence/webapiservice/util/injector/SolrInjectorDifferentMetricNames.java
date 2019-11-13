@@ -14,8 +14,8 @@ public class SolrInjectorDifferentMetricNames extends AbstractSolrInjector {
     private final int size;
     private final int numberOfChunkByMetric;
 
-    public SolrInjectorDifferentMetricNames(int size, int numberOfChunkByMetric) {
-        this.size = size;
+    public SolrInjectorDifferentMetricNames(int numberOfMetric, int numberOfChunkByMetric) {
+        this.size = numberOfMetric;
         this.numberOfChunkByMetric = numberOfChunkByMetric;
     }
 

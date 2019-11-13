@@ -47,7 +47,7 @@ public class TimeSeriesExtracterUsingPreAgg extends TimeSeriesExtracterImpl {
                 break;
             case FIRST_ITEM:
                 aggValue = chunks.stream()
-                        .mapToDouble(chunk -> chunk.getDouble(RESPONSE_CHUNK_MIN_FIELD))
+                        .mapToDouble(chunk -> chunk.getDouble(RESPONSE_CHUNK_FIRST_VALUE_FIELD))
                         .findFirst()
                         .getAsDouble();
                 break;
