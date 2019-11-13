@@ -62,30 +62,17 @@ public class SamplerFactory {
      * @return the sampler
      */
     public static Sampler<Point> getPointSampler(SamplingAlgorithm algorithm, int bucketSize) {
-
         switch (algorithm) {
             case FIRST_ITEM:
                 return new FirstItemSampler<Point>(bucketSize);
             case AVERAGE:
-                TimeSerieHandler<Point> timeSerieHandler = new TimeSerieHandler<Point>() {
-                    @Override
-                    public Point createTimeserie(long timestamp, double value) {
-                        return new Point(0, timestamp, value);
-                    }
-
-                    @Override
-                    public long getTimeserieTimestamp(Point point) {
-                        return point.getTimestamp();
-                    }
-
-                    @Override
-                    public Double getTimeserieValue(Point point) {
-                        return point.getValue();
-                    }
-                };
-                return new AverageSampler<Point>(timeSerieHandler ,bucketSize);
+                return new AverageSampler<Point>(getPointTimeSerieHandler(), bucketSize);
             case NONE:
                 return new IsoSampler<Point>();
+            case MIN:
+                return new MinSampler<Point>(getPointTimeSerieHandler(), bucketSize);
+            case MAX:
+                return new MaxSampler<Point>(getPointTimeSerieHandler(), bucketSize);
             case MIN_MAX:
             case LTTB:
             case MODE_MEDIAN:
@@ -93,5 +80,24 @@ public class SamplerFactory {
                 throw new UnsupportedOperationException("algorithm " + algorithm.name() + " is not yet supported !");
 
         }
+    }
+
+    public static TimeSerieHandler<Point> getPointTimeSerieHandler() {
+        return new TimeSerieHandler<Point>() {
+                @Override
+                public Point createTimeserie(long timestamp, double value) {
+                    return new Point(0, timestamp, value);
+                }
+
+                @Override
+                public long getTimeserieTimestamp(Point point) {
+                    return point.getTimestamp();
+                }
+
+                @Override
+                public Double getTimeserieValue(Point point) {
+                    return point.getValue();
+                }
+            };
     }
 }

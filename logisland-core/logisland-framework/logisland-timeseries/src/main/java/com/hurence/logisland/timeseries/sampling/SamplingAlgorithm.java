@@ -21,5 +21,7 @@ public enum SamplingAlgorithm {
     AVERAGE,
     MODE_MEDIAN,
     LTTB,
-    MIN_MAX
+    MIN_MAX,
+    MIN,
+    MAX
 }
