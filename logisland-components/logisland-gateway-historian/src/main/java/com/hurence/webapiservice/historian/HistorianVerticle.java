@@ -37,27 +37,32 @@ public class HistorianVerticle extends AbstractVerticle {
 
   private static Logger LOGGER = LoggerFactory.getLogger(HistorianVerticle.class);
 
-
+  //root conf
   public static final String CONFIG_HISTORIAN_ADDRESS = "address";
+  public static final String CONFIG_LIMIT_NUMBER_OF_POINT = "limit_number_of_point_before_using_pre_agg";
+  public static final String CONFIG_LIMIT_NUMBER_OF_CHUNK = "limit_number_of_chunks_before_using_solr_partition";
   public static final String CONFIG_ROOT_SOLR = "solr";
-//  public static final String CONFIG_ES_CLUSTER_NAME = "cluster.name";
 
+  //solr conf
   public static final String CONFIG_SOLR_URLS = "urls";
   public static final String CONFIG_SOLR_USE_ZOOKEEPER = "use_zookeeper";
   public static final String CONFIG_SOLR_ZOOKEEPER_ROOT = "zookeeper_chroot";//see zookeeper documentation about chroot
   public static final String CONFIG_SOLR_ZOOKEEPER_URLS = "zookeeper_urls";
   public static final String CONFIG_SOLR_CONNECTION_TIMEOUT = "connection_timeout";
   public static final String CONFIG_SOLR_SOCKET_TIMEOUT = "socket_timeout";
-//  public static final String CONFIG_SOLR_HOST_NAME = "host";
-//  public static final String CONFIG_SOLR_PORT = "port";
   public static final String CONFIG_SOLR_COLLECTION = "collection";
   public static final String CONFIG_SOLR_STREAM_ENDPOINT = "stream_url";
+
   private SolrClient client;
 
   @Override
   public void start(Promise<Void> promise) throws Exception {
     LOGGER.debug("deploying {} verticle with config : {}", HistorianVerticle.class.getSimpleName(), config().encodePrettily());
+    //general conf
     final String address = config().getString(CONFIG_HISTORIAN_ADDRESS, "historian");
+    final long limitNumberOfPoint = config().getLong(CONFIG_LIMIT_NUMBER_OF_POINT, 50000L);
+    final long limitNumberOfChunks = config().getLong(CONFIG_LIMIT_NUMBER_OF_CHUNK, 50000L);
+    //solr conf
     final JsonObject slrConfig = config().getJsonObject(CONFIG_ROOT_SOLR);
     final int connectionTimeout = slrConfig.getInteger(CONFIG_SOLR_CONNECTION_TIMEOUT, 10000);
     final int socketTimeout = slrConfig.getInteger(CONFIG_SOLR_SOCKET_TIMEOUT, 60000);
@@ -67,6 +72,7 @@ public class HistorianVerticle extends AbstractVerticle {
       throw new IllegalArgumentException(String.format("key %s is needed in solr config of historian verticle conf.",
               CONFIG_SOLR_STREAM_ENDPOINT));
     final String streamEndpoint = slrConfig.getString(CONFIG_SOLR_STREAM_ENDPOINT);
+
 
     CloudSolrClient.Builder clientBuilder;
     if (useZookeeper) {
@@ -90,7 +96,8 @@ public class HistorianVerticle extends AbstractVerticle {
 
 
     HistorianService.create(vertx, client,
-            collection, streamEndpoint, ready -> {
+            collection, streamEndpoint,
+            limitNumberOfPoint, limitNumberOfChunks, ready -> {
       if (ready.succeeded()) {
         ServiceBinder binder = new ServiceBinder(vertx);
         binder.setAddress(address)

@@ -46,16 +46,24 @@ public class SolrHistorianServiceImpl implements HistorianService {
     private final Vertx vertx;
     private final String collection;
     private final String streamEndPoint;
-    private final long limitNumberOfPoint = 50000L;//TODO make it configurable
-    private final long limitNumberOfChunks = 50000L;//TODO make it configurable
+    private final long limitNumberOfPoint;
+    private final long limitNumberOfChunks;
 
     public SolrHistorianServiceImpl(Vertx vertx, SolrClient client,
                                     String collection, String baseUrl,
+                                    long limitNumberOfPoint, long limitNumberOfChunks,
                                     Handler<AsyncResult<HistorianService>> readyHandler) {
         this.client = client;
         this.vertx = vertx;
         this.collection = collection;
         this.streamEndPoint = baseUrl;
+        this.limitNumberOfPoint = limitNumberOfPoint;
+        this.limitNumberOfChunks = limitNumberOfChunks;
+        LOGGER.debug("SolrHistorianServiceImpl with params:");
+        LOGGER.debug("collection : {}", collection);
+        LOGGER.debug("streamEndPoint : {}", baseUrl);
+        LOGGER.debug("limitNumberOfPoint : {}", limitNumberOfPoint);
+        LOGGER.debug("limitNumberOfChunks : {}", limitNumberOfChunks);
         Handler<Promise<Integer>> colPinghandler = createPingHandler(6000, 3);
         Handler<AsyncResult<Integer>> statusHandler = h -> {
             if (h.succeeded()) {
@@ -116,6 +124,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
     @Override
     public HistorianService getTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
         final SolrQuery query = buildTimeSeriesChunkQuery(params);
+        query.setFields();//so we return every fields (this endpoint is currently used only in tests, this is legacy code)
         //  EXECUTE REQUEST
         Handler<Promise<JsonObject>> getTimeSeriesHandler = p -> {
             try {
@@ -237,6 +246,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
             try {
                 metricsInfo = getNumberOfPointsByMetricInRequest(query);//TODO there is two query, split every one in promise
                 LOGGER.debug("metrics info to query : {}", metricsInfo);
+                //TODO make three different group for each metrics, not use a single strategy globally for all metrics.
                 if (metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint) {
                     LOGGER.debug("QUERY MODE 1: metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint");
                     query.addField(RESPONSE_CHUNK_VALUE_FIELD);
@@ -258,7 +268,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
                         LOGGER.error("unexpected exception while executing search with solr", e);
                         p.fail(e);
                     }
-                } else if (metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks) {//TODO make three different group for each metrics, not globally.
+                } else if (metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks) {
                     LOGGER.debug("QUERY MODE 2: metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks");
                     SamplingConf samplingConf = getSamplingConf(myParams);
                     Set<SamplingAlgorithm> samplingAlgos = determineSamplingAlgoThatWillBeUsed(samplingConf, metricsInfo);

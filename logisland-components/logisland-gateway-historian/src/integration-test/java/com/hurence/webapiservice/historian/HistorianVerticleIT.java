@@ -18,8 +18,10 @@ import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -77,14 +79,14 @@ public class HistorianVerticleIT {
         assertEquals("historian", schemaRepresentation.getName());
         assertEquals(1.6, schemaRepresentation.getVersion(), 0.001f);
         assertEquals("id", schemaRepresentation.getUniqueKey());
-        assertEquals(19, schemaRepresentation.getFields().size());
+        assertEquals(20, schemaRepresentation.getFields().size());
         assertEquals(69, schemaRepresentation.getDynamicFields().size());
         assertEquals(68, schemaRepresentation.getFieldTypes().size());
         assertEquals(0, schemaRepresentation.getCopyFields().size());
     }
 
     @Test
-    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
     void getTimeSeriesChunkTestWithoutParameter(VertxTestContext testContext) {
 
         JsonObject params = new JsonObject();
@@ -112,17 +114,16 @@ public class HistorianVerticleIT {
                         assertTrue(doc1.containsKey(RESPONSE_CHUNK_SIZE_BYTES_FIELD));
                         assertTrue(doc1.containsKey(RESPONSE_CHUNK_SUM_FIELD));
                         assertTrue(doc1.containsKey(RESPONSE_CHUNK_VERSION_FIELD));
-                        assertEquals(15, doc1.size());
+                        assertTrue(doc1.containsKey(RESPONSE_CHUNK_FIRST_VALUE_FIELD));
+                        assertEquals(16, doc1.size());
                         assertEquals("id0", doc1.getString("id"));
                         assertEquals(1L, doc1.getLong(RESPONSE_CHUNK_START_FIELD));
                         assertEquals(4L, doc1.getLong(RESPONSE_CHUNK_END_FIELD));
                         JsonObject doc2 = docs.getJsonObject(1);
-                        assertEquals(15, doc2.size());
                         assertEquals("id1", doc2.getString("id"));
                         assertEquals(5L, doc2.getLong(RESPONSE_CHUNK_START_FIELD));
                         assertEquals(8L, doc2.getLong(RESPONSE_CHUNK_END_FIELD));
                         JsonObject doc3 = docs.getJsonObject(2);
-                        assertEquals(15, doc3.size());
                         assertEquals("id2", doc3.getString("id"));
                         assertEquals(9L, doc3.getLong(RESPONSE_CHUNK_START_FIELD));
                         assertEquals(12L, doc3.getLong(RESPONSE_CHUNK_END_FIELD));
@@ -133,7 +134,7 @@ public class HistorianVerticleIT {
     }
 
     @Test
-    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
     void getTimeSeriesChunkTestWithStart(VertxTestContext testContext) {
 
         JsonObject params = new JsonObject()
@@ -154,7 +155,7 @@ public class HistorianVerticleIT {
     }
 
     @Test
-    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
     void getTimeSeriesChunkTestWithEnd(VertxTestContext testContext) {
 
         JsonObject params = new JsonObject()
@@ -175,7 +176,8 @@ public class HistorianVerticleIT {
     }
 
     @Test
-    @Timeout(value = 5000, timeUnit = TimeUnit.SECONDS)
+    @Timeout(value = 5, timeUnit = TimeUnit.SECONDS)
+    @Disabled("This feature is legacy, now this is the service that decides what to return based on timeseries request.")
     void getTimeSeriesChunkTestWithSelectedFields(VertxTestContext testContext) {
         JsonObject params = new JsonObject()
                 .put(FIELDS_TO_FETCH_AS_LIST_REQUEST_FIELD, new JsonArray()

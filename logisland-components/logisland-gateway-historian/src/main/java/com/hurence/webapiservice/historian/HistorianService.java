@@ -23,9 +23,10 @@ public interface HistorianService {
     @GenIgnore
     static HistorianService create(Vertx vertx, SolrClient client,
                                    String collection, String streamEndPoint,
+                                   long limitNumberOfPoint, long limitNumberOfChunks,
                                    Handler<AsyncResult<HistorianService>> readyHandler) {
         return new SolrHistorianServiceImpl(vertx, client,
-                collection, streamEndPoint, readyHandler);
+                collection, streamEndPoint, limitNumberOfPoint, limitNumberOfChunks, readyHandler);
     }
 
     @GenIgnore
