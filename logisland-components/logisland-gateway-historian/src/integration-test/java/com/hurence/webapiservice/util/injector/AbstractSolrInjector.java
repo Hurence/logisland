@@ -54,6 +54,8 @@ public abstract class AbstractSolrInjector implements SolrInjector {
         doc.addField(RESPONSE_CHUNK_SIZE_BYTES_FIELD, chunk.compressedPoints.length);
         doc.addField(RESPONSE_CHUNK_SUM_FIELD, chunk.sum);
         doc.addField(RESPONSE_TAG_NAME_FIELD, chunk.tags);
+        doc.addField(RESPONSE_CHUNK_FIRST_VALUE_FIELD, chunk.points.get(0).getValue());
+
         return doc;
     }
 }

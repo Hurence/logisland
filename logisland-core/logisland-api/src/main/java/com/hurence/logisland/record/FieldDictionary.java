@@ -45,6 +45,7 @@ public class FieldDictionary {
     public static final String CHUNK_META = "chunk_attribute";
     public static final String CHUNK_MAX = "chunk_max";
     public static final String CHUNK_MIN = "chunk_min";
+    public static final String CHUNK_FIRST_VALUE = "chunk_first_value";
     public static final String CHUNK_AVG = "chunk_avg";
     public static final String CHUNK_SAX = "chunk_sax";
     public static final String CHUNK_TREND = "chunk_trend";

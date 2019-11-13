@@ -40,6 +40,7 @@ public class HistorianFields {
     public static String RESPONSE_CHUNK_MIN_FIELD = FieldDictionary.CHUNK_MIN;
     public static String RESPONSE_CHUNK_START_FIELD = FieldDictionary.CHUNK_START;
     public static String RESPONSE_CHUNK_END_FIELD = FieldDictionary.CHUNK_END;
+    public static String RESPONSE_CHUNK_FIRST_VALUE_FIELD = FieldDictionary.CHUNK_FIRST_VALUE;
     public static String RESPONSE_CHUNK_AVG_FIELD = FieldDictionary.CHUNK_AVG;
     public static String RESPONSE_CHUNK_SIZE_FIELD = FieldDictionary.CHUNK_SIZE;
     public static String RESPONSE_CHUNK_SUM_FIELD = FieldDictionary.CHUNK_SUM;

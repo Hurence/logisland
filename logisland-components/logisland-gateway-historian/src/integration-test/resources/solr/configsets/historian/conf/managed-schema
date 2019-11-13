@@ -460,6 +460,7 @@
   <field name="_root_" type="string" docValues="false" indexed="true" stored="false"/>
   <field name="_text_" type="text_general" multiValued="true" indexed="true" stored="false"/>
   <field name="_version_" type="plong" indexed="false" stored="false"/>
+  <field name="chunk_first_value" type="pdouble"/>
   <field name="chunk_avg" type="pdouble"/>
   <field name="chunk_end" type="plong"/>
   <field name="chunk_max" type="pdouble"/>
