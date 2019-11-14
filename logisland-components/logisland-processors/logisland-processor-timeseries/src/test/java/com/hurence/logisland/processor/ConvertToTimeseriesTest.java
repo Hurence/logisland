@@ -179,76 +179,31 @@ public class ConvertToTimeseriesTest {
     }
 
     @Test
-    public void validateNoSampling() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
-        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.NO_SAMPLING);
-        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "0");
+    public void validateSumAndFirst() {
+        final String name = "cpu.load";
+        final TestRunner testRunner = TestRunners.newTestRunner(new ConvertToTimeseries());
+        testRunner.setProperty(ConvertToTimeseries.GROUPBY, FieldDictionary.RECORD_NAME);
+        testRunner.setProperty(ConvertToTimeseries.METRIC, "sum;first");
         testRunner.assertValid();
 
-        int recordsCount = 2000;
+        int recordsCount = 3;
+        Record[] records = createRawData(name, recordsCount);
         testRunner.clearQueues();
-        testRunner.enqueue(createRawData("sampling", recordsCount));
+        testRunner.enqueue(
+                createRecord(name, 1000000L, 0),
+                createRecord(name, 1000002L, 2),
+                createRecord(name, 1000004L, 3.5)
+        );
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(recordsCount);
-    }
+        testRunner.assertOutputRecordsCount(1);
 
-    @Test
-    public void validateFirstItemSampling() {
-        int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
-        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.FIRST_ITEM_SAMPLING);
-        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
-        testRunner.assertValid();
+        MockRecord out = testRunner.getOutputRecords().get(0);
 
+        out.assertFieldEquals(FieldDictionary.CHUNK_SIZE, 3);
+        out.assertFieldEquals(FieldDictionary.CHUNK_SUM, 5.5);
+        out.assertFieldEquals(FieldDictionary.CHUNK_FIRST_VALUE, 0.0);
+        out.assertRecordSizeEquals(9);
 
-        testRunner.clearQueues();
-        testRunner.enqueue(createRawData("sampling", recordsCount));
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(9);
-        printRecords(testRunner.getOutputRecords());
-    }
-
-    @Test
-    public void validateAverageSampling() {
-        int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
-        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.AVERAGE_SAMPLING);
-        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
-        testRunner.assertValid();
-
-
-        testRunner.clearQueues();
-        testRunner.enqueue(createRawData("sampling", recordsCount));
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(9);
-        printRecords(testRunner.getOutputRecords());
-    }
-
-    @Test
-    public void validateLLTBSampling() {
-        int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
-        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.LTTB_SAMPLING);
-        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "10"); // bucket size => 9 buckets
-        testRunner.assertValid();
-
-
-        testRunner.clearQueues();
-        testRunner.enqueue(createRawData("sampling", recordsCount));
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(9);
-        printRecords(testRunner.getOutputRecords());
     }
 }

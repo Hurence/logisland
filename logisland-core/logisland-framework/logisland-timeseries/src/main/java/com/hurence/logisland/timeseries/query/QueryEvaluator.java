@@ -91,7 +91,7 @@ public final class QueryEvaluator {
                     //No function found.
 
                     if (chronixFunction == null) {
-                        LOGGER.debug("Could not find custom function {} for type {}", queryFunction, typeName);
+                        LOGGER.error("Could not find custom function {} for type {}", queryFunction, typeName);
                         continue;
                     }
 

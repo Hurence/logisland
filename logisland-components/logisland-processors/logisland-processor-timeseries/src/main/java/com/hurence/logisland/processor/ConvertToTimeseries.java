@@ -56,7 +56,6 @@ import java.util.stream.Collectors;
 @CapabilityDescription("Converts a given field records into a chronix timeseries record")
 @ExtraDetailFile("./details/common-processors/EncodeSAX-Detail.rst")
 public class ConvertToTimeseries extends AbstractProcessor {
-    //TODO delete use others processor instead
 
     public static final PropertyDescriptor GROUPBY = new PropertyDescriptor.Builder()
             .name("groupby")
