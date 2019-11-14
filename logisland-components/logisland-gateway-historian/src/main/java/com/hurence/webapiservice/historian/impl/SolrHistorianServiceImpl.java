@@ -153,11 +153,11 @@ public class SolrHistorianServiceImpl implements HistorianService {
     private SolrQuery buildTimeSeriesChunkQuery(JsonObject params) {
         StringBuilder queryBuilder = new StringBuilder();
         if (params.getLong(TO_REQUEST_FIELD) != null) {
-            LOGGER.debug("requesting timeseries to {}", params.getLong(TO_REQUEST_FIELD));
+            LOGGER.trace("requesting timeseries to {}", params.getLong(TO_REQUEST_FIELD));
             queryBuilder.append(RESPONSE_CHUNK_START_FIELD).append(":[* TO ").append(params.getLong(TO_REQUEST_FIELD)).append("]");
         }
         if (params.getLong(FROM_REQUEST_FIELD) != null) {
-            LOGGER.debug("requesting timeseries from {}", params.getLong(FROM_REQUEST_FIELD));
+            LOGGER.trace("requesting timeseries from {}", params.getLong(FROM_REQUEST_FIELD));
             if (queryBuilder.length() != 0)
                 queryBuilder.append(" AND ");
             queryBuilder.append(RESPONSE_CHUNK_END_FIELD).append(":[").append(params.getLong(FROM_REQUEST_FIELD)).append(" TO *]");
@@ -248,6 +248,12 @@ public class SolrHistorianServiceImpl implements HistorianService {
             try {
                 metricsInfo = getNumberOfPointsByMetricInRequest(query);//TODO there is two query, split every one in promise
                 LOGGER.debug("metrics info to query : {}", metricsInfo);
+                if (metricsInfo.isEmpty()) {
+                    final MultiTimeSeriesExtracter timeSeriesExtracter =
+                            createTimeSerieExtractorSamplingAllPoints(myParams, metricsInfo);
+                    p.complete(buildTimeSeriesResponse(timeSeriesExtracter));
+                    return;
+                }
                 //TODO make three different group for each metrics, not use a single strategy globally for all metrics.
                 if (metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint ||
                         metricsInfo.getTotalNumberOfPoints() <= getSamplingConf(myParams).getMaxPoint()) {
@@ -258,12 +264,13 @@ public class SolrHistorianServiceImpl implements HistorianService {
                     //TODO Test if streaming api works if we use export endpoint ! I do no not think so
                     // To refactor because we currently are using chunk_value which is a binary fields and is not stream api compatible...
                     try {
+                        LOGGER.debug("solr request : {}", query.toString());
                         final QueryResponse response = client.query(collection, query);
                         final SolrDocumentList documents = response.getResults();
                         List<JsonObject> chunks = documents.stream()
                                 .map(this::convertDoc)
                                 .collect(Collectors.toList());
-                        JsonObject timeseries = extractTimeSeries(chunks, timeSeriesExtracter);
+                        JsonObject timeseries = extractTimeSeriesThenBuildResponse(chunks, timeSeriesExtracter);
                         p.complete(timeseries);
                     } catch (IOException | SolrServerException e) {
                         p.fail(e);
@@ -278,7 +285,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
                     addNecessaryFieldToQuery(query, samplingAlgos);
                     final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
                     try (JsonStream stream = queryStream(query)) {
-                        JsonObject timeseries = extractTimeSeries(stream, timeSeriesExtracter);
+                        JsonObject timeseries = extractTimeSeriesThenBuildResponse(stream, timeSeriesExtracter);
                         p.complete(timeseries);
                     } catch (Exception e) {
                         LOGGER.error("unexpected exception", e);
@@ -294,7 +301,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
                     addNecessaryFieldToQuery(query, samplingAlgos);
                     final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
                     try (JsonStream stream = queryStream(query)) {
-                        JsonObject timeseries = extractTimeSeries(stream, timeSeriesExtracter);
+                        JsonObject timeseries = extractTimeSeriesThenBuildResponse(stream, timeSeriesExtracter);
                         p.complete(timeseries);
                     } catch (Exception e) {
                         LOGGER.error("unexpected exception", e);
@@ -383,7 +390,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         return new SamplingConf(algo, bucketSize, maxPoint);
     }
 
-    private JsonObject extractTimeSeries(JsonStream stream, MultiTimeSeriesExtracter timeSeriesExtracter) throws IOException {
+    private JsonObject extractTimeSeriesThenBuildResponse(JsonStream stream, MultiTimeSeriesExtracter timeSeriesExtracter) throws IOException {
         stream.open();
         JsonObject chunk = stream.read();
         while (!chunk.containsKey("EOF") || !chunk.getBoolean("EOF")) {
@@ -391,20 +398,22 @@ public class SolrHistorianServiceImpl implements HistorianService {
             chunk = stream.read();
         }
         timeSeriesExtracter.flush();
-        LOGGER.info("extractTimeSeries response metric : {}", chunk.encodePrettily());
-        return new JsonObject()
-                .put(TOTAL_POINTS_RESPONSE_FIELD ,timeSeriesExtracter.pointCount())
-                .put(TIMESERIES_RESPONSE_FIELD ,timeSeriesExtracter.getTimeSeries());
+        LOGGER.debug("read {} chunks in stream", stream.getNumberOfDocRead());
+        LOGGER.debug("extractTimeSeries response metric : {}", chunk.encodePrettily());
+        return buildTimeSeriesResponse(timeSeriesExtracter);
     }
 
-    private JsonObject extractTimeSeries(List<JsonObject> chunks, MultiTimeSeriesExtracter timeSeriesExtracter) {
+    private JsonObject extractTimeSeriesThenBuildResponse(List<JsonObject> chunks, MultiTimeSeriesExtracter timeSeriesExtracter) {
         chunks.forEach(timeSeriesExtracter::addChunk);
         timeSeriesExtracter.flush();
+        return buildTimeSeriesResponse(timeSeriesExtracter);
+    }
+
+    private JsonObject buildTimeSeriesResponse(MultiTimeSeriesExtracter timeSeriesExtracter) {
         return new JsonObject()
                 .put(TOTAL_POINTS_RESPONSE_FIELD ,timeSeriesExtracter.pointCount())
                 .put(TIMESERIES_RESPONSE_FIELD ,timeSeriesExtracter.getTimeSeries());
     }
-
 
     private JsonStream queryStream(SolrQuery query) {
         StringBuilder exprBuilder = new StringBuilder("search(").append(collection).append(",")
@@ -418,11 +427,12 @@ public class SolrHistorianServiceImpl implements HistorianService {
         exprBuilder
                 .append("fl=\"").append(query.getFields()).append("\",")
                 .append("sort=\"").append(query.getSortField()).append("\",")
-                .append("qt=\"export\")");
+                .append("qt=\"/export\")");
 
         ModifiableSolrParams paramsLoc = new ModifiableSolrParams();
         paramsLoc.set("expr", exprBuilder.toString());
         paramsLoc.set("qt", "/stream");
+        LOGGER.debug("queryStream params : {}", paramsLoc);
 
         TupleStream solrStream = new SolrStream(streamEndPoint, paramsLoc);
         StreamContext context = new StreamContext();

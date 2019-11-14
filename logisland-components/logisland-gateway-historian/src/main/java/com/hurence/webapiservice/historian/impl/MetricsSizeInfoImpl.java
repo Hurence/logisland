@@ -28,6 +28,11 @@ public class MetricsSizeInfoImpl implements MetricsSizeInfo {
         return metricsInfo.values().stream().mapToLong(metricInfo -> metricInfo.totalNumberOfChunks).sum();
     }
 
+    @Override
+    public boolean isEmpty() {
+        return metricsInfo.isEmpty();
+    }
+
     public void setMetricInfo(MetricSizeInfo metricInfo) {
         metricsInfo.put(metricInfo.metricName, metricInfo);
     }

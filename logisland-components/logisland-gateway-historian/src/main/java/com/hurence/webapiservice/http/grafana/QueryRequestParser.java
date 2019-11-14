@@ -6,6 +6,8 @@ import com.hurence.webapiservice.http.grafana.modele.Target;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.json.pointer.JsonPointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,9 +19,8 @@ import java.util.stream.Collectors;
 
 public class QueryRequestParser {
 
-
-
-    private static SimpleDateFormat dateFormat = createDateFormat();
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueryRequestParser.class);
+    private SimpleDateFormat dateFormat = createDateFormat();
 
     private static SimpleDateFormat createDateFormat() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
@@ -30,6 +31,7 @@ public class QueryRequestParser {
     }
 
     public QueryRequestParam parseRequest(JsonObject requestBody) throws IllegalArgumentException {
+        LOGGER.debug("trying to parse requestBody : {}", requestBody);
         QueryRequestParam.Builder builder = new QueryRequestParam.Builder();
         long from = parseFrom(requestBody);
         builder.from(from);
@@ -43,7 +45,10 @@ public class QueryRequestParser {
         builder.withTargets(targets);
         List<AdHocFilter> adHocFilters = parseAdHocFilters(requestBody);;
         builder.withAdHocFilters(adHocFilters);
+        String requestId = parseRequestId(requestBody);
+        builder.withId(requestId);
         return builder.build();
+
     }
 
     private List<Target> parseTargets(JsonObject requestBody) {
@@ -63,11 +68,13 @@ public class QueryRequestParser {
     }
 
     private long parseDate(JsonObject requestBody, String pointer) {
+        LOGGER.debug("trying to parse pointer {}", pointer);
         JsonPointer jsonPointer = JsonPointer.from(pointer);
         Object fromObj = jsonPointer.queryJson(requestBody);
         if (fromObj instanceof String) {
+            String fromStr = (String) fromObj;
             try {
-                return dateFormat.parse((String) fromObj).getTime();
+                return dateFormat.parse(fromStr).getTime();
             } catch (ParseException e) {
                 throw new IllegalArgumentException(
                         String.format("'%s' json pointer value '%s' could not be parsed as a valid date !",
@@ -81,6 +88,10 @@ public class QueryRequestParser {
 
     private String parseFormat(JsonObject requestBody) {
         return requestBody.getString("format");
+    }
+
+    private String parseRequestId(JsonObject requestBody) {
+        return requestBody.getString("requestId");
     }
 
     private int parseMaxDataPoints(JsonObject requestBody) {

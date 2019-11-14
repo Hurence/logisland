@@ -5,6 +5,7 @@ import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.HistorianFields;
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
+import com.hurence.webapiservice.http.grafana.modele.QueryRequestParam;
 import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.GrafanaTimeSeriesModeler;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
@@ -27,7 +28,6 @@ public class GrafanaApiImpl implements GrafanaApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GrafanaApiImpl.class);
     private HistorianService service;
-    private static final QueryRequestParser queryRequestParser = new QueryRequestParser();
 
     public final static String ALGO_TAG_KEY = "Algo";
     public final static String BUCKET_SIZE_TAG_KEY = "Bucket size";
@@ -66,10 +66,15 @@ public class GrafanaApiImpl implements GrafanaApi {
 
     @Override
     public void query(RoutingContext context) {
-        final TimeSeriesRequest request;
+        final long startRequest = System.currentTimeMillis();
+        final QueryRequestParam request;
         try {
             JsonObject requestBody = context.getBodyAsJson();
-            request = queryRequestParser.parseRequest(requestBody);
+            /*
+                When declaring QueryRequestParser as a static variable, There is a problem parsing parallel requests
+                at initialization (did not successfully reproduced this in a unit test).//TODO
+             */
+            request = new QueryRequestParser().parseRequest(requestBody);
         } catch (Exception ex) {
             LOGGER.error("error parsing request", ex);
             context.response().setStatusCode(BAD_REQUEST);
@@ -84,9 +89,12 @@ public class GrafanaApiImpl implements GrafanaApi {
         service
                 .rxGetTimeSeries(getTimeSeriesChunkParams)
                 .map(sampledTimeSeries -> {
-                    long totalSampledPoint = sampledTimeSeries.getLong(RESPONSE_TOTAL_FOUND, 0L);
+//                    LOGGER.trace("response from rxGetTimeSeries : {}", sampledTimeSeries.encodePrettily());
                     JsonArray timeseries = sampledTimeSeries.getJsonArray(TIMESERIES_RESPONSE_FIELD);
-                    LOGGER.debug("sampled a total of {} points", totalSampledPoint);
+                    LOGGER.debug("responding with {} points to client request with id {} and path {} in {} ms",
+                            sampledTimeSeries.getLong(TOTAL_POINTS_RESPONSE_FIELD, 0L),
+                            request.getRequestId() ,context.normalisedPath(),
+                            System.currentTimeMillis() - startRequest);
                     return timeseries;
                 })
                 .doOnError(ex -> {

@@ -61,6 +61,8 @@ public class TimeSeriesExtracterImpl implements TimeSeriesExtracter {
     }
 
     protected void samplePointsInBufferThenReset() {
+        LOGGER.trace("sample points in buffer has been called with chunks : {}",
+                chunks.stream().map(JsonObject::encodePrettily).collect(Collectors.joining("\n")));
         Stream<Point> extractedPoints = TimeSeriesExtracterUtil.extractPointsAsStream(from, to, chunks);
         Stream<Point> sortedPoints = extractedPoints//TODO is sorting really necessary ?
                 .sorted(Comparator.comparing(Point::getTimestamp));

@@ -11,4 +11,6 @@ public interface JsonStream extends Closeable, Serializable {
     void open() throws IOException;
 
     JsonObject read() throws IOException;
+
+    long getNumberOfDocRead();
 }

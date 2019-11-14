@@ -9,6 +9,7 @@ import java.io.IOException;
 public class JsonStreamSolrStreamImpl implements JsonStream {
 
     private TupleStream stream;
+    private long counter = 0L;
 
     public JsonStreamSolrStreamImpl(TupleStream stream) {
         this.stream = stream;
@@ -22,7 +23,13 @@ public class JsonStreamSolrStreamImpl implements JsonStream {
     @Override
     public JsonObject read() throws IOException {
         Tuple tuple = stream.read();
+        counter++;
         return toJson(tuple);
+    }
+
+    @Override
+    public long getNumberOfDocRead() {
+        return counter;
     }
 
     private JsonObject toJson(Tuple tuple) {

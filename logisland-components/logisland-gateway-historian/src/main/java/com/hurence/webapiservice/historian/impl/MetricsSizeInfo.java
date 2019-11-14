@@ -12,4 +12,6 @@ public interface MetricsSizeInfo {
 
     public long getTotalNumberOfChunks();
 
+    boolean isEmpty();
 }
+

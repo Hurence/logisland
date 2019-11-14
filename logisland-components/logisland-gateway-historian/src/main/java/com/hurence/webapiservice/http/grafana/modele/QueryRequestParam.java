@@ -12,12 +12,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class QueryRequestParam implements TimeSeriesRequest {
+
+    public static final int DEFAULT_BUCKET_SIZE = 1000;
+    public static final SamplingAlgorithm DEFAULT_SAMPLING_ALGORITHM = SamplingAlgorithm.NONE;
+
     private List<Target> targets;
     private long from;
     private long to;
     private String format;
     private int maxDataPoints;
     private List<AdHocFilter> adHocFilters;
+    private String requestId;
 
     private QueryRequestParam() { }
 
@@ -70,6 +75,14 @@ public class QueryRequestParam implements TimeSeriesRequest {
         this.adHocFilters = adHocFilters;
     }
 
+    public String getRequestId() {
+        return requestId;
+    }
+
+    private void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
     public List<AGG> getAggs() {
         return Collections.emptyList();
     }
@@ -80,10 +93,10 @@ public class QueryRequestParam implements TimeSeriesRequest {
             Optional<Integer> bucketSize = getBucketSizeFromFilter();
             return new SamplingConf(
                     algo.orElse(SamplingAlgorithm.AVERAGE),
-                    bucketSize.orElse(1000),
+                    bucketSize.orElse(DEFAULT_BUCKET_SIZE),
                     getMaxDataPoints());
         } else {
-            return new SamplingConf(SamplingAlgorithm.NONE, 1000, getMaxDataPoints());
+            return new SamplingConf(DEFAULT_SAMPLING_ALGORITHM, DEFAULT_BUCKET_SIZE, getMaxDataPoints());
         }
     }
 
@@ -137,6 +150,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
         private String format;
         private int maxDataPoints;
         private List<AdHocFilter> adHocFilters;
+        private String requestId;
 
         public Builder() { }
 
@@ -170,6 +184,11 @@ public class QueryRequestParam implements TimeSeriesRequest {
             return this;
         }
 
+        public Builder withId(String requestId) {
+            this.requestId = requestId;
+            return this;
+        }
+
         public QueryRequestParam build() {
             QueryRequestParam getTimeSerieRequestParam = new QueryRequestParam();
             getTimeSerieRequestParam.setTargets(targets);
@@ -178,6 +197,7 @@ public class QueryRequestParam implements TimeSeriesRequest {
             getTimeSerieRequestParam.setFormat(format);
             getTimeSerieRequestParam.setMaxDataPoints(maxDataPoints);
             getTimeSerieRequestParam.setAdHocFilters(adHocFilters);
+            getTimeSerieRequestParam.setRequestId(requestId);
             return getTimeSerieRequestParam;
         }
     }
