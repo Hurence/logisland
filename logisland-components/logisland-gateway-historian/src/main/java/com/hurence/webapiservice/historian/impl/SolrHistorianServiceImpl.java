@@ -280,8 +280,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
                     }
                 } else if (metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks) {
                     LOGGER.debug("QUERY MODE 2: metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks");
-                    SamplingConf samplingConf = getSamplingConf(myParams);
-                    Set<SamplingAlgorithm> samplingAlgos = determineSamplingAlgoThatWillBeUsed(samplingConf, metricsInfo);
+                    SamplingConf requestedSamplingConf = getSamplingConf(myParams);
+                    Set<SamplingAlgorithm> samplingAlgos = determineSamplingAlgoThatWillBeUsed(requestedSamplingConf, metricsInfo);
                     addNecessaryFieldToQuery(query, samplingAlgos);
                     final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
                     try (JsonStream stream = queryStream(query)) {
@@ -357,7 +357,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
                     return algo;
                 }).collect(Collectors.toSet());
     }
-
+    //TODO from, to and SamplingConf as parameter. So calcul SampligConf before this method not in MultiTimeSeriesExtractorUsingPreAgg
     private MultiTimeSeriesExtracter createTimeSerieExtractorUsingChunks(JsonObject params, MetricsSizeInfo metricsInfo) {
         long from = params.getLong(FROM_REQUEST_FIELD);
         long to = params.getLong(TO_REQUEST_FIELD);

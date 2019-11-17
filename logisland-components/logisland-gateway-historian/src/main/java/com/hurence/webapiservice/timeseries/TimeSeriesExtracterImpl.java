@@ -49,9 +49,13 @@ public class TimeSeriesExtracterImpl implements TimeSeriesExtracter {
         totalChunkCounter++;
         pointCounter+=chunk.getLong(HistorianFields.RESPONSE_CHUNK_SIZE_FIELD);
         chunks.add(chunk);
-        if (pointCounter >= samplingConf.getBucketSize()) {
+        if (isBufferFull()) {
             samplePointsInBufferThenReset();
         }
+    }
+
+    public boolean isBufferFull() {
+        return pointCounter >= samplingConf.getBucketSize();
     }
 
     @Override

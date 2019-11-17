@@ -23,28 +23,14 @@ public class BucketUtils {
         long totalNumberOfPointLong = totalNumberOfPoint;
         return calculBucketSize(totalNumberOfPointLong, maxPoint);
     }
-    //TODO optimize this
+
     public static int calculBucketSize(long totalNumberOfPoint, int maxPoint) {
-        LOGGER.debug("total point {}", totalNumberOfPoint);
-        LOGGER.debug("max point {}", maxPoint);
-        int bucketSize = BigDecimal.valueOf(totalNumberOfPoint).divide(BigDecimal.valueOf(maxPoint), RoundingMode.CEILING).intValue();
-        LOGGER.debug("first try {}", bucketSize);
-        while (!testBucketSize(totalNumberOfPoint, bucketSize)) {
-            bucketSize++;
-        }
-        LOGGER.debug("found {}", bucketSize);
-        long numberofPoint = totalNumberOfPoint / bucketSize;
-        LOGGER.debug("numberofPoint {}", numberofPoint);
-        LOGGER.debug("----------------");
-        return bucketSize;
-    }
-
-
-    private static boolean testBucketSize(long totalNumberOfPoint, int bucketSize) {
-        long remain = totalNumberOfPoint % bucketSize;
-        LOGGER.trace("--------");
-        LOGGER.trace("trying bucketSize {}", bucketSize);
-        LOGGER.trace("remain {}", remain);
-        return remain == 0;
+        BigDecimal totalNumberOfPointBigDec = BigDecimal.valueOf(totalNumberOfPoint);
+        BigDecimal maxPointBigDec = BigDecimal.valueOf(maxPoint);
+        BigDecimal mainBucketSize = totalNumberOfPointBigDec.divide(maxPointBigDec, RoundingMode.CEILING);
+        BigDecimal remainderBigDec = totalNumberOfPointBigDec.remainder(mainBucketSize);
+        LOGGER.debug("total point {}, max point {} :\n found bucket size of {} with a remain of {}",
+                totalNumberOfPoint, maxPoint, mainBucketSize, remainderBigDec);
+        return mainBucketSize.intValue();
     }
 }
