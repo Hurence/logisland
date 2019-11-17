@@ -19,17 +19,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FirstItemSampler<SAMPLED> extends AbstractFirstItemSampler<SAMPLED> implements Sampler<SAMPLED> {
+public class FirstItemSamplerWithSpecificBucketing<SAMPLED>  extends AbstractFirstItemSampler<SAMPLED> implements Sampler<SAMPLED> {
 
-    private int numBuckets;
+    private BucketingStrategy bucketingStrategy;
 
-    public FirstItemSampler(int numBuckets) {
-        this.numBuckets = numBuckets;
+    public FirstItemSamplerWithSpecificBucketing(BucketingStrategy bucketingStrategy) {
+        this.bucketingStrategy = bucketingStrategy;
     }
 
     @Override
     protected Stream<List<SAMPLED>> group(List<SAMPLED> toBeSampled) {
-        final int bucketSize = SamplingUtils.fitBucketSize(toBeSampled, numBuckets);
-        return SamplingUtils.grouped(toBeSampled, bucketSize);
+        return SamplingUtils.groupedWithStrictBucketStrategy(toBeSampled, bucketingStrategy);
     }
 }

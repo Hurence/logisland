@@ -19,17 +19,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FirstItemSampler<SAMPLED> extends AbstractFirstItemSampler<SAMPLED> implements Sampler<SAMPLED> {
+public abstract class AbstractFirstItemSampler<SAMPLED> implements Sampler<SAMPLED> {
 
-    private int numBuckets;
-
-    public FirstItemSampler(int numBuckets) {
-        this.numBuckets = numBuckets;
-    }
-
+    /**
+     * divide the points sequence into equally sized buckets
+     * and select the first point of each bucket
+     *
+     * @param toBeSampled the input list
+     * @return
+     */
     @Override
-    protected Stream<List<SAMPLED>> group(List<SAMPLED> toBeSampled) {
-        final int bucketSize = SamplingUtils.fitBucketSize(toBeSampled, numBuckets);
-        return SamplingUtils.grouped(toBeSampled, bucketSize);
+    public List<SAMPLED> sample(List<SAMPLED> toBeSampled) {
+        return group(toBeSampled)
+                .map(bucket -> bucket.get(0))
+                .collect(Collectors.toList());
     }
+
+    /**
+     * group list into buckets
+     *
+     * @param toBeSampled the input list
+     * @return
+     */
+    abstract protected Stream<List<SAMPLED>> group(List<SAMPLED> toBeSampled);
 }

@@ -17,6 +17,7 @@ package com.hurence.logisland.timeseries.sampling;
 
 import java.util.List;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 public class SamplingUtils {
@@ -44,7 +45,7 @@ public class SamplingUtils {
      * @param bucketSize
      * @return
      */
-    public static <E> Stream<List<E>> grouped(List<E> source, int bucketSize) {
+    public static <E> Stream<List<E>> grouped(List<E> source, int bucketSize) throws IllegalArgumentException {
         if (bucketSize <= 0)
             throw new IllegalArgumentException("length = " + bucketSize);
         int size = source.size();
@@ -53,6 +54,30 @@ public class SamplingUtils {
         int numberOfFullBucket = (size - 1) / bucketSize;
         return IntStream.range(0, numberOfFullBucket + 1).mapToObj(
                 n -> source.subList(n * bucketSize, n == numberOfFullBucket ? size : (n + 1) * bucketSize)
+        );
+    }
+
+    /**
+     *
+     * @param source
+     * @param bucketingStrategy
+     * @param <E>
+     * @return a stream of bucket corresponding to bucketingStrategy
+     * @throws IllegalArgumentException if size of input source does not fit in bucketingStrategy
+     */
+    public static <E> Stream<List<E>> groupedWithStrictBucketStrategy(List<E> source, BucketingStrategy bucketingStrategy) throws IllegalArgumentException {
+        int size = source.size();
+        if (bucketingStrategy.getTotalNumberOfPointSampled() != size)
+            throw new IllegalArgumentException(
+                    String.format("toBeSampled size expected to be %s but was %s",
+                            bucketingStrategy.getTotalNumberOfPointSampled(),
+                            size));
+        return LongStream.range(1, bucketingStrategy.getTotalNumberOfBucket()).mapToObj(
+                bucketNumber -> {
+                    int from = bucketingStrategy.getStartPointOfBucket(bucketNumber);
+                    int to = bucketingStrategy.getEndPointOfBucket(bucketNumber);
+                    return source.subList(from, to);
+                }
         );
     }
 
