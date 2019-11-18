@@ -21,6 +21,7 @@ public class ChunkModele {
     public double min;
     public double max;
     public double sum;
+    public double firstValue;
     public boolean trend;
     public String name;
     public String sax;
@@ -38,6 +39,7 @@ public static ChunkModele fromPoints(String metricName, List<Point> points) {
     chunk.max = chunk.points.stream().mapToDouble(Point::getValue).max().getAsDouble();
     chunk.name = metricName;
     chunk.sax = "edeebcccdf";
+    chunk.firstValue = points.get(0).getValue();
     return chunk;
 }
 
@@ -64,6 +66,7 @@ public static ChunkModele fromPoints(String metricName, List<Point> points) {
         json.put(RESPONSE_CHUNK_SIZE_BYTES_FIELD, this.compressedPoints.length);
         json.put(RESPONSE_CHUNK_SUM_FIELD, this.sum);
         json.put(RESPONSE_TAG_NAME_FIELD, this.tags);
+        json.put(RESPONSE_CHUNK_FIRST_VALUE_FIELD, this.firstValue);
         return json;
     }
 
@@ -84,6 +87,7 @@ public static ChunkModele fromPoints(String metricName, List<Point> points) {
         doc.addField(RESPONSE_CHUNK_SIZE_BYTES_FIELD, chunk.compressedPoints.length);
         doc.addField(RESPONSE_CHUNK_SUM_FIELD, chunk.sum);
         doc.addField(RESPONSE_TAG_NAME_FIELD, chunk.tags);
+        doc.addField(RESPONSE_CHUNK_FIRST_VALUE_FIELD, chunk.firstValue);
         return doc;
     }
 }

@@ -7,9 +7,7 @@ import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
 import com.hurence.webapiservice.http.grafana.modele.QueryRequestParam;
 import com.hurence.webapiservice.modele.SamplingConf;
-import com.hurence.webapiservice.timeseries.GrafanaTimeSeriesModeler;
-import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
-import com.hurence.webapiservice.timeseries.TimeSeriesRequest;
+import com.hurence.webapiservice.timeseries.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -89,12 +87,20 @@ public class GrafanaApiImpl implements GrafanaApi {
         service
                 .rxGetTimeSeries(getTimeSeriesChunkParams)
                 .map(sampledTimeSeries -> {
-//                    LOGGER.trace("response from rxGetTimeSeries : {}", sampledTimeSeries.encodePrettily());
                     JsonArray timeseries = sampledTimeSeries.getJsonArray(TIMESERIES_RESPONSE_FIELD);
-                    LOGGER.debug("responding with {} points to client request with id {} and path {} in {} ms",
-                            sampledTimeSeries.getLong(TOTAL_POINTS_RESPONSE_FIELD, 0L),
-                            request.getRequestId() ,context.normalisedPath(),
-                            System.currentTimeMillis() - startRequest);
+                    if (LOGGER.isDebugEnabled()) {
+                        timeseries.forEach(metric -> {
+                            JsonObject el = (JsonObject) metric;
+                            String metricName = el.getString(TimeSeriesExtracterImpl.TIMESERIE_NAME);
+                            int size = el.getJsonArray(TimeSeriesExtracterImpl.TIMESERIE_POINT).size();
+                            LOGGER.debug("[REQUEST ID {}] return {} points for metric {}.",
+                                    request.getRequestId(),size, metricName);
+                        });
+                        LOGGER.debug("[REQUEST ID {}] Sampled a total of {} points in {} ms.",
+                                request.getRequestId(),
+                                sampledTimeSeries.getLong(TOTAL_POINTS_RESPONSE_FIELD, 0L),
+                                System.currentTimeMillis() - startRequest);
+                    }
                     return timeseries;
                 })
                 .doOnError(ex -> {
@@ -107,6 +113,7 @@ public class GrafanaApiImpl implements GrafanaApi {
                     context.response().setStatusCode(200);
                     context.response().putHeader("Content-Type", "application/json");
                     context.response().end(timeseries.encode());
+
                 }).subscribe();
     }
 

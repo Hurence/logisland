@@ -7,12 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.hurence.webapiservice.historian.HistorianFields.*;
 
-public class TimeSeriesExtracterUsingPreAgg extends TimeSeriesExtracterImpl {
+public class TimeSeriesExtracterUsingPreAgg extends AbstractTimeSeriesExtracter {
 
     private static Logger LOGGER = LoggerFactory.getLogger(TimeSeriesExtracterUsingPreAgg.class);
 
@@ -21,14 +23,33 @@ public class TimeSeriesExtracterUsingPreAgg extends TimeSeriesExtracterImpl {
     }
 
     @Override
-    protected void samplePointsInBufferThenReset() {
-        LOGGER.trace("sample points in buffer has been called with chunks : {}",
-                chunks.stream().map(JsonObject::encodePrettily).collect(Collectors.joining("\n")));
-        Point sampledPoint = sampleChunksIntoOneAggPoint(chunks);
-        this.sampledPoints.add(sampledPoint);
-        chunks.clear();
-        toatlPointCounter+=pointCounter;
-        pointCounter = 0;
+    protected void samplePointsFromChunks(long from, long to, List<JsonObject> chunks) {
+        List<Point> sampledPoint = extractPoints(chunks);
+        this.sampledPoints.addAll(sampledPoint);
+    }
+
+    private List<Point> extractPoints(List<JsonObject> chunks) {
+        List<List<JsonObject>> groupedChunks = groupChunks(chunks, this.samplingConf.getBucketSize());
+        return groupedChunks.stream()
+                .map(this::sampleChunksIntoOneAggPoint)
+                .sorted(Comparator.comparing(Point::getTimestamp))
+                .collect(Collectors.toList());
+    }
+
+    private List<List<JsonObject>> groupChunks(List<JsonObject> chunks, int bucketSize) {
+        List<List<JsonObject>> groupedChunks = new ArrayList<>();
+        int currentPointNumber = 0;
+        List<JsonObject> bucketOfChunks = new ArrayList<>();
+        for (JsonObject chunk: chunks) {
+            bucketOfChunks.add(chunk);
+            currentPointNumber += chunk.getInteger(RESPONSE_CHUNK_SIZE_FIELD);
+            if (currentPointNumber >= bucketSize) {
+                groupedChunks.add(bucketOfChunks);
+                bucketOfChunks = new ArrayList<>();
+                currentPointNumber = 0;
+            }
+        }
+        return groupedChunks;
     }
 
     private Point sampleChunksIntoOneAggPoint(List<JsonObject> chunks) {

@@ -35,6 +35,7 @@ public class TimeSeriesExtracterImplTest {
                 1477895624866L , 1477917224866L,
                 new SamplingConf(SamplingAlgorithm.NONE, 2, 3), 3);
         extractor.addChunk(getChunk1());
+        extractor.flush();
         Assert.assertEquals(1, extractor.chunkCount());
         Assert.assertEquals(3, extractor.pointCount());
         JsonArray expectedPoints = new JsonArray();
@@ -53,6 +54,7 @@ public class TimeSeriesExtracterImplTest {
                 1477895624866L , 1477917224866L,
                 new SamplingConf(SamplingAlgorithm.AVERAGE, 2, 3), 3);
         extractor.addChunk(getChunk1());
+        extractor.flush();
         Assert.assertEquals(1, extractor.chunkCount());
         Assert.assertEquals(3, extractor.pointCount());
         JsonArray expectedPoints = new JsonArray();

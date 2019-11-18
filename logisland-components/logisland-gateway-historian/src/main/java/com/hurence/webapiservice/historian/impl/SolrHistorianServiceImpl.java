@@ -178,6 +178,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
                 RESPONSE_METRIC_NAME_FIELD);
         //    SORT
         query.setSort(RESPONSE_CHUNK_START_FIELD, SolrQuery.ORDER.asc);
+        query.addSort(RESPONSE_CHUNK_END_FIELD, SolrQuery.ORDER.asc);
         query.setRows(params.getInteger(MAX_TOTAL_CHUNKS_TO_RETRIEVE_REQUEST_FIELD, 50000));
         return query;
     }

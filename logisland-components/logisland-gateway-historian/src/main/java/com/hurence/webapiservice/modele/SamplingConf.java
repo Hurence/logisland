@@ -24,4 +24,13 @@ public class SamplingConf {
     public int getMaxPoint() {
         return maxPoint;
     }
+
+    @Override
+    public String toString() {
+        return "SamplingConf{" +
+                "algo=" + algo +
+                ", bucketSize=" + bucketSize +
+                ", maxPoint=" + maxPoint +
+                '}';
+    }
 }
