@@ -235,80 +235,27 @@ public class SolrHistorianServiceImpl implements HistorianService {
         return this;
     }
 
+    /**
+           nombre point < LIMIT_TO_DEFINE ==> Extract points from chunk
+           nombre point >= LIMIT_TO_DEFINE && nombre de chunk < LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg)
+           nombre de chunk >= LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg),
+                                                   but should using agg on solr side (using key partition, by month, daily ? yearly ?)
+       */
     @Override
     public HistorianService getTimeSeries(JsonObject myParams, Handler<AsyncResult<JsonObject>> myResult) {
-        /*
-            nombre point < LIMIT_TO_DEFINE ==> Extract points from chunk
-            nombre point >= LIMIT_TO_DEFINE && nombre de chunk < LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg)
-            nombre de chunk >= LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg),
-                                                    but should using agg on solr side (using key partition, by month, daily ? yearly ?)
-        */
         final SolrQuery query = buildTimeSeriesChunkQuery(myParams);
         Handler<Promise<JsonObject>> getTimeSeriesHandler = p -> {
             MetricsSizeInfo metricsInfo;
             try {
-                metricsInfo = getNumberOfPointsByMetricInRequest(query);//TODO there is two query, split every one in promise
+                metricsInfo = getNumberOfPointsByMetricInRequest(query);
                 LOGGER.debug("metrics info to query : {}", metricsInfo);
                 if (metricsInfo.isEmpty()) {
-                    final MultiTimeSeriesExtracter timeSeriesExtracter =
-                            createTimeSerieExtractorSamplingAllPoints(myParams, metricsInfo);
+                    final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorSamplingAllPoints(myParams, metricsInfo);
                     p.complete(buildTimeSeriesResponse(timeSeriesExtracter));
                     return;
                 }
-                //TODO make three different group for each metrics, not use a single strategy globally for all metrics.
-                if (metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint ||
-                        metricsInfo.getTotalNumberOfPoints() <= getSamplingConf(myParams).getMaxPoint()) {
-                    LOGGER.debug("QUERY MODE 1: metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint");
-                    query.addField(RESPONSE_CHUNK_VALUE_FIELD);
-                    final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorSamplingAllPoints(myParams, metricsInfo);
-//                   binary fields can not be retrieved using stream api... So we use the search api instead
-                    //TODO Test if streaming api works if we use export endpoint ! I do no not think so
-                    // To refactor because we currently are using chunk_value which is a binary fields and is not stream api compatible...
-                    try {
-                        LOGGER.debug("solr request : {}", query.toString());
-                        final QueryResponse response = client.query(collection, query);
-                        final SolrDocumentList documents = response.getResults();
-                        List<JsonObject> chunks = documents.stream()
-                                .map(this::convertDoc)
-                                .collect(Collectors.toList());
-                        JsonObject timeseries = extractTimeSeriesThenBuildResponse(chunks, timeSeriesExtracter);
-                        p.complete(timeseries);
-                    } catch (IOException | SolrServerException e) {
-                        p.fail(e);
-                    } catch (Exception e) {
-                        LOGGER.error("unexpected exception while executing search with solr", e);
-                        p.fail(e);
-                    }
-                } else if (metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks) {
-                    LOGGER.debug("QUERY MODE 2: metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks");
-                    SamplingConf requestedSamplingConf = getSamplingConf(myParams);
-                    Set<SamplingAlgorithm> samplingAlgos = determineSamplingAlgoThatWillBeUsed(requestedSamplingConf, metricsInfo);
-                    addNecessaryFieldToQuery(query, samplingAlgos);
-                    final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
-                    try (JsonStream stream = queryStream(query)) {
-                        JsonObject timeseries = extractTimeSeriesThenBuildResponse(stream, timeSeriesExtracter);
-                        p.complete(timeseries);
-                    } catch (Exception e) {
-                        LOGGER.error("unexpected exception", e);
-                        p.fail(e);
-                    }
-                } else {
-                    LOGGER.debug("QUERY MODE 3 : else");
-                    //TODO Sample points with chunk aggs depending on alg (min, avg),
-                    // but should using agg on solr side (using key partition, by month, daily ? yearly ?)
-                    // For the moment we use the stream api without partitionning
-                    SamplingConf samplingConf = getSamplingConf(myParams);
-                    Set<SamplingAlgorithm> samplingAlgos = determineSamplingAlgoThatWillBeUsed(samplingConf, metricsInfo);
-                    addNecessaryFieldToQuery(query, samplingAlgos);
-                    final MultiTimeSeriesExtracter timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
-                    try (JsonStream stream = queryStream(query)) {
-                        JsonObject timeseries = extractTimeSeriesThenBuildResponse(stream, timeSeriesExtracter);
-                        p.complete(timeseries);
-                    } catch (Exception e) {
-                        LOGGER.error("unexpected exception", e);
-                        p.fail(e);
-                    }
-                }
+                final MultiTimeSeriesExtracter timeSeriesExtracter = getMultiTimeSeriesExtracter(myParams, query, metricsInfo);
+                requestSolrAndbuildTimeSeries(query, p, timeSeriesExtracter);
             } catch (IOException e) {
                 LOGGER.error("unexpected exception", e);
                 p.fail(e);
@@ -316,6 +263,45 @@ public class SolrHistorianServiceImpl implements HistorianService {
         };
         vertx.executeBlocking(getTimeSeriesHandler, myResult);
         return this;
+    }
+
+    public MultiTimeSeriesExtracter getMultiTimeSeriesExtracter(JsonObject myParams, SolrQuery query, MetricsSizeInfo metricsInfo) {
+        //TODO make three different group for each metrics, not use a single strategy globally for all metrics.
+        final MultiTimeSeriesExtracter timeSeriesExtracter;
+        if (metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint ||
+                metricsInfo.getTotalNumberOfPoints() <= getSamplingConf(myParams).getMaxPoint()) {
+            LOGGER.debug("QUERY MODE 1: metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint");
+            query.addField(RESPONSE_CHUNK_VALUE_FIELD);
+            timeSeriesExtracter = createTimeSerieExtractorSamplingAllPoints(myParams, metricsInfo);
+        } else if (metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks) {
+            LOGGER.debug("QUERY MODE 2: metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks");
+            addFieldsThatWillBeNeededBySamplingAlgorithms(myParams, query, metricsInfo);
+            timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
+        } else {
+            LOGGER.debug("QUERY MODE 3 : else");
+            //TODO Sample points with chunk aggs depending on alg (min, avg),
+            // but should using agg on solr side (using key partition, by month, daily ? yearly ?)
+            // For the moment we use the stream api without partitionning
+            addFieldsThatWillBeNeededBySamplingAlgorithms(myParams, query, metricsInfo);
+            timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
+        }
+        return timeSeriesExtracter;
+    }
+
+    public void requestSolrAndbuildTimeSeries(SolrQuery query, Promise<JsonObject> p, MultiTimeSeriesExtracter timeSeriesExtracter) {
+        try (JsonStream stream = queryStream(query)) {
+            JsonObject timeseries = extractTimeSeriesThenBuildResponse(stream, timeSeriesExtracter);
+            p.complete(timeseries);
+        } catch (Exception e) {
+            LOGGER.error("unexpected exception", e);
+            p.fail(e);
+        }
+    }
+
+    public void addFieldsThatWillBeNeededBySamplingAlgorithms(JsonObject myParams, SolrQuery query, MetricsSizeInfo metricsInfo) {
+        SamplingConf requestedSamplingConf = getSamplingConf(myParams);
+        Set<SamplingAlgorithm> samplingAlgos = determineSamplingAlgoThatWillBeUsed(requestedSamplingConf, metricsInfo);
+        addNecessaryFieldToQuery(query, samplingAlgos);
     }
 
     private void addNecessaryFieldToQuery(SolrQuery query, Set<SamplingAlgorithm> samplingAlgos) {
@@ -367,7 +353,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         fillingExtractorWithMetricsSizeInfo(timeSeriesExtracter, metricsInfo);
         return timeSeriesExtracter;
     }
-
+    //TODO from, to and SamplingConf as parameter. So calcul SampligConf before this method not in MultiTimeSeriesExtracterImpl
     private MultiTimeSeriesExtracter createTimeSerieExtractorSamplingAllPoints(JsonObject params, MetricsSizeInfo metricsInfo) {
         long from = params.getLong(FROM_REQUEST_FIELD);
         long to = params.getLong(TO_REQUEST_FIELD);
