@@ -220,6 +220,7 @@ public class GrafanaApiImpl implements GrafanaApi {
                 .add(new JsonObject().put("text", SamplingAlgorithm.NONE))
                 .add(new JsonObject().put("text", SamplingAlgorithm.AVERAGE))
                 .add(new JsonObject().put("text", SamplingAlgorithm.FIRST_ITEM))
-                .add(new JsonObject().put("text", SamplingAlgorithm.MIN_MAX));
+                .add(new JsonObject().put("text", SamplingAlgorithm.MIN))
+                .add(new JsonObject().put("text", SamplingAlgorithm.MAX));
     }
 }
