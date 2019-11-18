@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,6 +83,13 @@ public abstract class AbstractTimeSeriesExtracter implements TimeSeriesExtracter
     @Override
     public JsonObject getTimeSeries() {
         List<JsonArray> points = sampledPoints.stream()
+                /*
+                * Here we have to sort sampled points in case some chunks are intersecting.
+                * The best would be to repare the chunk though. A mechanism that would track those chunks and rebuild them
+                * may be the best solution I think. The requesting code here should suppose chunks are not intersecting.
+                * We sort just so that user can not realize there is a problem in chunks.
+                */
+                .sorted(Comparator.comparing(Point::getTimestamp))
                 .map(p -> new JsonArray().add(p.getValue()).add(p.getTimestamp()))
                 .collect(Collectors.toList());
         JsonObject toReturn = new JsonObject()
