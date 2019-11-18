@@ -54,7 +54,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         LOGGER.debug("streamEndPoint : {}", solrHistorianConf.streamEndPoint);
         LOGGER.debug("limitNumberOfPoint : {}", solrHistorianConf.limitNumberOfPoint);
         LOGGER.debug("limitNumberOfChunks : {}", solrHistorianConf.limitNumberOfChunks);
-        Handler<Promise<Integer>> colPinghandler = createPingHandler(6000, 3);
+        Handler<Promise<Integer>> colPinghandler = createPingHandler(solrHistorianConf.sleepDurationBetweenTry, solrHistorianConf.numberOfRetryToConnect);
         Handler<AsyncResult<Integer>> statusHandler = h -> {
             if (h.succeeded()) {
                 if (h.result() == 0) {
