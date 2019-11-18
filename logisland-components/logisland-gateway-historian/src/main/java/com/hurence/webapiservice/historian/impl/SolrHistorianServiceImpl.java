@@ -338,8 +338,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
     private MultiTimeSeriesExtracter createTimeSerieExtractorUsingChunks(JsonObject params, MetricsSizeInfo metricsInfo) {
         long from = params.getLong(FROM_REQUEST_FIELD);
         long to = params.getLong(TO_REQUEST_FIELD);
-        SamplingConf samplingConf = getSamplingConf(params);
-        MultiTimeSeriesExtractorUsingPreAgg timeSeriesExtracter = new MultiTimeSeriesExtractorUsingPreAgg(from, to, samplingConf);
+        SamplingConf requestedSamplingConf = getSamplingConf(params);
+        MultiTimeSeriesExtractorUsingPreAgg timeSeriesExtracter = new MultiTimeSeriesExtractorUsingPreAgg(from, to, requestedSamplingConf);
         fillingExtractorWithMetricsSizeInfo(timeSeriesExtracter, metricsInfo);
         return timeSeriesExtracter;
     }
@@ -347,8 +347,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
     private MultiTimeSeriesExtracter createTimeSerieExtractorSamplingAllPoints(JsonObject params, MetricsSizeInfo metricsInfo) {
         long from = params.getLong(FROM_REQUEST_FIELD);
         long to = params.getLong(TO_REQUEST_FIELD);
-        SamplingConf samplingConf = getSamplingConf(params);
-        MultiTimeSeriesExtracterImpl timeSeriesExtracter = new MultiTimeSeriesExtracterImpl(from, to, samplingConf);
+        SamplingConf requestedSamplingConf = getSamplingConf(params);
+        MultiTimeSeriesExtracterImpl timeSeriesExtracter = new MultiTimeSeriesExtracterImpl(from, to, requestedSamplingConf);
         fillingExtractorWithMetricsSizeInfo(timeSeriesExtracter, metricsInfo);
         return timeSeriesExtracter;
     }
