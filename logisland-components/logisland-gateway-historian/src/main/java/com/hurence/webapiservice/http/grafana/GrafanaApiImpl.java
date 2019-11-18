@@ -183,10 +183,10 @@ public class GrafanaApiImpl implements GrafanaApi {
             case BUCKET_SIZE_TAG_KEY:
                 //TODO verify how to handle integer type
                 response = new JsonArray()
-                        .add(new JsonObject().put("int", "50"))
-                        .add(new JsonObject().put("int", "100"))
-                        .add(new JsonObject().put("int", "250"))
-                        .add(new JsonObject().put("int", "500"));
+                        .add(new JsonObject().put("text", "50"))
+                        .add(new JsonObject().put("text", "100"))
+                        .add(new JsonObject().put("text", "250"))
+                        .add(new JsonObject().put("text", "500"));
                 break;
             case FILTER_TAG_KEY:
                 response = new JsonArray()

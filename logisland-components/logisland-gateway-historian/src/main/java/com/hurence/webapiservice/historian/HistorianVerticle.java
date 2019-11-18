@@ -17,6 +17,7 @@
 
 package com.hurence.webapiservice.historian;
 
+import com.hurence.webapiservice.historian.impl.SolrHistorianConf;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -52,6 +53,8 @@ public class HistorianVerticle extends AbstractVerticle {
   public static final String CONFIG_SOLR_SOCKET_TIMEOUT = "socket_timeout";
   public static final String CONFIG_SOLR_COLLECTION = "collection";
   public static final String CONFIG_SOLR_STREAM_ENDPOINT = "stream_url";
+  public static final String CONFIG_SOLR_SLEEP_BETWEEEN_TRY = "sleep_milli_between_connection_attempt";
+  public static final String CONFIG_SOLR_NUMBER_CONNECTION_ATTEMPT = "number_of_connection_attempt";
 
   private SolrClient client;
 
@@ -68,6 +71,8 @@ public class HistorianVerticle extends AbstractVerticle {
     final int socketTimeout = slrConfig.getInteger(CONFIG_SOLR_SOCKET_TIMEOUT, 60000);
     final boolean useZookeeper = slrConfig.getBoolean(CONFIG_SOLR_USE_ZOOKEEPER, false);
     final String collection = slrConfig.getString(CONFIG_SOLR_COLLECTION, "historian");
+
+
     if (!slrConfig.containsKey(CONFIG_SOLR_STREAM_ENDPOINT))
       throw new IllegalArgumentException(String.format("key %s is needed in solr config of historian verticle conf.",
               CONFIG_SOLR_STREAM_ENDPOINT));
@@ -94,10 +99,16 @@ public class HistorianVerticle extends AbstractVerticle {
             .withSocketTimeout(socketTimeout)
             .build();
 
+    SolrHistorianConf historianConf = new SolrHistorianConf();
+    historianConf.client = client;
+    historianConf.collection = collection;
+    historianConf.streamEndPoint = streamEndpoint;
+    historianConf.limitNumberOfPoint = limitNumberOfPoint;
+    historianConf.limitNumberOfChunks = limitNumberOfChunks;
+    historianConf.sleepDurationBetweenTry = slrConfig.getLong(CONFIG_SOLR_SLEEP_BETWEEEN_TRY, 10000L);;
+    historianConf.numberOfRetryToConnect = slrConfig.getInteger(CONFIG_SOLR_NUMBER_CONNECTION_ATTEMPT, 3);;
 
-    HistorianService.create(vertx, client,
-            collection, streamEndpoint,
-            limitNumberOfPoint, limitNumberOfChunks, ready -> {
+    HistorianService.create(vertx, historianConf, ready -> {
       if (ready.succeeded()) {
         ServiceBinder binder = new ServiceBinder(vertx);
         binder.setAddress(address)

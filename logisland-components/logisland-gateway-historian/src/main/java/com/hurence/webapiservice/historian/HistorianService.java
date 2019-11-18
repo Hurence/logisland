@@ -1,5 +1,6 @@
 package com.hurence.webapiservice.historian;
 
+import com.hurence.webapiservice.historian.impl.SolrHistorianConf;
 import com.hurence.webapiservice.historian.impl.SolrHistorianServiceImpl;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -21,12 +22,9 @@ public interface HistorianService {
 
 
     @GenIgnore
-    static HistorianService create(Vertx vertx, SolrClient client,
-                                   String collection, String streamEndPoint,
-                                   long limitNumberOfPoint, long limitNumberOfChunks,
+    static HistorianService create(Vertx vertx, SolrHistorianConf historianConf,
                                    Handler<AsyncResult<HistorianService>> readyHandler) {
-        return new SolrHistorianServiceImpl(vertx, client,
-                collection, streamEndPoint, limitNumberOfPoint, limitNumberOfChunks, readyHandler);
+        return new SolrHistorianServiceImpl(vertx, historianConf, readyHandler);
     }
 
     @GenIgnore

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -70,7 +71,7 @@ public class TimeSeriesExtracterUsingPreAgg extends AbstractTimeSeriesExtracter 
                         .mapToLong(chunk -> chunk.getLong(RESPONSE_CHUNK_SIZE_FIELD))
                         .sum();
                 aggValue = BigDecimal.valueOf(sum)
-                        .divide(BigDecimal.valueOf(numberOfPoint))
+                        .divide(BigDecimal.valueOf(numberOfPoint), 3, RoundingMode.HALF_UP)
                         .doubleValue();
                 break;
             case FIRST_ITEM:

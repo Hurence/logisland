@@ -42,28 +42,18 @@ public class SolrHistorianServiceImpl implements HistorianService {
 
     private static Logger LOGGER = LoggerFactory.getLogger(SolrHistorianServiceImpl.class);
 
-    private final SolrClient client;
     private final Vertx vertx;
-    private final String collection;
-    private final String streamEndPoint;
-    private final long limitNumberOfPoint;
-    private final long limitNumberOfChunks;
+    private final SolrHistorianConf solrHistorianConf;
 
-    public SolrHistorianServiceImpl(Vertx vertx, SolrClient client,
-                                    String collection, String baseUrl,
-                                    long limitNumberOfPoint, long limitNumberOfChunks,
+    public SolrHistorianServiceImpl(Vertx vertx, SolrHistorianConf solrHistorianConf,
                                     Handler<AsyncResult<HistorianService>> readyHandler) {
-        this.client = client;
         this.vertx = vertx;
-        this.collection = collection;
-        this.streamEndPoint = baseUrl;
-        this.limitNumberOfPoint = limitNumberOfPoint;
-        this.limitNumberOfChunks = limitNumberOfChunks;
+        this.solrHistorianConf = solrHistorianConf;
         LOGGER.debug("SolrHistorianServiceImpl with params:");
-        LOGGER.debug("collection : {}", collection);
-        LOGGER.debug("streamEndPoint : {}", baseUrl);
-        LOGGER.debug("limitNumberOfPoint : {}", limitNumberOfPoint);
-        LOGGER.debug("limitNumberOfChunks : {}", limitNumberOfChunks);
+        LOGGER.debug("collection : {}", solrHistorianConf.collection);
+        LOGGER.debug("streamEndPoint : {}", solrHistorianConf.streamEndPoint);
+        LOGGER.debug("limitNumberOfPoint : {}", solrHistorianConf.limitNumberOfPoint);
+        LOGGER.debug("limitNumberOfChunks : {}", solrHistorianConf.limitNumberOfChunks);
         Handler<Promise<Integer>> colPinghandler = createPingHandler(6000, 3);
         Handler<AsyncResult<Integer>> statusHandler = h -> {
             if (h.succeeded()) {
@@ -97,8 +87,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
 
     private Integer pingSolrServer(long sleepDurationMilli, int numberOfRetry) throws IOException, SolrServerException {
         try {
-            final SolrRequest request = CollectionAdminRequest.collectionStatus(collection);
-            final NamedList<Object> rsp = client.request(request);
+            final SolrRequest request = CollectionAdminRequest.collectionStatus(solrHistorianConf.collection);
+            final NamedList<Object> rsp = solrHistorianConf.client.request(request);
             final NamedList<Object> responseHeader = (NamedList<Object>) rsp.get("responseHeader");
             int status = (int) responseHeader.get("status");
             return status;
@@ -128,7 +118,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         //  EXECUTE REQUEST
         Handler<Promise<JsonObject>> getTimeSeriesHandler = p -> {
             try {
-                final QueryResponse response = client.query(collection, query);
+                final QueryResponse response = solrHistorianConf.client.query(solrHistorianConf.collection, query);
                 final SolrDocumentList documents = response.getResults();
                 LOGGER.debug("Found " + documents.getNumFound() + " documents");
                 JsonArray docs = new JsonArray(documents.stream()
@@ -208,7 +198,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         //  EXECUTE REQUEST
         Handler<Promise<JsonObject>> getMetricsNameHandler = p -> {
             try {
-                final QueryResponse response = client.query(collection, query);
+                final QueryResponse response = solrHistorianConf.client.query(solrHistorianConf.collection, query);
                 FacetField facetField = response.getFacetField(RESPONSE_METRIC_NAME_FIELD);
                 FacetField.Count count = facetField.getValues().get(0);
                 count.getCount();
@@ -268,12 +258,12 @@ public class SolrHistorianServiceImpl implements HistorianService {
     public MultiTimeSeriesExtracter getMultiTimeSeriesExtracter(JsonObject myParams, SolrQuery query, MetricsSizeInfo metricsInfo) {
         //TODO make three different group for each metrics, not use a single strategy globally for all metrics.
         final MultiTimeSeriesExtracter timeSeriesExtracter;
-        if (metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint ||
+        if (metricsInfo.getTotalNumberOfPoints() < solrHistorianConf.limitNumberOfPoint ||
                 metricsInfo.getTotalNumberOfPoints() <= getSamplingConf(myParams).getMaxPoint()) {
             LOGGER.debug("QUERY MODE 1: metricsInfo.getTotalNumberOfPoints() < limitNumberOfPoint");
             query.addField(RESPONSE_CHUNK_VALUE_FIELD);
             timeSeriesExtracter = createTimeSerieExtractorSamplingAllPoints(myParams, metricsInfo);
-        } else if (metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks) {
+        } else if (metricsInfo.getTotalNumberOfChunks() < solrHistorianConf.limitNumberOfChunks) {
             LOGGER.debug("QUERY MODE 2: metricsInfo.getTotalNumberOfChunks() < limitNumberOfChunks");
             addFieldsThatWillBeNeededBySamplingAlgorithms(myParams, query, metricsInfo);
             timeSeriesExtracter = createTimeSerieExtractorUsingChunks(myParams, metricsInfo);
@@ -403,7 +393,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
     }
 
     private JsonStream queryStream(SolrQuery query) {
-        StringBuilder exprBuilder = new StringBuilder("search(").append(collection).append(",")
+        StringBuilder exprBuilder = new StringBuilder("search(").append(solrHistorianConf.collection).append(",")
                 .append("q=\"").append(query.getQuery()).append("\",");
         if (query.getFilterQueries() != null) {
             for (String filterQuery: query.getFilterQueries()) {
@@ -421,7 +411,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         paramsLoc.set("qt", "/stream");
         LOGGER.debug("queryStream params : {}", paramsLoc);
 
-        TupleStream solrStream = new SolrStream(streamEndPoint, paramsLoc);
+        TupleStream solrStream = new SolrStream(solrHistorianConf.streamEndPoint, paramsLoc);
         StreamContext context = new StreamContext();
         solrStream.setStreamContext(context);
         return new JsonStreamSolrStreamImpl(solrStream);
@@ -460,7 +450,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
     private MetricsSizeInfo getNumberOfPointsByMetricInRequest(SolrQuery query) throws IOException {//TODO better handling of exception
 //        String cexpr = "rollup(search(historian, q=\"*:*\", fl=\"chunk_size, name\", qt=\"/export\", sort=\"name asc\"),\n" +
 //                "\t\t\t\t over=\"name\", sum(chunk_size))";
-        StringBuilder exprBuilder = new StringBuilder("rollup(search(").append(collection)
+        StringBuilder exprBuilder = new StringBuilder("rollup(search(").append(solrHistorianConf.collection)
                 .append(",q=\"").append(query.getQuery()).append("\"");
         if (query.getFilterQueries() != null) {
             for (String filterQuery: query.getFilterQueries()) {
@@ -476,7 +466,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         ModifiableSolrParams paramsLoc = new ModifiableSolrParams();
         paramsLoc.set("expr", exprBuilder.toString());
         paramsLoc.set("qt", "/stream");
-        TupleStream solrStream = new SolrStream(streamEndPoint, paramsLoc);
+        TupleStream solrStream = new SolrStream(solrHistorianConf.streamEndPoint, paramsLoc);
         StreamContext context = new StreamContext();
         solrStream.setStreamContext(context);
         solrStream.open();
