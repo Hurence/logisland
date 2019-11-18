@@ -6,6 +6,7 @@ import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMe
 import io.vertx.core.json.JsonObject;
 import org.apache.solr.common.SolrInputDocument;
 
+import java.util.Base64;
 import java.util.List;
 
 import static com.hurence.webapiservice.historian.HistorianFields.*;
@@ -70,24 +71,25 @@ public static ChunkModele fromPoints(String metricName, List<Point> points) {
         return json;
     }
 
-    private SolrInputDocument buildSolrDocument(ChunkModele chunk, String id) {
+    public SolrInputDocument buildSolrDocument(String id) {
         final SolrInputDocument doc = new SolrInputDocument();
         doc.addField(RESPONSE_CHUNK_ID_FIELD, id);
-        doc.addField(RESPONSE_CHUNK_START_FIELD, chunk.start);
-        doc.addField(RESPONSE_CHUNK_SIZE_FIELD, chunk.points.size());
-        doc.addField(RESPONSE_CHUNK_END_FIELD, chunk.end);
-        doc.addField(RESPONSE_CHUNK_SAX_FIELD, chunk.sax);
-        doc.addField(RESPONSE_CHUNK_VALUE_FIELD, chunk.compressedPoints);
-        doc.addField(RESPONSE_CHUNK_AVG_FIELD, chunk.avg);
-        doc.addField(RESPONSE_CHUNK_MIN_FIELD, chunk.min);
+        doc.addField(RESPONSE_CHUNK_START_FIELD, this.start);
+        doc.addField(RESPONSE_CHUNK_SIZE_FIELD, this.points.size());
+        doc.addField(RESPONSE_CHUNK_END_FIELD, this.end);
+        doc.addField(RESPONSE_CHUNK_SAX_FIELD, this.sax);
+//        doc.addField(RESPONSE_CHUNK_VALUE_FIELD, this.compressedPoints);
+        doc.addField(RESPONSE_CHUNK_VALUE_FIELD, Base64.getEncoder().encodeToString(this.compressedPoints));
+        doc.addField(RESPONSE_CHUNK_AVG_FIELD, this.avg);
+        doc.addField(RESPONSE_CHUNK_MIN_FIELD, this.min);
         doc.addField(RESPONSE_CHUNK_WINDOW_MS_FIELD, 11855);
-        doc.addField(RESPONSE_METRIC_NAME_FIELD, chunk.name);
-        doc.addField(RESPONSE_CHUNK_TREND_FIELD, chunk.trend);
-        doc.addField(RESPONSE_CHUNK_MAX_FIELD, chunk.max);
-        doc.addField(RESPONSE_CHUNK_SIZE_BYTES_FIELD, chunk.compressedPoints.length);
-        doc.addField(RESPONSE_CHUNK_SUM_FIELD, chunk.sum);
-        doc.addField(RESPONSE_TAG_NAME_FIELD, chunk.tags);
-        doc.addField(RESPONSE_CHUNK_FIRST_VALUE_FIELD, chunk.firstValue);
+        doc.addField(RESPONSE_METRIC_NAME_FIELD, this.name);
+        doc.addField(RESPONSE_CHUNK_TREND_FIELD, this.trend);
+        doc.addField(RESPONSE_CHUNK_MAX_FIELD, this.max);
+        doc.addField(RESPONSE_CHUNK_SIZE_BYTES_FIELD, this.compressedPoints.length);
+        doc.addField(RESPONSE_CHUNK_SUM_FIELD, this.sum);
+        doc.addField(RESPONSE_TAG_NAME_FIELD, this.tags);
+        doc.addField(RESPONSE_CHUNK_FIRST_VALUE_FIELD, this.firstValue);
         return doc;
     }
 }

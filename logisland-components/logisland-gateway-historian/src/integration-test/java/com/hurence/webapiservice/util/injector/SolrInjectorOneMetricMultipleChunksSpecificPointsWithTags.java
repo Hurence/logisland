@@ -31,17 +31,7 @@ public class SolrInjectorOneMetricMultipleChunksSpecificPointsWithTags extends A
     }
 
     private ChunkModele buildChunk(int index) {
-        ChunkModele chunk = new ChunkModele();
-        chunk.points = pointsByChunk.get(index);
-        chunk.compressedPoints = compressPoints(chunk.points);
-        chunk.start = chunk.points.stream().mapToLong(Point::getTimestamp).min().getAsLong();
-        chunk.end = chunk.points.stream().mapToLong(Point::getTimestamp).max().getAsLong();;
-        chunk.sum = chunk.points.stream().mapToDouble(Point::getValue).sum();
-        chunk.avg = chunk.sum / chunk.points.size();
-        chunk.min = chunk.points.stream().mapToDouble(Point::getValue).min().getAsDouble();
-        chunk.max = chunk.points.stream().mapToDouble(Point::getValue).max().getAsDouble();
-        chunk.name = metricName;
-        chunk.sax = "edeebcccdf";
+        ChunkModele chunk = ChunkModele.fromPoints(metricName, pointsByChunk.get(index));
         chunk.tags = tags.get(index);
         return chunk;
     }

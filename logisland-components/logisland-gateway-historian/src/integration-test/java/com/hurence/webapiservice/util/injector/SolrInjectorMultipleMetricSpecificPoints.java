@@ -29,17 +29,6 @@ public class SolrInjectorMultipleMetricSpecificPoints extends AbstractSolrInject
     }
 
     private ChunkModele buildChunk(int index) {
-        ChunkModele chunk = new ChunkModele();
-        chunk.points = pointsByMetric.get(index);
-        chunk.compressedPoints = compressPoints(chunk.points);
-        chunk.start = chunk.points.stream().mapToLong(Point::getTimestamp).min().getAsLong();
-        chunk.end = chunk.points.stream().mapToLong(Point::getTimestamp).max().getAsLong();;
-        chunk.sum = chunk.points.stream().mapToDouble(Point::getValue).sum();
-        chunk.avg = chunk.sum / chunk.points.size();
-        chunk.min = chunk.points.stream().mapToDouble(Point::getValue).min().getAsDouble();
-        chunk.max = chunk.points.stream().mapToDouble(Point::getValue).max().getAsDouble();
-        chunk.name = metricNames.get(index);
-        chunk.sax = "edeebcccdf";
-        return chunk;
+        return ChunkModele.fromPoints(metricNames.get(index), pointsByMetric.get(index));
     }
 }

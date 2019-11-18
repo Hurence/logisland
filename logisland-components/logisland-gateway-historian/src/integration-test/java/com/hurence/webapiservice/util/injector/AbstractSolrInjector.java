@@ -49,24 +49,6 @@ public abstract class AbstractSolrInjector implements SolrInjector {
     protected abstract List<ChunkModele> buildListOfChunks();
 
     private SolrInputDocument buildSolrDocument(ChunkModele chunk, String id) {
-        final SolrInputDocument doc = new SolrInputDocument();
-        doc.addField(RESPONSE_CHUNK_ID_FIELD, id);
-        doc.addField(RESPONSE_CHUNK_START_FIELD, chunk.start);
-        doc.addField(RESPONSE_CHUNK_SIZE_FIELD, chunk.points.size());
-        doc.addField(RESPONSE_CHUNK_END_FIELD, chunk.end);
-        doc.addField(RESPONSE_CHUNK_SAX_FIELD, chunk.sax);
-        doc.addField(RESPONSE_CHUNK_VALUE_FIELD, chunk.compressedPoints);
-        doc.addField(RESPONSE_CHUNK_AVG_FIELD, chunk.avg);
-        doc.addField(RESPONSE_CHUNK_MIN_FIELD, chunk.min);
-        doc.addField(RESPONSE_CHUNK_WINDOW_MS_FIELD, 11855);
-        doc.addField(RESPONSE_METRIC_NAME_FIELD, chunk.name);
-        doc.addField(RESPONSE_CHUNK_TREND_FIELD, chunk.trend);
-        doc.addField(RESPONSE_CHUNK_MAX_FIELD, chunk.max);
-        doc.addField(RESPONSE_CHUNK_SIZE_BYTES_FIELD, chunk.compressedPoints.length);
-        doc.addField(RESPONSE_CHUNK_SUM_FIELD, chunk.sum);
-        doc.addField(RESPONSE_TAG_NAME_FIELD, chunk.tags);
-        doc.addField(RESPONSE_CHUNK_FIRST_VALUE_FIELD, chunk.points.get(0).getValue());
-
-        return doc;
+        return chunk.buildSolrDocument(id);
     }
 }
