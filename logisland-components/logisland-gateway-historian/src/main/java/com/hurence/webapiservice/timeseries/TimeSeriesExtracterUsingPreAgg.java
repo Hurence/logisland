@@ -50,6 +50,8 @@ public class TimeSeriesExtracterUsingPreAgg extends AbstractTimeSeriesExtracter 
                 currentPointNumber = 0;
             }
         }
+        if (!bucketOfChunks.isEmpty())
+            groupedChunks.add(bucketOfChunks);
         return groupedChunks;
     }
 
