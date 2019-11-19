@@ -59,6 +59,11 @@ the final package is available at `logisland-assembly/target/logisland-1.2.0-bin
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
+
+If you want to build with opencv support, please install OpenCV first and then
+
+     mvn clean package -Dopencv
+
 Quick start
 -----------
 

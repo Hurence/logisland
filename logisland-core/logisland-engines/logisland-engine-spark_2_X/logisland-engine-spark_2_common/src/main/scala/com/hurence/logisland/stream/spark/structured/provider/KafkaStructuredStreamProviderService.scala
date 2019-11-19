@@ -170,8 +170,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       .option("kafka.bootstrap.servers", brokerList)
       .option("subscribe", inputTopics.mkString(","))
       .load()
-      .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
-      .as[(String, String)]
+      .selectExpr("CAST(key AS STRING)", "CAST(value AS BINARY)")
+    //  .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
+      .as[(String, Array[Byte])]
       .map(r => {
         new StandardRecord(inputTopics.head)
           .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
@@ -251,9 +252,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
 
     // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
     df .map(r => {
-      (r.getField(FieldDictionary.RECORD_ID).asString(), r.getField(FieldDictionary.RECORD_VALUE).asString())
+      (r.getField(FieldDictionary.RECORD_ID).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
     })
-      .as[(String, String)]
+      .as[(String, Array[Byte])]
       .toDF("key","value")
       .writeStream
       .format("kafka")

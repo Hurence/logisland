@@ -2,6 +2,8 @@ FROM hurence/spark:2.3.3
 
 LABEL maintainer="support@hurence.com"
 
+COPY ./opencv4/* /usr/local/share/java/opencv4/
+
 COPY ./logisland-*.tar.gz /tmp/
 RUN cd /tmp; \
         tar -xzf logisland-*.tar.gz; \

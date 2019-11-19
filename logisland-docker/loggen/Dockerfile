@@ -68,11 +68,12 @@ ENV PYTHON_PACKAGES="\
      tzlocal==1.3.0 \
      tornado==5.1.1 \
      kafka-python \
+     Pillow \
 "
 
 RUN apk add --no-cache --virtual build-dependencies python3 \
     && apk add --virtual build-runtime \
-    build-base python3-dev openblas-dev freetype-dev pkgconfig gfortran \
+    build-base python3-dev openblas-dev freetype-dev pkgconfig gfortran jpeg-dev libjpeg \
     && ln -s /usr/include/locale.h /usr/include/xlocale.h \
     && python3 -m ensurepip \
     && rm -r /usr/lib/python*/ensurepip \
@@ -81,12 +82,13 @@ RUN apk add --no-cache --virtual build-dependencies python3 \
     && ln -sf pip3 /usr/bin/pip \
     && rm -r /root/.cache \
     && pip install --no-cache-dir $PYTHON_PACKAGES \
-    && apk del build-runtime \
+   # && apk del build-runtime \
     && apk add --no-cache --virtual build-dependencies $PACKAGES \
     && rm -rf /var/cache/apk/*
 
 RUN apk add openblas
 
 ADD loggen.py /home/loggen.py
+ADD randimg.py /home/randimg.py
 
 ENTRYPOINT ["python", "loggen.py"]

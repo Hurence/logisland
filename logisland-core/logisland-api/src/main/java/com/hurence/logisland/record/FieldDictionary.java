@@ -69,6 +69,9 @@ public class FieldDictionary {
     public static final String RECORD_POSITION_SPEED = "record_position_speed";
     public static final String RECORD_POSITION_STATUS = "record_position_status";
     public static final String RECORD_POSITION_TIMESTAMP = "record_position_timestamp";
+    public static final String IMAGE_HEIGHT = "image_height";
+    public static final String IMAGE_TYPE = "image_type";
+    public static final String IMAGE_WIDTH = "image_width";
 
     public static Boolean contains(String fieldName) {
         return asList().contains(fieldName);

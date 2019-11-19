@@ -230,7 +230,8 @@ trait StructuredStreamProviderService extends ControllerService {
       }
 
       // processor setup (don't forget that)
-      processor.init(processorContext)
+      if(!processor.isInitialized)
+        processor.init(processorContext)
 
       // do the actual processing
       processingRecords = processor.process(processorContext, processingRecords)
