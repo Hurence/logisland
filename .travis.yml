@@ -32,6 +32,7 @@ before_install:
 #  - sudo mv docker-compose /usr/local/bin
 #  # Print out the current docker-compose version.
 #  - docker-compose --version
+  - rm -rf sudo /home/travis/.m2/repository/org/apache/lucene/lucene-highlighter/6.6.2/*
 
 script:
   # Build
