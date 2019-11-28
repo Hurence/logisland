@@ -1,0 +1,5 @@
+[
+  {"type":"string","text":"Algo"},
+  {"type":"int","text":"Bucket size"},
+  {"type":"string","text":"Tag"}
+]

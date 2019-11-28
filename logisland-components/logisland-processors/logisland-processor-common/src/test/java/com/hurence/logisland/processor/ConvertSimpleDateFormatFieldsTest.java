@@ -66,7 +66,7 @@ public class ConvertSimpleDateFormatFieldsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testConvertSimpleDate1Value() {
+    public void testDate1Format1() {
 
         Record record1 = getRecord1();
         int recSizeOri=record1.size();
@@ -87,7 +87,7 @@ public class ConvertSimpleDateFormatFieldsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testConvertSimpleDate2Value() {
+    public void testDate1Format2() {
 
         Record record1 = getRecord1();
         int recSizeOri=record1.size();
@@ -108,7 +108,7 @@ public class ConvertSimpleDateFormatFieldsTest extends BaseSyslogTest {
     }
 
     @Test
-    public void testConvertSimpleDate3Value() {
+    public void testDate1Format3() {
 
         Record record1 = getRecord1();
         int recSizeOri=record1.size();

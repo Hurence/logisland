@@ -41,7 +41,7 @@ you have to copy this file into your Dockerfile directory you can now issue
 
     cd logisland-docker/full-container/
     docker build --rm -t hurence/logisland  .
-    docker tag hurence/logisland:latest hurence/logisland:1.2.0
+    docker tag hurence/logisland:latest hurence/logisland:1.2.1
 
 
 Running the image

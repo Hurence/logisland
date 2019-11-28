@@ -1,0 +1,21 @@
+version: "2.0"
+
+services:
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+
+  solr1:
+    image: solr:8.2.0
+    command: >
+      /bin/bash -c "/opt/solr/bin/solr -c -z zookeeper:2181 -m 1g; tail -f /var/solr/logs/solr.log"
+    links:
+      - zookeeper
+
+  solr2:
+    image: solr:8.2.0
+    command: >
+      /bin/bash -c "/opt/solr/bin/solr -c -f -z zookeeper:2181 -m 1g"
+    links:
+      - solr1
+      - zookeeper

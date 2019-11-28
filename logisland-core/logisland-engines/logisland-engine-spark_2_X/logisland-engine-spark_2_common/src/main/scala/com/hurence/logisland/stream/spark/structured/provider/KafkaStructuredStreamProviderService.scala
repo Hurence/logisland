@@ -161,8 +161,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     * @return DataFrame currently loaded
     */
   override def read(spark: SparkSession, streamContext: StreamContext) = {
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
     import spark.implicits._
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
     logger.info(s"starting Kafka direct stream on topics $inputTopics from $kafkaOffset offsets")
     val df = spark.readStream
@@ -175,7 +175,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       .as[(String, Array[Byte])]
       .map(r => {
         new StandardRecord(inputTopics.head)
-          .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
+          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
           .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
       })
 
@@ -252,7 +252,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
 
     // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
     df .map(r => {
-      (r.getField(FieldDictionary.RECORD_ID).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
+      (r.getField(FieldDictionary.RECORD_KEY).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
     })
       .as[(String, Array[Byte])]
       .toDF("key","value")

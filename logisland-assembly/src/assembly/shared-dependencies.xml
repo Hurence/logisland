@@ -53,6 +53,7 @@
                 <include>com.hurence.logisland:logisland-plugin-support</include>
                 <include>com.hurence.logisland:logisland-scripting-base</include>
                 <include>com.hurence.logisland:logisland-scripting-mvel</include>
+                <include>com.hurence.logisland:logisland-timeseries</include>
             </includes>
             <binaries>
                 <directoryMode>0770</directoryMode>

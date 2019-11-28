@@ -22,7 +22,6 @@ package com.hurence.logisland.serializer;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.util.runner.RecordValidator;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;

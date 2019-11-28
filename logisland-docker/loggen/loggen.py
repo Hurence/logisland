@@ -42,6 +42,7 @@ class switch(object):
 
 
 parser = argparse.ArgumentParser(__file__, description="Fake event Generator")
+
 parser.add_argument("--gen-mode", "-g", dest='gen_mode', help="Generate either a metric or a log", choices=['LOG', 'METRIC', 'IMG'], default=os.getenv('LOGGEN_MODE', "METRIC"))
 parser.add_argument("--output", "-o", dest='output_type', help="Write to a Log file, a gzip file or to STDOUT", choices=['LOG', 'GZ', 'CONSOLE', 'KAFKA'], default="KAFKA")
 parser.add_argument("--log-format", "-l", dest='log_format', help="Log format, Common or Extended Log Format ", choices=['CLF', 'ELF'], default="ELF")
