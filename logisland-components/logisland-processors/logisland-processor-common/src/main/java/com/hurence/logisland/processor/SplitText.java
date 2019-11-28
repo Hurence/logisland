@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,10 +18,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 import com.hurence.logisland.util.time.DateUtil;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
@@ -106,12 +103,12 @@ public class SplitText extends AbstractProcessor {
             .addValidator(StandardValidators.TIMEZONE_VALIDATOR)
             .build();
 
-    private class AlternativeMappingPattern{
+    private class AlternativeMappingPattern {
 
         private String[] mapping;
         private Pattern pattern;
 
-        AlternativeMappingPattern(String mapping,Pattern pattern) {
+        AlternativeMappingPattern(String mapping, Pattern pattern) {
             this.mapping = mapping.split(",");
             this.pattern = pattern;
         }
@@ -200,22 +197,21 @@ public class SplitText extends AbstractProcessor {
         final Pattern valueRegex = Pattern.compile(valueRegexString);
 
 
-
         /**
          * try to match the regexp to create an event
          */
         List<Record> outputRecords = new ArrayList<>();
         records.forEach(record -> {
             try {
-                final String key = record.getField(FieldDictionary.RECORD_KEY).asString();
-                final String value = record.getField(FieldDictionary.RECORD_VALUE).asString();
+                final Field key = record.getField(FieldDictionary.RECORD_KEY);
+                final Field value = record.getField(FieldDictionary.RECORD_VALUE);
 
                 StandardRecord outputRecord = new StandardRecord(eventType);
 
                 // match the key
-                if (key != null && !key.isEmpty()) {
+                if (key != null && key.asString() != null && !key.asString().isEmpty()){
                     try {
-                        Matcher keyMatcher = keyRegex.matcher(key);
+                        Matcher keyMatcher = keyRegex.matcher(key.asString());
                         if (keyMatcher.matches()) {
 
                             if (keepRawContent) {
@@ -250,9 +246,9 @@ public class SplitText extends AbstractProcessor {
                 }
 
                 // match the value
-                if (value != null && !value.isEmpty()) {
+                if (value != null && value.asString() != null && !value.asString().isEmpty()) {
                     try {
-                        Matcher valueMatcher = valueRegex.matcher(value);
+                        Matcher valueMatcher = valueRegex.matcher(value.asString());
                         if (valueMatcher.lookingAt()) {
                             extractValueFields(valueFields, keepRawContent, outputRecord, valueMatcher, timezone);
                         } else {
@@ -261,7 +257,7 @@ public class SplitText extends AbstractProcessor {
                                     getAlternativePatterns(context, valueRegexString);
                             boolean hasMatched = false;
                             for (AlternativeMappingPattern alternativeMatchingRegex : alternativeRegexList) {
-                                Matcher alternativeValueMatcher = alternativeMatchingRegex.getPattern().matcher(value);
+                                Matcher alternativeValueMatcher = alternativeMatchingRegex.getPattern().matcher(value.asString());
                                 if (alternativeValueMatcher.lookingAt()) {
                                     extractValueFields(
                                             alternativeMatchingRegex.getMapping(),
@@ -313,12 +309,12 @@ public class SplitText extends AbstractProcessor {
             if (!entry.getKey().isDynamic()) {
                 continue;
             }
-            if(!entry.getKey().getName().toLowerCase().contains("alt.value.fields")){
+            if (!entry.getKey().getName().toLowerCase().contains("alt.value.fields")) {
                 continue;
             }
             final String patternPropertyKey = entry.getKey().getName().toLowerCase().replace("fields", "regex");
 
-            if(context.getPropertyValue(patternPropertyKey) != null){
+            if (context.getPropertyValue(patternPropertyKey) != null) {
                 final String alternativeRegexString = context.getPropertyValue(patternPropertyKey).asString();
                 final String mapping = entry.getValue();
                 final Pattern pattern = Pattern.compile(alternativeRegexString);
@@ -353,7 +349,7 @@ public class SplitText extends AbstractProcessor {
                 try {
                     eventDate = DateUtil.parse(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString(), timezone);
                 } catch (ParseException e) {
-                    getLogger().info("issue while parsing date : {} ", new Object[]{e.toString()} );
+                    getLogger().info("issue while parsing date : {} ", new Object[]{e.toString()});
                 }
                 if (eventDate != null) {
                     outputRecord.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, eventDate.getTime());
