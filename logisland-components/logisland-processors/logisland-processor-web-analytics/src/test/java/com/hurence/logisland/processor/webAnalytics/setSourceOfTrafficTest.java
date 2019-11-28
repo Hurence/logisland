@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic.ES_INDEX_FIELD;
+import static com.hurence.logisland.processor.webAnalytics.SetSourceOfTraffic.ES_INDEX_FIELD;
 
 public class setSourceOfTrafficTest {
 
@@ -310,18 +310,18 @@ public class setSourceOfTrafficTest {
 
     private TestRunner getTestRunner() throws InitializationException {
 
-        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic");
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.webAnalytics.SetSourceOfTraffic");
 
         // create the controller service and link it to the test processor
         final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();
         runner.addControllerService("elasticsearchClient", elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
-        runner.setProperty(setSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
+        runner.setProperty(SetSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
 
         final MockCacheService<String, String> cacheService = new MockCacheService();
         runner.addControllerService("cacheService", cacheService);
         runner.enableControllerService(cacheService);
-        runner.setProperty(setSourceOfTraffic.CONFIG_CACHE_SERVICE, "cacheService");
+        runner.setProperty(SetSourceOfTraffic.CONFIG_CACHE_SERVICE, "cacheService");
 
         runner.setProperty(ES_INDEX_FIELD.getName(), "index1");
 

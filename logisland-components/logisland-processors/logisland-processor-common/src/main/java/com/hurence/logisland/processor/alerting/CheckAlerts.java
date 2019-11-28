@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.FieldDictionary;
@@ -32,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.util.*;
 
+@Category(ComponentCategory.ALERTING)
 @Tags({"record", "alerting", "thresholds", "opc", "tag"})
 @CapabilityDescription("Add one or more records representing alerts. Using a datastore.")
 @ExtraDetailFile("./details/common-processors/CheckAlerts-Detail.rst")
@@ -158,7 +157,6 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
 
 
         List<Record> outputRecords = new ArrayList<>(records);

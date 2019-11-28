@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
+ * Copyright (C) 2019 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package com.hurence.logisland.service.influxdb;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnStopped;
@@ -41,6 +43,7 @@ import org.influxdb.dto.Pong;
 import java.util.*;
 import java.util.concurrent.*;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({"influxdb", "service", "time series"})
 @CapabilityDescription(
         "Provides a controller service that for the moment only allows to bulkput records into influxdb."

@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor.useragent;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginLoader;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -33,6 +31,8 @@ import com.hurence.logisland.validator.Validator;
 import nl.basjes.parse.useragent.UserAgent;
 import nl.basjes.parse.useragent.UserAgentAnalyzer;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 /**
  * HTTP user-agent processor
  */
+@Category(ComponentCategory.ENRICHMENT)
 @Tags({"User-Agent", "clickstream", "DMP"})
 @CapabilityDescription(
         "The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest."

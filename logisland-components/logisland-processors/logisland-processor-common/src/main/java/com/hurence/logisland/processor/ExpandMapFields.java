@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
@@ -29,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Category(ComponentCategory.PROCESSING)
 @Tags({"record", "fields", "Expand", "Map"})
 @CapabilityDescription("Expands the content of a MAP field to the root.")
 @ExtraDetailFile("./details/common-processors/ExpandMapFields-Detail.rst")

@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor.enrichment;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -35,6 +33,7 @@ import java.util.*;
 
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
 
+@Category(ComponentCategory.ENRICHMENT)
 @Tags({"geo", "enrich", "ip"})
 @CapabilityDescription("Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **"
         + IpAbstractProcessor.PROP_IP_ADDRESS_FIELD + "** property. By default, the geo information are put in a hierarchical structure. " +

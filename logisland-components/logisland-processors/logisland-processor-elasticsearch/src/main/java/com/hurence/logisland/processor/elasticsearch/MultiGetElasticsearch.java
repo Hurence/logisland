@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor.elasticsearch;
 
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
@@ -30,6 +28,7 @@ import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.*;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({"elasticsearch"})
 @CapabilityDescription("Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.\n" +
         "Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :\n" +
