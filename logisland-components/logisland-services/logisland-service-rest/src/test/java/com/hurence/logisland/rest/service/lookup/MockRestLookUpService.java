@@ -4,6 +4,7 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.Buffer;
 import okio.BufferedSource;
 import org.mockito.Mockito;
 
@@ -11,6 +12,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
 
 // Override methods to create a mock service that can return staged data
 public class MockRestLookUpService extends RestLookupService {
@@ -31,7 +34,7 @@ public class MockRestLookUpService extends RestLookupService {
     }
 
     @Override
-    protected Response executeRequest(Request request) {
+    protected Response executeRequest(Request request) throws IOException {
         String url = request.url().toString();
         if (!fakeServer.containsKey(url)) {
             throw new IllegalArgumentException(String.format("Please add a fake payload for url : '%s'", url));
@@ -42,6 +45,11 @@ public class MockRestLookUpService extends RestLookupService {
         final BufferedSource source = Mockito.mock(BufferedSource.class);
         Mockito.when(source.inputStream())
                 .thenReturn(new ByteArrayInputStream(payload));
+        Mockito.when(source.buffer())
+                .thenReturn(new Buffer().write(payload));
+        Mockito.when(source.readString(any()))
+                .thenReturn(new String(payload));
+
         //ResponseBody mock
         final ResponseBody restResponseBody = Mockito.mock(ResponseBody.class);
         Mockito.when(restResponseBody.source()).thenReturn(source);

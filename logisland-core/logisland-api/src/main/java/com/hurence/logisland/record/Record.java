@@ -81,6 +81,8 @@ public interface Record extends Serializable {
 
     Record setArrayField(String fieldName, Collection value);
 
+    Record setObjectField(String fieldName, Object value);
+
     Record setDateTimeField(String fieldName, Date value);
 
     Record setMapField(String fieldName, Map value);

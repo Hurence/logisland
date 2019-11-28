@@ -1,0 +1,33 @@
+{
+  "panelId": 1,
+  "range": {
+    "from": "2016-10-31T06:33:44.866Z",
+    "to": "2020-10-31T12:33:44.866Z",
+    "raw": {
+      "from": "now-6h",
+      "to": "now"
+    }
+  },
+  "rangeRaw": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "interval": "30s",
+  "intervalMs": 30000,
+  "targets": [
+    {
+      "target": "metric_to_filter",
+      "refId": "A",
+      "type": "timeserie"
+    }
+  ],
+  "format": "json",
+  "adhocFilters": [
+    {
+      "key": "Tag",
+      "operator": "=",
+      "value": "Berlin"
+    }
+  ],
+  "maxDataPoints": 1000
+}

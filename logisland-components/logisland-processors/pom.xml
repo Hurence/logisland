@@ -48,8 +48,20 @@
         <module>logisland-processor-timeseries</module>
         <module>logisland-processor-rest</module>
 
-
-        <!--
-        -->
     </modules>
+
+
+    <profiles>
+        <profile>
+            <id>opencv</id>
+            <activation>
+                <property>
+                    <name>opencv</name>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-processor-computer-vision</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

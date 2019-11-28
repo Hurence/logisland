@@ -35,7 +35,7 @@ import org.junit.runners.model.Statement;
  */
 public class SolrRule implements TestRule {
     /**
-     * An elastic-search cluster consisting of one node.
+     * A solr cluster consisting of one node.
      */
     private EmbeddedSolrServer solrServer;
 

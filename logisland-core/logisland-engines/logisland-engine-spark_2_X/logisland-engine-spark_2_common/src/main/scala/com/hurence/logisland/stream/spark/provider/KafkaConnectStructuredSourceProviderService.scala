@@ -55,7 +55,7 @@ class KafkaConnectStructuredSourceProviderService extends KafkaConnectBaseProvid
       */
     override def read(spark: SparkSession, streamContext: StreamContext): Dataset[Record] = {
         import spark.implicits._
-        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+        implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
         getLogger.info(s"Connecting kafka-connect source $delegateConnectorClass")
         spark.readStream

@@ -1,0 +1,62 @@
+version: 1.2.0
+documentation: LogIsland computer vision sample
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  configuration:
+    spark.app.name: OpenCV
+    spark.master: local[2]
+    spark.streaming.batchDuration: 200
+    spark.streaming.kafka.maxRatePerPartition: 10000
+    spark.streaming.timeout: -1
+
+  controllerServiceConfigurations:
+
+    - controllerService: kafka_service
+      component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_images
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: kafka:9092
+        kafka.zookeeper.quorum: zookeeper:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+
+  streamConfigurations:
+
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
+        read.stream.service.provider: kafka_service
+        write.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
+        write.stream.service.provider: kafka_service
+      processorConfigurations:
+
+        - processor: contour_extraction
+          component: com.hurence.logisland.cv.processor.RunScript
+          configuration:
+            input.field: record_value
+            output.field: record_value
+            output.mode: overwrite
+            image.format: png
+            script.ns: com.hurence.logisland
+            script.function: ld_detect_edges
+            script.code: >
+              (ns com.hurence.logisland
+                (:refer-clojure :exclude [sort min merge reduce max compare repeat])
+                (:require [opencv4.utils :refer :all])
+                (:require [opencv4.core :refer :all])
+                (:import [com.hurence.logisland.record Record]))
+
+              (defn ld_detect_edges [mat]
+                (-> mat
+                    (resize-by 0.5)
+                    (cvt-color! COLOR_RGB2GRAY)
+                    (canny! 300.0 100.0 3 true)
+                    (bitwise-not!)))

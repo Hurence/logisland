@@ -17,9 +17,7 @@ package com.hurence.logisland.processor;
 
 
 import com.hurence.logisland.record.*;
-import com.hurence.logisland.timeseries.MetricTimeSeries;
 import com.hurence.logisland.timeseries.converter.compaction.BinaryCompactionConverter;
-import com.hurence.logisland.timeseries.converter.serializer.protobuf.ProtoBufMetricTimeSeriesSerializer;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -28,19 +26,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
 public class ConvertToTimeseriesTest {
 
-    static String RAW_DATA1 = "/data/raw-data1.txt";
-    static String RAW_DATA2 = "/data/raw-data2.txt";
     static String SAMPLED_RECORD = "sampled_record";
 
     private static Logger logger = LoggerFactory.getLogger(ConvertToTimeseriesTest.class);
@@ -114,19 +108,24 @@ public class ConvertToTimeseriesTest {
         testRunner.assertOutputRecordsCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertFieldExists(FieldDictionary.RECORD_CHUNK_START);
-        out.assertFieldExists(FieldDictionary.RECORD_CHUNK_END);
+        out.assertFieldExists(FieldDictionary.CHUNK_START);
+        out.assertFieldExists(FieldDictionary.CHUNK_END);
         out.assertFieldExists(FieldDictionary.RECORD_NAME);
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldExists(FieldDictionary.CHUNK_VALUE);
 
-        out.assertFieldEquals(FieldDictionary.RECORD_CHUNK_START, 1000000);
-        out.assertFieldEquals(FieldDictionary.RECORD_CHUNK_END, 1001999);
+        out.assertFieldEquals(FieldDictionary.CHUNK_START, 1000000);
+        out.assertFieldEquals(FieldDictionary.CHUNK_END, 1001999);
         out.assertFieldEquals(FieldDictionary.RECORD_NAME, "cpu.load");
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, SAMPLED_RECORD);
-        out.assertRecordSizeEquals(4);
+        out.assertFieldTypeEquals(FieldDictionary.CHUNK_VALUE, FieldType.BYTES);
+        out.assertFieldEquals(FieldDictionary.CHUNK_SIZE, 2000);
+        out.assertFieldEquals(FieldDictionary.CHUNK_SIZE_BYTES, 8063);
+
+        out.assertRecordSizeEquals(7);
 
 
-        byte[] binaryTimeseries = out.getField(FieldDictionary.RECORD_VALUE).asBytes();
+        byte[] binaryTimeseries = out.getField(FieldDictionary.CHUNK_VALUE).asBytes();
 
 
         BinaryCompactionConverter.Builder builder = new BinaryCompactionConverter.Builder();
@@ -162,94 +161,49 @@ public class ConvertToTimeseriesTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
 
-        out.assertFieldExists("min");
-        out.assertFieldExists("max");
-        out.assertFieldExists("avg");
-        out.assertFieldExists("trend");
-        out.assertFieldExists("outlier");
-        out.assertFieldExists("sax");
+        out.assertFieldExists(FieldDictionary.CHUNK_MIN);
+        out.assertFieldExists(FieldDictionary.CHUNK_MAX);
+        out.assertFieldExists(FieldDictionary.CHUNK_AVG);
+        out.assertFieldExists(FieldDictionary.CHUNK_TREND);
+        out.assertFieldExists(FieldDictionary.CHUNK_OUTLIER);
+        out.assertFieldExists(FieldDictionary.CHUNK_SAX);
 
-        out.assertFieldEquals("min", -1.0);
-        out.assertFieldEquals("max", 1.0);
-        out.assertFieldEquals("avg", 0.0);
-        out.assertFieldEquals("trend", false);
-        out.assertFieldEquals("outlier", false);
-        out.assertFieldEquals("sax", "gijigdbabdgijigdbabd");
-        out.assertRecordSizeEquals(10);
+        out.assertFieldEquals(FieldDictionary.CHUNK_MIN, -1.0);
+        out.assertFieldEquals(FieldDictionary.CHUNK_MAX, 1.0);
+        out.assertFieldEquals(FieldDictionary.CHUNK_AVG, 0.0);
+        out.assertFieldEquals(FieldDictionary.CHUNK_TREND, false);
+        out.assertFieldEquals(FieldDictionary.CHUNK_OUTLIER, false);
+        out.assertFieldEquals(FieldDictionary.CHUNK_SAX, "gijigdbabdgijigdbabd");
+        out.assertRecordSizeEquals(13);
 
     }
 
     @Test
-    public void validateNoSampling() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
-        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.NO_SAMPLING);
-        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "0");
+    public void validateSumAndFirst() {
+        final String name = "cpu.load";
+        final TestRunner testRunner = TestRunners.newTestRunner(new ConvertToTimeseries());
+        testRunner.setProperty(ConvertToTimeseries.GROUPBY, FieldDictionary.RECORD_NAME);
+        testRunner.setProperty(ConvertToTimeseries.METRIC, "sum;first");
         testRunner.assertValid();
 
-        int recordsCount = 2000;
+        int recordsCount = 3;
+        Record[] records = createRawData(name, recordsCount);
         testRunner.clearQueues();
-        testRunner.enqueue(createRawData("sampling", recordsCount));
+        testRunner.enqueue(
+                createRecord(name, 1000000L, 0),
+                createRecord(name, 1000002L, 2),
+                createRecord(name, 1000004L, 3.5)
+        );
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(recordsCount);
-    }
+        testRunner.assertOutputRecordsCount(1);
 
-    @Test
-    public void validateFirstItemSampling() {
-        int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
-        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.FIRST_ITEM_SAMPLING);
-        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
-        testRunner.assertValid();
+        MockRecord out = testRunner.getOutputRecords().get(0);
 
+        out.assertFieldEquals(FieldDictionary.CHUNK_SIZE, 3);
+        out.assertFieldEquals(FieldDictionary.CHUNK_SUM, 5.5);
+        out.assertFieldEquals(FieldDictionary.CHUNK_FIRST_VALUE, 0.0);
+        out.assertRecordSizeEquals(9);
 
-        testRunner.clearQueues();
-        testRunner.enqueue(createRawData("sampling", recordsCount));
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(9);
-        printRecords(testRunner.getOutputRecords());
-    }
-
-    @Test
-    public void validateAverageSampling() {
-        int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
-        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.AVERAGE_SAMPLING);
-        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
-        testRunner.assertValid();
-
-
-        testRunner.clearQueues();
-        testRunner.enqueue(createRawData("sampling", recordsCount));
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(9);
-        printRecords(testRunner.getOutputRecords());
-    }
-
-    @Test
-    public void validateLLTBSampling() {
-        int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
-        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.LTTB_SAMPLING);
-        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "10"); // bucket size => 9 buckets
-        testRunner.assertValid();
-
-
-        testRunner.clearQueues();
-        testRunner.enqueue(createRawData("sampling", recordsCount));
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(9);
-        printRecords(testRunner.getOutputRecords());
     }
 }

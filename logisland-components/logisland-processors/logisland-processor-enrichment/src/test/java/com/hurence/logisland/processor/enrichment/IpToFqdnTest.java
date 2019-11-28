@@ -427,19 +427,19 @@ public class IpToFqdnTest {
     @Test
     public void testValidatorIpV4() {
         //VALID
-        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("2"));
-        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("255"));
-        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("024.003"));
-        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("024.3.78"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("2"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("255"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("024.003"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("024.3.78"));
         Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("255.255.255.255"));
         Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("1.3.78.159"));
-        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("024.003.78.159"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("024.003.78.159"));
 
         //VALID, BUT VALIDITY IS JUSTIFIED OR NOT ?
         //It seems that it supports greater integer than 255 for most right part. It convert it in several bytes for completing address
-        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("125.1288"));
-        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("256"));//valid , is it okay ? probably converting integer into bytes
-        Assert.assertTrue(InetAddressValidator.getInstance().isValidInet4Address("257"));//valid , is it okay ? probably converting integer into bytes
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("125.1288"));
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("256"));//valid , is it okay ? probably converting integer into bytes
+        Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("257"));//valid , is it okay ? probably converting integer into bytes
 
         //NOT VALID
         Assert.assertFalse(InetAddressValidator.getInstance().isValidInet4Address("a"));

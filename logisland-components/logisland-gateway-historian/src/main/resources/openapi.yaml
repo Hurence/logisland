@@ -1,0 +1,159 @@
+openapi: "3.0.2"
+info:
+  description: "A simple search engine API that finds documents according to a query or another document"
+  version: "1.0.0"
+  title: "Document search engine"
+servers:
+  - url: http://localhost:8080/v1
+    description: Local Server
+tags:
+  - name: "document"
+    description: "Everything about documents"
+paths:
+  "/timeseries":
+    "get":
+      tags:
+        - timeseries
+      "description": Returns desired timeseries, with or without sampling, with or without agregations
+      "operationId": "getTimeSeries"
+      "parameters":
+        - "name": from
+          "in": query
+          "description": the start of timeseries to look for
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - "name": to
+          "in": query
+          "description": the end of timeseries to look for. If not specified look for all data until Long.MAX
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - "name": names
+          "in": query
+          "description": the name of the timeserie to look for. If not specified look for all type of timeseries
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - "name": aggs
+          "in": query
+          "description": the agregations to calculate for the timeserie. If not specified no agregations is calculated.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string #TODO enum
+        - "name": samplingAlgo
+          "in": query
+          "description": the algorithm to use to sample data.
+          required: false
+          schema:
+            type: string
+            default: none #TODO enum
+        - "name": bucketSize
+          "in": query
+          "description": the numbre of point by bucket if using a sampling algorithm.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 100
+        - "name": maxPoints
+          "in": query
+          "description": the max number of point to return for a timeseries, none by default.
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 10000
+
+      "responses":
+        "200":
+          "description": Requested timeseries.
+          "content":
+            "application/json":
+              "schema":
+                "$ref": '#/components/schemas/TimeseriesResponse'
+        "500":
+          "description": "Something wrong happened"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Aggs: #TODO sax encoding ? CHUNK_WINDOW_MS ? CHUNK_TREND ? CHUNK_SIZE_BYTES ?
+      type: object
+      properties:
+        min:
+          type: number
+          format: double
+        max:
+          type: number
+          format: double
+        avg:
+          type: number
+          format: double
+        count:
+          type: integer
+          format: int64
+        sum:
+          type: number
+          format: double
+    Timeserie:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        timestamps:
+          type: array
+          items:
+            type: integer
+            format: int64
+        values:
+          type: array
+          items:
+            type: number
+            format: double
+        aggs:
+          $ref: "#/components/schemas/Aggs"
+    TimeseriesResponse:
+      type: object
+      required:
+        - query
+        - total_timeseries
+        - timeseries
+      properties:
+        query:
+          type: string #TODO return query as requested
+        total_timeseries:
+          type: integer
+          format: int64
+        timeseries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Timeserie"
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+#security:
+#externalDocs:
+

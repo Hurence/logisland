@@ -134,7 +134,7 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     */
   override def read(spark: SparkSession, streamContext: StreamContext) = {
     import spark.implicits._
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
     val dataStreamReader =  spark.readStream
       .format("text")

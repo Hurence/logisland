@@ -290,10 +290,8 @@ public class JsonSerializer implements RecordSerializer {
         SimpleModule module = new SimpleModule();
         module.addDeserializer(Record.class, new EventDeserializer());
         mapper.registerModule(module);
-
-        Record record = null;
         try {
-            return record = mapper.readValue(in, Record.class);
+            return mapper.readValue(in, Record.class);
         } catch (IOException e) {
             logger.error(e.toString());
             throw new RecordSerializationException("unable to deserialize record");

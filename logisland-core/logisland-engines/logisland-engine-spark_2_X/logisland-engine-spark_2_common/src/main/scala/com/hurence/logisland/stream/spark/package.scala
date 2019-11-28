@@ -298,7 +298,15 @@ object StreamProperties {
     .description("the time in ms before we invalidate the microbatch state")
     .addValidator(StandardValidators.LONG_VALIDATOR)
     .required(false)
-    .defaultValue("30000")
+    .defaultValue("2000")
+    .build
+
+  val CHUNK_SIZE: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("chunk.size")
+    .description("the number of records to group into chunks")
+    .addValidator(StandardValidators.INTEGER_VALIDATOR)
+    .required(false)
+    .defaultValue("100")
     .build
   //////////////////////////////////////
   // MQTT options

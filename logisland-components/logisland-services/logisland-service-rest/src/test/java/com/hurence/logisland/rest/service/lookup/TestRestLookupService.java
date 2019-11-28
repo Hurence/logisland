@@ -72,18 +72,26 @@ public class TestRestLookupService {
         assertThat(lookupService, instanceOf(RestLookupService.class));
 
         MockRecord record1 = new MockRecord(lookupService.lookup(Collections.emptyMap()).get());
-        record1.assertFieldExists("name");
-        record1.assertFieldEquals("name", "greg");
-        record1.assertRecordSizeEquals(1);
+        record1.assertFieldEquals(service.getResponseCodeKey(), 200);
+        record1.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        record1.assertRecordSizeEquals(3);
+        MockRecord bodyRecord1 = new MockRecord(record1.getField(service.getResponseBodyKey()).asRecord());
+        bodyRecord1.assertFieldEquals("name", "greg");
+        bodyRecord1.assertRecordSizeEquals(1);
 
         runner.disableControllerService(service);
         runner.setProperty(service, MockRestLookUpService.URL, "http://hurence.com/employee/2");
         runner.enableControllerService(service);
 
         MockRecord record2 = new MockRecord(lookupService.lookup(Collections.emptyMap()).get());
-        record2.assertFieldExists("name");
-        record2.assertFieldEquals("name", "jésus");
-        record2.assertRecordSizeEquals(1);
+        record2.assertFieldEquals(service.getResponseCodeKey(), 200);
+        record2.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        record2.assertRecordSizeEquals(3);
+        MockRecord bodyRecord2 = new MockRecord(record2.getField(service.getResponseBodyKey()).asRecord());
+        bodyRecord2.assertFieldEquals("name", "jésus");
+        bodyRecord2.assertRecordSizeEquals(1);
+
+
     }
 
     @Test
@@ -115,14 +123,20 @@ public class TestRestLookupService {
         runner.assertAllInputRecordsProcessed();
 
         final MockRecord outputRecord1 = runner.getOutputRecords().get(0);
-        outputRecord1.assertFieldExists("name");
-        outputRecord1.assertFieldEquals("name", "greg");
-        outputRecord1.assertRecordSizeEquals(1);
+        outputRecord1.assertFieldEquals(service.getResponseCodeKey(), 200);
+        outputRecord1.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        outputRecord1.assertRecordSizeEquals(3);
+        MockRecord bodyRecord1 = new MockRecord(outputRecord1.getField(service.getResponseBodyKey()).asRecord());
+        bodyRecord1.assertFieldEquals("name", "greg");
+        bodyRecord1.assertRecordSizeEquals(1);
 
         final MockRecord outputRecord2 = runner.getOutputRecords().get(1);
-        outputRecord2.assertFieldExists("name");
-        outputRecord2.assertFieldEquals("name", "jésus");
-        outputRecord2.assertRecordSizeEquals(1);
+        outputRecord2.assertFieldEquals(service.getResponseCodeKey(), 200);
+        outputRecord2.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        outputRecord2.assertRecordSizeEquals(3);
+        MockRecord bodyRecord2 = new MockRecord(outputRecord2.getField(service.getResponseBodyKey()).asRecord());
+        bodyRecord2.assertFieldEquals("name", "jésus");
+        bodyRecord2.assertRecordSizeEquals(1);
     }
 
     @Test(expected = Throwable.class)
@@ -166,31 +180,15 @@ public class TestRestLookupService {
         runner.assertAllInputRecordsProcessed();
 
         final MockRecord outputRecord1 = runner.getOutputRecords().get(0);
-        outputRecord1.assertFieldExists(FieldDictionary.RECORD_VALUE);
-        outputRecord1.assertFieldEquals(FieldDictionary.RECORD_VALUE, "Hello world !");
-        outputRecord1.assertRecordSizeEquals(1);
+        outputRecord1.assertFieldEquals(service.getResponseCodeKey(), 200);
+        outputRecord1.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        outputRecord1.assertFieldEquals(service.getResponseBodyKey(), "Hello world !");
+        outputRecord1.assertRecordSizeEquals(3);
     }
 
-//    @Test
-//    public void testConcurrency() throws InitializationException, IOException, LookupFailureException {
-//        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
-//        MockRestLookUpService service = new MockRestLookUpService();
-//        //build mock urls
-//        service.addServerResponse("http://192.168.99.100:31112/function/id1",
-//                "Hello world !".getBytes(StandardCharsets.UTF_8));
-//        //enable service
-//        runner.addControllerService("restLookupService", service);
-//        runner.setProperty(service, MockRestLookUpService.URL, "http://192.168.99.100:31112/function/${function_name}");
-//        runner.enableControllerService(service);
-//        runner.assertValid(service);
-//
-//        runner.setProperty(TestProcessor.LOOKUP_SERVICE, "restLookupService");
-//
-//        runner.enqueue(RecordUtils.getRecordOfString("function_name", "id1"));
-//        runner.run();
-//    }
     //TODO test with a proxy
     //TODO test with SSL
+    //TODO testConcurrency
 
 
 }

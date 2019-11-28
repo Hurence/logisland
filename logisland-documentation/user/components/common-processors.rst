@@ -9,7 +9,56 @@ Find below the list.
 
 ----------
 
-.. _com.hurence.logisland.processor.alerting.ComputeTags: 
+
+.. _com.hurence.logisland.processor.AddFields: 
+
+AddFields
+---------
+Add one or more field to records
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.2.0
+
+Class
+_____
+com.hurence.logisland.processor.AddFields
+
+Tags
+____
+record, fields, Add
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "Name of the field to add", "Value of the field to add", "Add a field to the record with the specified value. Expression language can be used.You can not add a field that end with '.type' as this suffix is used to specify the type of fields to add", "", "null", **true**
+   "Name of the field to add with the suffix '.field.type'", "Type of the field to add", "Add a field to the record with the specified type. These properties are only used if a correspondant property without the suffix '.field.type' is already defined. If this property is not defined, default type for adding fields is String.You can only use Logisland predefined type fields.", "NULL, STRING, INT, LONG, ARRAY, FLOAT, DOUBLE, BYTES, RECORD, MAP, ENUM, BOOLEAN, UNION, DATETIME, OBJECT", "STRING", false
+   "Name of the field to add with the suffix '.field.name'", "Name of the field to add using expression language", "Add a field to the record with the specified name (which is evaluated using expression language). These properties are only used if a correspondant property without the suffix '.field.name' is already defined. If this property is not defined, the name of the field to add is the key of the first dynamic property (which is the main and only required dynamic property).", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/AddFields-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.ApplyRegexp: 
+
 
 ComputeTags
 -----------
@@ -1471,7 +1520,57 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
      each open brace \"\"{\"\", to ensure interruption checking. Otherwise simple
 
-     code like:
+
+.. _com.hurence.logisland.processor.SplitRecord: 
+
+SplitRecord
+-----------
+This processor is used to create a new set of records from one record.
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.2.0
+
+Class
+_____
+com.hurence.logisland.processor.SplitRecord
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "keep.parent.record", "Specify if the parent record should exist", "", "false", "false", "false"
+   "keep.parent.record_time", "Specify whether to use the processing_time as record_time or not", "", "true", "false", "false"
+   "keep.parent.record_type", "Specify whether to use the dynamic property name as record_type or not", "", "false", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "new record name", "fields to have", "the new record", "", "null", **true**
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.processor.SplitText: 
+
 
      <pre>
 
