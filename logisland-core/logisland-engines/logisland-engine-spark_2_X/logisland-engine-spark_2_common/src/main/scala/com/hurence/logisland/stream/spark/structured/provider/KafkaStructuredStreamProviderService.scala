@@ -80,6 +80,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
   var inputSerializerType = ""
   var outputSerializerType = ""
 
+  var securityProtocol = ""
+  var saslKbServiceName = ""
+
   @OnEnabled
   @throws[InitializationException]
   override def init(context: ControllerServiceInitializationContext): Unit = {
@@ -102,6 +105,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
         brokerList = context.getPropertyValue(KAFKA_METADATA_BROKER_LIST).asString
         zkQuorum = context.getPropertyValue(KAFKA_ZOOKEEPER_QUORUM).asString
 
+        securityProtocol = context.getPropertyValue(KAFKA_SECURITY_PROTOCOL).asString
+        saslKbServiceName = context.getPropertyValue(KAFKA_SASL_KERBEROS_SERVICE_NAME).asString()
 
         kafkaBatchSize = context.getPropertyValue(KAFKA_BATCH_SIZE).asString
         kafkaLingerMs = context.getPropertyValue(KAFKA_LINGER_MS).asString
@@ -168,14 +173,16 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     val df = spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
+      .option("kafka.security.protocol", securityProtocol)
+      .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
+      .option("startingOffsets", "earliest")
       .option("subscribe", inputTopics.mkString(","))
       .load()
-      .selectExpr("CAST(key AS STRING)", "CAST(value AS BINARY)")
-    //  .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
-      .as[(String, Array[Byte])]
+      .selectExpr("CAST(key AS BINARY)", "CAST(value AS BINARY)")
+      .as[(Array[Byte], Array[Byte])]
       .map(r => {
         new StandardRecord(inputTopics.head)
-          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
+          .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
           .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
       })
 
@@ -209,6 +216,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     descriptors.add(KAFKA_ACKS)
     descriptors.add(WINDOW_DURATION)
     descriptors.add(SLIDE_DURATION)
+    descriptors.add(KAFKA_SECURITY_PROTOCOL)
+    descriptors.add(KAFKA_SASL_KERBEROS_SERVICE_NAME)
     Collections.unmodifiableList(descriptors)
   }
 
@@ -252,13 +261,15 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
 
     // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
     df .map(r => {
-      (r.getField(FieldDictionary.RECORD_KEY).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
+      (r.getField(FieldDictionary.RECORD_KEY).asBytes(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
     })
-      .as[(String, Array[Byte])]
+      .as[(Array[Byte], Array[Byte])]
       .toDF("key","value")
       .writeStream
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
+      .option("kafka.security.protocol", securityProtocol)
+      .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
       .option("topic", outputTopics.mkString(","))
       .option("checkpointLocation", "checkpoints")
 

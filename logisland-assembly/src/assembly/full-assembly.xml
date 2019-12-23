@@ -69,6 +69,8 @@
                 <include>com.hurence.logisland:logisland-processor-rest</include>
                 <!--                CONNECTORS          -->
                 <include>com.hurence.logisland:logisland-connector-opc</include>
+
+                <include>com.hurence.logisland:logisland-connector-spooldir</include>
             </includes>
             <binaries>
                 <directoryMode>0770</directoryMode>

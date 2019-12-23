@@ -86,9 +86,9 @@ public class SolrRecordConverter {
 
         document.addField(uniqueKey, record.getId());
         for (Field field : record.getAllFields()) {
-            if (field.isReserved()) {
+          /*  if (field.isReserved()) {
                 continue;
-            }
+            }*/
 
             document.addField(field.getName(), field.getRawValue());
         }

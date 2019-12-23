@@ -107,6 +107,13 @@ public class NormalizeFields extends AbstractProcessor {
                     for (String obsoleteFieldName : obsoleteFieldNames) {
                         overwriteObsoleteFieldName(record, normalizedFieldName, obsoleteFieldName);
                     }
+                }else if (conflictPolicy.equals(KEEP_BOTH_FIELDS.getValue())) {
+                    for (String obsoleteFieldName : obsoleteFieldNames) {
+                        if (record.hasField(obsoleteFieldName)) {
+                            final Field oldField = record.getField(obsoleteFieldName);
+                            record.setField(normalizedFieldName, oldField.getType(), oldField.getRawValue());
+                        }
+                    }
                 }
             }else if (conflictPolicy.equals(KEEP_BOTH_FIELDS.getValue())) {
                 for (String obsoleteFieldName : obsoleteFieldNames) {

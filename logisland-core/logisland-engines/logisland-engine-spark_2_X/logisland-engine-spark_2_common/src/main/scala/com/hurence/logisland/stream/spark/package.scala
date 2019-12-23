@@ -558,4 +558,34 @@ object StreamProperties {
     .build
 
 
+  //////////////////////////////////////
+  // Security options
+  //////////////////////////////////////
+
+  val PLAINTEXT = new AllowableValue("PLAINTEXT", "PLAINTEXT", "Un-authenticated, non-encrypted channel")
+  val SSL = new AllowableValue("SSL", "SSL", "SSL channel")
+  val SASL_PLAINTEXT = new AllowableValue("SASL_PLAINTEXT", "SASL_PLAINTEXT", "SASL authenticated, non-encrypted channel")
+  val SASL_SSL = new AllowableValue("SASL_SSL", "SASL_SSL", "SASL authenticated, SSL channel")
+
+  val KAFKA_SECURITY_PROTOCOL: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.security.protocol")
+    .description("kafka.security.protocol sets the value of of the security protocol \n" +
+      "Apache Kafka® brokers supports client authentication via SASL. " +
+      "SASL authentication can be enabled concurrently with SSL encryption " +
+      "(SSL client authentication will be disabled).\n\nThe supported SASL mechanisms are:")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue(PLAINTEXT.getValue)
+    .allowableValues(PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
+    .build
+
+  val KAFKA_SASL_KERBEROS_SERVICE_NAME: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.sasl.kerberos.service.name")
+    .description("follow the guide here to configure your job to work with kerberos authentification \n" +
+      "https://docs.confluent.io/2.0.0/kafka/sasl.html")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue("kafka")
+    .build
+
 }

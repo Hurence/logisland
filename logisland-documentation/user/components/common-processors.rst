@@ -9,56 +9,7 @@ Find below the list.
 
 ----------
 
-
-.. _com.hurence.logisland.processor.AddFields: 
-
-AddFields
----------
-Add one or more field to records
-
-Module
-______
-com.hurence.logisland:logisland-processor-common:1.3.0
-
-Class
-_____
-com.hurence.logisland.processor.AddFields
-
-Tags
-____
-record, fields, Add
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-   :escape: \
-
-   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
-
-Dynamic Properties
-__________________
-Dynamic Properties allow the user to specify both the name and value of a property.
-
-.. csv-table:: dynamic-properties
-   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
-   :widths: 20,20,40,40,20,10
-   :escape: \
-
-   "Name of the field to add", "Value of the field to add", "Add a field to the record with the specified value. Expression language can be used.You can not add a field that end with '.type' as this suffix is used to specify the type of fields to add", "", "null", **true**
-   "Name of the field to add with the suffix '.field.type'", "Type of the field to add", "Add a field to the record with the specified type. These properties are only used if a correspondant property without the suffix '.field.type' is already defined. If this property is not defined, default type for adding fields is String.You can only use Logisland predefined type fields.", "NULL, STRING, INT, LONG, ARRAY, FLOAT, DOUBLE, BYTES, RECORD, MAP, ENUM, BOOLEAN, UNION, DATETIME, OBJECT", "STRING", false
-   "Name of the field to add with the suffix '.field.name'", "Name of the field to add using expression language", "Add a field to the record with the specified name (which is evaluated using expression language). These properties are only used if a correspondant property without the suffix '.field.name' is already defined. If this property is not defined, the name of the field to add is the key of the first dynamic property (which is the main and only required dynamic property).", "", "null", **true**
-
-Extra informations
-__________________
-.. include:: ./details/common-processors/AddFields-Detail.rst
-----------
-
-.. _com.hurence.logisland.processor.ApplyRegexp: 
-
+.. _com.hurence.logisland.processor.alerting.ComputeTags: 
 
 ComputeTags
 -----------
@@ -430,7 +381,7 @@ Dynamic Properties allow the user to specify both the name and value of a proper
    :escape: \
 
    "Name of the field to add", "Value of the field to add", "Add a field to the record with the specified value. Expression language can be used.You can not add a field that end with '.type' as this suffix is used to specify the type of fields to add", "", "null", **true**
-   "Name of the field to add with the suffix '.field.type'", "Type of the field to add", "Add a field to the record with the specified type. These properties are only used if a correspondant property without the suffix '.field.type' is already defined. If this property is not defined, default type for adding fields is String.You can only use Logisland predefined type fields.", "NULL, STRING, INT, LONG, ARRAY, FLOAT, DOUBLE, BYTES, RECORD, MAP, ENUM, BOOLEAN, UNION, DATETIME", "STRING", false
+   "Name of the field to add with the suffix '.field.type'", "Type of the field to add", "Add a field to the record with the specified type. These properties are only used if a correspondant property without the suffix '.field.type' is already defined. If this property is not defined, default type for adding fields is String.You can only use Logisland predefined type fields.", "NULL, STRING, INT, LONG, ARRAY, FLOAT, DOUBLE, BYTES, RECORD, MAP, ENUM, BOOLEAN, UNION, DATETIME, OBJECT", "STRING", false
    "Name of the field to add with the suffix '.field.name'", "Name of the field to add using expression language", "Add a field to the record with the specified name (which is evaluated using expression language). These properties are only used if a correspondant property without the suffix '.field.name' is already defined. If this property is not defined, the name of the field to add is the key of the first dynamic property (which is the main and only required dynamic property).", "", "null", **true**
 
 Extra informations
@@ -715,78 +666,7 @@ __________________
 .. include:: ./details/common-processors/SelectDistinctRecords-Detail.rst
 ----------
 
-.. _com.hurence.logisland.processor.DecodeBase64: 
-
-DecodeBase64
-------------
-Decodes fields to base64. The fields should be of type string
-
-Module
-______
-com.hurence.logisland:logisland-processor-common:1.3.0
-
-Class
-_____
-com.hurence.logisland.processor.DecodeBase64
-
-Tags
-____
-decode, base64
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-   :escape: \
-
-   "**source.fields**", "a comma separated list of fields corresponding to the fields to decode. Please note than the fields should be of type string", "", "null", "false", "false"
-   "**destination.fields**", "a comma separated list of fields corresponding to the decoded content according to the fields provided as input. Those fields will be of type bytes", "", "null", "false", "false"
-
-Extra informations
-__________________
-.. include:: ./details/common-processors/DecodeBase64-Detail.rst
-----------
-
-.. _com.hurence.logisland.processor.EncodeBase64: 
-
-EncodeBase64
-------------
-Encodes fields to base64. The fields should be of type array of bytes
-
-Module
-______
-com.hurence.logisland:logisland-processor-common:1.3.0
-
-Class
-_____
-com.hurence.logisland.processor.EncodeBase64
-
-Tags
-____
-encode, base64
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-   :escape: \
-
-   "**source.fields**", "a comma separated list of fields corresponding to the fields to encode. Please note than the fields should be of type bytes", "", "null", "false", "false"
-   "**destination.fields**", "a comma separated list of fields corresponding to the encoded content according to the fields provided as input. Those fields will be of type string", "", "null", "false", "false"
-
-Extra informations
-__________________
-.. include:: ./details/common-processors/EncodeBase64-Detail.rst
-----------
-
-.. _com.hurence.logisland.processor.EncryptField: 
-
+.. _com.hurence.logisland.processor.EvaluateJsonPath: 
 
 EvaluateJsonPath
 ----------------
@@ -1179,6 +1059,76 @@ __________________
 .. include:: ./details/common-processors/ConvertSimpleDateFormatFields-Detail.rst
 ----------
 
+.. _com.hurence.logisland.processor.DecodeBase64: 
+
+DecodeBase64
+------------
+Decodes fields to base64. The fields should be of type string
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.3.0
+
+Class
+_____
+com.hurence.logisland.processor.DecodeBase64
+
+Tags
+____
+decode, base64
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source.fields**", "a comma separated list of fields corresponding to the fields to decode. Please note than the fields should be of type string", "", "null", "false", "false"
+   "**destination.fields**", "a comma separated list of fields corresponding to the decoded content according to the fields provided as input. Those fields will be of type bytes", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/DecodeBase64-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.EncodeBase64: 
+
+EncodeBase64
+------------
+Encodes fields to base64. The fields should be of type array of bytes
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.3.0
+
+Class
+_____
+com.hurence.logisland.processor.EncodeBase64
+
+Tags
+____
+encode, base64
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source.fields**", "a comma separated list of fields corresponding to the fields to encode. Please note than the fields should be of type bytes", "", "null", "false", "false"
+   "**destination.fields**", "a comma separated list of fields corresponding to the encoded content according to the fields provided as input. Those fields will be of type string", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/EncodeBase64-Detail.rst
+----------
+
 .. _com.hurence.logisland.processor.EncryptField: 
 
 EncryptField
@@ -1479,48 +1429,6 @@ __________________
 .. include:: ./details/common-processors/SetJsonAsFields-Detail.rst
 ----------
 
-.. _com.hurence.logisland.processor.alerting.CheckAlerts: 
-
-CheckAlerts
------------
-Add one or more records representing alerts. Using a datastore.
-
-Module
-______
-com.hurence.logisland:logisland-processor-common:1.3.0
-
-Class
-_____
-com.hurence.logisland.processor.alerting.CheckAlerts
-
-Tags
-____
-record, alerting, thresholds, opc, tag
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-   :escape: \
-
-   "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "false", "false"
-   "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "false", "false"
-   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces \"\"{}\"\".
-
-   .. raw:: html
-
-     <p>
-
-     Explanation: all loops (for, do-while, while, and if-else, and functions
-
-     should use braces, because poison_pill() function will be inserted after
-
-     each open brace \"\"{\"\", to ensure interruption checking. Otherwise simple
-
-
 .. _com.hurence.logisland.processor.SplitRecord: 
 
 SplitRecord
@@ -1569,8 +1477,48 @@ No additional information is provided
 
 ----------
 
-.. _com.hurence.logisland.processor.SplitText: 
+.. _com.hurence.logisland.processor.alerting.CheckAlerts: 
 
+CheckAlerts
+-----------
+Add one or more records representing alerts. Using a datastore.
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.3.0
+
+Class
+_____
+com.hurence.logisland.processor.alerting.CheckAlerts
+
+Tags
+____
+record, alerting, thresholds, opc, tag
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "false", "false"
+   "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "false", "false"
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces \"\"{}\"\".
+
+   .. raw:: html
+
+     <p>
+
+     Explanation: all loops (for, do-while, while, and if-else, and functions
+
+     should use braces, because poison_pill() function will be inserted after
+
+     each open brace \"\"{\"\", to ensure interruption checking. Otherwise simple
+
+     code like:
 
      <pre>
 

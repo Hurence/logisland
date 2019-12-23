@@ -53,6 +53,8 @@ public abstract class AbstractPropertyValue implements PropertyValue {
             return null;
         } else if (getRawValue() instanceof char[]) {
             return new String(asChars());
+        } else if (getRawValue() instanceof Field) {
+            return (String) ((Field)getRawValue()).getRawValue();
         }
         return getRawValue().toString();
     }
@@ -189,8 +191,8 @@ public abstract class AbstractPropertyValue implements PropertyValue {
         } else if (getRawValue() instanceof Record) {
             return ((Record) rawValue);
         } else {
-            logger.error(" : unable to convert " + rawValue.toString() + " as a Record[]");
-            throw new IllegalArgumentException("not a Record");
+            //logger.error(" : unable to convert " + rawValue.toString() + " as a Record[]");
+            return null;
         }
     }
 

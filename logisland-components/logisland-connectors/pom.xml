@@ -22,6 +22,7 @@
     </dependencies>
     <modules>
         <module>logisland-connector-opc</module>
+        <module>logisland-connector-spooldir</module>
     </modules>
 
 
@@ -45,7 +46,7 @@
                             <providedLibDir>BOOT-INF/lib-provided/</providedLibDir>
                         </layoutFactory>
 
-                        <excludeArtifactIds>connect-runtime,connect-json,connect-transforms,kafka-clients,
+                        <excludeArtifactIds>
                             logisland-utils,logisland-api,commons-logging,logisland-scripting-mvel,logisland-scripting-base
                         </excludeArtifactIds>
                         <excludeGroupIds>org.slf4j,ch.qos.logback,log4j</excludeGroupIds>

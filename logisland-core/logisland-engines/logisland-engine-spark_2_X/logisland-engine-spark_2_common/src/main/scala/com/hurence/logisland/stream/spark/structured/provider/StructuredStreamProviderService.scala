@@ -151,7 +151,7 @@ trait StructuredStreamProviderService extends ControllerService {
 
     if (state.hasTimedOut || (state.exists && (currentTimestamp - state.get.getField(CHUNK_CREATION_TS).asLong()) >= timeOutDuration)) {
       state.remove()
-    //  logger.debug("TIMEOUT key " + key + ", flushing " + allRecords.size + " records in " + recordChunks.size + "chunks")
+      //  logger.debug("TIMEOUT key " + key + ", flushing " + allRecords.size + " records in " + recordChunks.size + "chunks")
       recordChunks
         .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
         .iterator
@@ -168,8 +168,8 @@ trait StructuredStreamProviderService extends ControllerService {
       val newChunk = new StandardRecord("chunk_record") //Chunk(key, recordChunks.last)
       newChunk.setObjectField(ALL_RECORDS, recordChunks.last)
       newChunk.setStringField(FieldDictionary.RECORD_KEY, key)
-      newChunk.setLongField(CHUNK_CREATION_TS, new Date().getTime )
-     // logger.debug("CREATE key " + key + " new chunk with " + allRecords.size + " records")
+      newChunk.setLongField(CHUNK_CREATION_TS, new Date().getTime)
+      // logger.debug("CREATE key " + key + " new chunk with " + allRecords.size + " records")
 
       state.update(newChunk)
       state.setTimeoutDuration(timeOutDuration)
@@ -186,9 +186,9 @@ trait StructuredStreamProviderService extends ControllerService {
       if (recordChunks.size == 1) {
         currentChunk.setObjectField(ALL_RECORDS, allRecords)
         state.update(currentChunk)
-       // logger.debug("UPDATE key " + key + ", allRecords " + allRecords.size + ", recordChunks " + recordChunks.size)
+        // logger.debug("UPDATE key " + key + ", allRecords " + allRecords.size + ", recordChunks " + recordChunks.size)
         Iterator.empty
-      }else{
+      } else {
         currentChunk.setObjectField(ALL_RECORDS, recordChunks.last)
         //logger.debug("UPDATE key " + key + ", allRecords " + allRecords.size + ", recordChunks " + recordChunks.size)
 
@@ -230,7 +230,7 @@ trait StructuredStreamProviderService extends ControllerService {
       }
 
       // processor setup (don't forget that)
-      if(!processor.isInitialized)
+      if (!processor.isInitialized)
         processor.init(processorContext)
 
       // do the actual processing
@@ -293,15 +293,15 @@ trait StructuredStreamProviderService extends ControllerService {
   = {
 
     try {
-      val ret = valueSerializer match {
+      val ret = /*valueSerializer match {
         case s: JsonSerializer =>
           new StandardRecord()
             .setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, doSerializeAsString(valueSerializer, record))
-        case _ =>
-          new StandardRecord()
-            .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, doSerialize(valueSerializer, record))
-      }
-      val fieldKey = record.getField(FieldDictionary.RECORD_KEY);
+        case _ =>*/
+        new StandardRecord()
+          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, doSerialize(valueSerializer, record))
+      // }
+      val fieldKey = record.getField(FieldDictionary.RECORD_KEY)
       if (fieldKey != null) {
         ret.setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, doSerialize(keySerializer, new StandardRecord().setField(fieldKey)))
       } else {
@@ -367,19 +367,25 @@ trait StructuredStreamProviderService extends ControllerService {
       if (r.hasField(FieldDictionary.RECORD_NAME))
         deserialized.setField(r.getField(FieldDictionary.RECORD_NAME))
 
-      if (r.hasField(FieldDictionary.RECORD_KEY) && r.getField(FieldDictionary.RECORD_KEY).getRawValue != null) {
-        val deserializedKey = doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY))
-        if (deserializedKey.hasField(FieldDictionary.RECORD_VALUE) && deserializedKey.getField(FieldDictionary.RECORD_VALUE).getRawValue != null) {
-          val f = deserializedKey.getField(FieldDictionary.RECORD_VALUE)
-          deserialized.setField(FieldDictionary.RECORD_KEY, f.getType, f.getRawValue)
-        } else {
-          logger.warn("Unable to serialize key for record $r with serializer $keySerializer")
+      // TODO : handle key stuff
+     /* if (r.hasField(FieldDictionary.RECORD_KEY) && r.getField(FieldDictionary.RECORD_KEY).getRawValue != null) {
+
+        try {
+          val deserializedKey = doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY))
+          if (deserializedKey.hasField(FieldDictionary.RECORD_VALUE) && deserializedKey.getField(FieldDictionary.RECORD_VALUE).getRawValue != null) {
+            val f = deserializedKey.getField(FieldDictionary.RECORD_VALUE)
+            deserialized.setField(FieldDictionary.RECORD_KEY, f.getType, f.getRawValue)
+          }
+        } catch {
+          case t: Throwable => logger.trace(s"Unable to serialize key for record $r with serializer $keySerializer")
         }
-      }
+      }*/
 
       Some(deserialized)
 
-    } catch {
+    }
+
+    catch {
       case t: Throwable =>
         logger.error(s"exception while deserializing events ${
           t.getMessage

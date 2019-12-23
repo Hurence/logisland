@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -58,23 +58,44 @@ public class LogIslandRecordConverter implements Converter {
      */
     private static final String DEFAULT_RECORD_TYPE = "kafka_connect";
 
+
+    public static final String DO_NEST_RECORD = "do.nest.record";
+    private static final boolean DEFAULT_DO_NEST_RECORD = true;
+
+
     private RecordSerializer recordSerializer;
     private String recordType;
     private boolean isKey;
+    private boolean doNestRecords = true;
 
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
         recordSerializer = SerializerProvider.getSerializer((String) configs.get(PROPERTY_RECORD_SERIALIZER), (String) configs.get(PROPERTY_AVRO_SCHEMA));
         recordType = ((Map<String, Object>) configs).getOrDefault(PROPERTY_RECORD_TYPE, DEFAULT_RECORD_TYPE).toString();
+        doNestRecords = Boolean.valueOf(((Map<String, Object>) configs).getOrDefault(DO_NEST_RECORD, DEFAULT_DO_NEST_RECORD).toString());
         this.isKey = isKey;
     }
 
     @Override
     public byte[] fromConnectData(String topic, Schema schema, Object value) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            recordSerializer.serialize(baos,
-                    new StandardRecord(recordType).setField(toFieldRecursive(FieldDictionary.RECORD_VALUE, schema, value, isKey)));
+
+            Record outRecord;
+            if (value instanceof Struct && !doNestRecords && !isKey) {
+                Struct struct = (Struct) value;
+                if (struct.schema() != schema) {
+                    throw new DataException("Mismatching schema.");
+                }
+                outRecord = new StandardRecord();
+                struct.schema().fields().stream()
+                        .filter(field -> !(field.schema().isOptional() && struct.get(field) == null))
+                        .forEach(field -> outRecord.setField(toFieldRecursive(field.name(), field.schema(), struct.get(field), true)));
+
+            } else {
+                outRecord = new StandardRecord(recordType).setField(toFieldRecursive(FieldDictionary.RECORD_VALUE, schema, value, isKey));
+            }
+            recordSerializer.serialize(baos, outRecord);
             return baos.toByteArray();
         } catch (IOException ioe) {
             throw new DataException("Unexpected IO Exception occurred while serializing data [topic " + topic + "]", ioe);

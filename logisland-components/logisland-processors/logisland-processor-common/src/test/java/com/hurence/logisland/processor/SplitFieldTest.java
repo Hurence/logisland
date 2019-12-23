@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -97,7 +97,7 @@ public class SplitFieldTest {
         TestRunner testRunner = TestRunners.newTestRunner(new SplitField());
         //testRunner.setProperty("description", "textArray:https\\:\\/\\/www\\.(\\w+\\.\\w+)\\/?.*");
         testRunner.setProperty("description1", "descArray:\\s*\\+\\s*");
-        testRunner.setProperty("split.counter.enable","true");
+        testRunner.setProperty("split.counter.enable", "true");
         testRunner.setProperty("split.counter.suffix", "Counter");
         testRunner.assertValid();
         testRunner.enqueue(record1);
@@ -110,6 +110,30 @@ public class SplitFieldTest {
         out.assertFieldEquals("descArrayCounter", "3");
     }
 
+/*
+    @Test
+    public void testSplitField() {
+
+        Record record1 = getRecord();
+
+        record1.setStringField("tagname", "T475.FIC_511_OUTPUT");
+        TestRunner testRunner = TestRunners.newTestRunner(new SplitField());
+        //testRunner.setProperty("description", "textArray:https\\:\\/\\/www\\.(\\w+\\.\\w+)\\/?.*");
+        testRunner.setProperty("tagname", "tag_meta1:/(\\w+)\\.\\w+");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(8);
+        out.assertFieldEquals("descArrayCounter", "3");
+
+    }
+
+*/
+
 
     @Test
     public void testRegexpAdvanced02() {
@@ -119,7 +143,7 @@ public class SplitFieldTest {
         TestRunner testRunner = TestRunners.newTestRunner(new SplitField());
         //testRunner.setProperty("description", "textArray:https\\:\\/\\/www\\.(\\w+\\.\\w+)\\/?.*");
         testRunner.setProperty("description2", "descArray:\\s*\\+\\s*");
-        testRunner.setProperty("split.counter.enable","true");
+        testRunner.setProperty("split.counter.enable", "true");
         testRunner.setProperty("split.counter.suffix", "Counter");
         testRunner.assertValid();
         testRunner.enqueue(record1);
