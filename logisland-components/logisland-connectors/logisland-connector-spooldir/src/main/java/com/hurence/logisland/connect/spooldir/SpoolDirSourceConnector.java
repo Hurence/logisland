@@ -20,6 +20,7 @@ import com.github.jcustenborder.kafka.connect.utils.jackson.ObjectMapperFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.io.PatternFilenameFilter;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.errors.DataException;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,17 +62,20 @@ public abstract class SpoolDirSourceConnector<CONF extends SpoolDirSourceConnect
       SchemaGenerator<CONF> generator = generator(settings);
 
       try {
-        List<File> inputFiles = Arrays.stream(this.config.inputPath.listFiles(this.config.inputFilenameFilter))
+        /*List<File> inputFiles = Arrays.stream(this.config.inputPath.listFiles(this.config.inputFilenameFilter))
             .limit(5)
             .collect(Collectors.toList());
+        */
 
-/*
-        List<File> inputFiles = Files.find(Paths.get(this.config.inputPath.toURI()),
-                Integer.MAX_VALUE,
-                (filePath, fileAttr) -> fileAttr.isRegularFile())
+
+        List<File> inputFiles = Files.find(Paths.get(this.config.inputPath.getAbsolutePath()),
+                10,
+                (filePath, fileAttr) -> fileAttr.isRegularFile() /*&&
+                        !filePath.toUri().getPath().contains(".PROCESSING")*/ &&
+                        config.inputFilenameFilter.accept(filePath.getParent().toFile(),filePath.getFileName().toString() ))
+                .limit(3)
                 .map(Path::toFile)
-                .limit(5)
-                .collect(Collectors.toList());*/
+                .collect(Collectors.toList());
 
 
         Preconditions.checkState(
