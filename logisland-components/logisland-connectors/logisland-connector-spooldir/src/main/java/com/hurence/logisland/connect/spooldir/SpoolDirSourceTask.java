@@ -213,7 +213,7 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
 
             try {
                 fileLister.closeAndMoveToFinished(this.inputStream, this.inputFile, this.config.inputPath, this.config.errorPath, false);
-
+                this.inputStream = null;
             } catch (IOException | InterruptedException ex0) {
                 log.error("Exception thrown while moving {} to {}", this.inputFile, this.config.errorPath, ex0);
             }

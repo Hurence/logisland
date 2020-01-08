@@ -144,7 +144,11 @@ public class SynchronizedFileLister {
                     log.error("Error during processing, moving {} to {}.", inputFile, outputDirectory);
                 }
 
-                Files.move(inputFile, finishedFile);
+                if (inputFile.exists()) {
+                    Files.move(inputFile, finishedFile);
+                } else {
+                    log.trace("Unable to move file {}, may be already moved.", inputFile);
+                }
 
                 File processingFile = processingFile(inputFile);
                 if (processingFile.exists()) {
@@ -166,7 +170,7 @@ public class SynchronizedFileLister {
         File file = null;
         try {
             file = fileQueue.poll();
-            if(file != null) {
+            if (file != null) {
                 File processingFile = processingFile(file);
                 Files.touch(processingFile);
             }
