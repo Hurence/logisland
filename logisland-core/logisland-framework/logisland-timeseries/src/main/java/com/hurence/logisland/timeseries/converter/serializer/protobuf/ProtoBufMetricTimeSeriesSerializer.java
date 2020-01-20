@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -144,21 +144,25 @@ public final class ProtoBufMetricTimeSeriesSerializer {
      * @param to                including points to
      */
     public static List<Point> from(final InputStream decompressedBytes, long timeSeriesStart, long timeSeriesEnd, long from, long to) throws IOException, IllegalArgumentException {
+        LOGGER.debug("from - timeSeriesStart={} timeSeriesEnd={} to={} from={}", timeSeriesStart, timeSeriesEnd, to, from);
         if (from == -1 || to == -1) {
             throw new IllegalArgumentException("FROM or TO have to be >= 0");
         }
 
         //if to is left of the time series, we have no points to return
         if (to < timeSeriesStart) {
+            LOGGER.debug("error to={} is lower than timeSeriesStart={}", to, timeSeriesStart);
             return Collections.emptyList();
         }
         //if from is greater  to, we have nothing to return
         if (from > to) {
+            LOGGER.debug("error from={} is greater than to={}", from, to);
             return Collections.emptyList();
         }
 
         //if from is right of the time series we have nothing to return
         if (from > timeSeriesEnd) {
+            LOGGER.debug("error from={} is greater than timeSeriesEnd={}", from, timeSeriesEnd);
             return Collections.emptyList();
         }
 
@@ -176,8 +180,12 @@ public final class ProtoBufMetricTimeSeriesSerializer {
 
             double value;
 
+
             for (int i = 0; i < size; i++) {
+
                 MetricProtocolBuffers.Point p = pList.get(i);
+
+
                 //Decode the time
                 if (i > 0) {
                     lastDelta = getTimestamp(p, lastDelta);
@@ -192,11 +200,15 @@ public final class ProtoBufMetricTimeSeriesSerializer {
                         value = p.getV();
                     }
                     if (calculatedPointDate > to) {
+                        LOGGER.debug("remaining {} points are skipped after t={}", size - i, calculatedPointDate);
                         return pointsToReturn;
                     }
                     pointsToReturn.add(new Point(i, calculatedPointDate, value));
+                } else {
+                    LOGGER.debug("not adding point at t={}", calculatedPointDate);
                 }
             }
+
             return pointsToReturn;
         } catch (IOException e) {
             LOGGER.info("Could not decode protocol buffers points");

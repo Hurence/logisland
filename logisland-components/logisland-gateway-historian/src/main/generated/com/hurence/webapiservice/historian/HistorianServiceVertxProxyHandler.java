@@ -125,6 +125,11 @@ public class HistorianServiceVertxProxyHandler extends ProxyHandler {
                         HelperUtils.createHandler(msg));
           break;
         }
+        case "compactTimeSeriesChunk": {
+          service.compactTimeSeriesChunk((io.vertx.core.json.JsonObject)json.getValue("params"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
         case "getMetricsName": {
           service.getMetricsName((io.vertx.core.json.JsonObject)json.getValue("params"),
                         HelperUtils.createHandler(msg));

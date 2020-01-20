@@ -13,9 +13,11 @@
   "historian": {
     "address" : "historian",
     "solr" : {
-      "use_zookeeper": true,
+      "use_zookeeper": false,
       "zookeeper_urls": ["localhost:2181"],
-      "collection": "historian"
+      "collection": "historian",
+      "stream_url": "http://localhost:8983/solr/historian",
+      "urls": ["http://localhost:8983/solr"]
     }
   }
 }

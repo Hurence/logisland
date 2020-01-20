@@ -1,10 +1,13 @@
 package com.hurence.webapiservice.timeseries;
 
 import com.hurence.logisland.record.Point;
+import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
 import com.hurence.webapiservice.modele.AGG;
 import com.hurence.webapiservice.modele.SamplingConf;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,7 +17,9 @@ import static com.hurence.webapiservice.historian.HistorianFields.*;
 public class GrafanaTimeSeriesModeler implements TimeSeriesModeler {
     private static String TIMESERIE_NAME = "target";
     private static String TIMESERIE_POINT = "datapoints";
+    private static String TIMESERIE_NUM_POINTS = "datapoints_count";
     private static String TIMESERIE_AGGS = "aggs";
+    private static final Logger LOGGER = LoggerFactory.getLogger(GrafanaTimeSeriesModeler.class);
 
     /**
      *
@@ -35,10 +40,12 @@ public class GrafanaTimeSeriesModeler implements TimeSeriesModeler {
      *        </pre>
      */
     public JsonObject extractTimeSerieFromChunks(long from, long to, List<AGG> aggs, SamplingConf samplingConf, List<JsonObject> chunks) {
+
         if (chunks==null || chunks.isEmpty()) throw new IllegalArgumentException("chunks is null or empty !");
         String name = chunks.stream().findFirst().get().getString(RESPONSE_METRIC_NAME_FIELD);
         List<JsonArray> points = getPoints(from, to, samplingConf, chunks);
         return new JsonObject()
+                .put(TIMESERIE_NUM_POINTS, points.size())
                 .put(TIMESERIE_NAME, name)
                 .put(TIMESERIE_POINT, new JsonArray(points));
     }

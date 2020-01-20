@@ -25,6 +25,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,10 +95,16 @@ public class HistorianVerticle extends AbstractVerticle {
       );
     }
 
-    this.client = clientBuilder
-            .withConnectionTimeout(connectionTimeout)
-            .withSocketTimeout(socketTimeout)
-            .build();
+    if (useZookeeper) {
+      this.client = clientBuilder
+              .withConnectionTimeout(connectionTimeout)
+              .withSocketTimeout(socketTimeout)
+              .build();
+    }else {
+
+
+      this.client = new HttpSolrClient.Builder(getStringListIfExist(slrConfig, CONFIG_SOLR_URLS).get().get(0) ).build();
+    }
 
     SolrHistorianConf historianConf = new SolrHistorianConf();
     historianConf.client = client;

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class BinaryCompactionConverter implements Serializable {
 
 
-    private static Logger logger = LoggerFactory.getLogger(BinaryCompactionConverter.class.getName());
+    private static Logger LOGGER = LoggerFactory.getLogger(BinaryCompactionConverter.class.getName());
 
     private int ddcThreshold = 0;
 

@@ -2,6 +2,9 @@ package com.hurence.webapiservice.historian.impl;
 
 import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.HistorianService;
+import com.hurence.webapiservice.http.compaction.LazyCompactor;
+import com.hurence.webapiservice.http.compaction.LazyDocumentLoader;
+import com.hurence.webapiservice.http.compaction.SolrFacetService;
 import com.hurence.webapiservice.modele.SamplingConf;
 import com.hurence.webapiservice.timeseries.MultiTimeSeriesExtracter;
 import com.hurence.webapiservice.timeseries.MultiTimeSeriesExtracterImpl;
@@ -10,6 +13,8 @@ import com.hurence.webapiservice.timeseries.TimeSeriesExtracterUtil;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.Query;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
@@ -37,6 +42,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.hurence.webapiservice.historian.HistorianFields.*;
+import static com.hurence.webapiservice.http.compaction.CompactionHandlerParams.*;
+import static com.hurence.webapiservice.http.compaction.CompactionHandlerParams.PAGE_SIZE;
+import static java.lang.String.join;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class SolrHistorianServiceImpl implements HistorianService {
 
@@ -140,6 +149,40 @@ public class SolrHistorianServiceImpl implements HistorianService {
         return this;
     }
 
+    @Override
+    public HistorianService compactTimeSeriesChunk(JsonObject params, Handler<AsyncResult<JsonObject>> resultHandler) {
+        final SolrQuery query = buildTimeSeriesChunkQuery(params);
+        query.setFields();//so we return every fields (this endpoint is currently used only in tests, this is legacy code)
+        //  EXECUTE REQUEST
+        Handler<Promise<JsonObject>> getTimeSeriesHandler = p -> {
+            try {
+
+
+                final QueryResponse response = solrHistorianConf.client.query(solrHistorianConf.collection, query);
+                final SolrDocumentList documents = response.getResults();
+
+                LOGGER.debug("Found " + documents.getNumFound() + " documents");
+                JsonArray docs = new JsonArray(documents.stream()
+                        .map(this::convertDoc)
+                        .collect(Collectors.toList())
+                );
+                p.complete(new JsonObject()
+                        .put(RESPONSE_TOTAL_FOUND, documents.getNumFound())
+                        .put(RESPONSE_CHUNKS, docs)
+                );
+
+
+            } catch (IOException | SolrServerException e) {
+                p.fail(e);
+            } catch (Exception e) {
+                LOGGER.error("unexpected exception");
+                p.fail(e);
+            }
+        };
+        vertx.executeBlocking(getTimeSeriesHandler, resultHandler);
+        return this;
+    }
+
     private SolrQuery buildTimeSeriesChunkQuery(JsonObject params) {
         StringBuilder queryBuilder = new StringBuilder();
         if (params.getLong(TO_REQUEST_FIELD) != null) {
@@ -226,11 +269,11 @@ public class SolrHistorianServiceImpl implements HistorianService {
     }
 
     /**
-           nombre point < LIMIT_TO_DEFINE ==> Extract points from chunk
-           nombre point >= LIMIT_TO_DEFINE && nombre de chunk < LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg)
-           nombre de chunk >= LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg),
-                                                   but should using agg on solr side (using key partition, by month, daily ? yearly ?)
-       */
+     * nombre point < LIMIT_TO_DEFINE ==> Extract points from chunk
+     * nombre point >= LIMIT_TO_DEFINE && nombre de chunk < LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg)
+     * nombre de chunk >= LIMIT_TO_DEFINE ==> Sample points with chunk aggs depending on alg (min, avg),
+     * but should using agg on solr side (using key partition, by month, daily ? yearly ?)
+     */
     @Override
     public HistorianService getTimeSeries(JsonObject myParams, Handler<AsyncResult<JsonObject>> myResult) {
         final SolrQuery query = buildTimeSeriesChunkQuery(myParams);
@@ -334,6 +377,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
                     return algo;
                 }).collect(Collectors.toSet());
     }
+
     //TODO from, to and SamplingConf as parameter. So calcul SampligConf before this method not in MultiTimeSeriesExtractorUsingPreAgg
     private MultiTimeSeriesExtracter createTimeSerieExtractorUsingChunks(JsonObject params, MetricsSizeInfo metricsInfo) {
         long from = params.getLong(FROM_REQUEST_FIELD);
@@ -343,6 +387,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
         fillingExtractorWithMetricsSizeInfo(timeSeriesExtracter, metricsInfo);
         return timeSeriesExtracter;
     }
+
     //TODO from, to and SamplingConf as parameter. So calcul SampligConf before this method not in MultiTimeSeriesExtracterImpl
     private MultiTimeSeriesExtracter createTimeSerieExtractorSamplingAllPoints(JsonObject params, MetricsSizeInfo metricsInfo) {
         long from = params.getLong(FROM_REQUEST_FIELD);
@@ -354,8 +399,8 @@ public class SolrHistorianServiceImpl implements HistorianService {
     }
 
     private void fillingExtractorWithMetricsSizeInfo(MultiTimeSeriesExtracterImpl timeSeriesExtracter,
-                                                                         MetricsSizeInfo metricsInfo) {
-        metricsInfo.getMetrics().forEach(metric ->  {
+                                                     MetricsSizeInfo metricsInfo) {
+        metricsInfo.getMetrics().forEach(metric -> {
             timeSeriesExtracter.setTotalNumberOfPointForMetric(metric, metricsInfo.getMetricInfo(metric).totalNumberOfPoints);
         });
     }
@@ -388,15 +433,15 @@ public class SolrHistorianServiceImpl implements HistorianService {
 
     private JsonObject buildTimeSeriesResponse(MultiTimeSeriesExtracter timeSeriesExtracter) {
         return new JsonObject()
-                .put(TOTAL_POINTS_RESPONSE_FIELD ,timeSeriesExtracter.pointCount())
-                .put(TIMESERIES_RESPONSE_FIELD ,timeSeriesExtracter.getTimeSeries());
+                .put(TOTAL_POINTS_RESPONSE_FIELD, timeSeriesExtracter.pointCount())
+                .put(TIMESERIES_RESPONSE_FIELD, timeSeriesExtracter.getTimeSeries());
     }
 
     private JsonStream queryStream(SolrQuery query) {
         StringBuilder exprBuilder = new StringBuilder("search(").append(solrHistorianConf.collection).append(",")
                 .append("q=\"").append(query.getQuery()).append("\",");
         if (query.getFilterQueries() != null) {
-            for (String filterQuery: query.getFilterQueries()) {
+            for (String filterQuery : query.getFilterQueries()) {
                 exprBuilder
                         .append("fq=\"").append(filterQuery).append("\",");
             }
@@ -453,13 +498,13 @@ public class SolrHistorianServiceImpl implements HistorianService {
         StringBuilder exprBuilder = new StringBuilder("rollup(search(").append(solrHistorianConf.collection)
                 .append(",q=\"").append(query.getQuery()).append("\"");
         if (query.getFilterQueries() != null) {
-            for (String filterQuery: query.getFilterQueries()) {
+            for (String filterQuery : query.getFilterQueries()) {
                 exprBuilder
                         .append(",fq=\"").append(filterQuery).append("\"");
             }
         }
         exprBuilder.append(",fl=\"").append(RESPONSE_CHUNK_SIZE_FIELD).append(", ")
-                                    .append(RESPONSE_METRIC_NAME_FIELD).append("\"")
+                .append(RESPONSE_METRIC_NAME_FIELD).append("\"")
                 .append(",qt=\"/export\", sort=\"").append(RESPONSE_METRIC_NAME_FIELD).append(" asc\")")
                 .append(",over=\"name\", sum(chunk_size), count(*))");
         LOGGER.trace("expression is : {}", exprBuilder.toString());
@@ -477,7 +522,7 @@ public class SolrHistorianServiceImpl implements HistorianService {
             MetricSizeInfo metric = new MetricSizeInfo();
             metric.metricName = tuple.getString("name");
             metric.totalNumberOfChunks = tuple.getLong("count(*)");
-            metric.totalNumberOfPoints =  tuple.getLong("sum(chunk_size)");
+            metric.totalNumberOfPoints = tuple.getLong("sum(chunk_size)");
             metricsInfo.setMetricInfo(metric);
             tuple = solrStream.read();
         }

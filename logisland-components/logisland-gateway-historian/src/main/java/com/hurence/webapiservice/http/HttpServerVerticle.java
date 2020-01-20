@@ -2,6 +2,7 @@ package com.hurence.webapiservice.http;
 
 import com.hurence.webapiservice.historian.reactivex.HistorianService;
 import com.hurence.webapiservice.historian.util.HistorianResponseHelper;
+import com.hurence.webapiservice.http.compaction.CompactionApiImpl;
 import com.hurence.webapiservice.http.grafana.GrafanaApiImpl;
 import com.hurence.webapiservice.timeseries.LogislandTimeSeriesModeler;
 import com.hurence.webapiservice.timeseries.TimeSeriesModeler;
@@ -61,6 +62,9 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.get("/timeseries").handler(this::getTimeSeries);
         Router graphanaApi = new GrafanaApiImpl(historianService).getGraphanaRouter(vertx);
         router.mountSubRouter("/api/grafana", graphanaApi);
+
+        Router compactionApi = new CompactionApiImpl(historianService).getCompactionRouter(vertx);
+        router.mountSubRouter("/api/compaction", compactionApi);
 //    router.get("/doc/similarTo/:id").handler(this::getSimilarDoc);
 
         int portNumber = config().getInteger(CONFIG_HTTP_SERVER_PORT, 8080);

@@ -8,6 +8,8 @@ import com.hurence.logisland.timeseries.sampling.SamplingAlgorithm;
 import com.hurence.webapiservice.historian.util.ChunkUtil;
 import com.hurence.webapiservice.modele.SamplingConf;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -21,6 +23,7 @@ public class TimeSeriesExtracterUtil {
     public final static String TIMESERIES_TIMESTAMPS = "timestamps";
     public final static String TIMESERIES_VALUES = "values";
     public final static SamplingAlgorithm DEFAULT_SAMPLING_ALGORITHM = SamplingAlgorithm.FIRST_ITEM;
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimeSeriesExtracterUtil.class);
 
 
     private TimeSeriesExtracterUtil() {}
