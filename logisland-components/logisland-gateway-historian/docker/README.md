@@ -24,7 +24,7 @@ Building the image, modify version of jar in ENTRYPOINT if needed
 
 ```shell script
 docker build --rm -t hurence/historian .
-docker tag hurence/historian:latest hurence/historian:1.2.0
+docker tag hurence/historian:latest hurence/historian:1.3.0
 ```
 
 Deploy the image to Docker hub
