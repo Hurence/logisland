@@ -40,7 +40,7 @@ public class StreamProcessingRunner {
      */
     public static void main(String[] args) {
 
-        logger.info("starting StreamProcessingRunner");
+        logger.info("Starting StreamProcessingRunner");
 
         //////////////////////////////////////////
         // Commande lien management
@@ -60,6 +60,13 @@ public class StreamProcessingRunner {
         Option conf = OptionBuilder.create("conf");
         options.addOption(conf);
 
+        OptionBuilder.withArgName("databricks");
+        OptionBuilder.withLongOpt("databricks-mode");
+        OptionBuilder.isRequired(false);
+        OptionBuilder.hasArg(false);
+        OptionBuilder.withDescription("Databricks mode (configuration is read from DBFS)");
+        Option databricks = OptionBuilder.create("databricks");
+        options.addOption(databricks);
 
         Optional<EngineContext> engineInstance = Optional.empty();
         try {
@@ -70,7 +77,16 @@ public class StreamProcessingRunner {
             String configFile = line.getOptionValue("conf");
 
             // load the YAML config
-            LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
+            LogislandConfiguration sessionConf;
+
+            boolean databricksMode = line.hasOption("databricks");
+
+            if (databricksMode) {
+                sessionConf = ConfigReader.loadConfigFromSharedFS(configFile);
+            } else {
+                sessionConf = ConfigReader.loadConfig(configFile);
+            }
+            logger.info("Configuration loaded");
 
             // instantiate engine and all the processor from the config
             engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
@@ -80,23 +96,24 @@ public class StreamProcessingRunner {
             if (!engineInstance.get().isValid()) {
                 throw new IllegalArgumentException("engineInstance is not valid with input configuration !");
             }
-            logger.info("starting Logisland session version {}", sessionConf.getVersion());
+            logger.info("Starting Logisland session version {}", sessionConf.getVersion());
             logger.info(sessionConf.getDocumentation());
         } catch (Exception e) {
-            logger.error("unable to launch runner", e);
+            logger.error("Unable to launch runner", e);
             System.exit(-1);
         }
         String engineName = engineInstance.get().getEngine().getIdentifier();
         try {
             // start the engine
             EngineContext engineContext = engineInstance.get();
-            logger.info("start engine {}", engineName);
+            logger.info("Start engine {}", engineName);
             engineInstance.get().getEngine().start(engineContext);
-            logger.info("awaitTermination for engine {}", engineName);
+            logger.info("Waiting termination of engine {}", engineName);
             engineContext.getEngine().awaitTermination(engineContext);
+            logger.info("Engine {} terminated", engineName);
             System.exit(0);
         } catch (Exception e) {
-            logger.error("something went bad while running the job {} : {}", engineName, e);
+            logger.error("Something went bad while running the job {} : {}", engineName, e);
             System.exit(-1);
         }
 
