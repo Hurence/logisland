@@ -24,9 +24,8 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.channels.IllegalChannelGroupException;
+import java.lang.reflect.Method;
 import java.util.Optional;
-
 
 public class StreamProcessingRunner {
 
@@ -81,10 +80,11 @@ public class StreamProcessingRunner {
 
             boolean databricksMode = line.hasOption("databricks");
 
-            if (databricksMode) {
-                sessionConf = ConfigReader.loadConfigFromSharedFS(configFile);
-            } else {
+            if (!databricksMode) {
                 sessionConf = ConfigReader.loadConfig(configFile);
+            } else {
+                logger.info("Running in databricks mode");
+                sessionConf = loadConfigFromSharedFS(configFile);
             }
             logger.info("Configuration loaded");
 
@@ -116,7 +116,43 @@ public class StreamProcessingRunner {
             logger.error("Something went bad while running the job {} : {}", engineName, e);
             System.exit(-1);
         }
+    }
 
+    /**
+     * Loads the configuration from the shared filesystem
+     * @param configFile Configuration path to load.
+     *                   With databricks, no need to put the 'dbfs:' scheme: use /foo/logisland.yml instead of
+     *                   dbfs:/foo/logisland.yml
+     * @return The read configuration
+     */
+    private static LogislandConfiguration loadConfigFromSharedFS(String configFile) {
 
+        // Load the spark config reader. This is only expected to work if a spark 2+ engine is being
+        // used and available in the classpath (which should be the case in the azure databricks environment)
+        Class<?> sparkConfigReaderClass = null;
+        try {
+            sparkConfigReaderClass = Class.forName("com.hurence.logisland.util.spark.SparkConfigReader");
+        } catch(Exception e) {
+            logger.error("Could not load the SparkConfigReader class", e);
+            System.exit(-1);
+        }
+        // Prepare to call the loadConfigFromSharedFS method
+        Method loadConfigFromSharedFSMethod = null;
+        try {
+            loadConfigFromSharedFSMethod = sparkConfigReaderClass.getMethod("loadConfigFromSharedFS", String.class);
+        } catch (Exception e) {
+            logger.error("Could not find method loadConfigFromSharedFS in SparkConfigReader class", e);
+            System.exit(-1);
+        }
+        // Call the loadConfigFromSharedFS method to read the configuration from the shared filesystem
+        LogislandConfiguration LogislandConfiguration = null;
+        try {
+            LogislandConfiguration = (LogislandConfiguration)loadConfigFromSharedFSMethod.invoke(null, configFile);
+        } catch(Exception e) {
+            logger.error("Could not load configuration from shared filesystem", e);
+            System.exit(-1);
+        }
+
+        return LogislandConfiguration;
     }
 }

@@ -27,29 +27,12 @@
     <artifactId>logisland-utils</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <spark.version>2.3.0</spark.version>
-        <scala.binary.version>2.11</scala.binary.version>
-    </properties>
-
     <dependencies>
         <!--Versions are set in root pom <dependencyManagement> so that all core library use the same -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_${scala.binary.version}</artifactId>
-            <version>${spark.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>com.google.guava</artifactId>
-                    <groupId>guava</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.avro</groupId>

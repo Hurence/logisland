@@ -139,6 +139,7 @@ public final class ComponentFactory {
             try {
                 return (T) PluginLoader.loadPlugin(className);
             } catch (ClassNotFoundException cnfe) {
+                logger.warn("Class " + className + " not found in plugins: trying to load from current class loader");
                 return (T) Class.forName(className).newInstance();
             }
         } catch (Exception e) {
