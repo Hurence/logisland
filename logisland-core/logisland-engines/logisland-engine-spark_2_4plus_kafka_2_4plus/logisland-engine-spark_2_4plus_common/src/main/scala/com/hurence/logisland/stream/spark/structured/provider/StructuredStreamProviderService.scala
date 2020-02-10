@@ -36,6 +36,7 @@ import java.util.Date
 
 import com.hurence.logisland.controller.ControllerService
 import com.hurence.logisland.record._
+import com.hurence.logisland.runner.GlobalOptions
 import com.hurence.logisland.serializer.{JsonSerializer, NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
@@ -277,10 +278,15 @@ trait StructuredStreamProviderService extends ControllerService {
     // do the parallel processing
     val df2 = df.mapPartitions(record => record.map(record => serializeRecords(serializer, keySerializer, record)))
 
+    var checkpointLocation = "checkpoints/" + streamContext.getIdentifier
+    if (GlobalOptions.checkpointLocation != null) {
+      checkpointLocation = GlobalOptions.checkpointLocation
+    }
+
     write(df2, controllerServiceLookupSink, streamContext)
       .queryName(streamContext.getIdentifier)
       // .outputMode("update")
-      .option("checkpointLocation", "checkpoints/" + streamContext.getIdentifier)
+      .option("checkpointLocation", checkpointLocation)
       .start()
     // .processAllAvailable()
 

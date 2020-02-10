@@ -51,6 +51,7 @@ public class StreamProcessingRunner {
         Option help = new Option("help", helpMsg);
         options.addOption(help);
 
+        // Configuration file
         OptionBuilder.withArgName("conf");
         OptionBuilder.withLongOpt("config-file");
         OptionBuilder.isRequired();
@@ -59,6 +60,7 @@ public class StreamProcessingRunner {
         Option conf = OptionBuilder.create("conf");
         options.addOption(conf);
 
+        // Databricks mode
         OptionBuilder.withArgName("databricks");
         OptionBuilder.withLongOpt("databricks-mode");
         OptionBuilder.isRequired(false);
@@ -66,6 +68,15 @@ public class StreamProcessingRunner {
         OptionBuilder.withDescription("Databricks mode (configuration is read from DBFS)");
         Option databricks = OptionBuilder.create("databricks");
         options.addOption(databricks);
+
+        // Checkpoint directory
+        OptionBuilder.withArgName("chkploc");
+        OptionBuilder.withLongOpt("checkpoint-location");
+        OptionBuilder.isRequired(false);
+        OptionBuilder.hasArg(true);
+        OptionBuilder.withDescription("Checkpoint location used by some engines");
+        Option checkpointLocation = OptionBuilder.create("chkploc");
+        options.addOption(checkpointLocation);
 
         Optional<EngineContext> engineInstance = Optional.empty();
         try {
@@ -84,9 +95,21 @@ public class StreamProcessingRunner {
                 sessionConf = ConfigReader.loadConfig(configFile);
             } else {
                 logger.info("Running in databricks mode");
+                GlobalOptions.databricks = true;
                 sessionConf = loadConfigFromSharedFS(configFile);
             }
             logger.info("Configuration loaded");
+
+            // Get checkpoint location if any
+            boolean chkploc = line.hasOption("chkploc");
+
+            if (databricksMode && !chkploc) {
+                logger.error("Databricks mode requires checkpoint location to be set");
+                System.exit(-1);
+            }
+
+            GlobalOptions.checkpointLocation = line.getOptionValue("chkploc");
+            logger.info("Using checkpoint location: " + GlobalOptions.checkpointLocation);
 
             // instantiate engine and all the processor from the config
             engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());

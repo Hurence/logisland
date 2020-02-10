@@ -38,6 +38,7 @@ import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
+import com.hurence.logisland.runner.GlobalOptions
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.kafka.KafkaSink
@@ -249,6 +250,11 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
 
     import df.sparkSession.implicits._
 
+    var checkpointLocation = "checkpoints"
+    if (GlobalOptions.checkpointLocation != null) {
+      checkpointLocation = GlobalOptions.checkpointLocation
+    }
+
     // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
     df .map(r => {
       (r.getField(FieldDictionary.RECORD_KEY).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
@@ -259,8 +265,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
       .option("topic", outputTopics.mkString(","))
-      .option("checkpointLocation", "checkpoints")
-
+      .option("checkpointLocation", checkpointLocation)
   }
 
   private def getOrElse[T](record: Record, field: String, defaultValue: T): T = {

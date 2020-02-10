@@ -51,6 +51,7 @@ import java.util
 import java.util.Date
 
 import com.hurence.logisland.record._
+import com.typesafe.scalalogging.LazyLogging
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Type
