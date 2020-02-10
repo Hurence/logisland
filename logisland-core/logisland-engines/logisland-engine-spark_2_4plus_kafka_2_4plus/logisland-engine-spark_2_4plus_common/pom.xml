@@ -5,10 +5,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-engine-spark_2_X</artifactId>
+        <artifactId>logisland-engine-spark_2_4plus_kafka_2_4plus</artifactId>
         <version>1.2.0</version>
     </parent>
-    <artifactId>logisland-engine-spark_2_common</artifactId>
+    <artifactId>logisland-engine-spark_2_4plus_common</artifactId>
     <packaging>jar</packaging>
 
 
@@ -18,10 +18,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <scala-maven-plugin-version>3.1.5</scala-maven-plugin-version>
         <scala-test-version>3.0.4</scala-test-version>
         <swagger-async-httpclient-version>0.3.5</swagger-async-httpclient-version>
-        <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.3.3</spark.version>
-        <kafka.version>0.10.2.1</kafka.version>
-        <scala.version>2.11.8</scala.version>
+        <scala.binary.version>2.12</scala.binary.version>
+        <spark.version>2.4.4</spark.version>
+        <kafka.version>2.4.0</kafka.version>
+        <scala.version>2.12.10</scala.version>
         <jackson.version>2.6.6</jackson.version>
     </properties>
 
@@ -50,7 +50,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
             <dependency>
                 <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.11</artifactId>
+                <artifactId>kafka</artifactId>
                 <version>${kafka.version}</version>
                 <scope>compile</scope>
             </dependency>
@@ -88,12 +88,12 @@ http://www.w3.org/2001/XMLSchema-instance ">
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
+                <artifactId>spark-streaming-kafka</artifactId>
                 <version>${spark.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
+                <artifactId>spark-sql-kafka</artifactId>
                 <version>${spark.version}</version>
             </dependency>
 
@@ -115,7 +115,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>2.2.4</version>
+                <version>3.1.0</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -149,13 +149,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
-            <version>2.1.2</version>
-
-        </dependency>
-
 
         <dependency>
             <groupId>com.groupon.dse</groupId>
@@ -184,23 +177,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
         </dependency>
         <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
-
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
-
-        </dependency>
-
-
-        <dependency>
             <groupId>org.apache.bahir</groupId>
-            <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
-            <version>2.3.2</version>
+            <artifactId>spark-sql-streaming-mqtt_${scala.binary.version}</artifactId>
+            <version>2.4.0</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -310,7 +290,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
+            <artifactId>kafka_${scala.binary.version}</artifactId>
+            <version>${kafka.version}</version>
 
         </dependency>
 
@@ -375,7 +356,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>4.3.1</version>
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>
@@ -404,7 +385,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
                     <scalaVersion>${scala.version}</scalaVersion>
                     <recompileMode>incremental</recompileMode>
-                    <useZincServer>false</useZincServer>
                     <args>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
