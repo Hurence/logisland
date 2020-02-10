@@ -46,6 +46,12 @@ extensions:
     module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.DebugStream
     tags: [record, debug]
+  - name: RecordsCounter
+    description: This is a processor that logs incoming records
+    category: utils
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
+    class: com.hurence.logisland.processor.RecordsCounter
+    tags: [record, debug]
   - name: BulkPut
     description: Indexes the content of a Record in a Datastore using bulk processor
     category: datastore

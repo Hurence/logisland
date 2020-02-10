@@ -246,6 +246,33 @@ __________________
 .. include:: ./details/common-processors/DebugStream-Detail.rst
 ----------
 
+.. _com.hurence.logisland.processor.RecordsCounter: 
+
+RecordsCounter
+--------------
+This is a processor that logs incoming records
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.3.0
+
+Class
+_____
+com.hurence.logisland.processor.RecordsCounter
+
+Tags
+____
+record, debug
+
+Properties
+__________
+This component has no required or optional properties.
+
+Extra informations
+__________________
+.. include:: ./details/common-processors/DebugStream-Detail.rst
+----------
+
 .. _com.hurence.logisland.processor.datastore.BulkPut: 
 
 BulkPut

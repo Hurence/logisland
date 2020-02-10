@@ -33,7 +33,6 @@
         <module>logisland-scripting</module>
         <module>logisland-plugin-support</module>
         <module>logisland-maven-plugin</module>
-        <module>logisland-timeseries</module>
     </modules>
 
 
