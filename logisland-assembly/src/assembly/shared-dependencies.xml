@@ -29,6 +29,7 @@
 <!--                <include>com.hurence.logisland:logisland-engine-spark_2_4_kafka_2_4</include>-->
                 <include>com.hurence.logisland:logisland-engine-spark_2_1</include>
                 <include>com.hurence.logisland:logisland-engine-spark_2_3</include>
+                <include>com.hurence.logisland:logisland-engine-spark_2_4</include>
                 <include>com.hurence.logisland:logisland-engine-spark_1_6</include>
                 <include>com.hurence.logisland:logisland-engine-vanilla</include>
             </includes>

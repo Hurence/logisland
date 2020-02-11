@@ -22,6 +22,7 @@
         <module>logisland-engine-spark_2_common</module>
         <module>logisland-engine-spark_2_1</module>
         <module>logisland-engine-spark_2_3</module>
+        <module>logisland-engine-spark_2_4</module>
     </modules>
 
 
