@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.stream.spark.structured.provider
 
+import java.time.{Duration, Instant}
 import java.util
 import java.util.Collections
 
@@ -22,12 +23,12 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
+import com.hurence.logisland.record.{FieldDictionary, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.eventhubs.{ConnectionStringBuilder, EventHubsConf}
+import org.apache.spark.eventhubs.{ConnectionStringBuilder, EventHubsConf, EventPosition}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**
@@ -50,12 +51,6 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
   var writeEventHub : String = null
   var writeSasKeyName : String = null
   var writeSasKey : String = null
-
-//  var maxEventPerTrigger : Int = Int.MaxValue
-//  var maxOperationTimeout : Int = null
-//  var threadPoolSize : Int = null
-//  var readReceiverTimeout : Int = null
-//  var readPrefetchCount : Int = null
 
   var properties : Map[String, Any] = Map[String, Any]()
 
@@ -89,19 +84,19 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
         // maxEventPerTrigger
         if (context.getPropertyValue(EVENTHUBS_MAX_EVENTS_PER_TRIGGER).isSet) {
           properties += (EVENTHUBS_MAX_EVENTS_PER_TRIGGER.getName
-            -> context.getPropertyValue(EVENTHUBS_MAX_EVENTS_PER_TRIGGER).asInteger().toInt)
+            -> context.getPropertyValue(EVENTHUBS_MAX_EVENTS_PER_TRIGGER).asLong().toLong)
         }
 
-        // maxOperationTimeout
-        if (context.getPropertyValue(EVENTHUBS_MAX_OPERATION_TIMEOUT).isSet) {
-          properties += (EVENTHUBS_MAX_OPERATION_TIMEOUT.getName
-            -> context.getPropertyValue(EVENTHUBS_MAX_OPERATION_TIMEOUT).asInteger().toInt)
+        // operationTimeout
+        if (context.getPropertyValue(EVENTHUBS_OPERATION_TIMEOUT).isSet) {
+          properties += (EVENTHUBS_OPERATION_TIMEOUT.getName
+            -> context.getPropertyValue(EVENTHUBS_OPERATION_TIMEOUT).asLong().toLong)
         }
 
         // threadPoolSize
-        if (context.getPropertyValue(EVENTHUBS_MAX_THREAD_POOL_SIZE).isSet) {
-          properties += (EVENTHUBS_MAX_THREAD_POOL_SIZE.getName
-            -> context.getPropertyValue(EVENTHUBS_MAX_THREAD_POOL_SIZE).asInteger().toInt)
+        if (context.getPropertyValue(EVENTHUBS_THREAD_POOL_SIZE).isSet) {
+          properties += (EVENTHUBS_THREAD_POOL_SIZE.getName
+            -> context.getPropertyValue(EVENTHUBS_THREAD_POOL_SIZE).asInteger().toInt)
         }
 
         if ((readEventHub == null) && (writeEventHub == null)) {
@@ -194,8 +189,8 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
     val descriptors = new util.ArrayList[PropertyDescriptor]
     descriptors.add(EVENTHUBS_NAMESPACE)
     descriptors.add(EVENTHUBS_MAX_EVENTS_PER_TRIGGER)
-    descriptors.add(EVENTHUBS_MAX_OPERATION_TIMEOUT)
-    descriptors.add(EVENTHUBS_MAX_THREAD_POOL_SIZE)
+    descriptors.add(EVENTHUBS_OPERATION_TIMEOUT)
+    descriptors.add(EVENTHUBS_THREAD_POOL_SIZE)
     descriptors.add(EVENTHUBS_READ_EVENT_HUB)
     descriptors.add(EVENTHUBS_READ_SAS_KEY_NAME)
     descriptors.add(EVENTHUBS_READ_SAS_KEY)
@@ -208,6 +203,82 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
     descriptors.add(EVENTHUBS_WRITE_SAS_KEY_NAME)
     descriptors.add(EVENTHUBS_WRITE_SAS_KEY)
     Collections.unmodifiableList(descriptors)
+  }
+
+  /**
+    * Applies the defined service configuration to the passed event hub configuration object
+    * @param eventHubsConf
+    */
+  def applyConfig(eventHubsConf: EventHubsConf, forRead : Boolean): Unit = {
+
+    if (forRead) {
+
+      /**
+        * Properties only for read
+        */
+
+      if (readConsumerGroup != null) {
+        eventHubsConf.setConsumerGroup(readConsumerGroup)
+      }
+
+      if (readPositionIsString != null) {
+        // Read position is a string
+        readPositionString match {
+          case EVENTHUBS_READ_POSITION_START_OF_STREAM =>
+            eventHubsConf.setStartingPosition(EventPosition.fromStartOfStream)
+          case EVENTHUBS_READ_POSITION_END_OF_STREAM =>
+            eventHubsConf.setStartingPosition(EventPosition.fromEndOfStream)
+          case EVENTHUBS_READ_POSITION_INSTANT_NOW =>
+            eventHubsConf.setStartingPosition(EventPosition.fromEnqueuedTime(Instant.now()))
+          case _ => throw new IllegalStateException("Unsupported read position string value: " + readPositionString)
+        }
+      } else {
+        // Read position is a long, let's use it according to its meaning defined in readPositionType
+        readPositionType match {
+          case EVENTHUBS_READ_POSITION_TYPE_OFFSET =>
+            eventHubsConf.setStartingPosition(EventPosition.fromOffset(readPositionLong.toString))
+          case EVENTHUBS_READ_POSITION_TYPE_SEQUENCE_NUMBER =>
+            eventHubsConf.setStartingPosition(EventPosition.fromSequenceNumber(readPositionLong))
+          case EVENTHUBS_READ_POSITION_TYPE_EPOCH_MILLIS =>
+            eventHubsConf.setStartingPosition(EventPosition.fromEnqueuedTime(Instant.ofEpochMilli(readPositionLong)))
+          case _ => throw new IllegalStateException("Unsupported read position type value: " + readPositionType)
+        }
+      }
+
+      // readReceiverTimeout
+      val optionLong = properties.get(EVENTHUBS_READ_RECEIVER_TIMEOUT.getName).asInstanceOf[Option[Long]]
+      if (optionLong.isDefined) {
+        eventHubsConf.setReceiverTimeout(Duration.ofMillis(optionLong.get))
+      }
+
+      // readPrefetchCount
+      val optionInt : Option[Int] = properties.get(EVENTHUBS_READ_PREFETCH_COUNT.getName).asInstanceOf[Option[Int]]
+      if (optionInt.isDefined) {
+        eventHubsConf.setPrefetchCount(optionInt.get)
+      }
+    }
+
+    /**
+      * Properties for both read or write
+      */
+
+    // maxEventPerTrigger
+    var optionLong : Option[Long] = properties.get(EVENTHUBS_MAX_EVENTS_PER_TRIGGER.getName).asInstanceOf[Option[Long]]
+    if (optionLong.isDefined) {
+      eventHubsConf.setMaxEventsPerTrigger(optionLong.get)
+    }
+
+    // operationTimeout
+    optionLong = properties.get(EVENTHUBS_OPERATION_TIMEOUT.getName).asInstanceOf[Option[Long]]
+    if (optionLong.isDefined) {
+      eventHubsConf.setOperationTimeout(Duration.ofMillis(optionLong.get))
+    }
+
+    // maxEventPerTrigger
+    val optionInt : Option[Int] = properties.get(EVENTHUBS_THREAD_POOL_SIZE.getName).asInstanceOf[Option[Int]]
+    if (optionInt.isDefined) {
+      eventHubsConf.setThreadPoolSize(optionInt.get)
+    }
   }
 
   /**
@@ -229,7 +300,8 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
       .setSasKey(readSasKey)
       .build
 
-    var eventHubsConf = EventHubsConf(connectionString)
+    val eventHubsConf = EventHubsConf(connectionString)
+    applyConfig(eventHubsConf, true)
 
     logger.info(s"Starting azure event hubs structured stream on event hub $readEventHub in $namespace namespace")
     val df = spark.readStream
@@ -264,17 +336,18 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
 
     val connectionString = ConnectionStringBuilder()
       .setNamespaceName(namespace)
-      .setEventHubName(readEventHub)
-      .setSasKeyName(readSasKeyName)
-      .setSasKey(readSasKey)
+      .setEventHubName(writeEventHub)
+      .setSasKeyName(writeSasKeyName)
+      .setSasKey(writeSasKey)
       .build
 
-    var eventHubsConf = EventHubsConf(connectionString)
+    val eventHubsConf = EventHubsConf(connectionString)
+    applyConfig(eventHubsConf, false)
 
     logger.info(s"Starting azure event hubs structured stream to event hub $readEventHub in $namespace namespace")
 
     // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-    df .map(r => {
+    df.map(r => {
       (r.getField(FieldDictionary.RECORD_KEY).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
     })
       .as[(String, Array[Byte])]
@@ -282,6 +355,7 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
       .writeStream
       .format("eventhubs")
       .options(eventHubsConf.toMap)
+      // TODO update checkpoint with global value
       .option("checkpointLocation", "checkpoints")
   }
 }

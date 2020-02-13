@@ -572,18 +572,18 @@ object StreamProperties {
     .name("eventhubs.maxEventsPerTrigger")
     .description("Rate limit on maximum number of events processed per trigger interval. The specified total number" +
       " of events will be proportionally split across partitions of different volume.")
-    .addValidator(StandardValidators.INTEGER_VALIDATOR)
+    .addValidator(StandardValidators.LONG_VALIDATOR)
     .required(false)
     .build
 
-  val EVENTHUBS_MAX_OPERATION_TIMEOUT: PropertyDescriptor = new PropertyDescriptor.Builder()
+  val EVENTHUBS_OPERATION_TIMEOUT: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("eventhubs.operationTimeout")
-    .description("The amount of time Event Hub API calls will be retried before throwing an exception.")
-    .addValidator(StandardValidators.INTEGER_VALIDATOR)
+    .description("The amount of time (in milliseconds) Event Hub API calls will be retried before throwing an exception.")
+    .addValidator(StandardValidators.LONG_VALIDATOR)
     .required(false)
     .build
 
-  val EVENTHUBS_MAX_THREAD_POOL_SIZE: PropertyDescriptor = new PropertyDescriptor.Builder()
+  val EVENTHUBS_THREAD_POOL_SIZE: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("eventhubs.threadPoolSize")
     .description("Sets the size of thread pool.")
     .addValidator(StandardValidators.INTEGER_VALIDATOR)
@@ -674,8 +674,8 @@ object StreamProperties {
 
   val EVENTHUBS_READ_RECEIVER_TIMEOUT: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("eventhubs.read.receiverTimeout")
-    .description("The amount of time Event Hub receive calls will be retried before throwing an exception.")
-    .addValidator(StandardValidators.INTEGER_VALIDATOR)
+    .description("The amount of time (in milliseconds) Event Hub receive calls will be retried before throwing an exception.")
+    .addValidator(StandardValidators.LONG_VALIDATOR)
     .required(false)
     .build
 

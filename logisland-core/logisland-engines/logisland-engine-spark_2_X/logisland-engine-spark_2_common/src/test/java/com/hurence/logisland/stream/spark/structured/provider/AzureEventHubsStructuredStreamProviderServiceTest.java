@@ -289,8 +289,8 @@ public class AzureEventHubsStructuredStreamProviderServiceTest {
             runner.addControllerService("eventhubs_service", service);
             runner.setProperty(service, StreamProperties.EVENTHUBS_NAMESPACE().getName(), "namespace");
             runner.setProperty(service, StreamProperties.EVENTHUBS_MAX_EVENTS_PER_TRIGGER().getName(), "987");
-            runner.setProperty(service, StreamProperties.EVENTHUBS_MAX_OPERATION_TIMEOUT().getName(), "654");
-            runner.setProperty(service, StreamProperties.EVENTHUBS_MAX_THREAD_POOL_SIZE().getName(), "321");
+            runner.setProperty(service, StreamProperties.EVENTHUBS_OPERATION_TIMEOUT().getName(), "654");
+            runner.setProperty(service, StreamProperties.EVENTHUBS_THREAD_POOL_SIZE().getName(), "321");
             runner.setProperty(service, StreamProperties.EVENTHUBS_READ_EVENT_HUB().getName(), "read_hub");
             runner.setProperty(service, StreamProperties.EVENTHUBS_READ_SAS_KEY_NAME().getName(), "read_sas_key_name");
             runner.setProperty(service, StreamProperties.EVENTHUBS_READ_SAS_KEY().getName(), "read_sas_key");
