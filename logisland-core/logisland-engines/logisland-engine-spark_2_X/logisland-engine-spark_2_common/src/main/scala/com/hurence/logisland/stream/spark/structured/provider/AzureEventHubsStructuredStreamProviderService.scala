@@ -23,7 +23,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.record.{FieldDictionary, Record, StandardRecord}
+import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
@@ -308,13 +308,14 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
       .format("eventhubs")
       .options(eventHubsConf.toMap)
       .load()
-      .selectExpr("CAST(key AS STRING)", "CAST(value AS BINARY)")
+//      .select($"body" cast "string")
+      .selectExpr("CAST(sequenceNumber AS STRING)", "CAST(body AS BINARY)")
     //  .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
       .as[(String, Array[Byte])]
       .map(r => {
-//        new StandardRecord(inputTopics.head)
-//          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
-//          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
+        new StandardRecord(readEventHub)
+          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
+          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
         new StandardRecord("").asInstanceOf[Record];
       })
 
@@ -328,9 +329,6 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
     * @return DataFrame currently loaded
     */
   override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext) = {
-
-
-    //    val sender = df.sparkSession.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
 
     import df.sparkSession.implicits._
 
@@ -352,6 +350,7 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
     })
       .as[(String, Array[Byte])]
       .toDF("key","value")
+      .selectExpr("partitionKey", "body")
       .writeStream
       .format("eventhubs")
       .options(eventHubsConf.toMap)
