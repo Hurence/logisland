@@ -24,6 +24,7 @@ import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
+import com.hurence.logisland.runner.GlobalOptions
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
@@ -221,7 +222,7 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
         eventHubsConf.setConsumerGroup(readConsumerGroup)
       }
 
-      if (readPositionIsString != null) {
+      if (readPositionIsString) {
         // Read position is a string
         readPositionString match {
           case EVENTHUBS_READ_POSITION_START_OF_STREAM =>
@@ -342,19 +343,22 @@ class AzureEventHubsStructuredStreamProviderService() extends AbstractController
     val eventHubsConf = EventHubsConf(connectionString)
     applyConfig(eventHubsConf, false)
 
-    logger.info(s"Starting azure event hubs structured stream to event hub $readEventHub in $namespace namespace")
+    logger.info(s"Starting azure event hubs structured stream to event hub $writeEventHub in $namespace namespace")
 
+    var checkpointLocation : String = "checkpoints"
+    if (GlobalOptions.checkpointLocation != null) {
+      checkpointLocation = GlobalOptions.checkpointLocation
+      logger.info(s"Writing to event hub using checkpointLocation: $writeEventHub")
+    }
     // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
     df.map(r => {
       (r.getField(FieldDictionary.RECORD_KEY).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
     })
       .as[(String, Array[Byte])]
-      .toDF("key","value")
-      .selectExpr("partitionKey", "body")
+      .toDF("partitionKey","body")
       .writeStream
       .format("eventhubs")
       .options(eventHubsConf.toMap)
-      // TODO update checkpoint with global value
-      .option("checkpointLocation", "checkpoints")
+      .option("checkpointLocation", checkpointLocation)
   }
 }
