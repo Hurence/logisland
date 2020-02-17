@@ -38,7 +38,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
   * https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/structured-streaming-eventhubs-integration.md
   */
 @CapabilityDescription("Provides a ways to use azure event hubs as input or output in StructuredStream streams")
-class AzureEventHubsStructuredStreamProviderService() extends AbstractControllerService with StructuredStreamProviderService {
+class AzureEventHubsStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
 
   var namespace : String = null
   var readPositionString: String = null
