@@ -199,9 +199,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>org.apache.bahir</groupId>
             <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
-            <version>2.3.2</version>
+            <version>2.4.0</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
