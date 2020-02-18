@@ -51,7 +51,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
             <dependency>
                 <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.11</artifactId>
+                <artifactId>kafka_${scala.binary.version}</artifactId>
                 <version>${kafka.version}</version>
                 <scope>compile</scope>
             </dependency>
@@ -198,7 +198,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
         <dependency>
             <groupId>org.apache.bahir</groupId>
-            <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
+            <artifactId>spark-sql-streaming-mqtt_${scala.binary.version}</artifactId>
             <version>2.4.0</version>
         </dependency>
 
