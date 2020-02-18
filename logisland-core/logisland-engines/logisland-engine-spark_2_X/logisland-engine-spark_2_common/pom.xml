@@ -202,6 +202,18 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <version>2.4.0</version>
         </dependency>
 
+        <!-- This dependency should not be declared as spark-sql-streaming-mqtt_${scala.binary.version} already depends on it.
+        However, If we don't declare this dependency here, which includes the org.apache.bahir.utils.Logging class, this class
+        gets packaged as expected in the spark2.4 engine jar but we get a class not found exception for it when instantiating
+        AzureEventHubsStructuredStreamProviderService in a logisland job (even in local run). I really do not know why this is
+        the case, even after having analyzed the plugin/class loading system... I give up for the moment and use this workaround
+        , sorry about that ... -->
+        <dependency>
+            <groupId>org.apache.bahir</groupId>
+            <artifactId>bahir-common_${scala.binary.version}</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
