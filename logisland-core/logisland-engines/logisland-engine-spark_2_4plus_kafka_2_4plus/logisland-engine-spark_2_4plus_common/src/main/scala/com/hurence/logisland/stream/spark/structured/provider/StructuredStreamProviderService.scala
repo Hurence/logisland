@@ -281,6 +281,7 @@ trait StructuredStreamProviderService extends ControllerService {
     var checkpointLocation = "checkpoints/" + streamContext.getIdentifier
     if (GlobalOptions.checkpointLocation != null) {
       checkpointLocation = GlobalOptions.checkpointLocation
+      logger.info(s"Saving structured stream using checkpointLocation: $checkpointLocation")
     }
 
     write(df2, controllerServiceLookupSink, streamContext)
