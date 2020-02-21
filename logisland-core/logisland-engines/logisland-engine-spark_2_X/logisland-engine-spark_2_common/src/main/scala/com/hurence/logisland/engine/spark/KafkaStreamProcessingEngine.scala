@@ -104,7 +104,14 @@ object KafkaStreamProcessingEngine {
         .name("spark.yarn.deploy-mode")
         .description("The yarn deploy mode")
         .required(false)
-        // .allowableValues("client", "cluster")
+        .allowableValues("client", "cluster")
+        .build
+
+    val SPARK_DEPLOYMODE = new PropertyDescriptor.Builder()
+        .name("spark.deploy-mode")
+        .description("The spark standalone cluster deploy mode")
+        .required(false)
+        .allowableValues("client", "cluster")
         .build
 
     val SPARK_YARN_QUEUE = new PropertyDescriptor.Builder()
@@ -487,6 +494,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MASTER)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MONITORING_DRIVER_PORT)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_DEPLOYMODE)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_DEPLOYMODE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_DRIVER_MEMORY)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_EXECUTOR_MEMORY)
