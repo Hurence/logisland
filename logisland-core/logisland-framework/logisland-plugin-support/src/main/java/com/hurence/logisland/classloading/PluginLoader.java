@@ -49,15 +49,20 @@ public class PluginLoader {
 
     static {
         JarFile.registerUrlProtocolHandler();
-        scanAndRegisterPlugins();
+        scanAndRegisterPlugins(null);
     }
 
     /**
      * Scan for plugins.
      */
-    private static void scanAndRegisterPlugins() {
+    public static void scanAndRegisterPlugins(ClassLoader startClassLoader) {
         Set<URL> urls = new HashSet<>();
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ClassLoader cl = null;
+        if (startClassLoader == null) {
+            cl = Thread.currentThread().getContextClassLoader();
+        } else {
+            cl = startClassLoader;
+        }
         while (cl != null) {
             if (cl instanceof URLClassLoader) {
                 urls.addAll(Arrays.asList(((URLClassLoader) cl).getURLs()));
