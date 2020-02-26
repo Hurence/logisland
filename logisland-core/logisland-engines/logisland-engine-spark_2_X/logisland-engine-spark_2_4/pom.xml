@@ -15,7 +15,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <properties>
 
         <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.4.4</spark.version>
+        <spark.version>2.4.0</spark.version>
         <kafka.version>0.10.2.1</kafka.version>
         <scala.version>2.11.8</scala.version>
 
