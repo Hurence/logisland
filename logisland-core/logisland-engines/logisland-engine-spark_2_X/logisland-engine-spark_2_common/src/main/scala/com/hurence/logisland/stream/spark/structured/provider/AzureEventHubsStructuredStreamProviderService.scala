@@ -304,20 +304,20 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     val eventHubsConf = EventHubsConf(connectionString)
     applyConfig(eventHubsConf, true)
 
-    logger.info(s"Starting azure event hubs structured stream on event hub $readEventHub in $namespace namespace")
+    val options = eventHubsConf.toMap
+    val optionsString = options.toString()
+
+    logger.info(s"Starting azure event hubs structured stream on event hub $readEventHub in $namespace namespace with configuration:\n$optionsString")
     val df = spark.readStream
       .format("eventhubs")
-      .options(eventHubsConf.toMap)
+      .options(options)
       .load()
-//      .select($"body" cast "string")
-      .selectExpr("CAST(sequenceNumber AS STRING)", "CAST(body AS BINARY)")
-    //  .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
+      .selectExpr("CAST(offset AS STRING)", "CAST(body AS BINARY)")
       .as[(String, Array[Byte])]
       .map(r => {
         new StandardRecord(readEventHub)
           .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
           .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
-        new StandardRecord("").asInstanceOf[Record];
       })
 
     df
@@ -343,19 +343,20 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     val eventHubsConf = EventHubsConf(connectionString)
     applyConfig(eventHubsConf, false)
 
-    logger.info(s"Starting azure event hubs structured stream to event hub $writeEventHub in $namespace namespace")
-
     var checkpointLocation : String = "checkpoints"
     if (GlobalOptions.checkpointLocation != null) {
       checkpointLocation = GlobalOptions.checkpointLocation
-      logger.info(s"Writing to event hub using checkpointLocation: $writeEventHub")
     }
-    // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
+
+    logger.info(s"Starting azure event hubs structured stream to event hub $writeEventHub in " +
+      s"$namespace namespace with checkpointLocation $checkpointLocation")
+
+    // Write key-value data from a DataFrame to a specific event hub specified in an option
     df.map(r => {
       (r.getField(FieldDictionary.RECORD_KEY).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
     })
       .as[(String, Array[Byte])]
-      .toDF("partitionKey","body")
+      .toDF("partitionKey", "body")
       .writeStream
       .format("eventhubs")
       .options(eventHubsConf.toMap)
