@@ -15,7 +15,6 @@
 
 
     <modules>
-<!--        <module>logisland-engine-spark_2_4plus_kafka_2_4plus</module>-->
         <module>logisland-engine-spark_2_X</module>
         <module>logisland-engine-spark_1_6</module>
         <module>logisland-engine-vanilla</module>
