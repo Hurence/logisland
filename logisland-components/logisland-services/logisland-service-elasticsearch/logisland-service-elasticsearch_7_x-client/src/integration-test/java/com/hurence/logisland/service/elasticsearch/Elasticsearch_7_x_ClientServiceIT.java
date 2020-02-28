@@ -54,6 +54,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
 
+import static com.hurence.logisland.service.elasticsearch.ElasticsearchClientService.HOSTS;
+
 public class Elasticsearch_7_x_ClientServiceIT {
 
     private static final String MAPPING1 = "{'properties':{'name':{'type': 'text'},'val':{'type':'integer'}}}";
@@ -82,85 +84,13 @@ public class Elasticsearch_7_x_ClientServiceIT {
             Assert.assertTrue(esRule.getClient().indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
         }
     }
-
-    private class MockElasticsearchClientService extends Elasticsearch_7_x_ClientService {
-
-        @Override
-        protected void createElasticsearchClient(ControllerServiceInitializationContext context) throws ProcessException {
-            if (esClient != null) {
-                return;
-            }
-            esClient = esRule.getClient();
-        }
-
-        @Override
-        protected void createBulkProcessor(ControllerServiceInitializationContext context) {
-
-            if (bulkProcessor != null) {
-                return;
-            }
-
-            // create the bulk processor
-
-            BulkProcessor.Listener listener =
-                    new BulkProcessor.Listener() {
-                        @Override
-                        public void beforeBulk(long l, BulkRequest bulkRequest) {
-                            getLogger().debug("Going to execute bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
-                        }
-
-                        @Override
-                        public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-                            getLogger().debug("Executed bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
-                            if (bulkResponse.hasFailures()) {
-                                getLogger().warn("There was failures while executing bulk [id:{}]," +
-                                                " done bulk request in {} ms with failure = {}",
-                                        new Object[]{l, bulkResponse.getTook().getMillis(), bulkResponse.buildFailureMessage()});
-                                for (BulkItemResponse item : bulkResponse.getItems()) {
-                                    if (item.isFailed()) {
-                                        errors.put(item.getId(), item.getFailureMessage());
-                                    }
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
-                            getLogger().error("something went wrong while bulk loading events to es : {}", new Object[]{throwable.getMessage()});
-                        }
-
-                    };
-
-            BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer =
-                    (request, bulkListener) -> esClient.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
-            bulkProcessor = BulkProcessor.builder(bulkConsumer, listener)
-                    .setBulkActions(1000)
-                    .setBulkSize(new ByteSizeValue(10, ByteSizeUnit.MB))
-                    .setFlushInterval(TimeValue.timeValueSeconds(1))
-                    .setConcurrentRequests(2)
-                    //.setBackoffPolicy(getBackOffPolicy(context))
-                    .build();
-
-        }
-
-        @Override
-        public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-
-            List<PropertyDescriptor> props = new ArrayList<>();
-
-            return Collections.unmodifiableList(props);
-        }
-
-    }
-
     private ElasticsearchClientService configureElasticsearchClientService(final TestRunner runner) throws InitializationException {
-        final MockElasticsearchClientService elasticsearchClientService = new MockElasticsearchClientService();
+        final Elasticsearch_7_x_ClientService elasticsearchClientService = new Elasticsearch_7_x_ClientService();
 
         runner.addControllerService("elasticsearchClient", elasticsearchClientService);
-
-        runner.enableControllerService(elasticsearchClientService);
         runner.setProperty(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
-        runner.assertValid(elasticsearchClientService);
+        runner.setProperty(elasticsearchClientService, HOSTS, esRule.getHostPortString());
+        runner.enableControllerService(elasticsearchClientService);
 
         // TODO : is this necessary ?
         final ElasticsearchClientService service = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
