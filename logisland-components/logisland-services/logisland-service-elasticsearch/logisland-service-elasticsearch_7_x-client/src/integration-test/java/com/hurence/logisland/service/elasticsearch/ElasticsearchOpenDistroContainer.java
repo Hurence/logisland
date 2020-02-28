@@ -64,21 +64,34 @@ public class ElasticsearchOpenDistroContainer extends GenericContainer<Elasticse
         logger().info("Starting an opendistro elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-opendistro-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
-        withEnv("opendistro_security.ssl.http.enabled", "false"); // Disable https
+        // With enforce_hostname_verification enabled, the Security plugin verifies that the hostname of the
+        // communication partner matches the hostname in the certificate
+//        withEnv("opendistro_security.ssl.transport.enforce_hostname_verification", "false");
+        // Do the clients (typically the browser or the proxy) have to authenticate themselves to the http server,
+        // default is OPTIONAL. To enforce authentication use REQUIRE, to completely disable client certificates use
+        // NONE.
+        withEnv("opendistro_security.ssl.http.clientauth_mode", "NONE");
+//        withEnv("opendistro_security.ssl.http.enabled", "false"); // Disable https
 //        withEnv("opendistro_security.disabled", "true"); // Completely disable security (https; authentication...)
         addExposedPorts(ELASTICSEARCH_OPENDISTRO_DEFAULT_PORT, ELASTICSEARCH_OPENDISTRO_DEFAULT_TCP_PORT);
         HttpWaitStrategy httpWaitStrategy = new HttpWaitStrategy()
                 .forPort(ELASTICSEARCH_OPENDISTRO_DEFAULT_PORT)
-                .forStatusCodeMatching(response -> response == HTTP_OK);
-//                .usingTls()
+                .forStatusCodeMatching(response -> response == HTTP_OK)
+                .usingTls();
 
-        // Ideally we woul like to be able to setup the user with the passed one. For the moment we only support the
+        // Ideally we would like to be able to setup the user with the passed one. For the moment we only support the
         // out of the box admin/admin user
         if ( (user != null) && (password != null) ) {
             httpWaitStrategy.withBasicCredentials(user, password);
         }
+        // TODO: if we use the wait strategy then this fails as it not only connects with SSL but it
+        // also tries to validate the server SSL certificate. We do not want that and there is currently no option to
+        // remove that offered by the testcontainers API. We could may be use system properties but this would impact
+        // the whole VM in which the IT test runs. We prefer for the moment just not use the wait strategy and replace
+        // it with a dummy sleep in the caller ESOpenDistroRule to let the docker container initialize. That is why it
+        // is commented here after.
 //        setWaitStrategy(httpWaitStrategy.withStartupTimeout(Duration.ofMinutes(2)));
-        setWaitStrategy(httpWaitStrategy.withStartupTimeout(Duration.ofSeconds(30)));
+//        setWaitStrategy(httpWaitStrategy.withStartupTimeout(Duration.ofSeconds(10)));
     }
 
     public String getHostPortString() {

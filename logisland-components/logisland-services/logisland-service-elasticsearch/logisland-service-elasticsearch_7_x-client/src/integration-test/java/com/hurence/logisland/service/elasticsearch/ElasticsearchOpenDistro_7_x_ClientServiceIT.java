@@ -43,6 +43,11 @@ import java.util.*;
 
 import static com.hurence.logisland.service.elasticsearch.ElasticsearchClientService.*;
 
+/**
+ * The current implementation uses HTTPS with no server certificate validation (like the ES service does) as well as
+ * user/password http basic auth, which is currently only admin/admin as it is by default configured in the opendistro
+ * ES docker image we currently use.
+ */
 public class ElasticsearchOpenDistro_7_x_ClientServiceIT {
 
     private static final String MAPPING1 = "{'properties':{'name':{'type': 'text'},'val':{'type':'integer'}}}";
@@ -92,11 +97,11 @@ public class ElasticsearchOpenDistro_7_x_ClientServiceIT {
         final Elasticsearch_7_x_ClientService elasticsearchClientService = new Elasticsearch_7_x_ClientService();
 
         runner.addControllerService("elasticsearchClient", elasticsearchClientService);
-
         runner.setProperty(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
         runner.setProperty(elasticsearchClientService, HOSTS, esOpenDistroRule.getHostPortString());
         runner.setProperty(elasticsearchClientService, USERNAME, OPENDISTRO_USERNAME);
         runner.setProperty(elasticsearchClientService, PASSWORD, OPENDISTRO_PASSWORD);
+        runner.setProperty(elasticsearchClientService, ENABLE_SSL, "true");
         runner.enableControllerService(elasticsearchClientService);
 
         // TODO : is this necessary ?

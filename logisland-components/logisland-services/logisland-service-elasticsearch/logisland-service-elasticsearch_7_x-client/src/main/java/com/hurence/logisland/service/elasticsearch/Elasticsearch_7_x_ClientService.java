@@ -59,14 +59,17 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.ReindexRequest;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+//import javax.security.cert.X509Certificate;
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 @Tags({ "elasticsearch", "client"})
@@ -98,6 +101,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         props.add(SAMPLER_INTERVAL);
         props.add(USERNAME);
         props.add(PASSWORD);
+        props.add(ENABLE_SSL);
         props.add(PROP_SHIELD_LOCATION);
         props.add(HOSTS);
         props.add(PROP_SSL_CONTEXT_SERVICE);
@@ -137,20 +141,60 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             final String username = context.getPropertyValue(USERNAME).asString();
             final String password = context.getPropertyValue(PASSWORD).asString();
             final String hosts = context.getPropertyValue(HOSTS).asString();
+            final boolean enableSsl = context.getPropertyValue(ENABLE_SSL).asBoolean();
 
-            esHosts = getEsHosts(hosts);
+            esHosts = getEsHosts(hosts, enableSsl);
 
             if (esHosts != null) {
 
                 RestClientBuilder builder = RestClient.builder(esHosts);
 
-                if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
-                    final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-                    credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+                /**
+                 * TODO use those link to support SSL
+                 * https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/_encrypted_communication.html
+                 *
+                 * https://github.com/opendistro-for-elasticsearch/community/issues/64
+                 */
+
+                if ((!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) || enableSsl) {
 
                     builder.setHttpClientConfigCallback(httpClientBuilder -> {
-                                    return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-                                });
+
+                        if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
+                            // Support user/password basic auth
+                            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+                            httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                        }
+                        if (enableSsl) {
+                            // Support SSL
+
+                            // Create and use a trust manager accepting all server certificates
+                            TrustManager[] acceptAllTrustManager = new TrustManager[] { new X509TrustManager() {
+                                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                                    return null;
+                                }
+                                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                                }
+
+                                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                                }
+                            } };
+
+                            SSLContext sslContext = null;
+                            try {
+                                sslContext = SSLContext.getInstance("SSL");
+                                sslContext.init(null, acceptAllTrustManager, new java.security.SecureRandom());
+                            } catch (Exception e) {
+                                getLogger().error("Failed to create Elasticsearch client SSLContext due to {}",
+                                        new Object[]{e}, e);
+                                throw new RuntimeException(e);
+                            }
+
+                            httpClientBuilder.setSSLContext(sslContext);
+                        }
+                        return httpClientBuilder;
+                    });
                 }
 
                 esClient = new RestHighLevelClient(builder);
@@ -166,9 +210,10 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
      * Get the ElasticSearch hosts.
      *
      * @param hosts A comma-separated list of ElasticSearch hosts (host:port,host2:port2, etc.)
+     * @param enableSsl Enable ssl or not
      * @return List of HttpHost for the ES hosts
      */
-    private HttpHost[]  getEsHosts(String hosts) {
+    private HttpHost[]  getEsHosts(String hosts, boolean enableSsl) {
 
         if (hosts == null) {
             return null;
@@ -182,7 +227,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             final String hostName = addresses[0].trim();
             final int port = Integer.parseInt(addresses[1].trim());
 
-            esHosts[indHost] = new HttpHost(hostName, port);
+            esHosts[indHost] = new HttpHost(hostName, port, enableSsl ? "https" : "http");
             indHost++;
         }
         return esHosts;

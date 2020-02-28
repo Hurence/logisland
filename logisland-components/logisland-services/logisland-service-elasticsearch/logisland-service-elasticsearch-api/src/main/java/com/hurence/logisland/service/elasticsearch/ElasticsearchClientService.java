@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.service.elasticsearch;
 
-
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
@@ -30,7 +29,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 
 @Tags({"elasticsearch", "client"})
 @CapabilityDescription("A controller service for accessing an elasticsearch client.")
@@ -152,6 +150,16 @@ public interface ElasticsearchClientService extends DatastoreClientService {
                     + "lib/ directory, doing so will prevent the Shield plugin from being loaded.")
             .required(false)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+            .build();
+
+    PropertyDescriptor ENABLE_SSL = new PropertyDescriptor.Builder()
+            .name("enable.ssl")
+            .description("Whether to enable (true) TLS/SSL connections or not (false). This can for instance be used" +
+                    " with opendistro. Defaults to false. Note that the current implementation does try to validate" +
+                    " the server certificate.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
             .build();
 
     PropertyDescriptor USERNAME = new PropertyDescriptor.Builder()
