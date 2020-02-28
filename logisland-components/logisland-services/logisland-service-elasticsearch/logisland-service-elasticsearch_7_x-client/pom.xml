@@ -17,6 +17,7 @@
     <properties>
         <!-- Versions -->
         <elasticsearch.version>7.1.1</elasticsearch.version>
+        <testcontainers.version>1.12.5</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -70,14 +71,14 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.10.7</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>1.10.7</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
 
