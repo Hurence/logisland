@@ -2,7 +2,6 @@
 
 #. $(dirname $0)/launcher.sh
 
-
 case "$(uname -s)" in
    Darwin)
      echo "I've detected that you're running Mac OS X, using greadlink instead of readlink"
@@ -58,6 +57,22 @@ initSparkJarsOptRecursively() {
     return 0;
 }
 
+# Create app classpath for spark standalone mode
+initSparkStandaloneClassPath() {
+    for entry in `ls ${1}/*.jar`
+    do
+      #echo "add spark standalone jar ${entry}"
+      if [[ -z "$spark_standalone_classpath" ]]
+        then
+          spark_standalone_classpath="$entry"
+        else
+          spark_standalone_classpath="$entry,$spark_standalone_classpath"
+        fi
+    done
+
+    echo $spark_standalone_classpath
+    return 0
+}
 
 # update $java_cp so that it contains all logisland jars except for engines.
 # we look for jars into specified dir recursively.
@@ -100,6 +115,7 @@ usage() {
   echo "  --conf <yml-configuration-file> : provides the configuration file"
   echo "  --standalone start logisland in standalone mode (no spark required)"
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
+  echo "  --spark-standalone-dir : sets the base shared directory for logisland jars for spark standlone (experimental)"
   echo "  --help : displays help"
 }
 
@@ -165,6 +181,10 @@ parse_input() {
           ;;
         --spark-home)
           SPARK_HOME="$2"
+          shift
+          ;;
+        --spark-standalone-dir)
+          SPARK_STANDALONE_DIR="$2"
           shift
           ;;
         --help)
@@ -252,7 +272,7 @@ main() {
 
     # ----------------------------------------------------------------
     # find the spark-submit mode
-    # can be either local, standalone, mesos or yarn
+    # can be either local, standalone, spark (standalone), mesos or yarn
     # ----------------------------------------------------------------
     if [[ "$STANDALONE" = true ]] ;
     then
@@ -322,6 +342,12 @@ main() {
         #
         if [[ "${MODE}" =~ ^spark://.* ]] # Starts with spark:// (spark standalone url)
         then
+            if [[ -z "${SPARK_STANDALONE_DIR}" ]]
+            then
+             echo "Spark standalone mode requires --spark-standalone-dir option to be set"
+             exit 1
+            fi
+
             SPARK_MASTER=${MODE}
             EXTRA_MODE=`awk '{ if( $1 == "spark.deploy-mode:" ){ print $2 } }' ${CONF_FILE}`
             if [[ -z "${EXTRA_MODE}" ]]
@@ -620,12 +646,14 @@ main() {
 
             CONF_FILE="logisland-configuration.yml"
 
+            engine_jar=(basename $engine_jar)
+
             ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${SPARK_CLUSTER_OPTIONS} \
             --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
             --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
             --class ${app_mainclass} \
-            --jars ${app_classpath} ${engine_jar} \
-             -conf ${CONF_FILE}
+            --jars ${SPARK_STANDALONE_DIR}/* ${SPARK_STANDALONE_DIR}/${engine_jar} \
+            -conf ${CONF_FILE}
             ;;
 
           spark-client)
@@ -660,22 +688,25 @@ main() {
                  SPARK_CLUSTER_OPTIONS="${SPARK_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
             fi
 
-            SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
-            if [[ -z "${SPARK_MONITORING_DRIVER_PORT}" ]]
+            EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executor.instances:" ){ print $2 } }' ${CONF_FILE}`
+            if [[ ! -z "${EXECUTORS_INSTANCES}" ]]
             then
-                 EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-                 EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-            else
-                 EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:'${CONF_DIR}'/../monitoring/jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':'${CONF_DIR}'/../monitoring/spark-prometheus.yml'
-                 EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
+                 SPARK_CLUSTER_OPTIONS="${SPARK_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}"
             fi
+
+            EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
+            EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
+
+            engine_jar=`basename $engine_jar`
+
+            spark_standalone_classpath=`initSparkStandaloneClassPath ${SPARK_STANDALONE_DIR}`
 
             ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${SPARK_CLUSTER_OPTIONS} \
             --conf spark.metrics.conf="${CONF_DIR}/../monitoring/metrics.properties"  \
             --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
             --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
             --class ${app_mainclass} \
-            --jars ${app_classpath} ${engine_jar} \
+            --jars ${spark_standalone_classpath} ${SPARK_STANDALONE_DIR}/${engine_jar} \
             -conf ${CONF_FILE}
             ;;
 
