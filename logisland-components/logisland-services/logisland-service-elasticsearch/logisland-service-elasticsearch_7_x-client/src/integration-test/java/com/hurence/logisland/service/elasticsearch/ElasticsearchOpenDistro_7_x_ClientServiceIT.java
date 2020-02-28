@@ -52,8 +52,14 @@ public class ElasticsearchOpenDistro_7_x_ClientServiceIT {
 
     private static Logger logger = LoggerFactory.getLogger(ElasticsearchOpenDistro_7_x_ClientServiceIT.class);
 
+    // For the moment, the ES opendistro container does not support configuring and using another user/password than
+    // admin/admin. To be allowed to changed that, the ElasticsearchOpenDistroContainer constructor must find a way
+    // to configure a new user/password starting the opendistro container.
+    public static final String OPENDISTRO_USERNAME = "admin";
+    public static final String OPENDISTRO_PASSWORD = "admin";
+
     @ClassRule
-    public static final ESOpenDistroRule esOpenDistroRule = new ESOpenDistroRule();
+    public static final ESOpenDistroRule esOpenDistroRule = new ESOpenDistroRule(OPENDISTRO_USERNAME, OPENDISTRO_PASSWORD);
 
     @After
     public void clean() throws IOException {
@@ -89,8 +95,8 @@ public class ElasticsearchOpenDistro_7_x_ClientServiceIT {
 
         runner.setProperty(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
         runner.setProperty(elasticsearchClientService, HOSTS, esOpenDistroRule.getHostPortString());
-        runner.setProperty(elasticsearchClientService, USERNAME, "admin");
-        runner.setProperty(elasticsearchClientService, PASSWORD, "admin");
+        runner.setProperty(elasticsearchClientService, USERNAME, OPENDISTRO_USERNAME);
+        runner.setProperty(elasticsearchClientService, PASSWORD, OPENDISTRO_PASSWORD);
         runner.enableControllerService(elasticsearchClientService);
 
         // TODO : is this necessary ?

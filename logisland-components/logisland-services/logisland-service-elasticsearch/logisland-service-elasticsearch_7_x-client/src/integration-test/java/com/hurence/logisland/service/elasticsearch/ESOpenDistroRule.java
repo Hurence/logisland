@@ -38,8 +38,15 @@ public class ESOpenDistroRule implements TestRule {
     */
    private RestHighLevelClient client;
    private ElasticsearchOpenDistroContainer container;
+   private String opendistroUsername;
+    private String opendistroPassword;
 
-   /**
+    public ESOpenDistroRule(String opendistroUsername, String opendistroPassword) {
+        this.opendistroUsername = opendistroUsername;
+        this.opendistroPassword = opendistroPassword;
+    }
+
+    /**
     * Return a closure which starts an embedded ES OpenDistro docker container, executes the unit-test, then shuts down the
     * ES instance.
     */
@@ -48,7 +55,8 @@ public class ESOpenDistroRule implements TestRule {
        return new Statement() {
            @Override
            public void evaluate() throws Throwable {
-               container = new ElasticsearchOpenDistroContainer("amazon/opendistro-for-elasticsearch:1.4.0", "admin", "admin");
+               container = new ElasticsearchOpenDistroContainer("amazon/opendistro-for-elasticsearch:1.4.0",
+                       opendistroUsername, opendistroPassword);
                container.start();
 
                /**
@@ -56,9 +64,8 @@ public class ESOpenDistroRule implements TestRule {
                 */
 
                final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-               credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("admin", "admin"));
-
-//               client = new RestHighLevelClient(RestClient.builder(HttpHost.create(container.getHostPortString())));
+               credentialsProvider.setCredentials(AuthScope.ANY,
+                       new UsernamePasswordCredentials(opendistroUsername, opendistroPassword));
 
                RestClientBuilder builder = RestClient.builder(
                        new HttpHost(container.getHostAddress(), container.getPort(), "http"))
