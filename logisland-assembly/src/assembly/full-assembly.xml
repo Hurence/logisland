@@ -59,7 +59,6 @@
                 <include>com.hurence.logisland:logisland-processor-useragent</include>
                 <include>com.hurence.logisland:logisland-processor-querymatcher</include>
                 <include>com.hurence.logisland:logisland-processor-outlier-detection</include>
-                <include>com.hurence.logisland:logisland-processor-timeseries</include>
                 <include>com.hurence.logisland:logisland-processor-computer-vision</include>
                 <include>com.hurence.logisland:logisland-processor-enrichment</include>
                 <include>com.hurence.logisland:logisland-processor-hbase</include>
