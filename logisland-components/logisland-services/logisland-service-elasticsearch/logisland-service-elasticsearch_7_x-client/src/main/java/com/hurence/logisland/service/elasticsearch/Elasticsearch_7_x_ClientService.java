@@ -150,9 +150,8 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
                 RestClientBuilder builder = RestClient.builder(esHosts);
 
                 /**
-                 * TODO use those link to support SSL
+                 * Inspired from:
                  * https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/_encrypted_communication.html
-                 *
                  * https://github.com/opendistro-for-elasticsearch/community/issues/64
                  */
 
@@ -167,7 +166,14 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
                             httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                         }
                         if (enableSsl) {
-                            // Support SSL
+                            // Support SSL (ES Shield or OpenDistro)
+
+                            /**
+                             * TODO: This current implementation does not verify the server certificate. One could
+                             * improve this and provide support for a local truststore to check the server certificate.
+                             * The same way, authentication to the server through local certificate is not supported
+                             * yet.
+                             */
 
                             // Create and use a trust manager accepting all server certificates
                             TrustManager[] acceptAllTrustManager = new TrustManager[] { new X509TrustManager() {
