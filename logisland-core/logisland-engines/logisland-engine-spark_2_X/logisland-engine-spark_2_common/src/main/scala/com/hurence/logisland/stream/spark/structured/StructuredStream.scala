@@ -60,6 +60,8 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     descriptors.add(GROUPBY)
     descriptors.add(STATE_TIMEOUT_MS)
     descriptors.add(CHUNK_SIZE)
+    descriptors.add(AVRO_INPUT_SCHEMA)
+    descriptors.add(AVRO_OUTPUT_SCHEMA)
 
     Collections.unmodifiableList(descriptors)
   }
