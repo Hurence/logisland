@@ -30,7 +30,6 @@ import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.record.*;
-import com.hurence.logisland.component.PropertyValue;
 
 import java.io.File;
 import java.io.IOException;
@@ -166,6 +165,8 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         long stop = System.currentTimeMillis();
         getLogger().info("Completed loading of Maxmind Geo Database in {} milliseconds.", new Object[]{stop - start});
         databaseReaderRef.set(databaseReader);
+
+        inputStream.close();
     }
 
     /**
