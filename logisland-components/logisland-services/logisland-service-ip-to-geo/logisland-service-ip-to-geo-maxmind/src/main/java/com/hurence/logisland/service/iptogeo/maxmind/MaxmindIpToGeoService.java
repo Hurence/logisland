@@ -145,7 +145,7 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         Configuration conf = new Configuration();
 
         String hdfsUri = conf.get("fs.defaultFS");
-        getLogger().info("Default HDFS URI: " + hdfsUri);
+        getLogger().info("Base default FS: " + hdfsUri);
 
         // Set HADOOP user to same as current suer
         String hadoopUser = System.getProperty("user.name");
@@ -157,7 +157,7 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
 
         // Create a path to config file and init input stream
         Path hdfsReadpath = new Path(dbUri);
-        getLogger().info("Reading Maxmind DB file from HDFS at: " + dbUri);
+        getLogger().info("Reading Maxmind DB file from URI at: " + dbUri);
         FSDataInputStream inputStream = fs.open(hdfsReadpath);
 
         long start = System.currentTimeMillis();
