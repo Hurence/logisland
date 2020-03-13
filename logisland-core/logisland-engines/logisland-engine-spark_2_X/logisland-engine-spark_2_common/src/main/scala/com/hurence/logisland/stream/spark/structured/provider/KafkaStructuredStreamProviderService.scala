@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 /**
   * Copyright (C) 2016 Hurence (support@hurence.com)
   *
@@ -44,10 +44,7 @@ import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
-import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.security.JaasUtils
-import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.{Dataset, SparkSession}
 
@@ -82,6 +79,10 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
 
   var securityProtocol = ""
   var saslKbServiceName = ""
+  var startingOffsets = ""
+  var failOnDataLoss = true
+  var maxOffsetsPerTrigger: Option[Long] = None
+
 
   @OnEnabled
   @throws[InitializationException]
@@ -106,50 +107,24 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
         zkQuorum = context.getPropertyValue(KAFKA_ZOOKEEPER_QUORUM).asString
 
         securityProtocol = context.getPropertyValue(KAFKA_SECURITY_PROTOCOL).asString
-        saslKbServiceName = context.getPropertyValue(KAFKA_SASL_KERBEROS_SERVICE_NAME).asString()
+        saslKbServiceName = context.getPropertyValue(KAFKA_SASL_KERBEROS_SERVICE_NAME).asString
 
-        kafkaBatchSize = context.getPropertyValue(KAFKA_BATCH_SIZE).asString
-        kafkaLingerMs = context.getPropertyValue(KAFKA_LINGER_MS).asString
-        kafkaAcks = context.getPropertyValue(KAFKA_ACKS).asString
-        kafkaOffset = context.getPropertyValue(KAFKA_MANUAL_OFFSET_RESET).asString
+        startingOffsets = context.getPropertyValue(KAFKA_STARTING_OFFSETS).asString
+        failOnDataLoss = context.getPropertyValue(KAFKA_FAIL_ON_DATA_LOSS).asBoolean
 
-
-        kafkaSinkParams = Map(
-          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
-          ProducerConfig.CLIENT_ID_CONFIG -> appName,
-          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getCanonicalName,
-          ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getName,
-          ProducerConfig.ACKS_CONFIG -> kafkaAcks,
-          ProducerConfig.RETRIES_CONFIG -> "3",
-          ProducerConfig.LINGER_MS_CONFIG -> kafkaLingerMs,
-          ProducerConfig.BATCH_SIZE_CONFIG -> kafkaBatchSize,
-          ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
-          ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
-
+        maxOffsetsPerTrigger = if (context.getPropertyValue(KAFKA_MAX_OFFSETS_PER_TRIGGER).isSet)
+          Some(context.getPropertyValue(KAFKA_MAX_OFFSETS_PER_TRIGGER).asLong())
+        else None
 
         // TODO deprecate topic creation here (must be done through the agent)
         if (topicAutocreate) {
           val zkUtils = ZkUtils.apply(zkQuorum, 10000, 10000, JaasUtils.isZkSecurityEnabled)
           createTopicsIfNeeded(zkUtils, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
           createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-          createTopicsIfNeeded(zkUtils, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+          createTopicsIfNeeded(zkUtils, errorTopics, 3, 1)
           createTopicsIfNeeded(zkUtils, metricsTopics, 1, 1)
         }
 
-
-        kafkaParams = Map[String, Object](
-          ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
-          ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> classOf[ByteArrayDeserializer],
-          ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[ByteArrayDeserializer],
-          ConsumerConfig.GROUP_ID_CONFIG -> appName,
-          ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "50",
-          ConsumerConfig.RETRY_BACKOFF_MS_CONFIG -> "100",
-          ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> kafkaOffset,
-          ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false",
-          ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "30000"
-          /*,
-          ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"*/
-        )
 
       } catch {
         case e: Exception =>
@@ -169,15 +144,22 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     import spark.implicits._
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
-    logger.info(s"starting Kafka direct stream on topics $inputTopics from $kafkaOffset offsets")
-    val df = spark.readStream
+    logger.info(s"starting Kafka direct stream on topics $inputTopics from $startingOffsets offsets, and maxOffsetsPerTrigger :$maxOffsetsPerTrigger")
+    var df = spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
       .option("kafka.security.protocol", securityProtocol)
       .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
-      .option("startingOffsets", "earliest")
+      .option("startingOffsets", startingOffsets)
+      .option("failOnDataLoss", failOnDataLoss)
       .option("subscribe", inputTopics.mkString(","))
-      .load()
+
+    if (maxOffsetsPerTrigger.isDefined) {
+      df = df.option("maxOffsetsPerTrigger", maxOffsetsPerTrigger.get)
+    }
+
+
+    df.load()
       .selectExpr("CAST(key AS BINARY)", "CAST(value AS BINARY)")
       .as[(Array[Byte], Array[Byte])]
       .map(r => {
@@ -186,7 +168,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
           .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
       })
 
-    df
+
   }
 
   /**
@@ -210,10 +192,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
     descriptors.add(KAFKA_METADATA_BROKER_LIST)
     descriptors.add(KAFKA_ZOOKEEPER_QUORUM)
-    descriptors.add(KAFKA_MANUAL_OFFSET_RESET)
-    descriptors.add(KAFKA_BATCH_SIZE)
-    descriptors.add(KAFKA_LINGER_MS)
-    descriptors.add(KAFKA_ACKS)
+    descriptors.add(KAFKA_STARTING_OFFSETS)
+    descriptors.add(KAFKA_FAIL_ON_DATA_LOSS)
+    descriptors.add(KAFKA_MAX_OFFSETS_PER_TRIGGER)
     descriptors.add(WINDOW_DURATION)
     descriptors.add(SLIDE_DURATION)
     descriptors.add(KAFKA_SECURITY_PROTOCOL)
@@ -246,8 +227,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     })
   }
 
-  case class RecordWrapper(record:Record)
-
   /**
     * create a streaming DataFrame that represents data received
     *
@@ -260,11 +239,11 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     import df.sparkSession.implicits._
 
     // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-    df .map(r => {
+    df.map(r => {
       (r.getField(FieldDictionary.RECORD_KEY).asBytes(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
     })
       .as[(Array[Byte], Array[Byte])]
-      .toDF("key","value")
+      .toDF("key", "value")
       .writeStream
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
