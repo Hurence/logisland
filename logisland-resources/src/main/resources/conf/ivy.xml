@@ -19,6 +19,7 @@
     <settings defaultResolver="default"/>
     <resolvers>
         <chain name="default">
+            <ibiblio name="repo1" m2compatible="true" root="https://repo1.maven.org/maven2"/>
             <ibiblio name="central" m2compatible="true"/>
             <ibiblio name="jcenter" m2compatible="true" root="https://jcenter.bintray.com"/>
             <ibiblio name="confluent" m2compatible="true" root="http://packages.confluent.io/maven/"/>
