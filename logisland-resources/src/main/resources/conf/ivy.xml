@@ -20,7 +20,7 @@
     <resolvers>
         <chain name="default">
             <ibiblio name="central" m2compatible="true"/>
-            <ibiblio name="jcenter" m2compatible="true" root="http://jcenter.bintray.com"/>
+            <ibiblio name="jcenter" m2compatible="true" root="https://jcenter.bintray.com"/>
             <ibiblio name="confluent" m2compatible="true" root="http://packages.confluent.io/maven/"/>
             <ibiblio name="jitpack" m2compatible="true" root="https://jitpack.io"/>
         </chain>
