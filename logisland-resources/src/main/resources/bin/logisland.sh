@@ -291,12 +291,15 @@ main() {
             case $? in
                 2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_1_6-*.jar` ;;
                 *) compare_versions ${SPARK_VERSION} 2.3.0
-                    case $? in
-                        2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_1-*.jar` ;;
-                        0) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_3-*.jar` ;;
-                        *) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_4-*.jar` ;;
+                   case $? in
+                       2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_1-*.jar` ;;
+                       0) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_3-*.jar` ;;
+                       *) compare_versions ${SPARK_VERSION} 2.4.0
+                          case $? in
+                              2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_3-*.jar` ;;
+                              *) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_4-*.jar` ;;
+                          esac
                     esac
-                   ;;
             esac
 
         export SPARK_PRINT_LAUNCH_COMMAND=1
