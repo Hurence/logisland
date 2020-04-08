@@ -524,7 +524,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
       *
       * @param engineContext
       */
-    override def reset(engineContext: EngineContext): Unit = {
+    override def    reset(engineContext: EngineContext): Unit = {
         //not supported
     }
 }

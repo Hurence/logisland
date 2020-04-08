@@ -17,9 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperties;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -34,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Category(ComponentCategory.PROCESSING)
 @Tags({"record", "fields", "Add"})
 @CapabilityDescription("Add one or more field to records")
 @ExtraDetailFile("./details/common-processors/AddFields-Detail.rst")
@@ -126,7 +125,7 @@ public class AddFields extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) throws InitializationException {
+    public void init(ProcessContext context)  throws InitializationException {
         super.init(context);
         initDynamicProperties(context);
         this.conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();

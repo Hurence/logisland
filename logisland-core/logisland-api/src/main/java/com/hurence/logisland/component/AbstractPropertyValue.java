@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,8 +51,10 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     public String asString() {
         if (getRawValue() == null) {
             return null;
-        } else  if (getRawValue() instanceof char[]) {
+        } else if (getRawValue() instanceof char[]) {
             return new String(asChars());
+        } else if (getRawValue() instanceof Field) {
+            return (String) ((Field)getRawValue()).getRawValue();
         }
         return getRawValue().toString();
     }
@@ -150,6 +152,8 @@ public abstract class AbstractPropertyValue implements PropertyValue {
             return null;
         } else if (getRawValue() instanceof byte[]) {
             return (byte[]) getRawValue();
+        } else if (getRawValue() instanceof String) {
+            return asString().getBytes();
         } else {
             logger.error(" : unable to convert " + rawValue.toString() + " as a byte[]");
             throw new IllegalArgumentException("not an array of bytes");
@@ -174,7 +178,7 @@ public abstract class AbstractPropertyValue implements PropertyValue {
         return getRawValue() != null;
     }
 
-//    @Override
+    //    @Override
 //    public Record asRecord() {
 //        return (getRawValue() == null) ? null : new StandardRecord()
 //                .setStringField(FieldDictionary.RECORD_VALUE, asString().trim());
@@ -187,8 +191,8 @@ public abstract class AbstractPropertyValue implements PropertyValue {
         } else if (getRawValue() instanceof Record) {
             return ((Record) rawValue);
         } else {
-            logger.error(" : unable to convert " + rawValue.toString() + " as a Record[]");
-            throw new IllegalArgumentException("not a Record");
+            //logger.error(" : unable to convert " + rawValue.toString() + " as a Record[]");
+            return null;
         }
     }
 
@@ -207,7 +211,6 @@ public abstract class AbstractPropertyValue implements PropertyValue {
         // does nothing
         return this;
     }
-
 
 
 }

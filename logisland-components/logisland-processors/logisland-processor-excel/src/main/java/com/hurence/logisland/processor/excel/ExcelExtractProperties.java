@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.processor.excel;
 
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.validator.StandardValidators;
@@ -26,9 +28,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * Common options for {@link ExcelExtract} processor.
- */
+@Category(ComponentCategory.PARSING)
 public class ExcelExtractProperties implements Serializable {
 
     public static final PropertyDescriptor RECORD_TYPE = new PropertyDescriptor.Builder()

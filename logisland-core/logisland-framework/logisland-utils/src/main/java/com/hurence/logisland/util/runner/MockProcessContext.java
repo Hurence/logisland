@@ -104,7 +104,7 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
         final String setPropertyValue = properties.get(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return new MockPropertyValue(propValue, this.serviceLookup, variableRegistry, descriptor);
+        return PropertyValueFactory.getInstance(descriptor, propValue, this.serviceLookup);
     }
 
     @Override

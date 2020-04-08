@@ -22,18 +22,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   intro
-   concepts
-   architecture
    user/index
    developer/index
    plugins
-   connectors
    tutorials/index
-   api
-   rest-api
    changes
-   faq
 
 Indices and tables
 ------------------

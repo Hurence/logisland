@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.google.common.collect.Lists;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
@@ -35,6 +33,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Category(ComponentCategory.PROCESSING)
 @Tags({"record", "fields", "remove", "delete"})
 @CapabilityDescription("Keep only distinct records based on a given field")
 @ExtraDetailFile("./details/common-processors/SelectDistinctRecords-Detail.rst")

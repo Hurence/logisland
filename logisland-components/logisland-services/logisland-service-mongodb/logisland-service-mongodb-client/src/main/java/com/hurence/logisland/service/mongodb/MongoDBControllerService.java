@@ -16,6 +16,8 @@
 package com.hurence.logisland.service.mongodb;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
@@ -48,6 +50,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({"mongo", "mongodb", "service"})
 @CapabilityDescription(
         "Provides a controller service that wraps most of the functionality of the MongoDB driver."

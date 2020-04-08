@@ -258,4 +258,18 @@ public class DateUtilTest {
     }
 
 
+    @Test
+    public void testStandardDate() throws ParseException {
+        final long expectedTimestamp = 1477895624866L;
+        final String testedDate = "2016-10-31T06:33:44.866Z";
+        final String format = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+        Date date = DateUtil.parse(testedDate, format);;
+        logger.info("date :" +date.toString());
+        assertEquals(expectedTimestamp, date.getTime());
+
+    }
+
+
+
+
 }

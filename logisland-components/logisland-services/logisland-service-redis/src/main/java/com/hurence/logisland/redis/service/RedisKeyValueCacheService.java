@@ -16,6 +16,8 @@
 package com.hurence.logisland.redis.service;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.AllowableValue;
@@ -57,6 +59,7 @@ import java.util.List;
  * <p>
  * <p>You specify default TTL </p>
  */
+@Category(ComponentCategory.DATASTORE)
 @Tags({"cache", "service", "key", "value", "pair", "redis"})
 @CapabilityDescription("A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap")
 public class RedisKeyValueCacheService extends AbstractControllerService implements DatastoreClientService, CacheService<String, Record> {

@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
@@ -25,6 +23,7 @@ import com.hurence.logisland.validator.StandardValidators;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Category(ComponentCategory.PROCESSING)
 @Tags({"record", "fields", "flatmap", "flatten"})
 @CapabilityDescription("Converts each field records into a single flatten record...")
 @ExtraDetailFile("./details/common-processors/FlatMap-Detail.rst")
@@ -114,7 +113,7 @@ public class FlatMap extends AbstractProcessor {
 
             // separate leaf from root fields
             List<Field> leafFields = rootRecord.getAllFields().stream()
-                    .filter(field -> field.getType().equals(FieldType.RECORD) &&
+                    .filter(field -> //field.getType().equals(FieldType.RECORD) &&
                             !field.getName().equals(FieldDictionary.RECORD_TYPE) &&
                             !field.getName().equals(FieldDictionary.RECORD_ID) &&
                             !field.getName().equals(FieldDictionary.RECORD_TIME) &&
@@ -129,55 +128,58 @@ public class FlatMap extends AbstractProcessor {
             leafFields.forEach(field -> {
 
                 Record flattenRecord = field.asRecord();
+                if(flattenRecord != null){
+                    // change type if requested
+                    if (!leafRecordType.isEmpty())
+                        flattenRecord.setType(leafRecordType);
 
-                // change type if requested
-                if (!leafRecordType.isEmpty())
-                    flattenRecord.setType(leafRecordType);
+                    // denormalize leaf with root values except id and time
+                    if (copyRootRecordFields) {
+                        if (concatFields.isEmpty()) {
+                            rootFields.forEach(flattenRecord::setField);
+                        } else {
+                            rootFields.forEach(rootField -> {
 
-                // denormalize leaf with root values except id and time
-                if (copyRootRecordFields) {
-                    if (concatFields.isEmpty()) {
-                        rootFields.forEach(flattenRecord::setField);
-                    } else {
-                        rootFields.forEach(rootField -> {
-
-                            String concatFieldName = rootField.getName();
-                            // do concat if needed
-                            if (concatFields.contains(concatFieldName) &&
-                                    rootField.getType() == FieldType.STRING &&
-                                    flattenRecord.hasField(concatFieldName) &&
-                                    flattenRecord.getField(concatFieldName).getType() == FieldType.STRING) {
+                                String concatFieldName = rootField.getName();
+                                // do concat if needed
+                                if (concatFields.contains(concatFieldName) &&
+                                        rootField.getType() == FieldType.STRING &&
+                                        flattenRecord.hasField(concatFieldName) &&
+                                        flattenRecord.getField(concatFieldName).getType() == FieldType.STRING) {
 
 
-                                flattenRecord.setStringField(concatFieldName,
-                                        rootField.asString() + concatSeparator +
-                                                flattenRecord.getField(rootField.getName()).asString());
-                            }else {
-                                flattenRecord.setField(rootField);
-                            }
-                        });
+                                    flattenRecord.setStringField(concatFieldName,
+                                            rootField.asString() + concatSeparator +
+                                                    flattenRecord.getField(rootField.getName()).asString());
+                                }else {
+                                    flattenRecord.setField(rootField);
+                                }
+                            });
 
+                        }
+
+
+                        // denormalize root record position
+                        if(includePosition && rootRecord.hasPosition()){
+                            Position position = rootRecord.getPosition();
+
+                            flattenRecord.setField(FieldDictionary.RECORD_POSITION_LATITUDE, FieldType.DOUBLE, position.getLatitude())
+                                    .setField(FieldDictionary.RECORD_POSITION_LONGITUDE, FieldType.DOUBLE, position.getLongitude())
+                                    .setField(FieldDictionary.RECORD_POSITION_ALTITUDE, FieldType.DOUBLE, position.getAltitude())
+                                    .setField(FieldDictionary.RECORD_POSITION_HEADING, FieldType.DOUBLE, position.getHeading())
+                                    .setField(FieldDictionary.RECORD_POSITION_PRECISION, FieldType.DOUBLE, position.getPrecision())
+                                    .setField(FieldDictionary.RECORD_POSITION_SATELLITES, FieldType.INT, position.getSatellites())
+                                    .setField(FieldDictionary.RECORD_POSITION_SPEED, FieldType.DOUBLE, position.getSpeed())
+                                    .setField(FieldDictionary.RECORD_POSITION_STATUS, FieldType.INT, position.getStatus())
+                                    .setField(FieldDictionary.RECORD_POSITION_TIMESTAMP, FieldType.LONG, position.getTimestamp().getTime());
+
+                        }
                     }
 
-
-                    // denormalize root record position
-                    if(includePosition && rootRecord.hasPosition()){
-                        Position position = rootRecord.getPosition();
-
-                        flattenRecord.setField(FieldDictionary.RECORD_POSITION_LATITUDE, FieldType.DOUBLE, position.getLatitude())
-                                .setField(FieldDictionary.RECORD_POSITION_LONGITUDE, FieldType.DOUBLE, position.getLongitude())
-                                .setField(FieldDictionary.RECORD_POSITION_ALTITUDE, FieldType.DOUBLE, position.getAltitude())
-                                .setField(FieldDictionary.RECORD_POSITION_HEADING, FieldType.DOUBLE, position.getHeading())
-                                .setField(FieldDictionary.RECORD_POSITION_PRECISION, FieldType.DOUBLE, position.getPrecision())
-                                .setField(FieldDictionary.RECORD_POSITION_SATELLITES, FieldType.INT, position.getSatellites())
-                                .setField(FieldDictionary.RECORD_POSITION_SPEED, FieldType.DOUBLE, position.getSpeed())
-                                .setField(FieldDictionary.RECORD_POSITION_STATUS, FieldType.INT, position.getStatus())
-                                .setField(FieldDictionary.RECORD_POSITION_TIMESTAMP, FieldType.LONG, position.getTimestamp().getTime());
-
-                    }
+                    outputRecords.add(flattenRecord);
                 }
 
-                outputRecords.add(flattenRecord);
+
 
             });
         });

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.documentation;
 
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.classloading.PluginLoader;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.ComponentContext;
@@ -25,6 +27,7 @@ import com.hurence.logisland.documentation.html.HtmlProcessorDocumentationWriter
 import com.hurence.logisland.documentation.json.JsonDocumentationWriter;
 import com.hurence.logisland.documentation.rst.RstDocumentationWriter;
 import com.hurence.logisland.documentation.util.ClassFinder;
+import com.hurence.logisland.documentation.yaml.YamlDocumentationWriter;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.stream.RecordStream;
@@ -37,7 +40,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 /**
  * Uses the ExtensionManager to get a list of Processor, ControllerService, and
@@ -46,6 +49,7 @@ import java.util.stream.IntStream;
 public class DocGeneratorUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(DocGeneratorUtils.class);
+
     /**
      * Generates documentation into the work/docs dir specified from a specified set of class
      */
@@ -127,6 +131,31 @@ public class DocGeneratorUtils {
                 logger.warn(e.getMessage());
                 throw new RuntimeException(e);//so we know there is something wrong with doc generation
             }
+        } else if (writerType.equals("yaml")) {
+            final File baseDocumenationFile = new File(docsDirectory, filename + "." + writerType);
+            if (baseDocumenationFile.exists() && !append)
+                baseDocumenationFile.delete();
+            if (!baseDocumenationFile.exists()) {
+
+                try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
+                    writer.println(
+                            "---  # document start\n" +
+                            "\n" +
+                            "categories:\n" +
+                            "  -  processing\n" +
+                            "  -  parsing\n" +
+                            "  -  datastore\n" +
+                            "  -  alerting\n" +
+                            "  -  security\n" +
+                            "  -  enrichment\n" +
+                            "  -  analytics\n" +
+                            "  -  timeseries\n" +
+                            "extensions:");
+                } catch (FileNotFoundException e) {
+                    logger.warn(e.getMessage());
+                    throw new RuntimeException(e);//so we know there is something wrong with doc generation
+                }
+            }
         }
 
         Class[] sortedExtensionsClasses = new Class[extensionClasses.size()];
@@ -153,20 +182,56 @@ public class DocGeneratorUtils {
             }
         });
 
+
         logger.info("Generating {} documentation for {} components in: {}",
                 writerType,
                 Arrays.stream(sortedExtensionsClasses).count(),
                 docsDirectory);
 
         Arrays.stream(sortedExtensionsClasses)
-                .forEach(extensionClass -> {
-                    final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
-                    try {
-                        document(docsDirectory, componentClass, writerType, filename);
-                    } catch (Exception e) {
-                        logger.error("Unexpected error for " + extensionClass, e);
-                        throw new RuntimeException(e);//so we know there is something wrong with doc generation
-                    }
+                .collect(Collectors.groupingBy(configurableComponent -> {
+                            final Category categoryAnnot = (Category) configurableComponent.asSubclass(ConfigurableComponent.class).getAnnotation(
+                                    Category.class);
+
+                            final String category;
+                            if (categoryAnnot != null) {
+                                category = categoryAnnot.value();
+                            } else {
+                                category = ComponentCategory.MISC;
+                            }
+
+                            return category;
+                        }
+                ))
+                .entrySet()
+                .forEach(entry -> {
+
+                   /* String category = entry.getKey();
+                    if (writerType.equals("yaml")) {
+
+                        final File baseDocumenationFile = new File(docsDirectory, filename + "." + writerType);
+                        try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
+                            writer.println(
+                                    "  - category: " + category + "\n" +
+                                    "    extensions:\n");
+                        } catch (FileNotFoundException e) {
+                            logger.warn(e.getMessage());
+                            throw new RuntimeException(e);//so we know there is something wrong with doc generation
+                        }
+
+
+                    }*/
+
+                    entry.getValue().forEach(extensionClass -> {
+
+                        final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
+                        try {
+                            document(docsDirectory, componentClass, writerType, filename);
+                        } catch (Exception e) {
+                            logger.error("Unexpected error for " + extensionClass, e);
+                            throw new RuntimeException(e);//so we know there is something wrong with doc generation
+                        }
+                    });
                 });
 
 
@@ -218,7 +283,7 @@ public class DocGeneratorUtils {
 
         final DocumentationWriter writer = getDocumentWriter(componentClass, writerType);
 
-        final File baseDocumenationFile = new File(docsDir,filename + "." + writerType);
+        final File baseDocumenationFile = new File(docsDir, filename + "." + writerType);
 
         try (final OutputStream output = new BufferedOutputStream(new FileOutputStream(baseDocumenationFile, true))) {
             writer.write(component, output);
@@ -260,6 +325,8 @@ public class DocGeneratorUtils {
                     return new RstDocumentationWriter();
                 case "json":
                     return new JsonDocumentationWriter();
+                case "yaml":
+                    return new YamlDocumentationWriter();
                 default:
                     return null;
             }

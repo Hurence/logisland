@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.service.iptogeo.maxmind;
 
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -41,6 +43,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import java.net.URI;
 
+@Category(ComponentCategory.ENRICHMENT)
 @Tags({"ip", "service", "geo", "maxmind"})
 @CapabilityDescription("Implementation of the IP 2 GEO Service using maxmind lite db file")
 public class MaxmindIpToGeoService extends AbstractControllerService implements IpToGeoService {

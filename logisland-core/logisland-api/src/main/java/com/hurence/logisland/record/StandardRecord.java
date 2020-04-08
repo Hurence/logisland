@@ -35,7 +35,7 @@ public class StandardRecord implements Record {
 
     public static String DEFAULT_RECORD_TYPE = "generic";
 
-    private Map<String, Field> fields = new HashMap<>();
+    private Map<String, Field> fields = new TreeMap<>();
 
     private List<String> errors = new ArrayList<>();
 
@@ -287,6 +287,12 @@ public class StandardRecord implements Record {
     @Override
     public Record setArrayField(String fieldName, Collection value) {
         return setField(fieldName, FieldType.ARRAY, value);
+    }
+
+
+    @Override
+    public Record setObjectField(String fieldName, Object value) {
+        return setField(fieldName, FieldType.OBJECT, value);
     }
 
     @Override

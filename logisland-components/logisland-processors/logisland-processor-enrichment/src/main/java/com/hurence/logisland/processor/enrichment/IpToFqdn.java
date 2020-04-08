@@ -15,12 +15,12 @@
  */
 package com.hurence.logisland.processor.enrichment;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldType;
@@ -39,6 +39,7 @@ import java.util.concurrent.*;
  * An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the
  * IP address.
  */
+@Category(ComponentCategory.ENRICHMENT)
 @Tags({"dns", "ip", "fqdn", "domain", "address", "fqhn", "reverse", "resolution", "enrich"})
 @CapabilityDescription("Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the" +
         " record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The" +

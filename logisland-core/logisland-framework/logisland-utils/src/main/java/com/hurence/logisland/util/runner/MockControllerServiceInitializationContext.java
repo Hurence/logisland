@@ -100,7 +100,7 @@ public class MockControllerServiceInitializationContext implements ControllerSer
     @Override
     public ValidationResult setProperty(final String propertyName, final String propertyValue) {
         PropertyDescriptor descriptor = controllerService.getPropertyDescriptor(propertyName);
-        if (!properties.containsKey(descriptor)) {
+        if (descriptor == null) {
             logger.warn("property '" + propertyName + "' does not exist on " + identifier);
             properties.put(new PropertyDescriptor.Builder().name(propertyName).build(), propertyValue);
             return new ValidationResult.Builder().valid(true).build();

@@ -37,7 +37,6 @@ import org.junit.Test;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -1054,7 +1053,7 @@ public class IncrementalWebSessionTest
 
         runner.addControllerService("elasticsearchClient", elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
-        runner.setProperty(setSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
+        runner.setProperty(SetSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
 
         runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_FIELD, SESSION_INDEX);
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME, SESSION_TYPE);

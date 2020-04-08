@@ -89,6 +89,7 @@ public class DocGenerator {
 
         File rootDocDir = new File(dir);
         DocGeneratorUtils.generate(rootDocDir, fileName, "rst", append);
+        DocGeneratorUtils.generate(rootDocDir, "components", "yaml", append);
     }
 
     private static void printUsage(Options options) {

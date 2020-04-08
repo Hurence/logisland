@@ -359,9 +359,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     private val logger = LoggerFactory.getLogger(classOf[KafkaStreamProcessingEngine])
     private val conf = new SparkConf()
     private var running = false
+    protected var batchDurationMs: Int = 1000
 
-
-    var batchDurationMs:Int = 1000
 
     /**
       * Provides subclasses the ability to perform initialization logic

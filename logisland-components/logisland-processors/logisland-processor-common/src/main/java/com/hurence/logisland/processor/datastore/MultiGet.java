@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor.datastore;
 
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
@@ -32,6 +30,8 @@ import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.*;
 
+
+@Category(ComponentCategory.DATASTORE)
 @Tags({"datastore","get", "multiget"})
 @CapabilityDescription("Retrieves a content from datastore using datastore multiget queries.\n" +
         "Each incoming record contains information regarding the datastore multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :\n" +

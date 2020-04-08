@@ -40,13 +40,21 @@ public class FieldDictionary {
     public static final String RECORD_CHUNK_COMPRESSED_POINTS = "record_chunk_compressed_points";
     public static final String RECORD_CHUNK_UNCOMPRESSED_POINTS = "record_chunk_uncompressed_points";
     public static final String RECORD_CHUNK_SAX_POINTS = "record_chunk_sax_points";
-    public static final String RECORD_CHUNK_START = "record_chunk_start";
-    public static final String RECORD_CHUNK_END = "record_chunk_end";
-    public static final String RECORD_CHUNK_META = "record_chunk_attribute";
-    public static final String RECORD_CHUNK_MAX = "record_chunk_max";
-    public static final String RECORD_CHUNK_MIN = "record_chunk_min";
-    public static final String RECORD_CHUNK_AVG = "record_chunk_avg";
-    public static final String RECORD_CHUNK_SAX = "record_chunk_sax";
+    public static final String CHUNK_START = "chunk_start";
+    public static final String CHUNK_END = "chunk_end";
+    public static final String CHUNK_META = "chunk_attribute";
+    public static final String CHUNK_MAX = "chunk_max";
+    public static final String CHUNK_MIN = "chunk_min";
+    public static final String CHUNK_FIRST_VALUE = "chunk_first";
+    public static final String CHUNK_AVG = "chunk_avg";
+    public static final String CHUNK_SAX = "chunk_sax";
+    public static final String CHUNK_TREND = "chunk_trend";
+    public static final String CHUNK_OUTLIER = "chunk_outlier";
+    public static final String CHUNK_SIZE = "chunk_size";
+    public static final String CHUNK_VALUE = "chunk_value";
+    public static final String CHUNK_SIZE_BYTES ="chunk_size_bytes";
+    public static final String CHUNK_SUM ="chunk_sum";
+    public static final String CHUNK_WINDOW_MS = "chunk_window_ms";
 
     public static final String RECORD_TIMESERIE_POINT_TIMESTAMP = "record_timeserie_time";
     public static final String RECORD_TIMESERIE_POINT_VALUE = "record_timeserie_value";
@@ -61,6 +69,9 @@ public class FieldDictionary {
     public static final String RECORD_POSITION_SPEED = "record_position_speed";
     public static final String RECORD_POSITION_STATUS = "record_position_status";
     public static final String RECORD_POSITION_TIMESTAMP = "record_position_timestamp";
+    public static final String IMAGE_HEIGHT = "image_height";
+    public static final String IMAGE_TYPE = "image_type";
+    public static final String IMAGE_WIDTH = "image_width";
 
     public static Boolean contains(String fieldName) {
         return asList().contains(fieldName);
@@ -103,13 +114,13 @@ public class FieldDictionary {
     );
 
     public static final List<String> CHUNK_FIELDS = Arrays.asList(
-            RECORD_CHUNK_START,
-            RECORD_CHUNK_END,
-            RECORD_CHUNK_META,
-            RECORD_CHUNK_MAX,
-            RECORD_CHUNK_MIN,
-            RECORD_CHUNK_AVG,
-            RECORD_CHUNK_SAX
+            CHUNK_START,
+            CHUNK_END,
+            CHUNK_META,
+            CHUNK_MAX,
+            CHUNK_MIN,
+            CHUNK_AVG,
+            CHUNK_SAX
     );
 
     public static final List<String> TIMESERIE_POINT_FIELDS = Arrays.asList(

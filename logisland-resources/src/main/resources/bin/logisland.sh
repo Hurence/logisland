@@ -20,13 +20,15 @@ esac
 
 app_mainclass="com.hurence.logisland.runner.StreamProcessingRunner"
 
-
+USE_MONITORING=false
+USE_KERBEROS=false
 MODE="default"
 STANDALONE=false
 SPARK_MASTER="local[*]"
 VERBOSE_OPTIONS=""
 YARN_CLUSTER_OPTIONS=""
-APP_NAME=""
+APP_NAME="logisland"
+OPENCV_NATIVE_LIB_PATH="/usr/local/share/java/opencv4"
 
 # update $app_classpath so that it contains all logisland jars except for engines.
 # we look for jars into specified dir recursively.
@@ -100,6 +102,7 @@ usage() {
   echo "  --standalone start logisland in standalone mode (no spark required)"
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --help : displays help"
+  echo "  --kb : use kerberos"
 }
 
 # compare versions
@@ -159,6 +162,9 @@ parse_input() {
         --standalone)
           STANDALONE=true
           ;;
+        --kb)
+          USE_KERBEROS=true
+          ;;
         --verbose)
           VERBOSE_OPTIONS="--verbose"
           ;;
@@ -209,6 +215,7 @@ parse_input() {
       exit 1
     fi
 }
+
 #run logisland job with standalone engine (vanilla)
 run_standalone() {
     java_cp=""
@@ -280,6 +287,7 @@ main() {
 
 
 
+        export SPARK_PRINT_LAUNCH_COMMAND=1
         echo "Detected spark version ${SPARK_VERSION}. We'll automatically plug in engine jar ${engine_jar}"
         APP_NAME=`awk '{ if( $1 == "spark.app.name:" ){ print $2 } }' ${CONF_FILE}`
         MODE=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
@@ -318,22 +326,47 @@ main() {
         fi
 
         case ${MODE} in
+
+          #########################
+          # SPARK LOCAL MODE
+          #########################
           local*)
 
-            ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
-             --conf spark.driver.extraJavaOptions="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dlog4j.configuration=\"file:${lib_dir}/../conf/log4j.properties\"" \
-             --conf spark.executor.extraJavaOptions="-Dlog4j.configuration=\"file:${lib_dir}/../conf/log4j.properties\"" \
+             #--files ${CONF_DIR}/kafka_client_jaas_longrun.conf#kafka_client_jaas_longrun.conf,${CONF_DIR}/hurence.keytab#hurence.keytab \
+
+            LOG4J_SETTINGS="-Dlog4j.configuration=file:${CONF_DIR}/log4j.properties"
+
+            if [[ "$USE_KERBEROS" = true ]]
+            then
+              echo "Using Kerberos"
+              KB_SETTINGS="-Djava.security.auth.login.config=${CONF_DIR}/kafka_client_jaas_longrun.conf"
+            fi
+
+            echo "CONF_DIR is set to ${CONF_DIR}"
+            ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} \
+             --files ${CONF_DIR}/log4j.properties \
+             --conf spark.executor.extraJavaOptions="${LOG4J_SETTINGS} ${KB_SETTINGS}" \
+             --driver-library-path ${OPENCV_NATIVE_LIB_PATH} \
+             --conf spark.driver.extraJavaOptions="${LOG4J_SETTINGS} ${KB_SETTINGS}" \
              --conf spark.metrics.namespace="${APP_NAME}"  \
              --conf spark.metrics.conf="${lib_dir}/../monitoring/metrics.properties"  \
-            --class ${app_mainclass} \
-            --jars ${app_classpath} ${engine_jar} \
-            -conf ${CONF_FILE}
+             --class ${app_mainclass} \
+             --jars ${app_classpath} ${engine_jar} \
+             -conf ${CONF_FILE}
 
             ;;
+
+          #########################
+          # YARN CLUSTER MODE
+          #########################
           yarn-cluster)
 
-            YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../monitoring/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/../monitoring/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/../monitoring/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties --conf spark.metrics.namespace=\"${APP_NAME}\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
-
+            YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster"
+            UPLOADED_CONF_FILE="logisland-configuration.yml"
+            YARN_FILES_OPTIONS="${CONF_FILE}#${UPLOADED_CONF_FILE},${CONF_DIR}/log4j.properties#log4j.properties"
+            LOG4J_SETTINGS="-Dlog4j.configuration=log4j.properties"
+            DRIVER_EXTRA_JAVA_OPTIONS="spark.driver.extraJavaOptions=${LOG4J_SETTINGS}"
+            EXECUTOR_EXTRA_JAVA_OPTIONS="spark.executor.extraJavaOptions=${LOG4J_SETTINGS}"
 
             if [[ ! -z "${YARN_APP_NAME}" ]]
             then
@@ -412,64 +445,98 @@ main() {
                  YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.task.maxFailures=${SPARK_TASK_MAX_FAILURES}"
             fi
 
-
             PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
             if [[ ! -z "${PROPERTIES_FILE_PATH}" ]]
             then
                  YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
             fi
 
-
             SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
             if [[ -z "${SPARK_MONITORING_DRIVER_PORT}" ]]
             then
-                 EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-                 EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-            else
-                 EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
-                 EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
+                echo "Using Monitoring : disabled because a bug"
+                #YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.metrics.namespace=${APP_NAME}"
+                #MONITORING_SETTINGS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar=${SPARK_MONITORING_DRIVER_PORT}:./spark-prometheus.yml"
+                #DRIVER_EXTRA_JAVA_OPTIONS="${DRIVER_EXTRA_JAVA_OPTIONS} ${MONITORING_SETTINGS}"
+                #EXECUTOR_EXTRA_JAVA_OPTIONS="${EXECUTOR_EXTRA_JAVA_OPTIONS} ${MONITORING_SETTINGS}"
+                #YARN_FILES_OPTIONS="${YARN_FILES_OPTIONS},${CONF_DIR}/../monitoring/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/../monitoring/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/../monitoring/metrics.properties#metrics.properties"
             fi
 
-            CONF_FILE="logisland-configuration.yml"
+            if [[ "$USE_KERBEROS" = true ]]
+            then
+                echo "Using Kerberos"
+                KB_WORKERS_SETTINGS="-Djava.security.auth.login.config=kafka_client_jaas_longrun2.conf -Dsun.security.krb5.debug=true"
+                DRIVER_EXTRA_JAVA_OPTIONS="${DRIVER_EXTRA_JAVA_OPTIONS} ${KB_WORKERS_SETTINGS}"
+                EXECUTOR_EXTRA_JAVA_OPTIONS="${EXECUTOR_EXTRA_JAVA_OPTIONS} ${KB_WORKERS_SETTINGS}"
+                YARN_FILES_OPTIONS="${YARN_FILES_OPTIONS},/tmp/hurence.keytab#hurence.keytab,${CONF_DIR}/kafka_client_jaas_longrun2.conf#kafka_client_jaas_longrun2.conf"
+            fi
+
+            #--principal --keytab
 
             ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
-            --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
-            --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
-            --class ${app_mainclass} \
-            --jars ${app_classpath} ${engine_jar} \
-             -conf ${CONF_FILE}
+                --files ${YARN_FILES_OPTIONS} \
+                --conf "${DRIVER_EXTRA_JAVA_OPTIONS}" \
+                --conf "${EXECUTOR_EXTRA_JAVA_OPTIONS}" \
+                --class ${app_mainclass} \
+                --jars ${app_classpath} ${engine_jar} \
+                 -conf ${UPLOADED_CONF_FILE}
 
             ;;
+
+
+
+
+          #########################
+          # YARN CLIENT MODE
+          #########################
           yarn-client)
 
-            YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode client --conf spark.metrics.namespace=\"${APP_NAME}\""
+            YARN_CLIENT_OPTIONS="--master yarn --deploy-mode client --conf spark.metrics.namespace=\"${APP_NAME}\""
+            YARN_FILES_OPTIONS="${CONF_DIR}/log4j.properties#log4j.properties"
+            LOG4J_DRIVER_SETTINGS="-Dlog4j.configuration=file:${CONF_DIR}/log4j.properties"
+            LOG4J_WORKERS_SETTINGS="-Dlog4j.configuration=log4j.properties"
 
             DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
             if [[ ! -z "${DRIVER_CORES}" ]]
             then
-             YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}"
+             YARN_CLIENT_OPTIONS="${YARN_CLIENT_OPTIONS} --driver-cores ${DRIVER_CORES}"
             fi
 
             DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
             if [[ ! -z "${DRIVER_MEMORY}" ]]
             then
-             YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
+             YARN_CLIENT_OPTIONS="${YARN_CLIENT_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
             fi
 
             PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
             if [[ ! -z "${PROPERTIES_FILE_PATH}" ]]
             then
-                 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
+                 YARN_CLIENT_OPTIONS="${YARN_CLIENT_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
             fi
 
-            ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
-            --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml' \
-            --conf spark.metrics.conf=./metrics.properties \
-            --class ${app_mainclass} \
-            --jars ${app_classpath} ${engine_jar} \
-             -conf ${CONF_FILE}
+            if [[ "$USE_KERBEROS" = true ]]
+            then
+              echo "Using Kerberos"
+              KB_DRIVER_SETTINGS="-Djava.security.auth.login.config=${CONF_DIR}/kafka_client_jaas_longrun.conf -Dsun.security.krb5.debug=true"
+              KB_WORKERS_SETTINGS="spark.executor.extraJavaOptions=-Djava.security.auth.login.config=kafka_client_jaas_longrun2.conf -Dsun.security.krb5.debug=true"
+              YARN_FILES_OPTIONS="${YARN_FILES_OPTIONS},/tmp/hurence.keytab#hurence.keytab,${CONF_DIR}/kafka_client_jaas_longrun2.conf#kafka_client_jaas_longrun2.conf"
+            fi
+
+            echo "CONF_DIR is set to ${CONF_DIR}"
+            ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLIENT_OPTIONS} \
+                 --files ${YARN_FILES_OPTIONS} \
+                 --driver-java-options "${KB_DRIVER_SETTINGS} ${LOG4J_DRIVER_SETTINGS}" \
+                 --conf "${KB_WORKERS_SETTINGS} ${LOG4J_WORKERS_SETTINGS}" \
+                 --class ${app_mainclass} \
+                 --jars ${app_classpath} ${engine_jar} \
+                 -conf ${CONF_FILE}
+
             ;;
 
+
+          #########################
+          # MESOS MODE
+          #########################
           mesos)
 
             MESOS_OPTIONS="--master ${SPARK_MASTER} --conf spark.metrics.namespace=\"${APP_NAME}\""
@@ -515,14 +582,9 @@ main() {
             MESOS_NATIVE_JAVA_LIBRARY=`awk '{ if( $1 == "java.library.path:" ){ print $2 } }' ${CONF_FILE}`
 
 
-
-            #--deploy-mode cluster \
-            #--supervise \
-            #--executor-memory 20G \
-           # --total-executor-cores 100 \
-
             export MESOS_NATIVE_JAVA_LIBRARY="${MESOS_NATIVE_JAVA_LIBRARY}"
             ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${MESOS_OPTIONS} \
+            --driver-library-path ${OPENCV_NATIVE_LIB_PATH} \
             --class ${app_mainclass} \
             --jars ${app_classpath} ${engine_jar} \
             -conf ${CONF_FILE}

@@ -16,6 +16,8 @@
 package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.InitializationException;
@@ -47,6 +49,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({"solr", "client"})
 @CapabilityDescription("Implementation of ChronixClientService for Solr 6 4 2")
 public class Solr_6_4_2_ChronixClientService extends AbstractControllerService implements DatastoreClientService {
