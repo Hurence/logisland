@@ -107,7 +107,7 @@
         <opencsv.version>3.7</opencsv.version>
 
         <swagger-core-version>1.5.9</swagger-core-version>
-        <jackson.version>2.9.10</jackson.version>
+        <jackson.version>2.10.3</jackson.version>
 
         <scala.version>2.12.9</scala.version>
         <scala.binary.version>2.12</scala.binary.version>
@@ -163,7 +163,7 @@
         </repository>
         <repository>
             <id>jcenter</id>
-            <url>http://jcenter.bintray.com</url>
+            <url>https://jcenter.bintray.com</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>

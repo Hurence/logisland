@@ -179,6 +179,18 @@ extensions:
     module: com.hurence.logisland:logisland-processor-common:1.2.0
     class: com.hurence.logisland.processor.ConvertSimpleDateFormatFields
     tags: [record, fields, add, date, conversion, convert]
+  - name: DecodeBase64
+    description: Decodes fields to base64. The fields should be of type string
+    category: misc
+    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    class: com.hurence.logisland.processor.DecodeBase64
+    tags: [decode, base64]
+  - name: EncodeBase64
+    description: Encodes fields to base64. The fields should be of type array of bytes
+    category: misc
+    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    class: com.hurence.logisland.processor.EncodeBase64
+    tags: [encode, base64]
   - name: EncryptField
     description: This is a processor that is used to encrypt or decrypt one or many fields of any type of a given Record mapping
     category: misc
@@ -231,6 +243,11 @@ extensions:
     module: com.hurence.logisland:logisland-processor-common:1.2.0
     class: com.hurence.logisland.processor.SetJsonAsFields
     tags: [json]
+  - name: SplitRecord
+    description: This processor is used to create a new set of records from one record.
+    category: misc
+    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    class: com.hurence.logisland.processor.SplitRecord
   - name: CheckAlerts
     description: Add one or more records representing alerts. Using a datastore.
     category: alerting

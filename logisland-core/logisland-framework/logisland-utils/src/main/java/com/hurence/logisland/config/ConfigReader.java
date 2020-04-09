@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.config;
 
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -28,7 +27,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-
 public class ConfigReader {
 
 
@@ -38,9 +36,8 @@ public class ConfigReader {
         return new String(encoded, encoding);
     }
 
-
     /**
-     * Loads a YAML config file
+     * Loads a YAML config file (file located in the local file system)
      *
      * @param configFilePath the path of the config file
      * @return a LogislandSessionConfiguration
@@ -66,7 +63,7 @@ public class ConfigReader {
         return logislandConf;
     }
 
-    private static void checkLogislandConf(LogislandConfiguration conf) throws IllegalArgumentException {
+    public static void checkLogislandConf(LogislandConfiguration conf) throws IllegalArgumentException {
         if (conf.getEngine().getComponent() == null || conf.getEngine().getComponent().isEmpty()) {
             throw new IllegalArgumentException("key 'component' is missing or empty for engine in configuration file");
         }

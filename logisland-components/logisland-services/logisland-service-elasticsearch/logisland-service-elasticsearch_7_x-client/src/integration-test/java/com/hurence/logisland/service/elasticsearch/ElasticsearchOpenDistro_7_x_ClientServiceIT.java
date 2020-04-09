@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
+ * Copyright (C) 2020 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@ package com.hurence.logisland.service.elasticsearch;
 
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
-import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -44,19 +41,30 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-import static com.hurence.logisland.service.elasticsearch.ElasticsearchClientService.HOSTS;
+import static com.hurence.logisland.service.elasticsearch.ElasticsearchClientService.*;
 
-public class Elasticsearch_7_x_ClientServiceIT {
+/**
+ * The current implementation uses HTTPS with no server certificate validation (like the ES service does) as well as
+ * user/password http basic auth, which is currently only admin/admin as it is by default configured in the opendistro
+ * ES docker image we currently use.
+ */
+public class ElasticsearchOpenDistro_7_x_ClientServiceIT {
 
     private static final String MAPPING1 = "{'properties':{'name':{'type': 'text'},'val':{'type':'integer'}}}";
     private static final String MAPPING2 = "{'properties':{'name':{'type': 'text'},'val':{'type': 'text'}}}";
     private static final String MAPPING3 =
             "{'dynamic':'strict','properties':{'name':{'type': 'text'},'xyz':{'type': 'text'}}}";
 
-    private static Logger logger = LoggerFactory.getLogger(Elasticsearch_7_x_ClientServiceIT.class);
+    private static Logger logger = LoggerFactory.getLogger(ElasticsearchOpenDistro_7_x_ClientServiceIT.class);
+
+    // For the moment, the ES opendistro container does not support configuring and using another user/password than
+    // admin/admin. To be allowed to changed that, the ElasticsearchOpenDistroContainer constructor must find a way
+    // to configure a new user/password starting the opendistro container.
+    public static final String OPENDISTRO_USERNAME = "admin";
+    public static final String OPENDISTRO_PASSWORD = "admin";
 
     @ClassRule
-    public static final ESRule esRule = new ESRule();
+    public static final ESOpenDistroRule esOpenDistroRule = new ESOpenDistroRule(OPENDISTRO_USERNAME, OPENDISTRO_PASSWORD);
 
     @After
     public void clean() throws IOException {
@@ -64,22 +72,36 @@ public class Elasticsearch_7_x_ClientServiceIT {
         GetIndexRequest request = new GetIndexRequest("*");
         GetIndexResponse response;
         try {
-            response = esRule.getClient().indices().get(request, RequestOptions.DEFAULT);
+            response = esOpenDistroRule.getClient().indices().get(request, RequestOptions.DEFAULT);
         } catch (ElasticsearchStatusException ex) {
             return;//should be index not found
         }
         String[] indices = response.getIndices();
-        if (indices.length != 0) {
-            DeleteIndexRequest deleteRequest = new DeleteIndexRequest(indices);
-            Assert.assertTrue(esRule.getClient().indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
+        List<String> indicesToClean = new ArrayList<String>();
+        // Do not remove .opendistro_security mandatory index
+        Arrays.stream(indices).forEach(index -> {
+            if (!index.equals(".opendistro_security")) {
+                indicesToClean.add(index);
+            }
+        });
+        if (indicesToClean.size() > 0) {
+            logger.info("Cleaning indices:" + indicesToClean);
+            DeleteIndexRequest deleteRequest = new DeleteIndexRequest(indicesToClean.toArray(new String[0]));
+            Assert.assertTrue(esOpenDistroRule.getClient().indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
+        } else {
+            logger.info("No index to clean");
         }
     }
-    private ElasticsearchClientService configureElasticsearchClientService(final TestRunner runner) throws InitializationException {
+
+    private ElasticsearchClientService configureElasticsearchOpenDistroClientService(final TestRunner runner) throws InitializationException {
         final Elasticsearch_7_x_ClientService elasticsearchClientService = new Elasticsearch_7_x_ClientService();
 
         runner.addControllerService("elasticsearchClient", elasticsearchClientService);
         runner.setProperty(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
-        runner.setProperty(elasticsearchClientService, HOSTS, esRule.getHostPortString());
+        runner.setProperty(elasticsearchClientService, HOSTS, esOpenDistroRule.getHostPortString());
+        runner.setProperty(elasticsearchClientService, USERNAME, OPENDISTRO_USERNAME);
+        runner.setProperty(elasticsearchClientService, PASSWORD, OPENDISTRO_PASSWORD);
+        runner.setProperty(elasticsearchClientService, ENABLE_SSL, "true");
         runner.enableControllerService(elasticsearchClientService);
 
         // TODO : is this necessary ?
@@ -98,7 +120,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
         final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
-        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
+        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchOpenDistroClientService(runner);
 
 
         // Verify the index does not exist
@@ -184,7 +206,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
         final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor :
-        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
+        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchOpenDistroClientService(runner);
 
         // Verify the index does not exist
         Assert.assertEquals(false, elasticsearchClientService.existsCollection(index));
@@ -249,7 +271,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
         final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor :
-        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
+        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchOpenDistroClientService(runner);
 
         // Verify the index does not exist
         Assert.assertEquals(false, elasticsearchClientService.existsCollection(index));
@@ -332,7 +354,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
         final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor :
-        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
+        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchOpenDistroClientService(runner);
 
         // Verify the indexes do not exist
         Assert.assertEquals(false, elasticsearchClientService.existsCollection(index1));

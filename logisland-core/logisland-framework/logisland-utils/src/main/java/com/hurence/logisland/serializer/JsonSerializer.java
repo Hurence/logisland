@@ -164,7 +164,6 @@ public class JsonSerializer implements RecordSerializer {
 
         @Override
         public Record deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-            JsonToken t = jp.getCurrentToken();
 
             String id = null;
             String type = null;
@@ -188,7 +187,10 @@ public class JsonSerializer implements RecordSerializer {
                     case VALUE_NUMBER_INT:
                         try {
                             fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.INT, jp.getIntValue()));
-                        } catch (JsonParseException ex) {
+                        } catch (Exception ex) {
+                            // May have JsonParseException or InputCoercionException (for instance for long instead of int)
+                            // This also depends on jackson version.
+                            // The simplest is to catch any exception, as not sure to be exhaustive and precise handling all
 
                             // special case for creationDate (not a field)
                             if (jp.getCurrentName() != null && jp.getCurrentName().equals("creationDate")) {
@@ -208,7 +210,7 @@ public class JsonSerializer implements RecordSerializer {
                         try {
 
                             fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
-                        } catch (JsonParseException ex) {
+                        } catch (Exception ex) {
 
                             fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
                         }

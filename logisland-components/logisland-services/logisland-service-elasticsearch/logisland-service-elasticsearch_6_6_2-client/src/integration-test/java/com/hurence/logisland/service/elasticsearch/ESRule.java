@@ -36,6 +36,7 @@ public class ESRule implements TestRule {
      * The internal-transport client that talks to the local node.
      */
     private RestHighLevelClient client;
+    private ElasticsearchContainer container;
 
     /**
      * Return a closure which starts an embedded ES docker container, executes the unit-test, then shuts down the
@@ -46,7 +47,7 @@ public class ESRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:6.6.2");
+                container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:6.6.2");
                 container.start();
                 client = new RestHighLevelClient(RestClient.builder(HttpHost.create(container.getHttpHostAddress())));
 
@@ -59,6 +60,10 @@ public class ESRule implements TestRule {
             }
         };
     }
+
+     public String getHostPortString() {
+         return container.getHttpHostAddress();
+     }
 
     /**
      * Return the object through which operations can be performed on the ES cluster.

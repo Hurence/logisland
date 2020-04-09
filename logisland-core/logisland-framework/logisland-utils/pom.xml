@@ -26,6 +26,7 @@
     </parent>
     <artifactId>logisland-utils</artifactId>
     <packaging>jar</packaging>
+
     <dependencies>
         <!--Versions are set in root pom <dependencyManagement> so that all core library use the same -->
         <dependency>
@@ -49,6 +50,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -65,10 +67,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jsonSchema</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>

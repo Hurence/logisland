@@ -22,8 +22,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <spark.version>2.3.3</spark.version>
         <kafka.version>0.10.2.1</kafka.version>
         <scala.version>2.11.8</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
         <jackson.version>2.6.6</jackson.version>
+        <eventhubs.version>2.3.14.1</eventhubs.version>
     </properties>
 
 
@@ -51,7 +51,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
             <dependency>
                 <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.11</artifactId>
+                <artifactId>kafka_${scala.binary.version}</artifactId>
                 <version>${kafka.version}</version>
                 <scope>compile</scope>
             </dependency>
@@ -195,13 +195,11 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
         </dependency>
 
-
         <dependency>
             <groupId>org.apache.bahir</groupId>
-            <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
+            <artifactId>spark-sql-streaming-mqtt_${scala.binary.version}</artifactId>
             <version>2.3.2</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -369,14 +367,36 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <version>5.1.3.RELEASE</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-eventhubs-spark_${scala.binary.version}</artifactId>
+            <version>${eventhubs.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-bootstrap</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+                <configuration>
+                    <!-- Do not truncate exception stack traces -->
+                    <trimStackTrace>false</trimStackTrace>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>4.3.1</version>
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>
