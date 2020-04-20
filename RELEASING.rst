@@ -15,9 +15,7 @@ Be sure `HubFlow git extension <https://github.com/datasift/gitflow>`_ is instal
 
     git hf release start v1.3.0
 
-Update the version with the bump_version.sh script.
-Usage: bump_version.sh <old_version> <new_version>
-You should double escape dots (in the old version only) so it is correctly parsed, otherwise it will be considered as the any character
+Update the version with the bump_version.sh script. Usage: bump_version.sh <old_version> <new_version>. You should double escape dots (in the old version only) so it is correctly parsed, otherwise it will be considered as the any character
 
 .. code-block:: sh
 
@@ -83,7 +81,6 @@ Building the image
 
     # verify image build
     docker images
-
 
 then login and push the latest image
 
