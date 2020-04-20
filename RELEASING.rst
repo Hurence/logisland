@@ -9,6 +9,8 @@ So be sure that any changes from the latest available release have been back-por
 Start a new branch and bump the version
 ---------------------------------------
 
+Be sure `HubFlow git extension<https://github.com/datasift/gitflow>`_ is installed on your system. Then:
+
 .. code-block:: sh
 
     git hf release start v1.3.0
@@ -19,7 +21,7 @@ You should double escape dots (in the old version only) so it is correctly parse
 
 .. code-block:: sh
 
-    ./bump_version.sh 1\\.2\\.0 1.3.0
+    bump_version.sh 1\.2\.0 1.3.0
 
 Build the code, run the unit tests as well as integration tests
 ---------------------------------------------------------------
