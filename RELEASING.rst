@@ -11,18 +11,26 @@ This guide will help you to perform the full release process for Logisland frame
     ./update-version.sh -o 0\\.14\\.0 -n 1.3.0 -d
     ./update-version.sh -o 0\\.14\\.0 -n 1.3.0
 
-Build the code and run the tests
---------------------------------
+Build the code, run the unit tests as well as integration tests
+---------------------------------------------------------------
 
+The following commands must be run from the top-level directory:
 
-The following commands must be run from the top-level directory.
+.. code-block:: sh
+
+    mvn -Pintegration-tests clean verify
+
+.. note::
+   When doing a new release, all available unit tests and integration tests should be run and pass.
+   If you know what your are doing, you can however use those additional information:
+
+To only build and run unit tests without integration tests:
 
 .. code-block:: sh
 
     mvn clean package
 
-If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line.
-
+If you wish to skip the unit tests in any of those commands, you can do this by adding `-DskipTests` to the command line.
 
 Release to maven repositories
 -----------------------------
