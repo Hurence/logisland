@@ -33,7 +33,7 @@ package com.hurence.logisland.stream
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
-import com.hurence.logisland.validator.StandardValidators
+import com.hurence.logisland.validator.{StandardValidators,Validator,ValidationResult}
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more

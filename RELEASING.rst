@@ -46,7 +46,7 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.3.0/assets?name=logisland-1.1.2-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.3.0/assets?name=logisland-1.3.0-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
 
 
 

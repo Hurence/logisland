@@ -826,7 +826,7 @@
         <profile>
             <!-- Profile for Integration tests run mechanism and separation from unit tests. Inspired from this page:
             https://www.baeldung.com/maven-integration-test
-            If you need additional stuff like resources for the integration tests, please this page to know how to do it.
+            If you need additional stuff like resources for the integration tests, read this page to know how to do it.
             To run integration tests, run: mvn -Pintegration-tests clean verify -->
             <id>integration-tests</id>
             <build>
