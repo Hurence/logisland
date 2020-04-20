@@ -90,7 +90,23 @@ then login and push the latest image
     docker login
     docker push hurence/logisland
 
+Update the release notes
+------------------------
+
+In logisland-documentation/changes.rst.
+
+TBD: should build again the doc or something to have this file 'published'?
+
 Publish artifact to github
 --------------------------
 
 Tag the release + upload latest tgz
+
+Merge back changes from the release into master and close release branch
+------------------------------------------------------------------------
+
+.. code-block:: sh
+
+    git hf release finish v1.3.0
+
+TBD: does this also generate the release tag?
