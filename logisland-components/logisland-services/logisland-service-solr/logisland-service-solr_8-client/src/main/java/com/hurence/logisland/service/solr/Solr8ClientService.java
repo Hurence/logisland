@@ -22,8 +22,7 @@ import com.hurence.logisland.service.solr.api.SolrClientService;
 import com.hurence.logisland.service.solr.api.SolrRecordConverter;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.*;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 import org.slf4j.LoggerFactory;
@@ -67,7 +66,23 @@ public class Solr8ClientService extends SolrClientService {
         cloudSolrClient.setZkClientTimeout(30000);
         cloudSolrClient.setZkConnectTimeout(30000);
 
-        return cloudSolrClient;
+
+
+
+
+        Krb5HttpClientBuilder krbBuild = new Krb5HttpClientBuilder();
+        SolrHttpClientBuilder kb = krbBuild.getBuilder();
+        HttpClientUtil.setHttpClientBuilder(kb);
+        CloudSolrClient solrServer = new CloudSolrClient.Builder().withZkHost(connectionString).build();
+
+        solrServer.setDefaultCollection(collection);
+        solrServer.connect();
+        solrServer.setZkClientTimeout(30000);
+        solrServer.setZkConnectTimeout(30000);
+
+
+
+        return solrServer;
     }
 
     @Override

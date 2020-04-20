@@ -20,7 +20,7 @@ extensions:
       
       a threshold_cross has the following properties : count, sum, avg, time, duration, value
     category: enrichment
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.alerting.ComputeTags
     tags: [record, fields, Add]
   - name: EnrichRecords
@@ -37,19 +37,25 @@ extensions:
       
       Each outcoming record holds at least the input record plus potentially one or more fields coming from of one datastore document.
     category: enrichment
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.datastore.EnrichRecords
     tags: [datastore, enricher]
   - name: DebugStream
     description: This is a processor that logs incoming records
     category: utils
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.DebugStream
+    tags: [record, debug]
+  - name: RecordsCounter
+    description: This is a processor that logs incoming records
+    category: utils
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
+    class: com.hurence.logisland.processor.RecordsCounter
     tags: [record, debug]
   - name: BulkPut
     description: Indexes the content of a Record in a Datastore using bulk processor
     category: datastore
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.datastore.BulkPut
     tags: [datastore, record, put, bulk]
   - name: MultiGet
@@ -73,61 +79,61 @@ extensions:
         - field name : the retrieved field name
         - field value : the retrieved field value
     category: datastore
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.datastore.MultiGet
     tags: [datastore, get, multiget]
   - name: AddFields
     description: Add one or more field to records
     category: processing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.AddFields
     tags: [record, fields, Add]
   - name: ApplyRegexp
     description: This processor is used to create a new set of fields from one field (using regexp).
     category: processing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.ApplyRegexp
     tags: [parser, regex, log, record]
   - name: ExpandMapFields
     description: Expands the content of a MAP field to the root.
     category: processing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.ExpandMapFields
     tags: [record, fields, Expand, Map]
   - name: FlatMap
     description: Converts each field records into a single flatten record...
     category: processing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.FlatMap
     tags: [record, fields, flatmap, flatten]
   - name: GenerateRandomRecord
     description: This is a processor that make random records given an Avro schema
     category: processing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.GenerateRandomRecord
     tags: [record, avro, generator]
   - name: ModifyId
     description: modify id of records or generate it following defined rules
     category: processing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.ModifyId
     tags: [record, id, idempotent, generate, modify]
   - name: NormalizeFields
     description: Changes the name of a field according to a provided name mapping...
     category: processing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.NormalizeFields
     tags: [record, fields, normalizer]
   - name: SelectDistinctRecords
     description: Keep only distinct records based on a given field
     category: processing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.SelectDistinctRecords
     tags: [record, fields, remove, delete]
   - name: EvaluateJsonPath
     description: Evaluates one or more JsonPath expressions against the content of a FlowFile. The results of those expressions are assigned to Records Fields depending on configuration of the Processor. JsonPaths are entered by adding user-defined properties; the name of the property maps to the Field Name into which the result will be placed. The value of the property must be a valid JsonPath expression. A Return Type of 'auto-detect' will make a determination based off the configured destination. If the JsonPath evaluates to a JSON array or JSON object and the Return Type is set to 'scalar' the Record will be routed to error. A Return Type of JSON can return scalar values if the provided JsonPath evaluates to the specified value. If the expression matches nothing, Fields will be created with empty strings as the value 
     category: parsing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.EvaluateJsonPath
     tags: [JSON, evaluate, JsonPath]
   - name: ParseProperties
@@ -135,89 +141,77 @@ extensions:
       Parse a field made of key=value fields separated by spaces
       a string like "a=1 b=2 c=3" will add a,b & c fields, respectively with values 1,2 & 3 to the current Record
     category: parsing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.ParseProperties
     tags: [record, properties, parser]
   - name: SplitField
     description: This processor is used to create a new set of fields from one field (using split).
     category: parsing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.SplitField
     tags: [parser, split, log, record]
   - name: SplitText
     description: This is a processor that is used to split a String into fields according to a given Record mapping
     category: parsing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.SplitText
     tags: [parser, regex, log, record]
   - name: SplitTextMultiline
     description: No description provided.
     category: parsing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.SplitTextMultiline
   - name: SplitTextWithProperties
     description: This is a processor that is used to split a String into fields according to a given Record mapping
     category: parsing
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.SplitTextWithProperties
     tags: [parser, regex, log, record]
   - name: ComputeAggsProcessor
     description: Enable to compute some common aggregations on all records or on array fields of records
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.ComputeAggsProcessor
     tags: [record, fields, agg, aggregation, metric, stat]
   - name: ConvertFieldsType
     description: Converts a field value into the given type. does nothing if conversion is not possible
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.ConvertFieldsType
     tags: [type, fields, update, convert]
   - name: ConvertSimpleDateFormatFields
     description: Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)...
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.ConvertSimpleDateFormatFields
     tags: [record, fields, add, date, conversion, convert]
-  - name: DecodeBase64
-    description: Decodes fields to base64. The fields should be of type string
-    category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
-    class: com.hurence.logisland.processor.DecodeBase64
-    tags: [decode, base64]
-  - name: EncodeBase64
-    description: Encodes fields to base64. The fields should be of type array of bytes
-    category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
-    class: com.hurence.logisland.processor.EncodeBase64
-    tags: [encode, base64]
   - name: EncryptField
     description: This is a processor that is used to encrypt or decrypt one or many fields of any type of a given Record mapping
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.EncryptField
   - name: FilterRecords
     description: Keep only records based on a given field value or/and based on custom methods returning a boolean (or something that can be casted into a boolean).
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.FilterRecords
     tags: [record, fields, remove, delete]
   - name: MergeRecordProcessor
     description: Merge contents of several records into less records.
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.MergeRecordProcessor
     tags: [record, fields, merge, content, reduce]
   - name: ParseGitlabLog
     description: The Gitlab logs processor is the Logisland entry point to get and process `Gitlab <https://www.gitlab.com>`_ logs. This allows for instance to monitor activities in your Gitlab server. The expected input of this processor are records from the production_json.log log file of Gitlab which contains JSON records. You can for instance use the `kafkacat <https://github.com/edenhill/kafkacat>`_ command to inject those logs into kafka and thus Logisland.
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.parser.ParseGitlabLog
     tags: [logs, gitlab]
   - name: RemoveFields
     description: Removes a list of fields defined by a comma separated list of field names or keeps only fields defined by a comma separated list of field names.
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.RemoveFields
     tags: [record, fields, remove, delete, keep]
   - name: SendMail
@@ -234,24 +228,19 @@ extensions:
       
        Apart from error records (when he is unable to process the incoming record or to send the mail), this processor is not expected to produce any output records.
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.SendMail
     tags: [smtp, email, e-mail, mail, mailer, sendmail, message, alert, html]
   - name: SetJsonAsFields
     description: The SetJsonAsFields processor reads the content of a string field containing a json  string and sets each json attribute as a field of the current record. Note that this could be achieved with the EvaluateJsonPath processor, but this implies to declare each json first level attribute in the configuration and also to know by advance every one of them. Whereas for this simple case, the SetJsonAsFields processor does not require such a configuration and will work with any incoming json, regardless of the list of first level attributes.
     category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.SetJsonAsFields
     tags: [json]
-  - name: SplitRecord
-    description: This processor is used to create a new set of records from one record.
-    category: misc
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
-    class: com.hurence.logisland.processor.SplitRecord
   - name: CheckAlerts
     description: Add one or more records representing alerts. Using a datastore.
     category: alerting
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.alerting.CheckAlerts
     tags: [record, alerting, thresholds, opc, tag]
   - name: CheckThresholds
@@ -262,13 +251,13 @@ extensions:
       - the record name will be set to the property name
       - the record time will be set to the current timestamp
     category: alerting
-    module: com.hurence.logisland:logisland-processor-common:1.2.0
+    module: com.hurence.logisland:logisland-processor-common:1.3.0
     class: com.hurence.logisland.processor.alerting.CheckThresholds
     tags: [record, threshold, tag, alerting]
   - name: ParseUserAgent
     description: The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest. There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them. This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.
     category: enrichment
-    module: com.hurence.logisland:logisland-processor-useragent:1.2.0
+    module: com.hurence.logisland:logisland-processor-useragent:1.3.0
     class: com.hurence.logisland.processor.useragent.ParseUserAgent
     tags: [User-Agent, clickstream, DMP]
   - name: IncrementalWebSession
@@ -297,7 +286,7 @@ extensions:
       - an integer denoting the duration of the web-sessions
       - optional fields that may be retrieved from the processed events
     category: analytics
-    module: com.hurence.logisland:logisland-processor-web-analytics:1.2.0
+    module: com.hurence.logisland:logisland-processor-web-analytics:1.3.0
     class: com.hurence.logisland.processor.webAnalytics.IncrementalWebSession
     tags: [analytics, web, session]
   - name: SetSourceOfTraffic
@@ -312,37 +301,37 @@ extensions:
       with a default value of source_of_traffic). To work properly the SetSourceOfTraffic processor needs to have access to an 
       Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
     category: analytics
-    module: com.hurence.logisland:logisland-processor-web-analytics:1.2.0
+    module: com.hurence.logisland:logisland-processor-web-analytics:1.3.0
     class: com.hurence.logisland.processor.webAnalytics.SetSourceOfTraffic
     tags: [session, traffic, source, web, analytics]
   - name: IpToFqdn
     description: Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
     category: enrichment
-    module: com.hurence.logisland:logisland-processor-enrichment:1.2.0
+    module: com.hurence.logisland:logisland-processor-enrichment:1.3.0
     class: com.hurence.logisland.processor.enrichment.IpToFqdn
     tags: [dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich]
   - name: IpToGeo
     description: Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
     category: enrichment
-    module: com.hurence.logisland:logisland-processor-enrichment:1.2.0
+    module: com.hurence.logisland:logisland-processor-enrichment:1.3.0
     class: com.hurence.logisland.processor.enrichment.IpToGeo
     tags: [geo, enrich, ip]
   - name: ParseNetworkPacket
     description: The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode).  In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records. The fields of packet headers are then extracted and made available in dedicated record fields. See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_ for an example of usage of this processor.
     category: security
-    module: com.hurence.logisland:logisland-processor-cyber-security:1.2.0
+    module: com.hurence.logisland:logisland-processor-cyber-security:1.3.0
     class: com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
     tags: [PCap, security, IDS, NIDS]
   - name: BulkAddElasticsearch
     description: Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor
     category: datastore
-    module: com.hurence.logisland:logisland-processor-elasticsearch:1.2.0
+    module: com.hurence.logisland:logisland-processor-elasticsearch:1.3.0
     class: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
     tags: [elasticsearch]
   - name: FetchHBaseRow
     description: Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
     category: datastore
-    module: com.hurence.logisland:logisland-processor-hbase:1.2.0
+    module: com.hurence.logisland:logisland-processor-hbase:1.3.0
     class: com.hurence.logisland.processor.hbase.FetchHBaseRow
     tags: [hbase, scan, fetch, get, enrich]
   - name: MultiGetElasticsearch
@@ -366,19 +355,19 @@ extensions:
          * field name : the retrieved field name
          * field value : the retrieved field value
     category: datastore
-    module: com.hurence.logisland:logisland-processor-elasticsearch:1.2.0
+    module: com.hurence.logisland:logisland-processor-elasticsearch:1.3.0
     class: com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
     tags: [elasticsearch]
   - name: PutHBaseCell
     description: Adds the Contents of a Record to HBase as the value of a single cell
     category: datastore
-    module: com.hurence.logisland:logisland-processor-hbase:1.2.0
+    module: com.hurence.logisland:logisland-processor-hbase:1.3.0
     class: com.hurence.logisland.processor.hbase.PutHBaseCell
     tags: [hadoop, hbase]
   - name: EvaluateXPath
     description: Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to new attributes in the records, depending on configuration of the Processor. XPaths are entered by adding user-defined properties; the name of the property maps to the Attribute Name into which the result will be placed. The value of the property must be a valid XPath expression. If the expression matches nothing, no attributes is added. 
     category: parsing
-    module: com.hurence.logisland:logisland-processor-xml:1.2.0
+    module: com.hurence.logisland:logisland-processor-xml:1.3.0
     class: com.hurence.logisland.processor.xml.EvaluateXPath
     tags: [XML, evaluate, XPath]
   - name: ConsolidateSession
@@ -387,7 +376,7 @@ extensions:
       
       "fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
     category: misc
-    module: com.hurence.logisland:logisland-processor-web-analytics:1.2.0
+    module: com.hurence.logisland:logisland-processor-web-analytics:1.3.0
     class: com.hurence.logisland.processor.webAnalytics.ConsolidateSession
     tags: [analytics, web, session]
   - name: DetectOutliers
@@ -409,7 +398,7 @@ extensions:
       
       This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
     category: misc
-    module: com.hurence.logisland:logisland-processor-outlier-detection:1.2.0
+    module: com.hurence.logisland:logisland-processor-outlier-detection:1.3.0
     class: com.hurence.logisland.processor.DetectOutliers
     tags: [analytic, outlier, record, iot, timeseries]
   - name: EnrichRecordsElasticsearch
@@ -418,13 +407,13 @@ extensions:
       Each incoming record must be possibly enriched with information stored in elasticsearch. 
       Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
     category: misc
-    module: com.hurence.logisland:logisland-processor-elasticsearch:1.2.0
+    module: com.hurence.logisland:logisland-processor-elasticsearch:1.3.0
     class: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
     tags: [elasticsearch]
   - name: ExcelExtract
     description: Consumes a Microsoft Excel document and converts each worksheet's line to a structured record. The processor is assuming to receive raw excel file as input record.
     category: misc
-    module: com.hurence.logisland:logisland-processor-excel:1.2.0
+    module: com.hurence.logisland:logisland-processor-excel:1.3.0
     class: com.hurence.logisland.processor.excel.ExcelExtract
     tags: [excel, processor, poi]
   - name: MatchIP
@@ -449,7 +438,7 @@ extensions:
       
       	don't forget to set numeric fields property to handle correctly numeric ranges queries
     category: misc
-    module: com.hurence.logisland:logisland-processor-querymatcher:1.2.0
+    module: com.hurence.logisland:logisland-processor-querymatcher:1.3.0
     class: com.hurence.logisland.processor.MatchIP
     tags: [analytic, percolator, record, record, query, lucene]
   - name: MatchQuery
@@ -474,7 +463,7 @@ extensions:
       
       	don't forget to set numeric fields property to handle correctly numeric ranges queries
     category: misc
-    module: com.hurence.logisland:logisland-processor-querymatcher:1.2.0
+    module: com.hurence.logisland:logisland-processor-querymatcher:1.3.0
     class: com.hurence.logisland.processor.MatchQuery
     tags: [analytic, percolator, record, record, query, lucene]
   - name: ParseBroEvent
@@ -571,7 +560,7 @@ extensions:
       
       "ts": 1487596886.953917
     category: misc
-    module: com.hurence.logisland:logisland-processor-cyber-security:1.2.0
+    module: com.hurence.logisland:logisland-processor-cyber-security:1.3.0
     class: com.hurence.logisland.processor.bro.ParseBroEvent
     tags: [bro, security, IDS, NIDS]
   - name: ParseNetflowEvent
@@ -586,7 +575,7 @@ extensions:
       Netflow are sent to kafka in order to be processed by logisland.
       In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
     category: misc
-    module: com.hurence.logisland:logisland-processor-cyber-security:1.2.0
+    module: com.hurence.logisland:logisland-processor-cyber-security:1.3.0
     class: com.hurence.logisland.processor.netflow.ParseNetflowEvent
     tags: [netflow, security]
   - name: RunPython
@@ -597,7 +586,7 @@ extensions:
       
       This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
     category: misc
-    module: com.hurence.logisland:logisland-processor-scripting:1.2.0
+    module: com.hurence.logisland:logisland-processor-scripting:1.3.0
     class: com.hurence.logisland.processor.scripting.python.RunPython
     tags: [scripting, python]
   - name: URLDecoder
@@ -605,78 +594,78 @@ extensions:
       Decode one or more field containing an URL with possibly special chars encoded
       ...
     category: misc
-    module: com.hurence.logisland:logisland-processor-web-analytics:1.2.0
+    module: com.hurence.logisland:logisland-processor-web-analytics:1.3.0
     class: com.hurence.logisland.processor.webAnalytics.URLDecoder
     tags: [record, fields, Decode]
   - name: MaxmindIpToGeoService
     description: Implementation of the IP 2 GEO Service using maxmind lite db file
     category: enrichment
-    module: com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.2.0
+    module: com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
     class: com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
     tags: [ip, service, geo, maxmind]
   - name: CSVKeyValueCacheService
     description: A cache that store csv lines as records loaded from a file
     category: datastore
-    module: com.hurence.logisland:logisland-service-inmemory-cache:1.2.0
+    module: com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
     class: com.hurence.logisland.service.cache.CSVKeyValueCacheService
     tags: [csv, service, cache]
   - name: CassandraControllerService
     description: Provides a controller service that for the moment only allows to bulkput records into cassandra.
     category: datastore
-    module: com.hurence.logisland:logisland-service-cassandra-client:1.2.0
+    module: com.hurence.logisland:logisland-service-cassandra-client:1.3.0
     class: com.hurence.logisland.service.cassandra.CassandraControllerService
     tags: [cassandra, service]
   - name: Elasticsearch_6_6_2_ClientService
     description: Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
     category: datastore
-    module: com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.2.0
+    module: com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
     class: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
     tags: [elasticsearch, client]
   - name: HBase_1_1_2_ClientService
     description: Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
     category: datastore
-    module: com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.2.0
+    module: com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
     class: com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
     tags: [hbase, client]
   - name: InfluxDBControllerService
     description: Provides a controller service that for the moment only allows to bulkput records into influxdb.
     category: datastore
-    module: com.hurence.logisland:logisland-service-influxdb-client:1.2.0
+    module: com.hurence.logisland:logisland-service-influxdb-client:1.3.0
     class: com.hurence.logisland.service.influxdb.InfluxDBControllerService
     tags: [influxdb, service, time series]
   - name: LRUKeyValueCacheService
     description: A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
     category: datastore
-    module: com.hurence.logisland:logisland-service-inmemory-cache:1.2.0
+    module: com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
     class: com.hurence.logisland.service.cache.LRUKeyValueCacheService
     tags: [cache, service, key, value, pair, LRU]
   - name: MongoDBControllerService
     description: Provides a controller service that wraps most of the functionality of the MongoDB driver.
     category: datastore
-    module: com.hurence.logisland:logisland-service-mongodb-client:1.2.0
+    module: com.hurence.logisland:logisland-service-mongodb-client:1.3.0
     class: com.hurence.logisland.service.mongodb.MongoDBControllerService
     tags: [mongo, mongodb, service]
   - name: RedisKeyValueCacheService
     description: A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
     category: datastore
-    module: com.hurence.logisland:logisland-service-redis:1.2.0
+    module: com.hurence.logisland:logisland-service-redis:1.3.0
     class: com.hurence.logisland.redis.service.RedisKeyValueCacheService
     tags: [cache, service, key, value, pair, redis]
   - name: Solr_6_6_2_ClientService
     description: Implementation of ElasticsearchClientService for Solr 5.5.5.
     category: datastore
-    module: com.hurence.logisland:logisland-service-solr_6_6_2-client:1.2.0
+    module: com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
     class: com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
     tags: [solr, client]
   - name: Elasticsearch_7_x_ClientService
     description: Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
     category: misc
-    module: com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.2.0
+    module: com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
     class: com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
     tags: [elasticsearch, client]
   - name: Solr8ClientService
     description: Implementation of SolrClientService for Solr 8
     category: misc
-    module: com.hurence.logisland:logisland-service-solr_8-client:1.2.0
+    module: com.hurence.logisland:logisland-service-solr_8-client:1.3.0
     class: com.hurence.logisland.service.solr.Solr8ClientService
     tags: [solr, client]

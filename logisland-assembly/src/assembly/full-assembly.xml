@@ -59,7 +59,6 @@
                 <include>com.hurence.logisland:logisland-processor-useragent</include>
                 <include>com.hurence.logisland:logisland-processor-querymatcher</include>
                 <include>com.hurence.logisland:logisland-processor-outlier-detection</include>
-                <include>com.hurence.logisland:logisland-processor-timeseries</include>
                 <include>com.hurence.logisland:logisland-processor-computer-vision</include>
                 <include>com.hurence.logisland:logisland-processor-enrichment</include>
                 <include>com.hurence.logisland:logisland-processor-hbase</include>
@@ -69,6 +68,8 @@
                 <include>com.hurence.logisland:logisland-processor-rest</include>
                 <!--                CONNECTORS          -->
                 <include>com.hurence.logisland:logisland-connector-opc</include>
+
+                <include>com.hurence.logisland:logisland-connector-spooldir</include>
             </includes>
             <binaries>
                 <directoryMode>0770</directoryMode>

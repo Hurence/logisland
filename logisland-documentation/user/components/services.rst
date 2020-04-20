@@ -17,7 +17,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.2.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
 
 Class
 _____
@@ -59,7 +59,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.2.0
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
 
 Class
 _____
@@ -101,7 +101,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 2.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.2.0
+com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.3.0
 
 Class
 _____
@@ -151,7 +151,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 5.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.2.0
+com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.3.0
 
 Class
 _____
@@ -201,7 +201,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.2.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
 
 Class
 _____
@@ -250,7 +250,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.2.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
 
 Class
 _____
@@ -299,7 +299,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.2.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
 
 Class
 _____
@@ -350,7 +350,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.2.0
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
 
 Class
 _____
@@ -396,7 +396,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.2.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
 
 Class
 _____
@@ -431,7 +431,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.2.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
 
 Class
 _____
@@ -469,7 +469,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.2.0
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
 
 Class
 _____
@@ -512,7 +512,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.2.0
+com.hurence.logisland:logisland-service-redis:1.3.0
 
 Class
 _____
@@ -566,7 +566,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.2.0
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
 
 Class
 _____
@@ -608,7 +608,7 @@ Implementation of ChronixClientService for Solr 6 4 2
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_chronix_6_4_2-client:1.2.0
+com.hurence.logisland:logisland-service-solr_chronix_6_4_2-client:1.3.0
 
 Class
 _____
@@ -648,7 +648,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.2.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
 
 Class
 _____
@@ -690,7 +690,7 @@ Implementation of ChronixClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_chronix_8-client:1.2.0
+com.hurence.logisland:logisland-service-solr_chronix_8-client:1.3.0
 
 Class
 _____
@@ -730,7 +730,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.2.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
 
 Class
 _____
@@ -768,7 +768,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.2.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
 
 Class
 _____
@@ -810,7 +810,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.2.0
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
 
 Class
 _____
@@ -852,7 +852,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.2.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
 
 Class
 _____
@@ -901,7 +901,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.2.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
 
 Class
 _____
@@ -952,7 +952,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.2.0
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
 
 Class
 _____
@@ -998,7 +998,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.2.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
 
 Class
 _____
@@ -1033,7 +1033,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.2.0
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
 
 Class
 _____
@@ -1076,7 +1076,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.2.0
+com.hurence.logisland:logisland-service-redis:1.3.0
 
 Class
 _____
@@ -1130,7 +1130,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.2.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
 
 Class
 _____
@@ -1172,7 +1172,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.2.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
 
 Class
 _____
@@ -1221,7 +1221,4271 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.2.0
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr8ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService: 
+
+MaxmindIpToGeoService
+---------------------
+Implementation of the IP 2 GEO Service using maxmind lite db file
+
+Module
+______
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
+
+Tags
+____
+ip, service, geo, maxmind
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "maxmind.database.uri", "Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
+   "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.CSVKeyValueCacheService: 
+
+CSVKeyValueCacheService
+-----------------------
+A cache that store csv lines as records loaded from a file
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.CSVKeyValueCacheService
+
+Tags
+____
+csv, service, cache
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**csv.format**", "a configuration for loading csv", "default (Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(true)), excel (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), excel_fr (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), mysql (Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\'. The default NULL string is \"\\N\". Settings are: withDelimiter('\t') withQuote(null) withRecordSeparator('\n') withIgnoreEmptyLines(false) withEscape('\\') withNullString(\"\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)), rfc4180 (Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false)), tdf (Tab-delimited format. Settings are: withDelimiter('\t') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreSurroundingSpaces(true))", "default", "false", "false"
+   "csv.header", "comma separated header values", "", "null", "false", "false"
+   "csv.file.uri", "Path to the CSV File.", "", "null", "false", "false"
+   "csv.file.path", "Local Path to the CSV File.", "", "null", "false", "false"
+   "**row.key**", "th primary key of this db", "", "null", "false", "false"
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+   "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
+   "encoding.charset", "charset", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
+
+CassandraControllerService
+--------------------------
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
+
+Module
+______
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cassandra.CassandraControllerService
+
+Tags
+____
+cassandra, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "false", "false"
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "false", "false"
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "false", "false"
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "false", "false"
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
+
+HBase_1_1_2_ClientService
+-------------------------
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
+
+Module
+______
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+
+Tags
+____
+hbase, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "hadoop.configuration.files", "Comma-separated list of Hadoop Configuration files, such as hbase-site.xml and core-site.xml for kerberos, including full paths to the files.", "", "null", "false", "false"
+   "zookeeper.quorum", "Comma-separated list of ZooKeeper hosts for HBase. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.client.port", "The port on which ZooKeeper is accepting client connections. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.znode.parent", "The ZooKeeper ZNode Parent value for HBase (example: /hbase). Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "false", "false"
+   "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "false", "**true**"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
+
+LRUKeyValueCacheService
+-----------------------
+A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.LRUKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, LRU
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.mongodb.MongoDBControllerService: 
+
+MongoDBControllerService
+------------------------
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
+
+Module
+______
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.mongodb.MongoDBControllerService
+
+Tags
+____
+mongo, mongodb, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "false", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "false", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "false", "**true**"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "insert (Insert records whose key must be unique), upsert (Insert records if not already existing or update the record if already existing)", "insert", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.redis.service.RedisKeyValueCacheService: 
+
+RedisKeyValueCacheService
+-------------------------
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-redis:1.3.0
+
+Class
+_____
+com.hurence.logisland.redis.service.RedisKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, redis
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "false", "false"
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "false", "false"
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "false", "false"
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "false", "false"
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "false", "false"
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "false", "false"
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", "false"
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "false", "false"
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "false", "false"
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "false", "false"
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "false", "false"
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "false", "false"
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "false", "false"
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "false", "false"
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "false", "false"
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "false", "false"
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "false", "false"
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "false", "false"
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
+   "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+Implementation of ElasticsearchClientService for Solr 5.5.5.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
+
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr8ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService: 
+
+MaxmindIpToGeoService
+---------------------
+Implementation of the IP 2 GEO Service using maxmind lite db file
+
+Module
+______
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
+
+Tags
+____
+ip, service, geo, maxmind
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "maxmind.database.uri", "Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
+   "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.CSVKeyValueCacheService: 
+
+CSVKeyValueCacheService
+-----------------------
+A cache that store csv lines as records loaded from a file
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.CSVKeyValueCacheService
+
+Tags
+____
+csv, service, cache
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**csv.format**", "a configuration for loading csv", "default (Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(true)), excel (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), excel_fr (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), mysql (Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\'. The default NULL string is \"\\N\". Settings are: withDelimiter('\t') withQuote(null) withRecordSeparator('\n') withIgnoreEmptyLines(false) withEscape('\\') withNullString(\"\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)), rfc4180 (Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false)), tdf (Tab-delimited format. Settings are: withDelimiter('\t') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreSurroundingSpaces(true))", "default", "false", "false"
+   "csv.header", "comma separated header values", "", "null", "false", "false"
+   "csv.file.uri", "Path to the CSV File.", "", "null", "false", "false"
+   "csv.file.path", "Local Path to the CSV File.", "", "null", "false", "false"
+   "**row.key**", "th primary key of this db", "", "null", "false", "false"
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+   "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
+   "encoding.charset", "charset", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
+
+CassandraControllerService
+--------------------------
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
+
+Module
+______
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cassandra.CassandraControllerService
+
+Tags
+____
+cassandra, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "false", "false"
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "false", "false"
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "false", "false"
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "false", "false"
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
+
+HBase_1_1_2_ClientService
+-------------------------
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
+
+Module
+______
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+
+Tags
+____
+hbase, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "hadoop.configuration.files", "Comma-separated list of Hadoop Configuration files, such as hbase-site.xml and core-site.xml for kerberos, including full paths to the files.", "", "null", "false", "false"
+   "zookeeper.quorum", "Comma-separated list of ZooKeeper hosts for HBase. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.client.port", "The port on which ZooKeeper is accepting client connections. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.znode.parent", "The ZooKeeper ZNode Parent value for HBase (example: /hbase). Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "false", "false"
+   "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "false", "**true**"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
+
+LRUKeyValueCacheService
+-----------------------
+A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.LRUKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, LRU
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.mongodb.MongoDBControllerService: 
+
+MongoDBControllerService
+------------------------
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
+
+Module
+______
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.mongodb.MongoDBControllerService
+
+Tags
+____
+mongo, mongodb, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "false", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "false", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "false", "**true**"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "insert (Insert records whose key must be unique), upsert (Insert records if not already existing or update the record if already existing)", "insert", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.redis.service.RedisKeyValueCacheService: 
+
+RedisKeyValueCacheService
+-------------------------
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-redis:1.3.0
+
+Class
+_____
+com.hurence.logisland.redis.service.RedisKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, redis
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "false", "false"
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "false", "false"
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "false", "false"
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "false", "false"
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "false", "false"
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "false", "false"
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", "false"
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "false", "false"
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "false", "false"
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "false", "false"
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "false", "false"
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "false", "false"
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "false", "false"
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "false", "false"
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "false", "false"
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "false", "false"
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "false", "false"
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "false", "false"
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
+   "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+Implementation of ElasticsearchClientService for Solr 5.5.5.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
+
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr8ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService: 
+
+MaxmindIpToGeoService
+---------------------
+Implementation of the IP 2 GEO Service using maxmind lite db file
+
+Module
+______
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
+
+Tags
+____
+ip, service, geo, maxmind
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "maxmind.database.uri", "Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
+   "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.CSVKeyValueCacheService: 
+
+CSVKeyValueCacheService
+-----------------------
+A cache that store csv lines as records loaded from a file
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.CSVKeyValueCacheService
+
+Tags
+____
+csv, service, cache
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**csv.format**", "a configuration for loading csv", "default (Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(true)), excel (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), excel_fr (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), mysql (Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\'. The default NULL string is \"\\N\". Settings are: withDelimiter('\t') withQuote(null) withRecordSeparator('\n') withIgnoreEmptyLines(false) withEscape('\\') withNullString(\"\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)), rfc4180 (Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false)), tdf (Tab-delimited format. Settings are: withDelimiter('\t') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreSurroundingSpaces(true))", "default", "false", "false"
+   "csv.header", "comma separated header values", "", "null", "false", "false"
+   "csv.file.uri", "Path to the CSV File.", "", "null", "false", "false"
+   "csv.file.path", "Local Path to the CSV File.", "", "null", "false", "false"
+   "**row.key**", "th primary key of this db", "", "null", "false", "false"
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+   "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
+   "encoding.charset", "charset", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
+
+CassandraControllerService
+--------------------------
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
+
+Module
+______
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cassandra.CassandraControllerService
+
+Tags
+____
+cassandra, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "false", "false"
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "false", "false"
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "false", "false"
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "false", "false"
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
+
+HBase_1_1_2_ClientService
+-------------------------
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
+
+Module
+______
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+
+Tags
+____
+hbase, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "hadoop.configuration.files", "Comma-separated list of Hadoop Configuration files, such as hbase-site.xml and core-site.xml for kerberos, including full paths to the files.", "", "null", "false", "false"
+   "zookeeper.quorum", "Comma-separated list of ZooKeeper hosts for HBase. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.client.port", "The port on which ZooKeeper is accepting client connections. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.znode.parent", "The ZooKeeper ZNode Parent value for HBase (example: /hbase). Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "false", "false"
+   "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "false", "**true**"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
+
+LRUKeyValueCacheService
+-----------------------
+A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.LRUKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, LRU
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.mongodb.MongoDBControllerService: 
+
+MongoDBControllerService
+------------------------
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
+
+Module
+______
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.mongodb.MongoDBControllerService
+
+Tags
+____
+mongo, mongodb, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "false", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "false", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "false", "**true**"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "insert (Insert records whose key must be unique), upsert (Insert records if not already existing or update the record if already existing)", "insert", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.redis.service.RedisKeyValueCacheService: 
+
+RedisKeyValueCacheService
+-------------------------
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-redis:1.3.0
+
+Class
+_____
+com.hurence.logisland.redis.service.RedisKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, redis
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "false", "false"
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "false", "false"
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "false", "false"
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "false", "false"
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "false", "false"
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "false", "false"
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", "false"
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "false", "false"
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "false", "false"
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "false", "false"
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "false", "false"
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "false", "false"
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "false", "false"
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "false", "false"
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "false", "false"
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "false", "false"
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "false", "false"
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "false", "false"
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
+   "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+Implementation of ElasticsearchClientService for Solr 5.5.5.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
+
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr8ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService: 
+
+MaxmindIpToGeoService
+---------------------
+Implementation of the IP 2 GEO Service using maxmind lite db file
+
+Module
+______
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
+
+Tags
+____
+ip, service, geo, maxmind
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "maxmind.database.uri", "Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
+   "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.CSVKeyValueCacheService: 
+
+CSVKeyValueCacheService
+-----------------------
+A cache that store csv lines as records loaded from a file
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.CSVKeyValueCacheService
+
+Tags
+____
+csv, service, cache
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**csv.format**", "a configuration for loading csv", "default (Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(true)), excel (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), excel_fr (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), mysql (Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\'. The default NULL string is \"\\N\". Settings are: withDelimiter('\t') withQuote(null) withRecordSeparator('\n') withIgnoreEmptyLines(false) withEscape('\\') withNullString(\"\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)), rfc4180 (Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false)), tdf (Tab-delimited format. Settings are: withDelimiter('\t') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreSurroundingSpaces(true))", "default", "false", "false"
+   "csv.header", "comma separated header values", "", "null", "false", "false"
+   "csv.file.uri", "Path to the CSV File.", "", "null", "false", "false"
+   "csv.file.path", "Local Path to the CSV File.", "", "null", "false", "false"
+   "**row.key**", "th primary key of this db", "", "null", "false", "false"
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+   "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
+   "encoding.charset", "charset", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
+
+CassandraControllerService
+--------------------------
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
+
+Module
+______
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cassandra.CassandraControllerService
+
+Tags
+____
+cassandra, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "false", "false"
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "false", "false"
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "false", "false"
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "false", "false"
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
+
+HBase_1_1_2_ClientService
+-------------------------
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
+
+Module
+______
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+
+Tags
+____
+hbase, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "hadoop.configuration.files", "Comma-separated list of Hadoop Configuration files, such as hbase-site.xml and core-site.xml for kerberos, including full paths to the files.", "", "null", "false", "false"
+   "zookeeper.quorum", "Comma-separated list of ZooKeeper hosts for HBase. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.client.port", "The port on which ZooKeeper is accepting client connections. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.znode.parent", "The ZooKeeper ZNode Parent value for HBase (example: /hbase). Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "false", "false"
+   "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "false", "**true**"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
+
+LRUKeyValueCacheService
+-----------------------
+A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.LRUKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, LRU
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.mongodb.MongoDBControllerService: 
+
+MongoDBControllerService
+------------------------
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
+
+Module
+______
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.mongodb.MongoDBControllerService
+
+Tags
+____
+mongo, mongodb, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "false", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "false", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "false", "**true**"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "insert (Insert records whose key must be unique), upsert (Insert records if not already existing or update the record if already existing)", "insert", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.redis.service.RedisKeyValueCacheService: 
+
+RedisKeyValueCacheService
+-------------------------
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-redis:1.3.0
+
+Class
+_____
+com.hurence.logisland.redis.service.RedisKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, redis
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "false", "false"
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "false", "false"
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "false", "false"
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "false", "false"
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "false", "false"
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "false", "false"
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", "false"
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "false", "false"
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "false", "false"
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "false", "false"
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "false", "false"
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "false", "false"
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "false", "false"
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "false", "false"
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "false", "false"
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "false", "false"
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "false", "false"
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "false", "false"
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
+   "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+Implementation of ElasticsearchClientService for Solr 5.5.5.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
+
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr8ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService: 
+
+MaxmindIpToGeoService
+---------------------
+Implementation of the IP 2 GEO Service using maxmind lite db file
+
+Module
+______
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
+
+Tags
+____
+ip, service, geo, maxmind
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "maxmind.database.uri", "Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
+   "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.CSVKeyValueCacheService: 
+
+CSVKeyValueCacheService
+-----------------------
+A cache that store csv lines as records loaded from a file
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.CSVKeyValueCacheService
+
+Tags
+____
+csv, service, cache
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**csv.format**", "a configuration for loading csv", "default (Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(true)), excel (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), excel_fr (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), mysql (Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\'. The default NULL string is \"\\N\". Settings are: withDelimiter('\t') withQuote(null) withRecordSeparator('\n') withIgnoreEmptyLines(false) withEscape('\\') withNullString(\"\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)), rfc4180 (Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false)), tdf (Tab-delimited format. Settings are: withDelimiter('\t') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreSurroundingSpaces(true))", "default", "false", "false"
+   "csv.header", "comma separated header values", "", "null", "false", "false"
+   "csv.file.uri", "Path to the CSV File.", "", "null", "false", "false"
+   "csv.file.path", "Local Path to the CSV File.", "", "null", "false", "false"
+   "**row.key**", "th primary key of this db", "", "null", "false", "false"
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+   "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
+   "encoding.charset", "charset", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
+
+CassandraControllerService
+--------------------------
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
+
+Module
+______
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cassandra.CassandraControllerService
+
+Tags
+____
+cassandra, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "false", "false"
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "false", "false"
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "false", "false"
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "false", "false"
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
+
+HBase_1_1_2_ClientService
+-------------------------
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
+
+Module
+______
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+
+Tags
+____
+hbase, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "hadoop.configuration.files", "Comma-separated list of Hadoop Configuration files, such as hbase-site.xml and core-site.xml for kerberos, including full paths to the files.", "", "null", "false", "false"
+   "zookeeper.quorum", "Comma-separated list of ZooKeeper hosts for HBase. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.client.port", "The port on which ZooKeeper is accepting client connections. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.znode.parent", "The ZooKeeper ZNode Parent value for HBase (example: /hbase). Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "false", "false"
+   "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "false", "**true**"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
+
+LRUKeyValueCacheService
+-----------------------
+A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.LRUKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, LRU
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.mongodb.MongoDBControllerService: 
+
+MongoDBControllerService
+------------------------
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
+
+Module
+______
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.mongodb.MongoDBControllerService
+
+Tags
+____
+mongo, mongodb, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "false", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "false", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "false", "**true**"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "insert (Insert records whose key must be unique), upsert (Insert records if not already existing or update the record if already existing)", "insert", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.redis.service.RedisKeyValueCacheService: 
+
+RedisKeyValueCacheService
+-------------------------
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-redis:1.3.0
+
+Class
+_____
+com.hurence.logisland.redis.service.RedisKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, redis
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "false", "false"
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "false", "false"
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "false", "false"
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "false", "false"
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "false", "false"
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "false", "false"
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", "false"
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "false", "false"
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "false", "false"
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "false", "false"
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "false", "false"
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "false", "false"
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "false", "false"
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "false", "false"
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "false", "false"
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "false", "false"
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "false", "false"
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "false", "false"
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
+   "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+Implementation of ElasticsearchClientService for Solr 5.5.5.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
+
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr8ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService: 
+
+MaxmindIpToGeoService
+---------------------
+Implementation of the IP 2 GEO Service using maxmind lite db file
+
+Module
+______
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
+
+Tags
+____
+ip, service, geo, maxmind
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "maxmind.database.uri", "Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
+   "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.CSVKeyValueCacheService: 
+
+CSVKeyValueCacheService
+-----------------------
+A cache that store csv lines as records loaded from a file
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.CSVKeyValueCacheService
+
+Tags
+____
+csv, service, cache
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**csv.format**", "a configuration for loading csv", "default (Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(true)), excel (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), excel_fr (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), mysql (Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\'. The default NULL string is \"\\N\". Settings are: withDelimiter('\t') withQuote(null) withRecordSeparator('\n') withIgnoreEmptyLines(false) withEscape('\\') withNullString(\"\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)), rfc4180 (Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false)), tdf (Tab-delimited format. Settings are: withDelimiter('\t') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreSurroundingSpaces(true))", "default", "false", "false"
+   "csv.header", "comma separated header values", "", "null", "false", "false"
+   "csv.file.uri", "Path to the CSV File.", "", "null", "false", "false"
+   "csv.file.path", "Local Path to the CSV File.", "", "null", "false", "false"
+   "**row.key**", "th primary key of this db", "", "null", "false", "false"
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+   "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
+   "encoding.charset", "charset", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
+
+CassandraControllerService
+--------------------------
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
+
+Module
+______
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cassandra.CassandraControllerService
+
+Tags
+____
+cassandra, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "false", "false"
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "false", "false"
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "false", "false"
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "false", "false"
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
+
+HBase_1_1_2_ClientService
+-------------------------
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
+
+Module
+______
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+
+Tags
+____
+hbase, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "hadoop.configuration.files", "Comma-separated list of Hadoop Configuration files, such as hbase-site.xml and core-site.xml for kerberos, including full paths to the files.", "", "null", "false", "false"
+   "zookeeper.quorum", "Comma-separated list of ZooKeeper hosts for HBase. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.client.port", "The port on which ZooKeeper is accepting client connections. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.znode.parent", "The ZooKeeper ZNode Parent value for HBase (example: /hbase). Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "false", "false"
+   "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "false", "**true**"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
+
+LRUKeyValueCacheService
+-----------------------
+A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.LRUKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, LRU
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.mongodb.MongoDBControllerService: 
+
+MongoDBControllerService
+------------------------
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
+
+Module
+______
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.mongodb.MongoDBControllerService
+
+Tags
+____
+mongo, mongodb, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "false", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "false", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "false", "**true**"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "insert (Insert records whose key must be unique), upsert (Insert records if not already existing or update the record if already existing)", "insert", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.redis.service.RedisKeyValueCacheService: 
+
+RedisKeyValueCacheService
+-------------------------
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-redis:1.3.0
+
+Class
+_____
+com.hurence.logisland.redis.service.RedisKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, redis
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "false", "false"
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "false", "false"
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "false", "false"
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "false", "false"
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "false", "false"
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "false", "false"
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", "false"
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "false", "false"
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "false", "false"
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "false", "false"
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "false", "false"
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "false", "false"
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "false", "false"
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "false", "false"
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "false", "false"
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "false", "false"
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "false", "false"
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "false", "false"
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
+   "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+Implementation of ElasticsearchClientService for Solr 5.5.5.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
+
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr8ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService: 
+
+MaxmindIpToGeoService
+---------------------
+Implementation of the IP 2 GEO Service using maxmind lite db file
+
+Module
+______
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
+
+Tags
+____
+ip, service, geo, maxmind
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "maxmind.database.uri", "Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
+   "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.CSVKeyValueCacheService: 
+
+CSVKeyValueCacheService
+-----------------------
+A cache that store csv lines as records loaded from a file
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.CSVKeyValueCacheService
+
+Tags
+____
+csv, service, cache
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**csv.format**", "a configuration for loading csv", "default (Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(true)), excel (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), excel_fr (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), mysql (Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\'. The default NULL string is \"\\N\". Settings are: withDelimiter('\t') withQuote(null) withRecordSeparator('\n') withIgnoreEmptyLines(false) withEscape('\\') withNullString(\"\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)), rfc4180 (Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false)), tdf (Tab-delimited format. Settings are: withDelimiter('\t') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreSurroundingSpaces(true))", "default", "false", "false"
+   "csv.header", "comma separated header values", "", "null", "false", "false"
+   "csv.file.uri", "Path to the CSV File.", "", "null", "false", "false"
+   "csv.file.path", "Local Path to the CSV File.", "", "null", "false", "false"
+   "**row.key**", "th primary key of this db", "", "null", "false", "false"
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+   "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
+   "encoding.charset", "charset", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
+
+CassandraControllerService
+--------------------------
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
+
+Module
+______
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cassandra.CassandraControllerService
+
+Tags
+____
+cassandra, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "false", "false"
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "false", "false"
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "false", "false"
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "false", "false"
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
+
+HBase_1_1_2_ClientService
+-------------------------
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
+
+Module
+______
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+
+Tags
+____
+hbase, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "hadoop.configuration.files", "Comma-separated list of Hadoop Configuration files, such as hbase-site.xml and core-site.xml for kerberos, including full paths to the files.", "", "null", "false", "false"
+   "zookeeper.quorum", "Comma-separated list of ZooKeeper hosts for HBase. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.client.port", "The port on which ZooKeeper is accepting client connections. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.znode.parent", "The ZooKeeper ZNode Parent value for HBase (example: /hbase). Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "false", "false"
+   "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "false", "**true**"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
+
+LRUKeyValueCacheService
+-----------------------
+A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.LRUKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, LRU
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.mongodb.MongoDBControllerService: 
+
+MongoDBControllerService
+------------------------
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
+
+Module
+______
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.mongodb.MongoDBControllerService
+
+Tags
+____
+mongo, mongodb, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "false", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "false", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "false", "**true**"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "insert (Insert records whose key must be unique), upsert (Insert records if not already existing or update the record if already existing)", "insert", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.redis.service.RedisKeyValueCacheService: 
+
+RedisKeyValueCacheService
+-------------------------
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-redis:1.3.0
+
+Class
+_____
+com.hurence.logisland.redis.service.RedisKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, redis
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "false", "false"
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "false", "false"
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "false", "false"
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "false", "false"
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "false", "false"
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "false", "false"
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", "false"
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "false", "false"
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "false", "false"
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "false", "false"
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "false", "false"
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "false", "false"
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "false", "false"
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "false", "false"
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "false", "false"
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "false", "false"
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "false", "false"
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "false", "false"
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
+   "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+Implementation of ElasticsearchClientService for Solr 5.5.5.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
+
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr8ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService: 
+
+MaxmindIpToGeoService
+---------------------
+Implementation of the IP 2 GEO Service using maxmind lite db file
+
+Module
+______
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService
+
+Tags
+____
+ip, service, geo, maxmind
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "maxmind.database.uri", "Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
+   "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
+   "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.CSVKeyValueCacheService: 
+
+CSVKeyValueCacheService
+-----------------------
+A cache that store csv lines as records loaded from a file
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.CSVKeyValueCacheService
+
+Tags
+____
+csv, service, cache
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**csv.format**", "a configuration for loading csv", "default (Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(true)), excel (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), excel_fr (Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)), mysql (Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\'. The default NULL string is \"\\N\". Settings are: withDelimiter('\t') withQuote(null) withRecordSeparator('\n') withIgnoreEmptyLines(false) withEscape('\\') withNullString(\"\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)), rfc4180 (Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreEmptyLines(false)), tdf (Tab-delimited format. Settings are: withDelimiter('\t') withQuote('\"') withRecordSeparator(\"\r\n\") withIgnoreSurroundingSpaces(true))", "default", "false", "false"
+   "csv.header", "comma separated header values", "", "null", "false", "false"
+   "csv.file.uri", "Path to the CSV File.", "", "null", "false", "false"
+   "csv.file.path", "Local Path to the CSV File.", "", "null", "false", "false"
+   "**row.key**", "th primary key of this db", "", "null", "false", "false"
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+   "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
+   "encoding.charset", "charset", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
+
+CassandraControllerService
+--------------------------
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
+
+Module
+______
+com.hurence.logisland:logisland-service-cassandra-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cassandra.CassandraControllerService
+
+Tags
+____
+cassandra, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "false", "false"
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "false", "false"
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "false", "false"
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "false", "false"
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
+
+HBase_1_1_2_ClientService
+-------------------------
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
+
+Module
+______
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+
+Tags
+____
+hbase, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "hadoop.configuration.files", "Comma-separated list of Hadoop Configuration files, such as hbase-site.xml and core-site.xml for kerberos, including full paths to the files.", "", "null", "false", "false"
+   "zookeeper.quorum", "Comma-separated list of ZooKeeper hosts for HBase. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.client.port", "The port on which ZooKeeper is accepting client connections. Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "zookeeper.znode.parent", "The ZooKeeper ZNode Parent value for HBase (example: /hbase). Required if Hadoop Configuration Files are not provided.", "", "null", "false", "false"
+   "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "false", "false"
+   "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "false", "**true**"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
+
+LRUKeyValueCacheService
+-----------------------
+A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-inmemory-cache:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.cache.LRUKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, LRU
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.mongodb.MongoDBControllerService: 
+
+MongoDBControllerService
+------------------------
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
+
+Module
+______
+com.hurence.logisland:logisland-service-mongodb-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.mongodb.MongoDBControllerService
+
+Tags
+____
+mongo, mongodb, service
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "false", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "false", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "false", "**true**"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "insert (Insert records whose key must be unique), upsert (Insert records if not already existing or update the record if already existing)", "insert", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.redis.service.RedisKeyValueCacheService: 
+
+RedisKeyValueCacheService
+-------------------------
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
+
+Module
+______
+com.hurence.logisland:logisland-service-redis:1.3.0
+
+Class
+_____
+com.hurence.logisland.redis.service.RedisKeyValueCacheService
+
+Tags
+____
+cache, service, key, value, pair, redis
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "false", "false"
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "false", "false"
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "false", "false"
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "false", "false"
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "false", "false"
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "false", "false"
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", "false"
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "false", "false"
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "false", "false"
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "false", "false"
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "false", "false"
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "false", "false"
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "false", "false"
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "false", "false"
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "false", "false"
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "false", "false"
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "false", "false"
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "false", "false"
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
+   "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+Implementation of ElasticsearchClientService for Solr 5.5.5.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+solr, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "false", "false"
+   "**solr.collection**", "name of the collection to use", "", "null", "false", "false"
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.3.0
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr8ClientService: 
+
+Solr8ClientService
+------------------
+Implementation of SolrClientService for Solr 8
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_8-client:1.3.0
 
 Class
 _____

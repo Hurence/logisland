@@ -33,7 +33,7 @@ package com.hurence.logisland.stream
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
-import com.hurence.logisland.validator.{StandardValidators, ValidationResult, Validator}
+import com.hurence.logisland.validator.StandardValidators
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -55,10 +55,10 @@ object StreamProperties {
 
   val NONE_TOPIC = "none"
 
-  val DEFAULT_RAW_TOPIC = new AllowableValue("_raw", "default raw topic", "the incoming non structured topic")
-  val DEFAULT_RECORDS_TOPIC = new AllowableValue("_records", "default events topic", "the outgoing structured topic")
-  val DEFAULT_ERRORS_TOPIC = new AllowableValue("_errors", "default raw topic", "the outgoing structured error topic")
-  val DEFAULT_METRICS_TOPIC = new AllowableValue("_metrics", "default metrics topic", "the topic to place processing metrics")
+  val DEFAULT_RAW_TOPIC = new AllowableValue("logisland_raw", "default raw topic", "the incoming non structured topic")
+  val DEFAULT_RECORDS_TOPIC = new AllowableValue("logisland_records", "default events topic", "the outgoing structured topic")
+  val DEFAULT_ERRORS_TOPIC = new AllowableValue("logisland_errors", "default raw topic", "the outgoing structured error topic")
+  val DEFAULT_METRICS_TOPIC = new AllowableValue("logisland_metrics", "default metrics topic", "the topic to place processing metrics")
 
   val INPUT_TOPICS: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("kafka.input.topics")
@@ -80,7 +80,7 @@ object StreamProperties {
   val ERROR_TOPICS: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("kafka.error.topics")
     .description("Sets the error topics Kafka topic name")
-    .required(true)
+    .required(false)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .defaultValue(DEFAULT_ERRORS_TOPIC.getValue)
     .build
@@ -172,7 +172,7 @@ object StreamProperties {
     .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
     .required(false)
     .addValidator(StandardValidators.INTEGER_VALIDATOR)
-    .defaultValue("20")
+    .defaultValue("3")
     .build
 
   val KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR: PropertyDescriptor = new PropertyDescriptor.Builder()
@@ -180,7 +180,7 @@ object StreamProperties {
     .description("if autoCreate is set to true, this will set the number of replica for each partition at topic creation time")
     .required(false)
     .addValidator(StandardValidators.INTEGER_VALIDATOR)
-    .defaultValue("3")
+    .defaultValue("1")
     .build
 
   val KAFKA_METADATA_BROKER_LIST: PropertyDescriptor = new PropertyDescriptor.Builder()
@@ -188,7 +188,7 @@ object StreamProperties {
     .description("a comma separated list of host:port brokers")
     .required(true)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-    .defaultValue("sandbox:9092")
+    .defaultValue("localhost:9092")
     .build
 
   val KAFKA_ZOOKEEPER_QUORUM: PropertyDescriptor = new PropertyDescriptor.Builder()
@@ -196,7 +196,7 @@ object StreamProperties {
     .description("")
     .required(true)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-    .defaultValue("sandbox:2181")
+    .defaultValue("localhost:2181")
     .build
 
   val LATEST_OFFSET = new AllowableValue("latest", "latest", "the offset to the latest offset")
@@ -308,6 +308,43 @@ object StreamProperties {
     .required(false)
     .defaultValue("100")
     .build
+
+
+
+
+val KAFKA_STARTING_OFFSETS:  PropertyDescriptor = new PropertyDescriptor.Builder()
+  .name("kafka.startingOffsets")
+  .description("\"earliest\", \"latest\", or json string \"\"\" {\"topicA\":{\"0\":23,\"1\":-1},\"topicB\":{\"0\":-2}} \"\"\"" +
+    "The start point when a query is started, either \"earliest\" which is from the earliest offsets, " +
+    "\"latest\" which is just from the latest offsets, or a json string specifying a starting offset for each TopicPartition. " +
+    "In the json, -2 as an offset can be used to refer to earliest, -1 to latest. " +
+    "Note: this only applies when a new query is started, and that resuming will always pick up from where the query " +
+    "left off. Newly discovered partitions during a query will start at earliest.")
+  .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+  .required(false)
+  .defaultValue("earliest")
+  .build
+
+  val KAFKA_FAIL_ON_DATA_LOSS:  PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.failOnDataLoss")
+    .description("Whether to fail the query when it's possible that data is lost" +
+      " (e.g., topics are deleted, or offsets are out of range). This may be a false alarm. " +
+      "You can disable it when it doesn't work as you expected. " +
+      "Batch queries will always fail if it fails to read any data from the provided offsets due to lost data.")
+    .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+    .required(false)
+    .defaultValue("true")
+    .build
+
+  val KAFKA_MAX_OFFSETS_PER_TRIGGER:  PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.maxOffsetsPerTrigger")
+    .description("Rate limit on maximum number of offsets processed per trigger interval. " +
+      "The specified total number of offsets will be proportionally split across topicPartitions of different volume.")
+    .addValidator(StandardValidators.LONG_VALIDATOR)
+    .required(false)
+    .build
+
+
   //////////////////////////////////////
   // MQTT options
   //////////////////////////////////////
@@ -555,6 +592,37 @@ object StreamProperties {
     .required(false)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .defaultValue("aggregation")
+    .build
+
+
+  //////////////////////////////////////
+  // Security options
+  //////////////////////////////////////
+
+  val PLAINTEXT = new AllowableValue("PLAINTEXT", "PLAINTEXT", "Un-authenticated, non-encrypted channel")
+  val SSL = new AllowableValue("SSL", "SSL", "SSL channel")
+  val SASL_PLAINTEXT = new AllowableValue("SASL_PLAINTEXT", "SASL_PLAINTEXT", "SASL authenticated, non-encrypted channel")
+  val SASL_SSL = new AllowableValue("SASL_SSL", "SASL_SSL", "SASL authenticated, SSL channel")
+
+  val KAFKA_SECURITY_PROTOCOL: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.security.protocol")
+    .description("kafka.security.protocol sets the value of of the security protocol \n" +
+      "Apache Kafka® brokers supports client authentication via SASL. " +
+      "SASL authentication can be enabled concurrently with SSL encryption " +
+      "(SSL client authentication will be disabled).\n\nThe supported SASL mechanisms are:")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue(PLAINTEXT.getValue)
+    .allowableValues(PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
+    .build
+
+  val KAFKA_SASL_KERBEROS_SERVICE_NAME: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.sasl.kerberos.service.name")
+    .description("follow the guide here to configure your job to work with kerberos authentification \n" +
+      "https://docs.confluent.io/2.0.0/kafka/sasl.html")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue("kafka")
     .build
 
   //////////////////////////////////////

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -195,11 +195,18 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
 
     @Override
     public Dataset<Row> getBatch(Option<Offset> start, Offset end) {
-        Long startOff = start.isDefined() ? Long.parseLong(start.get().json()) :
-                !bufferedRecords.isEmpty() ? bufferedRecords.firstKey() : 0L;
+        /*Long startOff = start.isDefined() ? Long.parseLong(start.get().json()) :
+                !bufferedRecords.isEmpty() ? bufferedRecords.firstKey() : 0L;*/
+
+
+        Long startOff = bufferedRecords.isEmpty() ? 0L :
+                start.isDefined() ? Long.parseLong(start.get().json()) : bufferedRecords.firstKey();
+
+        Long endOff = bufferedRecords.isEmpty() ? 0L : Long.parseLong(end.json()) + 1;
+
 
         Map<Integer, List<InternalRow>> current =
-                new LinkedHashMap<>(bufferedRecords.subMap(startOff, Long.parseLong(end.json()) + 1))
+                new LinkedHashMap<>(bufferedRecords.subMap(startOff > endOff ? endOff : startOff, endOff))
                         .keySet().stream()
                         .flatMap(offset -> {
                             List<Tuple2<SourceTask, SourceRecord>> srl = bufferedRecords.remove(offset);
