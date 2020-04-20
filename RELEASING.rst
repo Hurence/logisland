@@ -9,7 +9,7 @@ So be sure that any changes from the latest available release have been back-por
 Start a new branch and bump the version
 ---------------------------------------
 
-Be sure `HubFlow git extension<https://github.com/datasift/gitflow>`_ is installed on your system. Then:
+Be sure `HubFlow git extension <https://github.com/datasift/gitflow>`_ is installed on your system. Then:
 
 .. code-block:: sh
 
