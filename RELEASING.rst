@@ -9,11 +9,17 @@ So be sure that any changes from the latest available release have been back-por
 Start a new branch and bump the version
 ---------------------------------------
 
+.. code-block:: sh
+
     git hf release start v1.3.0
 
-    # update the version with the bump_version.sh <old_version> <new_version> script:
-    # you should double escape dots so it is correctly parsed, otherwise it will be considered as the any character
-    ./bump_version.sh 1\\.3\\.0 1.4.0
+Update the version with the bump_version.sh script.
+Usage: bump_version.sh <old_version> <new_version>
+You should double escape dots (in the old version only) so it is correctly parsed, otherwise it will be considered as the any character
+
+.. code-block:: sh
+
+    ./bump_version.sh 1\\.2\\.0 1.3.0
 
 Build the code, run the unit tests as well as integration tests
 ---------------------------------------------------------------
@@ -36,6 +42,13 @@ To only build and run unit tests without integration tests:
 
 If you wish to skip the unit tests in any of those commands, you can do this by adding `-DskipTests` to the command line.
 
+Run manual sanity checking
+--------------------------
+
+A good way of doing this is to run some of the `QuickStarts <https://github.com/Hurence/logisland-quickstarts>`_
+
+You must at least successfully run the `Getting Started Guide <https://logisland.github.io/docs/guides/getting-started-guide>`_
+
 Release to maven repositories
 -----------------------------
 to release artifacts (if you're allowed to), follow this guide `release to OSS Sonatype with maven <http://central.sonatype.org/pages/apache-maven.html>`_
@@ -46,12 +59,9 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
     mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
-
-follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
+Follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
 
 go to `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ to release manually the artifact
-
-
 
 Publish release assets to github
 --------------------------------
@@ -59,8 +69,6 @@ Publish release assets to github
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
 curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.3.0/assets?name=logisland-1.3.0-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
-
-
 
 Publish Docker image
 --------------------
@@ -81,7 +89,6 @@ then login and push the latest image
 
     docker login
     docker push hurence/logisland
-
 
 Publish artifact to github
 --------------------------
