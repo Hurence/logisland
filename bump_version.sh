@@ -18,7 +18,7 @@ function bump_files() {
     for i in `find . -name "*.yml"` ; do
         bump $i "version: $current_version" "version: $new_version"
     done
-    for i in `find . -name "*.rst"` ; do
+    for i in `find . -name "*.rst"|grep -v changes.rst|grep -v RELEASING.rst` ; do
         bump $i "$current_version" "$new_version"
     done
 }
