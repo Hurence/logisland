@@ -3,13 +3,17 @@ Releasing guide
 
 This guide will help you to perform the full release process for Logisland framework.
 
+Logisland sources follow the `GitFlow <https://datasift.github.io/gitflow/IntroducingGitFlow.html>`_ process.
+So be sure that any changes from the latest available release have been back-ported to the master and develop branch.
+
+Start a new branch and bump the version
+---------------------------------------
 
     git hf release start v1.3.0
 
-    # update the version (you should run a dry run first)
-    # you should double escapte dots so it is correctly parsed, otherwise it will be considered as the any character
-    ./update-version.sh -o 0\\.14\\.0 -n 1.3.0 -d
-    ./update-version.sh -o 0\\.14\\.0 -n 1.3.0
+    # update the version with the bump_version.sh <old_version> <new_version> script:
+    # you should double escape dots so it is correctly parsed, otherwise it will be considered as the any character
+    ./bump_version.sh 1\\.3\\.0 1.4.0
 
 Build the code, run the unit tests as well as integration tests
 ---------------------------------------------------------------
