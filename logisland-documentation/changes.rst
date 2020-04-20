@@ -2,7 +2,7 @@ What's new in logisland ?
 =========================
 
 
-v1.3.0
+v1.4.0
 ------
 
 - include Chronix timeseries api

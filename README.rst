@@ -55,7 +55,7 @@ to build from the source just clone source and package with maven (logisland req
     cd logisland
     mvn clean package
 
-the final package is available at `logisland-assembly/target/logisland-1.3.0-bin.tar.gz`
+the final package is available at `logisland-assembly/target/logisland-1.4.0-bin.tar.gz`
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
@@ -93,9 +93,9 @@ But you should choose the Spark version that is compatible with your environment
     curl -s http://d3kbcqa49mib13.cloudfront.net/spark-<spark-version>-bin-hadoop<hadoop-version>.tgz | tar -xz -C /usr/local/
     export SPARK_HOME=/usr/local/spark-<spark-version>-bin-hadoop<hadoop-version>
 
-    # install Logisland 1.3.0
+    # install Logisland 1.4.0
     curl -s https://github.com/Hurence/logisland/releases/download/v1.0.0-RC2/logisland-1.0.0-RC2-bin.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-1.3.0
+    cd /usr/local/logisland-1.4.0
 
     # launch a logisland job
     bin/logisland.sh --conf conf/index-apache-logs.yml
@@ -124,9 +124,9 @@ Launching logisland streaming apps is just easy as unarchiving logisland distrib
 
 .. code-block:: sh
 
-    # install Logisland 1.3.0
-    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-1.3.0-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-1.3.0
+    # install Logisland 1.4.0
+    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-1.4.0-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
+    cd /usr/local/logisland-1.4.0
     bin/logisland.sh --conf conf/index-apache-logs.yml
 
 
@@ -147,7 +147,7 @@ The first part is the `ProcessingEngine` configuration (here a Spark streaming e
 
 .. code-block:: yaml
 
-    version: 1.3.0
+    version: 1.4.0
     documentation: LogIsland job config file
     engine:
       component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
