@@ -1,16 +1,10 @@
 LogIsland docker files
 ======================
 
-Small standalone Hadoop distribution for development and testing purpose :
+This repository contains a Docker file to build the official logisland Docker image with :
 
-- Spark 1.6.2
-- Elasticsearch 2.3.3
-- Kibana 4.5.1
-- Kafka 0.9.0.1
+- Spark 2.4.0
 - Logisland 1.4.0
-
-This repository contains a Docker file to build a Docker image with Apache Spark, HBase, Flume & Zeppelin. 
-This Docker image depends on [centos 6.7](https://github.com/CentOS/CentOS-Dockerfiles) image.
 
 Getting the docker image from repository
 ----------------------------------------
