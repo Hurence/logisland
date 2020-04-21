@@ -47,13 +47,26 @@ If you wish to skip the unit tests in any of those commands, you can do this by 
 Build logisland docker image
 ----------------------------
 
+WARNING: you must build the logisland archive with the following command at the root directory of the workspace:
+
+.. code-block:: sh
+
+    mvn -DskipTests clean package
+
+You must not build it with the integration tests run command, as the final packaging will not be spring compliant and
+you will have some errors like this one once you run the docker based quickstarts:
+
+.. code-block:: sh
+
+    Exception in thread "main" java.lang.NoClassDefFoundError: org/springframework/boot/loader/archive/Archive
+
 Once the workspace is built, you must locally create with it the docker image that you will test.
 To do that, follow instructions in logisland-docker/full-container/README.rst, in the 'Build your own' section.
 
-Run manual sanity checking
---------------------------
+Run manual sanity checking with quickstarts
+-------------------------------------------
 
-A good way of doing this is to run some of the `QuickStarts <https://github.com/Hurence/logisland-quickstarts>`_.
+Run some of the `QuickStarts <https://github.com/Hurence/logisland-quickstarts>`_.
 Those tests use the logisland docker image.
 
 You must at least successfully run the `Getting Started Guide <https://logisland.github.io/docs/guides/getting-started-guide>`_
@@ -61,7 +74,7 @@ You must at least successfully run the `Getting Started Guide <https://logisland
 Update the release notes
 ------------------------
 
-When all the automatic and manual tests are ok, update the release notes with what's new in the version in logisland-documentation/changes.rst.
+When all the automatic and manual tests are ok, update the release notes with what's new in the new version in logisland-documentation/changes.rst.
 
 Release to maven repositories
 -----------------------------
