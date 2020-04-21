@@ -63,13 +63,14 @@ you will have some errors like this one once you run the docker based quickstart
 Once the workspace is built, you must locally create with it the docker image that you will test.
 To do that, follow instructions in logisland-docker/full-container/README.rst, in the 'Build your own' section.
 
-Run manual sanity checking with quickstarts
--------------------------------------------
+Run manual sanity checking using the QuickStarts
+------------------------------------------------
 
 Run some of the `QuickStarts <https://github.com/Hurence/logisland-quickstarts>`_.
 Those tests use the logisland docker image.
 
 You must at least successfully run the `Getting Started Guide <https://logisland.github.io/docs/guides/getting-started-guide>`_
+and the `Datastore Elasticsearch Guide <https://logisland.github.io/docs/guides/datastore-elasticsearch-guide>`_
 
 Update the release notes
 ------------------------
