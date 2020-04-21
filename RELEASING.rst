@@ -6,6 +6,8 @@ This guide will help you to perform the full release process for Logisland frame
 Logisland sources follow the `GitFlow <https://datasift.github.io/gitflow/IntroducingGitFlow.html>`_ process.
 So be sure that any changes from the latest available release have been back-ported to the master and develop branch.
 
+The develop branch must also include all of your new features that you want to release compared to the current existing release.
+
 Start a new branch and bump the version
 ---------------------------------------
 
@@ -42,10 +44,17 @@ To only build and run unit tests without integration tests:
 
 If you wish to skip the unit tests in any of those commands, you can do this by adding `-DskipTests` to the command line.
 
+Build logisland docker image
+----------------------------
+
+Once the workspace is built, you must locally create with it the docker image that you will test.
+To do that, follow instructions in logisland-docker/full-container/README.rst.
+
 Run manual sanity checking
 --------------------------
 
-A good way of doing this is to run some of the `QuickStarts <https://github.com/Hurence/logisland-quickstarts>`_
+A good way of doing this is to run some of the `QuickStarts <https://github.com/Hurence/logisland-quickstarts>`_.
+Those tests use the logisland docker image.
 
 You must at least successfully run the `Getting Started Guide <https://logisland.github.io/docs/guides/getting-started-guide>`_
 
