@@ -9,7 +9,6 @@ Small standalone Hadoop distribution for development and testing purpose :
 - Kafka 0.9.0.1
 - Logisland 1.4.0
 
-
 This repository contains a Docker file to build a Docker image with Apache Spark, HBase, Flume & Zeppelin. 
 This Docker image depends on [centos 6.7](https://github.com/CentOS/CentOS-Dockerfiles) image.
 
@@ -22,7 +21,6 @@ Pull the image from Docker Repository
 
     docker pull hurence/logisland
 
-
 Build your own
 --------------
 
@@ -34,15 +32,13 @@ Building the image
     mvn clean package
     cp logisland-assembly/target/logisland-1.4.0-full-bin.tar.gz logisland-docker/full-container
 
-The archive is generated under dist directory, 
-you have to copy this file into your Dockerfile directory you can now issue
+Once the full logisland archive is copied in the logisland docker image directory, directory you can now issue:
 
 .. code-block:: sh
 
     cd logisland-docker/full-container/
     docker build --rm -t hurence/logisland  .
     docker tag hurence/logisland:latest hurence/logisland:1.4.0
-
 
 Running the image
 -----------------
@@ -74,7 +70,6 @@ if you want to mount a directory from your host, add the following option :
 
     -v ~/projects/logisland/docker/mount/:/usr/local/logisland
 
-
 Deploy the image to Docker hub
 ------------------------------
 
@@ -93,10 +88,6 @@ then login and push the latest image
 
     docker login
     docker push hurence/logisland
-
-
-
-
 
 Buil Opncv into a docker file alpine
 ------------------------------------
@@ -162,4 +153,3 @@ Buil Opncv into a docker file alpine
 
 
     mvn install:install-file -Dfile=/usr/local/share/java/opencv4/opencv-411.jar -DgroupId=opencv -DartifactId=opencv -Dversion=4.1.1 -Dpackaging=jar
-

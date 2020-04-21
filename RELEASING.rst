@@ -48,7 +48,7 @@ Build logisland docker image
 ----------------------------
 
 Once the workspace is built, you must locally create with it the docker image that you will test.
-To do that, follow instructions in logisland-docker/full-container/README.rst.
+To do that, follow instructions in logisland-docker/full-container/README.rst, in the 'Build your own' section.
 
 Run manual sanity checking
 --------------------------
