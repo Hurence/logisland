@@ -1,4 +1,4 @@
-FROM hurence/spark:2.3.3
+FROM hurence/spark:2.4.0
 
 LABEL maintainer="support@hurence.com"
 
