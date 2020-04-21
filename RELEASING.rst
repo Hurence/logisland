@@ -58,6 +58,11 @@ Those tests use the logisland docker image.
 
 You must at least successfully run the `Getting Started Guide <https://logisland.github.io/docs/guides/getting-started-guide>`_
 
+Update the release notes
+------------------------
+
+When all the automatic and manual tests are ok, update the release notes with what's new in the version in logisland-documentation/changes.rst.
+
 Release to maven repositories
 -----------------------------
 to release artifacts (if you're allowed to), follow this guide `release to OSS Sonatype with maven <http://central.sonatype.org/pages/apache-maven.html>`_
@@ -97,13 +102,6 @@ then login and push the latest image
 
     docker login
     docker push hurence/logisland
-
-Update the release notes
-------------------------
-
-In logisland-documentation/changes.rst.
-
-TBD: should build again the doc or something to have this file 'published'?
 
 Publish artifact to github
 --------------------------
