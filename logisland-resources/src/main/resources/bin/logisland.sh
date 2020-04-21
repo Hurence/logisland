@@ -119,7 +119,7 @@ usage() {
   echo "  --spark-home : set the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --spark-standalone-dir : set the base shared directory for logisland jars for spark standlone (experimental)"
   echo "  --kb : use kerberos"
-  echo "  --help : displays help"  
+  echo "  --help : display help"
 }
 
 # compare versions
