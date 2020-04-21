@@ -31,7 +31,7 @@ Once the full logisland archive is copied in the logisland docker image director
 .. code-block:: sh
 
     cd logisland-docker/full-container/
-    docker build --rm -t hurence/logisland  .
+    docker build --rm -t hurence/logisland .
     docker tag hurence/logisland:latest hurence/logisland:1.4.0
 
 Running the image
