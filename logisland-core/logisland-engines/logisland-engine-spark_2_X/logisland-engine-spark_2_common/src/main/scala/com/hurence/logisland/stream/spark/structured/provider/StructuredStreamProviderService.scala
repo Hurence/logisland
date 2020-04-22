@@ -216,39 +216,40 @@ trait StructuredStreamProviderService extends ControllerService {
     // convert to logisland records
     var processingRecords: util.Collection[Record] = iterator.toList
 
-    val pipelineMetricPrefix = streamContext.getIdentifier + "."
-    // loop over processor chain
-    streamContext.getProcessContexts.foreach(processorContext => {
-      val startTime = System.currentTimeMillis()
-      val processor = processorContext.getProcessor
+    if (processingRecords.size() >0) {
+      val pipelineMetricPrefix = streamContext.getIdentifier + "."
+      // loop over processor chain
+      streamContext.getProcessContexts.foreach(processorContext => {
+        val startTime = System.currentTimeMillis()
+        val processor = processorContext.getProcessor
 
-      val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
-        processorContext.getIdentifier + ".processing_time_ms").time()
+        val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
+          processorContext.getIdentifier + ".processing_time_ms").time()
 
-      // injects controller service lookup into processor context
-      if (processor.hasControllerService) {
-        processorContext.setControllerServiceLookup(controllerServiceLookup)
-      }
+        // injects controller service lookup into processor context
+        if (processor.hasControllerService) {
+          processorContext.setControllerServiceLookup(controllerServiceLookup)
+        }
 
-      // processor setup (don't forget that)
-      if (!processor.isInitialized)
-        processor.init(processorContext)
+        // processor setup (don't forget that)
+        if (!processor.isInitialized)
+          processor.init(processorContext)
 
-      // do the actual processing
-      processingRecords = processor.process(processorContext, processingRecords)
+        // do the actual processing
+        processingRecords = processor.process(processorContext, processingRecords)
 
-      // compute metrics
-      ProcessorMetrics.computeMetrics(
-        pipelineMetricPrefix + processorContext.getIdentifier + ".",
-        processingRecords,
-        processingRecords,
-        0,
-        processingRecords.size,
-        System.currentTimeMillis() - startTime)
+        // compute metrics
+        ProcessorMetrics.computeMetrics(
+          pipelineMetricPrefix + processorContext.getIdentifier + ".",
+          processingRecords,
+          processingRecords,
+          0,
+          processingRecords.size,
+          System.currentTimeMillis() - startTime)
 
-      processorTimerContext.stop()
-    })
-
+        processorTimerContext.stop()
+      })
+    }
 
     processingRecords.asScala.iterator
   }
