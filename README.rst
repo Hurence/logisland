@@ -36,6 +36,9 @@ Online documentation
 --------------------
 You can find the latest Logisland documentation, including a programming guide,
 on the `project web page. <http://logisland.readthedocs.io/en/latest/index.html>`_
+
+Or on this `site web as well. <https://logisland.github.io/docs/>`_
+
 This README file only contains basic setup instructions.
 
 Browse the `Java API documentation <http://logisland.readthedocs.io/en/latest/_static/apidocs/>`_ for more information.
