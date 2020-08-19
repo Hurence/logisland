@@ -175,6 +175,15 @@ parse_input() {
       case $KEY in
         --conf)
           CONF_FILE="$2"
+          case "$(uname -s)" in
+             Darwin)
+               echo "I've detected that you're running Mac OS X, using greadlink instead of readlink"
+               CONF_FILE_ABOSLUTE_PATH="$(greadlink -f "${CONF_FILE}")"
+               ;;
+             *)
+               CONF_FILE_ABOSLUTE_PATH=$(readlink -f "${CONF_FILE}")
+               ;;
+          esac
           shift
           ;;
         --standalone)
@@ -648,15 +657,8 @@ run_spark_client_mode() {
 
   update_cluster_options_for_spark_cluster
 
-  SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
-  if [[ -z "${SPARK_MONITORING_DRIVER_PORT}" ]]
-  then
-       EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-       EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-  else
-       EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
-       EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
-  fi
+  EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
+  EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
 
   echo "##################"
   echo "Will run command :"
@@ -666,14 +668,14 @@ run_spark_client_mode() {
   --conf "'${EXTRA_PROCESSOR_JAVA_OPTIONS}'" \
   --class '${app_mainclass}' \
   --jars '${app_classpath}' '${engine_jar}' \
-  -conf '${UPLOADED_CONF_FILE}''
-  exit 1
+  -conf '${CONF_FILE_ABOSLUTE_PATH}''
+
   ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${SPARK_CLUSTER_OPTIONS} \
   --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
   --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
   --class ${app_mainclass} \
   --jars ${app_classpath} ${engine_jar} \
-  -conf ${UPLOADED_CONF_FILE}
+  -conf ${CONF_FILE_ABOSLUTE_PATH}
 }
 
 run_spark_cluster_mode() {
@@ -681,29 +683,25 @@ run_spark_cluster_mode() {
 
   update_cluster_options_for_spark_cluster
 
-  SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
-  if [[ -z "${SPARK_MONITORING_DRIVER_PORT}" ]]
-  then
-       EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-       EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-  else
-       EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
-       EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
-  fi
+  EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
+  EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
 
+  echo "##################"
+  echo "Will run command :"
+  echo "##################"
   echo ${SPARK_HOME}'/bin/spark-submit '${VERBOSE_OPTIONS}' '${SPARK_CLUSTER_OPTIONS}' \
   --conf "'${EXTRA_DRIVER_JAVA_OPTIONS}'" \
   --conf "'${EXTRA_PROCESSOR_JAVA_OPTIONS}'" \
   --class '${app_mainclass}' \
   --jars '${app_classpath}' '${engine_jar}' \
-  -conf '${UPLOADED_CONF_FILE}''
-  exit 1
+  -conf '${CONF_FILE_ABOSLUTE_PATH}''
+
   ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${SPARK_CLUSTER_OPTIONS} \
   --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
   --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
   --class ${app_mainclass} \
   --jars ${app_classpath} ${engine_jar} \
-  -conf ${UPLOADED_CONF_FILE}
+  -conf ${CONF_FILE_ABOSLUTE_PATH}
 }
 
 main() {
