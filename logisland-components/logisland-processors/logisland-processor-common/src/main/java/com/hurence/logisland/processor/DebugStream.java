@@ -92,7 +92,7 @@ public class DebugStream extends AbstractProcessor {
             final RecordSerializer finalSerializer = serializer;
             collection.forEach(event -> {
 
-
+                //TODO seems tp not work when record contains other records !
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 finalSerializer.serialize(baos, event);
                 try {
