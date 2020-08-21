@@ -318,6 +318,20 @@ object KafkaStreamProcessingEngine {
       .description("The maximum number of total executor core with mesos.")
       .required(false)
       .build
+    //SPARK STANDALONE CLUSTER OPTIONS
+    val SPARK_TOTAL_EXECUTOR_CORES = new PropertyDescriptor.Builder()
+      .name("spark.total.executor.cores")
+      .description("The total number of core of all executors")
+      .required(false)
+      .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+      .build
+
+    val SPARK_SUPERVISE = new PropertyDescriptor.Builder()
+      .name("spark.supervise")
+      .description("activate supervise option or not of spark standalone cluster (see documentation)")
+      .required(false)
+      .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+      .build
 }
 
 
@@ -359,6 +373,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_PROPERTIES_FILE_PATH)
         descriptors.add(KafkaStreamProcessingEngine.JAVA_MESOS_LIBRARY_PATH)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MESOS_CORE_MAX)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_TOTAL_EXECUTOR_CORES)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_SUPERVISE)
 
         Collections.unmodifiableList(descriptors)
     }
