@@ -148,6 +148,45 @@ public class ApplyRegexpTest {
     }
 
     @Test
+    public void testIpRegexWithPort() {
+
+        Record record1 = getRecord();
+        record1.setField("host", FieldType.STRING, "84.209.99.184:8888");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new ApplyRegexp());
+        testRunner.setProperty("host", "part1:((.+)(?=\\:)|\\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b)");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(6);
+        out.assertFieldEquals("part1", "84.209.99.184");
+    }
+
+    @Test
+    public void testIpRegexWithoutPort() {
+
+        Record record1 = getRecord();
+        record1.setField("remoteHost", FieldType.STRING, "84.209.99.184");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new ApplyRegexp());
+        testRunner.setProperty("remoteHost", "remoteHost:((.+)(?=\\:)|\\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b)");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(5);
+        out.assertFieldEquals("remoteHost", "84.209.99.184");
+    }
+
+
+    @Test
     public void testRegexpMultipleLessOutputVarsThanGroups() {
 
         Record record1 = getRecord();

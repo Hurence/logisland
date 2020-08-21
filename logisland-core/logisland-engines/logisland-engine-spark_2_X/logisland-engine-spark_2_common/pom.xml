@@ -430,6 +430,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     <args>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
+                        <arg>-Xmax-classfile-name</arg>
+                        <arg>140</arg>
                     </args>
                     <jvmArgs>
                         <jvmArg>-Xms64m</jvmArg>

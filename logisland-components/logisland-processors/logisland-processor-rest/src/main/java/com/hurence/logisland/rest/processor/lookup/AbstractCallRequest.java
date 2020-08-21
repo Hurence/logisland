@@ -59,6 +59,18 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
             .expressionLanguageSupported(true)
             .build();
 
+    /*
+            tag1=valuea,valueb;tag2=valuea,valuec
+     */
+    public static final PropertyDescriptor TAG_KEY_VALUE = new PropertyDescriptor.Builder()
+            .name("tag.map")
+            .description("the tags from the record with their values to allow the bulk rest call")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+
+
     public static final PropertyDescriptor REQUEST_BODY = new PropertyDescriptor.Builder()
             .name("request.body")
             .description("The body to use for the request.")
@@ -152,6 +164,7 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
         props.add(CONFLICT_RESOLUTION_POLICY);
         props.add(VALID_HTTP_CODES);
         props.add(KEEP_ONLY_BODY_RESPONSE);
+        props.add(TAG_KEY_VALUE);
         return Collections.unmodifiableList(props);
     }
 
@@ -213,6 +226,40 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
         return Optional.empty();
     }
 
+    Optional<String> concatBody(Collection<Record> records, ProcessContext context) {
+        StringBuffer result = new StringBuffer();
+            records.forEach(record -> {
+                if   (triggerRestCall(record,context)) {
+                    result.append("{");
+
+                    if (record.getField("ItemId").isSet() && record.getField("Userid").isSet()) {
+                        result.append("\"id\":" + Long.parseLong(record.getField("Userid").asString() + record.getField("ItemId").asString()) + ",");
+                    }
+
+                    if (record.getField("ItemId").isSet()) {
+                        result.append("\"presentationId\":" + record.getField("ItemId").asString() + ",");
+                    }
+                    if (record.getField("SecondsViewed").isSet()) {
+                        result.append("\"timeWatched\":" + record.getField("SecondsViewed").asLong() + ",");
+                    }
+                    if (record.getField("Userid").isSet()) {
+                        result.append("\"userId\":" + record.getField("Userid").asLong() + ",");
+                    }
+                    if (record.getField("VideoPercentViewed").isSet()) {
+                        result.append("\"watched\":" + record.getField("VideoPercentViewed").asInteger());
+                    }
+
+                    result.append("},");
+                }
+            } ) ;
+            if (result.length() >0 ) {
+            result.setLength(result.length()-1);
+            return Optional.ofNullable("[ " + result + " ]");
+            }else{
+                return Optional.empty();
+            }
+    }
+
     Optional<String> calculMimTyp(Record record, ProcessContext context) {
         if (context.getPropertyValue(REQUEST_MIME_TYPE).isSet()) {
             return Optional.ofNullable(context.getPropertyValue(REQUEST_MIME_TYPE.getName()).evaluate(record).asString());
@@ -225,5 +272,32 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
             return Optional.ofNullable(context.getPropertyValue(REQUEST_METHOD.getName()).evaluate(record).asString());
         }
         return Optional.empty();
+    }
+
+        /*
+            tag1=valuea,valueb;tag2=valuea,valuec
+            if the record contains one of the tag of the property with one of the value for this tag it will return true
+     */
+    Boolean triggerRestCall(Record record, ProcessContext context) {
+        List<Boolean> resultContainer = new ArrayList<>();
+        if (context.getPropertyValue(TAG_KEY_VALUE).isSet()) {
+           String tag_list = context.getPropertyValue(TAG_KEY_VALUE).asString();
+            String [] keyValuePairs = tag_list.split(";");
+            Map<String,String> map = new HashMap<>();
+            for(String pair : keyValuePairs)                        //iterate over the pairs
+            {
+                String[] entry = pair.split("=");                   //split the pairs to get key and value
+                map.put(entry[0].trim(), entry[1].trim());          //add them to the hashmap and trim whitespaces
+            }
+            map.forEach( (k,v) -> { //k here is tag1 and tag2
+                if ( record.getField(k) != null && record.getField(k).isSet()){
+                    String[] single_values = v.split(",");
+                    List<String> stringList = new ArrayList<>(Arrays.asList(single_values)); // List(valuea,valueb) for tag1 List(valuea,valuec) for tag2
+                    String recordValue = record.getField(k).asString();
+                    resultContainer.add(stringList.contains(recordValue));
+                }
+            });
+        }
+        return (!resultContainer.isEmpty() && resultContainer.contains(true));
     }
 }
