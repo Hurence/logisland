@@ -30,6 +30,7 @@ YARN_CLUSTER_OPTIONS=""
 APP_NAME="logisland"
 OPENCV_NATIVE_LIB_PATH="/usr/local/share/java/opencv4"
 UPLOADED_CONF_FILE="logisland-configuration.yml"
+DEBUG="false"
 
 # update $app_classpath so that it contains all logisland jars except for engines.
 # we look for jars into specified dir recursively.
@@ -121,6 +122,7 @@ usage() {
 #  echo "  --spark-standalone-dir : set the base shared directory for logisland jars for spark standlone (experimental)"
   echo "  --kb : use kerberos"
   echo "  --help : display help"
+  echo "  --debug : debug file for logs"
 }
 
 # compare versions
@@ -206,6 +208,9 @@ parse_input() {
         --help)
           usage
           exit 0
+          ;;
+        --debug)
+          DEBUG="true"
           ;;
         *)
           echo "Unsupported option : $KEY"
@@ -345,8 +350,6 @@ update_mode() {
 run_spark_local_mode() {
   #--files ${CONF_DIR}/kafka_client_jaas_longrun.conf#kafka_client_jaas_longrun.conf,${CONF_DIR}/hurence.keytab#hurence.keytab \
 
-            LOG4J_SETTINGS="-Dlog4j.configuration=file:${CONF_DIR}/log4j.properties"
-
             if [[ "$USE_KERBEROS" = true ]]
             then
               echo "Using Kerberos"
@@ -382,8 +385,14 @@ run_spark_local_mode() {
 
 run_yarn_client_mode() {
   YARN_CLIENT_OPTIONS="--master yarn --deploy-mode client --conf spark.metrics.namespace=\"${APP_NAME}\""
-  YARN_FILES_OPTIONS="${CONF_DIR}/log4j.properties#log4j.properties"
-  LOG4J_DRIVER_SETTINGS="-Dlog4j.configuration=file:${CONF_DIR}/log4j.properties"
+
+  if [[ "$DEBUG" = true ]]; then
+    LOG4J_FILE_TO_USE="log4j-debug.properties"
+  else
+    LOG4J_FILE_TO_USE="log4j.properties"
+  fi
+  YARN_FILES_OPTIONS="${CONF_DIR}/${LOG4J_FILE_TO_USE}#log4j.properties"
+  LOG4J_DRIVER_SETTINGS="-Dlog4j.configuration=file:${CONF_DIR}/${LOG4J_FILE_TO_USE}"
   LOG4J_WORKERS_SETTINGS="-Dlog4j.configuration=log4j.properties"
 
   DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
@@ -435,7 +444,12 @@ run_yarn_client_mode() {
 
 run_yarn_cluster_mode() {
   YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster"
-  YARN_FILES_OPTIONS="${CONF_FILE}#${UPLOADED_CONF_FILE},${CONF_DIR}/log4j.properties#log4j.properties"
+  if [[ "$DEBUG" = true ]]; then
+    LOG4J_FILE_TO_USE="log4j-debug.properties"
+  else
+    LOG4J_FILE_TO_USE="log4j.properties"
+  fi
+  YARN_FILES_OPTIONS="${CONF_FILE}#${UPLOADED_CONF_FILE},${CONF_DIR}/${LOG4J_FILE_TO_USE}#log4j.properties"
   LOG4J_SETTINGS="-Dlog4j.configuration=log4j.properties"
   DRIVER_EXTRA_JAVA_OPTIONS="spark.driver.extraJavaOptions=${LOG4J_SETTINGS}"
   EXECUTOR_EXTRA_JAVA_OPTIONS="spark.executor.extraJavaOptions=${LOG4J_SETTINGS}"
@@ -657,8 +671,8 @@ run_spark_client_mode() {
 
   update_cluster_options_for_spark_cluster
 
-  EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-  EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
+  EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions='${LOG4J_SETTINGS}
+  EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions='${LOG4J_SETTINGS}
 
   echo "##################"
   echo "Will run command :"
@@ -683,8 +697,8 @@ run_spark_cluster_mode() {
 
   update_cluster_options_for_spark_cluster
 
-  EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
-  EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
+  EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions='${LOG4J_SETTINGS}
+  EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions='${LOG4J_SETTINGS}
 
   echo "##################"
   echo "Will run command :"
@@ -707,13 +721,19 @@ run_spark_cluster_mode() {
 main() {
     parse_input $@
 
+    if [[ "$DEBUG" = true ]]; then
+      LOG4J_SETTINGS="-Dlog4j.configuration=file:${CONF_DIR}/log4j-debug.properties"
+    else
+      LOG4J_SETTINGS="-Dlog4j.configuration=file:${CONF_DIR}/log4j.properties"
+    fi
+
     # ----------------------------------------------------------------
     # find the spark-submit mode
     # can be either local, standalone, spark (standalone), mesos or yarn
     # ----------------------------------------------------------------
     if [[ "$STANDALONE" = true ]] ;
     then
-      run_standalone
+        run_standalone
     else
         echo "build classpath"
         app_classpath=""
