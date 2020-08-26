@@ -77,8 +77,14 @@ public class AsyncCallRequestBulkPostJson extends AbstractCallRequest
         /**
          * loop over events to add them to bulk
          */
+        getLogger().debug("Into the bulk " );
+        System.out.println("Into the bulk " );
+
         Optional<String> requestBody = concatBody(records, context);
-        if (requestBody.isPresent() && records.stream().findFirst().isPresent()) {
+        getLogger().debug("Bulk body " +requestBody );
+
+        if (requestBody.isPresent() && !requestBody.get().isEmpty() && records.stream().findFirst().isPresent()) {
+
             Record record = records.stream().findFirst().get();
             StandardRecord coordinates = new StandardRecord(record);
 
@@ -87,7 +93,9 @@ public class AsyncCallRequestBulkPostJson extends AbstractCallRequest
 
             coordinates.setStringField(restClientService.getbodyKey(), requestBody.get());
 
-            System.out.println("tttttt  method " + coordinates.getField(restClientService.getMethodKey()).asString() + " type " + coordinates.getField(restClientService.getMimeTypeKey()).asString() + " with body " + coordinates.getField(restClientService.getbodyKey()).asString());
+            getLogger().debug("Calling bulk for method " + coordinates.getField(restClientService.getMethodKey()).asString() +
+                    " type " + coordinates.getField(restClientService.getMimeTypeKey()).asString() +
+                    " with body " + coordinates.getField(restClientService.getbodyKey()).asString());
 
             Handler<Promise<Optional<Record>>> callRequestHandler = p -> {
                 try {
@@ -106,6 +114,7 @@ public class AsyncCallRequestBulkPostJson extends AbstractCallRequest
                         rspOpt.ifPresent(rsp -> modifyRecord(record, rsp));
                     });
             response.blockingGet();// wait until the request is done
+            getLogger().debug("Bulk ended " );
             stop();
         }
         return records;

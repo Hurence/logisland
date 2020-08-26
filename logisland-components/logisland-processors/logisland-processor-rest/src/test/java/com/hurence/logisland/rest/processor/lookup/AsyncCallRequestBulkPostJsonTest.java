@@ -63,22 +63,29 @@ public class AsyncCallRequestBulkPostJsonTest  {
 
         //test queries
         StandardRecord record1 = new StandardRecord();
-        record1.setField("ItemId", FieldType.LONG, 218594);
+        record1.setField("ItemId", FieldType.STRING, "218594");
         record1.setField("tagName", FieldType.STRING, "ha_video_engagement_brightcove");
         record1.setField("SecondsViewed", FieldType.LONG, 45);
         record1.setField("Userid", FieldType.LONG, 103951);
         record1.setField("VideoPercentViewed", FieldType.INT, 15);
 
         StandardRecord record2 = new StandardRecord();
-        record2.setField("ItemId", FieldType.LONG, 215863);
-        record2.setField("SecondsViewed", FieldType.LONG, 15);
-        record2.setField("Userid", FieldType.LONG, 103951);
+        record2.setField("ItemId", FieldType.STRING, "215863");
+        record2.setField("tagName", FieldType.STRING, "ha_video_engagement_brightcove");
+        record2.setField("Userid", FieldType.LONG, 103952);
         record2.setField("VideoPercentViewed", FieldType.INT, 15);
 
-        runner.enqueue(record1, record2);
+
+
+        StandardRecord record3 = new StandardRecord();
+        record3.setField("tagName", FieldType.STRING, "ha_video_engagement_brightcove");
+        record3.setField("ItemId", FieldType.STRING, "215863");
+        record3.setField("VideoPercentViewed", FieldType.INT, 15);
+
+        runner.enqueue(record1, record2, record3);
         runner.run();
         runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(2);
+        runner.assertOutputRecordsCount(3);
         MockRecord out = runner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(6);
 

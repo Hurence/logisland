@@ -228,36 +228,52 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
 
     Optional<String> concatBody(Collection<Record> records, ProcessContext context) {
         StringBuffer result = new StringBuffer();
+        if (records != null && !records.isEmpty()) {
             records.forEach(record -> {
-                if   (triggerRestCall(record,context)) {
+                if (triggerRestCall(record, context) && record.getField("ItemId") != null && record.getField("Userid")  != null
+                && record.getField("ItemId").isSet() && record.getField("Userid").isSet()) {
+
                     result.append("{");
 
-                    if (record.getField("ItemId").isSet() && record.getField("Userid").isSet()) {
-                        result.append("\"id\":" + Long.parseLong(record.getField("Userid").asString() + record.getField("ItemId").asString()) + ",");
-                    }
+                        try {
+                                result.append("\"id\":" + Long.parseLong(record.getField("Userid").asString() + record.getField("ItemId").asString()));
+                                result.append(",");
+                        } catch (NumberFormatException e) {
+                            getLogger().debug("User id or Item can't be parsed to long (maybe undefined)" + e.getMessage());
+                        }
 
-                    if (record.getField("ItemId").isSet()) {
-                        result.append("\"presentationId\":" + record.getField("ItemId").asString() + ",");
-                    }
-                    if (record.getField("SecondsViewed").isSet()) {
-                        result.append("\"timeWatched\":" + record.getField("SecondsViewed").asLong() + ",");
-                    }
-                    if (record.getField("Userid").isSet()) {
-                        result.append("\"userId\":" + record.getField("Userid").asLong() + ",");
-                    }
-                    if (record.getField("VideoPercentViewed").isSet()) {
-                        result.append("\"watched\":" + record.getField("VideoPercentViewed").asInteger());
-                    }
+                        try {
+                            if (record.getField("SecondsViewed").isSet()) {
+                                result.append("\"timeWatched\":" + record.getField("SecondsViewed").asLong());
+                                result.append(",");
+                            }
 
-                    result.append("},");
+                            if (record.getField("VideoPercentViewed").isSet()) {
+                                result.append("\"watched\":" + record.getField("VideoPercentViewed").asInteger());
+                                result.append(",");
+                            }
+                        } catch (Exception e) {
+                            getLogger().debug("Best effort mode didn't work to get seconds and/or percent viewed , can happen on live session " + e.getMessage());
+                        }
+
+                        result.append("\"presentationId\":" + "\"" + record.getField("ItemId").asString() + "\"");
+                        result.append(",");
+                        result.append("\"userId\":" + record.getField("Userid").asLong());
+
+                        result.append("},");
+
                 }
-            } ) ;
-            if (result.length() >0 ) {
-            result.setLength(result.length()-1);
-            return Optional.ofNullable("[ " + result + " ]");
-            }else{
+            });
+
+            if (result.length() > 0) {
+                result.setLength(result.length() - 1);
+                return Optional.ofNullable("[ " + result + " ]");
+            } else {
                 return Optional.empty();
             }
+        }else {
+            return Optional.empty();
+        }
     }
 
     Optional<String> calculMimTyp(Record record, ProcessContext context) {
