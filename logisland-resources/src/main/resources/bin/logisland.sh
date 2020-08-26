@@ -664,6 +664,18 @@ update_cluster_options_for_spark_cluster() {
   then
    SPARK_CLUSTER_OPTIONS="${SPARK_CLUSTER_OPTIONS} --supervise"
   fi
+
+  local DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
+  if [[ ! -z "${DRIVER_MEMORY}" ]]
+  then
+   SPARK_CLUSTER_OPTIONS="${SPARK_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
+  fi
+
+  local EXECUTORS_CORES=`awk '{ if( $1 == "spark.executor.cores:" ){ print $2 } }' ${CONF_FILE}`
+  if [[ ! -z "${EXECUTORS_CORES}" ]]
+  then
+       SPARK_CLUSTER_OPTIONS="${SPARK_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}"
+  fi
 }
 
 run_spark_client_mode() {
@@ -696,6 +708,13 @@ run_spark_cluster_mode() {
   SPARK_CLUSTER_OPTIONS="--master ${SPARK_MASTER} --deploy-mode cluster --conf spark.metrics.namespace=\"${APP_NAME}\" --conf spark.ui.showConsoleProgress=false"
 
   update_cluster_options_for_spark_cluster
+
+  #only in cluster mode
+  DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
+  if [[ ! -z "${DRIVER_CORES}" ]]
+  then
+   SPARK_CLUSTER_OPTIONS="${SPARK_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}"
+  fi
 
   EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions='${LOG4J_SETTINGS}
   EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions='${LOG4J_SETTINGS}
