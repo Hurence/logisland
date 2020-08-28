@@ -305,8 +305,10 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <!--Needed dependencies by logisland-plugin-support-->
                                     <dependency>cglib:cglib-nodep</dependency>
                                     <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                    <!--Needed dependencies by :logisland-processor-common-->
+                                    <dependency>com.hurence.logisland:logisland-plugin-support</dependency>
                                     <!--PROCESSORS-->
-                                    <dependency>com.hurence.logisland:logisland-processor-common</dependency>
+                                    <dependency>com.hurence.logisland:logisland-utils</dependency>
                                 </classpath>
                                 <argument>com.hurence.logisland.documentation.DocGenerator</argument>
                                 <argument>-d</argument>
