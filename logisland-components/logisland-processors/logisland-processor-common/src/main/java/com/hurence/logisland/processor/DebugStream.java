@@ -20,9 +20,7 @@ import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.serializer.JsonSerializer;
-import com.hurence.logisland.serializer.RecordSerializer;
-import com.hurence.logisland.serializer.StringSerializer;
+import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.io.ByteArrayOutputStream;
@@ -40,38 +38,68 @@ import java.util.List;
 @ExtraDetailFile("./details/common-processors/DebugStream-Detail.rst")
 public class DebugStream extends AbstractProcessor {
 
+    public static final AllowableValue NO_DESERIALIZER =
+        new AllowableValue("none", "no deserialization", "get body as raw string");
 
-    public static final AllowableValue JSON = new AllowableValue("json", "Json serialization",
-            "serialize events as json blocs");
+    public static final AllowableValue AVRO_DESERIALIZER =
+            new AllowableValue(AvroSerializer.class.getName(), "avro deserialization", "deserialize body as avro blocs");
 
-    public static final AllowableValue STRING = new AllowableValue("string", "String serialization",
-            "serialize events as toString() blocs");
+    public static final AllowableValue JSON_DESERIALIZER =
+            new AllowableValue(JsonSerializer.class.getName(), "json deserialization", "deserialize body as json blocs");
+
+    public static final AllowableValue EXTENDED_JSON_DESERIALIZER =
+            new AllowableValue(ExtendedJsonSerializer.class.getName(), "extended json deserialization", "deserialize body as json blocs");
+
+    public static final AllowableValue KRYO_DESERIALIZER =
+            new AllowableValue(KryoSerializer.class.getName(), "kryo deserialization", "deserialize body with kryo");
 
     public static final PropertyDescriptor SERIALIZER = new PropertyDescriptor.Builder()
             .name("event.serializer")
-            .description("the way to serialize event")
-            .required(true)
+            .description("the serializer needed for loading the payload and handling it as a record set.")
+            .expressionLanguageSupported(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue(JSON.getValue())
-            .allowableValues(JSON, STRING)
+            .allowableValues(KRYO_DESERIALIZER, JSON_DESERIALIZER, AVRO_DESERIALIZER, NO_DESERIALIZER, EXTENDED_JSON_DESERIALIZER)
+            .defaultValue(EXTENDED_JSON_DESERIALIZER.getValue())
             .build();
+
+    static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
+            .name("event.serializer.schema")
+            .description("the schema definition for the deserializer (for response payload). You can limit data to retrieve this way")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+
 
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(SERIALIZER);
+        descriptors.add(RECORD_SCHEMA);
         return Collections.unmodifiableList(descriptors);
     }
 
     private volatile MemoryMXBean memBean;
-
+    private volatile RecordSerializer serializer;
 
     @Override
     public void init(ProcessContext context)  throws InitializationException {
         super.init(context);
         if (memBean == null) {
             memBean = ManagementFactory.getMemoryMXBean();
+        }
+        if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
+            serializer = SerializerProvider.getSerializer(
+                    context.getPropertyValue(SERIALIZER).asString(),
+                    context.getPropertyValue(RECORD_SCHEMA).asString());
+        } else {
+            String serializerCanonicName = context.getPropertyValue(SERIALIZER).asString();
+            if (!serializerCanonicName.equals(NO_DESERIALIZER.getValue())) {
+                serializer = SerializerProvider.getSerializer(context.getPropertyValue(SERIALIZER).asString(), null);
+            } else {
+                serializer = new StringSerializer();
+            }
         }
     }
 
@@ -81,32 +109,19 @@ public class DebugStream extends AbstractProcessor {
         getLogger().info("processing {} records", new Object[]{collection.size()});
 
         if (collection.size() != 0) {
-            RecordSerializer serializer = null;
-            if (context.getPropertyValue(SERIALIZER).asString().equals(JSON.getValue())) {
-                serializer = new JsonSerializer();
-            } else {
-                serializer = new StringSerializer();
-            }
-
-
-            final RecordSerializer finalSerializer = serializer;
             collection.forEach(event -> {
-
-
+                //TODO seems tp not work when record contains other records !
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                finalSerializer.serialize(baos, event);
                 try {
+                    serializer.serialize(baos, event);
                     baos.close();
                 } catch (IOException e) {
-                    getLogger().debug("error {} ", e.getCause());
+                    getLogger().error("error while trying to deserialize record !", e);
                 }
 
                 getLogger().info(new String(baos.toByteArray()));
-
-
             });
         }
-
 
         return collection;
     }

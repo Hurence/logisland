@@ -295,8 +295,7 @@ public class JsonSerializer implements RecordSerializer {
         try {
             return mapper.readValue(in, Record.class);
         } catch (IOException e) {
-            logger.error(e.toString());
-            throw new RecordSerializationException("unable to deserialize record");
+            throw new RecordSerializationException("unable to deserialize record", e);
         }
 
     }
