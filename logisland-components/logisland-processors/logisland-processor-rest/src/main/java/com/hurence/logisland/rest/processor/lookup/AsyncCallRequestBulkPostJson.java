@@ -78,45 +78,46 @@ public class AsyncCallRequestBulkPostJson extends AbstractCallRequest
          * loop over events to add them to bulk
          */
         getLogger().debug("Into the bulk " );
-        System.out.println("Into the bulk " );
 
-        Optional<String> requestBody = concatBody(records, context);
-        getLogger().debug("Bulk body " +requestBody );
+        ArrayList<Optional<String>> requestBodies = concatBody(records, context);
+        getLogger().debug("Bulk body " +requestBodies );
 
-        if (requestBody.isPresent() && !requestBody.get().isEmpty() && records.stream().findFirst().isPresent()) {
+        if ( requestBodies !=null && !requestBodies.isEmpty()  && records.stream().findFirst().isPresent()) {
+            for (Optional<String> bodies : requestBodies) {
+                if (bodies.isPresent()) {
+                    Record record = records.stream().findFirst().get();
+                    StandardRecord coordinates = new StandardRecord(record);
 
-            Record record = records.stream().findFirst().get();
-            StandardRecord coordinates = new StandardRecord(record);
+                    calculVerb(record, context).ifPresent(verb -> coordinates.setStringField(restClientService.getMethodKey(), verb));
+                    calculMimTyp(record, context).ifPresent(mimeType -> coordinates.setStringField(restClientService.getMimeTypeKey(), mimeType));
 
-            calculVerb(record, context).ifPresent(verb -> coordinates.setStringField(restClientService.getMethodKey(), verb));
-            calculMimTyp(record, context).ifPresent(mimeType -> coordinates.setStringField(restClientService.getMimeTypeKey(), mimeType));
+                    coordinates.setStringField(restClientService.getbodyKey(), bodies.get());
 
-            coordinates.setStringField(restClientService.getbodyKey(), requestBody.get());
+                    getLogger().debug("Calling bulk for method " + coordinates.getField(restClientService.getMethodKey()).asString() +
+                            " type " + coordinates.getField(restClientService.getMimeTypeKey()).asString() +
+                            " with body " + coordinates.getField(restClientService.getbodyKey()).asString());
+                    Handler<Promise<Optional<Record>>> callRequestHandler = p -> {
+                        try {
+                            p.complete(restClientService.lookup(coordinates));
+                        } catch (Throwable t) { //There is other errors than LookupException, The proxyWrapper does wrap those into Reflection exceptions...
+                            p.fail(t);
+                        }
+                    };
 
-            getLogger().debug("Calling bulk for method " + coordinates.getField(restClientService.getMethodKey()).asString() +
-                    " type " + coordinates.getField(restClientService.getMimeTypeKey()).asString() +
-                    " with body " + coordinates.getField(restClientService.getbodyKey()).asString());
-
-            Handler<Promise<Optional<Record>>> callRequestHandler = p -> {
-                try {
-                    p.complete(restClientService.lookup(coordinates));
-                } catch (Throwable t) { //There is other errors than LookupException, The proxyWrapper does wrap those into Reflection exceptions...
-                    p.fail(t);
+                    Maybe<Optional<Record>> response = vertx
+                            .rxExecuteBlocking(callRequestHandler)
+                            .doOnError(t -> {
+                                ErrorUtils.handleError(getLogger(), t, record, ProcessError.RUNTIME_ERROR.getName());
+                            })
+                            .doOnSuccess(rspOpt -> {
+                                rspOpt.ifPresent(rsp -> modifyRecord(record, rsp));
+                            });
+                    response.blockingGet();// wait until the request is done
                 }
-            };
-
-            Maybe<Optional<Record>> response = vertx
-                    .rxExecuteBlocking(callRequestHandler)
-                    .doOnError(t -> {
-                        ErrorUtils.handleError(getLogger(), t, record, ProcessError.RUNTIME_ERROR.getName());
-                    })
-                    .doOnSuccess(rspOpt -> {
-                        rspOpt.ifPresent(rsp -> modifyRecord(record, rsp));
-                    });
-            response.blockingGet();// wait until the request is done
-            getLogger().debug("Bulk ended " );
-            stop();
+            }
         }
+        getLogger().debug("Bulk ended " );
+        stop();
         return records;
     }
 }

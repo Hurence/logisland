@@ -53,6 +53,7 @@ public class AsyncCallRequestBulkPostJsonTest  {
         final RestClientService service = (RestClientService) runner.getControllerService(SERVICE_ID);
         runner.setProperty(CONFLICT_RESOLUTION_POLICY, OVERWRITE_EXISTING.getValue());
         //runner.setProperty(KEEP_ONLY_BODY_RESPONSE, "true");
+        runner.setProperty(RECORDS_THRESHOLD, "2");
 
         runner.setProperty(REQUEST_BODY, "body");
         runner.setProperty(REQUEST_METHOD, "post");
@@ -82,6 +83,7 @@ public class AsyncCallRequestBulkPostJsonTest  {
         record3.setField("ItemId", FieldType.STRING, "215863");
         record3.setField("VideoPercentViewed", FieldType.INT, 15);
 
+        
         runner.enqueue(record1, record2, record3);
         runner.run();
         runner.assertAllInputRecordsProcessed();
