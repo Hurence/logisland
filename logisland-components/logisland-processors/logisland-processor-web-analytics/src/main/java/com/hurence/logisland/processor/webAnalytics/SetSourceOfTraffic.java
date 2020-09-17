@@ -87,6 +87,8 @@ public class SetSourceOfTraffic extends AbstractProcessor {
     private static final String ADWORDS = "adwords";
     private static final String DOUBLECLICK = "DoubleClick";
     protected boolean debug = false;
+    private final static String UTF8_PERCENT_ENCODED_CHAR = "%25";
+    private String percentEncodedChar = UTF8_PERCENT_ENCODED_CHAR;
 
     public static final PropertyDescriptor ELASTICSEARCH_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("elasticsearch.client.service")
@@ -384,52 +386,22 @@ public class SetSourceOfTraffic extends AbstractProcessor {
         }
         // Check if this is a custom campaign
         else if (record.getField(utm_source_field) != null) {
-            String utm_source = null;
-            try {
-                utm_source = URLDecoder.decode(record.getField(utm_source_field).asString(), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                getLogger().error("UnsupportedEncodingException", e);
-                utm_source = record.getField(utm_source_field).asString();
-            }
+            String utm_source = decode_UTF8(record.getField(utm_source_field).asString());
             sourceOfTraffic.setSource(utm_source);
             if (record.getField(utm_campaign_field) != null) {
-                String utm_campaign = null;
-                try {
-                    utm_campaign = URLDecoder.decode(record.getField(utm_campaign_field).asString(), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    getLogger().error("UnsupportedEncodingException", e);
-                    utm_campaign = record.getField(utm_campaign_field).asString();
-                }
+                String utm_campaign = decode_UTF8(record.getField(utm_campaign_field).asString());
                 sourceOfTraffic.setCampaign(utm_campaign);
             }
             if (record.getField(utm_medium_field) != null) {
-                String utm_medium = null;
-                try {
-                    utm_medium = URLDecoder.decode(record.getField(utm_medium_field).asString(), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    getLogger().error("UnsupportedEncodingException", e);
-                    utm_medium = record.getField(utm_medium_field).asString();
-                }
+                String utm_medium = decode_UTF8(record.getField(utm_medium_field).asString());
                 sourceOfTraffic.setMedium(utm_medium);
             }
             if (record.getField(utm_content_field) != null) {
-                String utm_content = null;
-                try {
-                    utm_content = URLDecoder.decode(record.getField(utm_content_field).asString(), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    getLogger().error("UnsupportedEncodingException", e);
-                    utm_content = record.getField(utm_content_field).asString();
-                }
+                String utm_content = decode_UTF8(record.getField(utm_content_field).asString());
                 sourceOfTraffic.setContent(utm_content);
             }
             if (record.getField(utm_term_field) != null) {
-                String utm_term = null;
-                try {
-                    utm_term = URLDecoder.decode(record.getField(utm_term_field).asString(), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    getLogger().error("UnsupportedEncodingException", e);
-                    utm_term = record.getField(utm_term_field).asString();
-                }
+                String utm_term = decode_UTF8(record.getField(utm_term_field).asString());
                 sourceOfTraffic.setKeyword(utm_term);
             }
         } else if (referer != null) {
@@ -481,13 +453,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
                     // then it is a referring site
                     sourceOfTraffic.setSource(domain);
                     sourceOfTraffic.setMedium(REFERRING_SITE);
-                    String referral_path = null;
-                    try {
-                        referral_path = URLDecoder.decode(referer, "UTF-8");
-                    } catch (UnsupportedEncodingException e) {
-                        getLogger().error("UnsupportedEncodingException", e);
-                        referral_path = referer;
-                    }
+                    String referral_path = decode_UTF8(referer);
                     sourceOfTraffic.setReferral_path(referral_path);
                 }
             }
@@ -732,6 +698,36 @@ public class SetSourceOfTraffic extends AbstractProcessor {
         public SourceOfTrafficMap() {
             setOrganic_searches(Boolean.FALSE); // By default we consider source of traffic to not be organic searches.
         }
+    }
+
+    /*
+     * Decode URL using UTF-8 charset
+     */
+    private String decode_UTF8(String encodedValue){
+        return decode_UTF8(encodedValue, true);
+    }
+
+    private String decode_UTF8(String encodedValue, boolean tryTrick){
+        String decodedValue = null;
+        try {
+            decodedValue = URLDecoder.decode(encodedValue, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            getLogger().error("UnsupportedEncodingException", e);
+            decodedValue = encodedValue;
+        } catch (IllegalArgumentException e) {
+            if (tryTrick) {
+                encodedValue = encodedValue.replaceAll("%(?![0-9a-fA-F]{2})", "UTF-8");
+                decodedValue = decode_UTF8(encodedValue, false);
+            }
+            else {
+                getLogger().error("IllegalArgumentException", e);
+                decodedValue = encodedValue;
+            }
+        } catch (Exception e) {
+            getLogger().error("Exception", e);
+            decodedValue = encodedValue;
+        }
+        return decodedValue;
     }
 
 }
