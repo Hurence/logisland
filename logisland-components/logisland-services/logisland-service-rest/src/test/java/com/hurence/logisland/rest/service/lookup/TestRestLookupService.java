@@ -186,6 +186,33 @@ public class TestRestLookupService {
         outputRecord1.assertRecordSizeEquals(3);
     }
 
+
+    @Test
+    public void testResponseWithStringEmpty() throws InitializationException, IOException, LookupFailureException {
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
+        MockRestLookUpService service = new MockRestLookUpService();
+        //build mock urls
+        service.addServerResponse("http://192.168.99.100:31112/function/id1",
+                "".getBytes(StandardCharsets.UTF_8));
+        //enable service
+        runner.addControllerService("restLookupService", service);
+        runner.setProperty(service, MockRestLookUpService.URL, "http://192.168.99.100:31112/function/${function_name}");
+        runner.enableControllerService(service);
+        runner.assertValid(service);
+
+        runner.setProperty(TestProcessor.LOOKUP_SERVICE, "restLookupService");
+
+        runner.enqueue(RecordUtils.getRecordOfString("function_name", "id1"));
+        runner.run();
+
+        runner.assertAllInputRecordsProcessed();
+
+        final MockRecord outputRecord1 = runner.getOutputRecords().get(0);
+        outputRecord1.assertFieldEquals(service.getResponseCodeKey(), 200);
+        outputRecord1.assertFieldEquals(service.getResponseMsgCodeKey(), "ok");
+        outputRecord1.assertFieldEquals(service.getResponseBodyKey(), "");
+        outputRecord1.assertRecordSizeEquals(3);
+    }
     //TODO test with a proxy
     //TODO test with SSL
     //TODO testConcurrency

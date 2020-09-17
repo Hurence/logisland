@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 public class ExtendedJsonSerializer implements RecordSerializer {
 
 
-    private static Logger logger = LoggerFactory.getLogger(com.hurence.logisland.serializer.JsonSerializer.class);
+    private static Logger logger = LoggerFactory.getLogger(ExtendedJsonSerializer.class);
 
     private final Schema schema;
 
@@ -254,10 +254,8 @@ public class ExtendedJsonSerializer implements RecordSerializer {
             }
             filterWithSchema(map).forEach((k, v) -> record.setField(doDeserializeField(k, v)));
             return record;
-
         } catch (IOException e) {
-            logger.error(e.toString());
-            throw new RecordSerializationException("unable to deserialize record");
+            throw new RecordSerializationException("unable to deserialize record", e);
         }
 
     }

@@ -36,6 +36,9 @@ Online documentation
 --------------------
 You can find the latest Logisland documentation, including a programming guide,
 on the `project web page. <http://logisland.readthedocs.io/en/latest/index.html>`_
+
+Or on this `site web as well. <https://logisland.github.io/docs/>`_
+
 This README file only contains basic setup instructions.
 
 Browse the `Java API documentation <http://logisland.readthedocs.io/en/latest/_static/apidocs/>`_ for more information.
@@ -55,7 +58,7 @@ to build from the source just clone source and package with maven (logisland req
     cd logisland
     mvn clean package
 
-the final package is available at `logisland-assembly/target/logisland-1.4.0-bin.tar.gz`
+the final package is available at `logisland-assembly/target/logisland-1.4.0-full-bin.tar.gz`
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
@@ -261,3 +264,8 @@ Contributing
 ------------
 
 Please review the `Contribution to Logisland guide <http://logisland.readthedocs.io/en/latest/developer.html>`_ for information on how to get started contributing to the project.
+
+
+
+Start a stream processing job
+-----------------------------

@@ -260,9 +260,13 @@ public class RestLookupService extends AbstractControllerService implements Rest
             if (config.hasCredential()){
                 builder.proxyAuthenticator((route, response) -> {
                     final String credential= Credentials.basic(config.getProxyUserName(), config.getProxyUserPassword());
-                    return response.request().newBuilder()
-                            .header("Proxy-Authorization", credential)
-                            .build();
+                    try {//bug memory leak 28/08/2020
+                        return response.request().newBuilder()
+                                .header("Proxy-Authorization", credential)
+                                .build();
+                    } finally {
+                        response.close();
+                    }
                 });
             }
         }
@@ -295,11 +299,15 @@ public class RestLookupService extends AbstractControllerService implements Rest
         Request request = buildRequest(mimeType, method, body, endpoint);
         try {
             Response response = executeRequest(request);
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Response code {} was returned for coordinate {}",
-                        new Object[]{response.code(), coordinates});
+            try {//bug memory leak 28/08/2020
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("Response code {} was returned for coordinate {}",
+                            new Object[]{response.code(), coordinates});
+                }
+                return handleResponse(response);
+            } finally {
+                response.close();
             }
-            return handleResponse(response);
         } catch (Exception e) {
             getLogger().error(String.format("Could not execute lookup at endpoint '%s'.", endpoint), e);
             throw new LookupFailureException(e);
