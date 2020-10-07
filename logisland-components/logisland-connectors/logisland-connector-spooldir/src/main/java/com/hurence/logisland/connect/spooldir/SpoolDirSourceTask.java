@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorConfig> extends SourceTask {
-    static final Logger log = LoggerFactory.getLogger(SpoolDirSourceTask.class);
+    private static final Logger log = LoggerFactory.getLogger(SpoolDirSourceTask.class);
     protected Parser parser;
     protected Map<String, ?> sourcePartition;
     CONF config;

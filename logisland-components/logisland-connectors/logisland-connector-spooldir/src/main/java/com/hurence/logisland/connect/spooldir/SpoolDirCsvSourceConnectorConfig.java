@@ -31,7 +31,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-class SpoolDirCsvSourceConnectorConfig extends SpoolDirSourceConnectorConfig {
+public class SpoolDirCsvSourceConnectorConfig extends SpoolDirSourceConnectorConfig {
 
   //CSVRecordProcessorConfig
   public static final String CSV_SKIP_LINES_CONF = "csv.skip.lines";
