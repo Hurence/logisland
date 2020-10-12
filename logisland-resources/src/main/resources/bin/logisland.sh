@@ -349,38 +349,54 @@ update_mode() {
 
 run_spark_local_mode() {
   #--files ${CONF_DIR}/kafka_client_jaas_longrun.conf#kafka_client_jaas_longrun.conf,${CONF_DIR}/hurence.keytab#hurence.keytab \
+  SPARK_MASTER=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
+  echo "SPARK_MASTER is ${SPARK_MASTER}"
 
-            if [[ "$USE_KERBEROS" = true ]]
-            then
-              echo "Using Kerberos"
-              KB_SETTINGS="-Djava.security.auth.login.config=${CONF_DIR}/kafka_client_jaas_longrun.conf"
-            fi
+  if [[ "$USE_KERBEROS" = true ]]
+  then
+    echo "Using Kerberos"
+    KB_SETTINGS="-Djava.security.auth.login.config=${CONF_DIR}/kafka_client_jaas_longrun.conf"
+  fi
 
+  SPARK_LOCAL_OPTIONS="--master ${SPARK_MASTER} --conf spark.metrics.namespace=\"${APP_NAME}\""
 
-#cat << EOF
-#${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} \
-#             --files ${CONF_DIR}/log4j.properties \
-#             --conf spark.executor.extraJavaOptions="${LOG4J_SETTINGS} ${KB_SETTINGS}" \
-#             --driver-library-path ${OPENCV_NATIVE_LIB_PATH} \
-#             --conf spark.driver.extraJavaOptions="${LOG4J_SETTINGS} ${KB_SETTINGS}" \
-#             --conf spark.metrics.namespace="${APP_NAME}"  \
-#             --conf spark.metrics.conf="${lib_dir}/../monitoring/metrics.properties"  \
-#             --class ${app_mainclass} \
-#             --jars ${app_classpath} ${engine_jar} \
-#             -conf ${CONF_FILE}
-#EOF
+  EXTRA_DRIVER_JAVA_OPTIONS="spark.driver.extraJavaOptions=${LOG4J_SETTINGS} ${KB_SETTINGS}"
+  EXTRA_PROCESSOR_JAVA_OPTIONS="spark.executor.extraJavaOptions=${LOG4J_SETTINGS} ${KB_SETTINGS}"
 
-            echo "CONF_DIR is set to ${CONF_DIR}"
-            ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} \
-             --files ${CONF_DIR}/log4j.properties \
-             --conf spark.executor.extraJavaOptions="${LOG4J_SETTINGS} ${KB_SETTINGS}" \
-             --driver-library-path ${OPENCV_NATIVE_LIB_PATH} \
-             --conf spark.driver.extraJavaOptions="${LOG4J_SETTINGS} ${KB_SETTINGS}" \
-             --conf spark.metrics.namespace="${APP_NAME}"  \
-             --conf spark.metrics.conf="${lib_dir}/../monitoring/metrics.properties"  \
-             --class ${app_mainclass} \
-             --jars ${app_classpath} ${engine_jar} \
-             -conf ${CONF_FILE}
+#  DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
+#  if [[ ! -z "${DRIVER_CORES}" ]]
+#  then
+#   SPARK_LOCAL_OPTIONS="${SPARK_LOCAL_OPTIONS} --driver-cores ${DRIVER_CORES}"
+#  fi
+
+  DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
+  if [[ ! -z "${DRIVER_MEMORY}" ]]
+  then
+   SPARK_LOCAL_OPTIONS="${SPARK_LOCAL_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
+  fi
+
+#  EXECUTORS_CORES=`awk '{ if( $1 == "spark.executor.cores:" ){ print $2 } }' ${CONF_FILE}`
+#  if [[ ! -z "${EXECUTORS_CORES}" ]]
+#  then
+#       YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}"
+#  fi
+#
+#  EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executor.memory:" ){ print $2 } }' ${CONF_FILE}`
+#  if [[ ! -z "${EXECUTORS_MEMORY}" ]]
+#  then
+#       YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}"
+#  fi
+
+  echo "Running logisland job in local :"
+
+  ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${SPARK_LOCAL_OPTIONS} \
+      --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
+      --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
+      --conf spark.metrics.conf="${lib_dir}/../monitoring/metrics.properties"  \
+      --driver-library-path ${OPENCV_NATIVE_LIB_PATH} \
+      --class ${app_mainclass} \
+      --jars ${app_classpath} ${engine_jar} \
+      -conf ${CONF_FILE_ABOSLUTE_PATH}
 }
 
 run_yarn_client_mode() {
