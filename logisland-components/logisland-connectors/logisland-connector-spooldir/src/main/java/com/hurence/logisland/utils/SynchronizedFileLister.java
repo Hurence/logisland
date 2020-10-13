@@ -1,7 +1,6 @@
 package com.hurence.logisland.utils;
 
 import com.google.common.io.Files;
-import com.hurence.logisland.connect.spooldir.SpoolDirSourceConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,33 +9,15 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class SynchronizedFileLister {
-
-    private int capacity = Integer.MAX_VALUE;
-
-    /**
-     * Current number of elements
-     */
-    private final AtomicInteger count = new AtomicInteger(0);
 
     /**
      * Lock held by take, poll, etc
      */
     private final ReentrantLock updateLock = new ReentrantLock();
-
-    /**
-     * Wait queue for waiting takes
-     */
-    private final Condition notEmpty = updateLock.newCondition();
 
     private File inputPath;
     private FilenameFilter inputFilenameFilter;
@@ -46,13 +27,13 @@ public class SynchronizedFileLister {
     private final BlockingQueue<File> fileQueue = new LinkedHashSetBlockingQueue<>(1024);
 
 
-    private static Logger log = LoggerFactory.getLogger(SynchronizedFileLister.class);
+    private static final Logger log = LoggerFactory.getLogger(SynchronizedFileLister.class);
 
 
     /**
      * Holder
      */
-    private static class SynchronizedFileListernHolder {
+    private static class SynchronizedFileListerHolder {
         /**
          * Instance unique non préinitialisée
          */
@@ -66,7 +47,7 @@ public class SynchronizedFileLister {
                                                      FilenameFilter inputFilenameFilter,
                                                      long minimumFileAgeMS,
                                                      String processingFileExtension) {
-        return SynchronizedFileListernHolder.instance
+        return SynchronizedFileListerHolder.instance
                 .config(inputPath, inputFilenameFilter, minimumFileAgeMS, processingFileExtension);
     }
 
@@ -82,10 +63,8 @@ public class SynchronizedFileLister {
         return this;
     }
 
-    public void updateList() throws InterruptedException {
-        final ReentrantLock updateLock = this.updateLock;
+    public void updateList() {
         updateLock.lock();
-
         try {
             if (fileQueue.size() < 20) {
                 java.nio.file.Files.find(Paths.get(inputPath.getAbsolutePath()),
@@ -93,37 +72,37 @@ public class SynchronizedFileLister {
                         (filePath, fileAttr) -> fileAttr.isRegularFile() &&
                                 !filePath.toUri().getPath().contains(processingFileExtension) &&
                                 inputFilenameFilter.accept(filePath.getParent().toFile(), filePath.getFileName().toString()))
+                        .filter(f -> {
+                                    File newFile = f.toFile();
+                                    long fileAgeMS = System.currentTimeMillis() - newFile.lastModified();
+                                    if (fileAgeMS < 0L) {
+                                        log.error("File {} has a date in the future.", newFile);
+                                    }
+                                    File processingFile = getProcessingFile(newFile);
+                                    if (processingFile.exists()) {
+                                        log.trace("Skipping file {} because a processing file already exists.", newFile);
+                                        return false;
+                                    } else if (minimumFileAgeMS > 0L && fileAgeMS < minimumFileAgeMS) {
+                                        log.debug("Skipping file {} because it does not meet the minimum age.", newFile);
+                                        return false;
+                                    } else {
+                                        return true;
+                                    }
+                                })
                         .limit(20)
                         .forEach(f -> {
                             File newFile = f.toFile();
-
-                            File processingFile = processingFile(newFile);
-                            log.trace("Checking for processing file: {}", processingFile);
-
-                            long fileAgeMS = System.currentTimeMillis() - newFile.lastModified();
-
-                            if (fileAgeMS < 0L) {
-                                log.warn("File {} has a date in the future.", newFile);
-                            }
-
-                            if (processingFile.exists()) {
-                                log.trace("Skipping {} because processing file exists.", f);
-                            } else if (minimumFileAgeMS > 0L && fileAgeMS < minimumFileAgeMS) {
-                                log.debug("Skipping {} because it does not meet the minimum age.", newFile);
-                            } else {
-                                fileQueue.add(newFile);
-                            }
+                            fileQueue.add(newFile);
                         });
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("error in upadteList()", e);
         } finally {
             updateLock.unlock();
         }
     }
 
-    public void closeAndMoveToFinished(InputStream inputStream, File inputFile, File inputDirectory, File outputDirectory, boolean errored) throws IOException, InterruptedException {
-        final ReentrantLock updateLock = this.updateLock;
+    public void closeAndMoveToFinished(InputStream inputStream, File inputFile, File inputDirectory, File outputDirectory, boolean errored) throws IOException {
         updateLock.lock();
         try {
             if (null != inputStream) {
@@ -150,7 +129,7 @@ public class SynchronizedFileLister {
                     log.trace("Unable to move file {}, may be already moved.", inputFile);
                 }
 
-                File processingFile = processingFile(inputFile);
+                File processingFile = getProcessingFile(inputFile);
                 if (processingFile.exists()) {
                     log.info("Removing processing file {}", processingFile);
                     processingFile.delete();
@@ -163,19 +142,18 @@ public class SynchronizedFileLister {
 
     }
 
-    public File take() throws InterruptedException {
-        final ReentrantLock updateLock = this.updateLock;
+    public File take() {
         updateLock.lock();
 
         File file = null;
         try {
             file = fileQueue.poll();
             if (file != null) {
-                File processingFile = processingFile(file);
+                File processingFile = getProcessingFile(file);
                 Files.touch(processingFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("error in take()", e);
         } finally {
             updateLock.unlock();
         }
@@ -183,7 +161,7 @@ public class SynchronizedFileLister {
         return file;
     }
 
-    File processingFile(File input) {
+    File getProcessingFile(File input) {
         String fileName = input.getName() + processingFileExtension;
         return new File(input.getParentFile(), fileName);
     }

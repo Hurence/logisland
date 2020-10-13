@@ -146,31 +146,32 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
         for (Map.Entry<Schema, TypeParser> kvp : dateTypeParsers.entrySet()) {
             this.parser.registerTypeParser(kvp.getKey(), kvp.getValue());
         }
+        config.logUnused();
+        log.info("Started source task : {}", SpoolDirSourceTask.class.getCanonicalName());
     }
 
     @Override
     public void stop() {
-
+        //TODO stop thread
     }
 
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
+        log.trace("Polling for new data (files)");
         fileLister.updateList();
-        log.trace("poll()");
         List<SourceRecord> results = read();
 
         if (results.isEmpty()) {
             log.trace("read() returned empty list. Sleeping {} ms.", this.config.emptyPollWaitMs);
             Thread.sleep(this.config.emptyPollWaitMs);
+        } else {
+            log.info("read() returning {} result(s)", results.size());
         }
-
-        log.trace("read() returning {} result(s)", results.size());
 
         return results;
     }
 
-
-    public List<SourceRecord> read() {
+    private List<SourceRecord> read() {
         try {
             if (!hasRecords) {
                 fileLister.closeAndMoveToFinished(this.inputStream, this.inputFile, this.config.inputPath, this.config.finishedPath, false);

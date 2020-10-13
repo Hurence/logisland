@@ -56,7 +56,7 @@ public abstract class SpoolDirSourceConnector<CONF extends SpoolDirSourceConnect
   public void start(final Map<String, String> input) {
     this.config = config(input);
     final Map<String, String> settings = new LinkedHashMap<>(input);
-
+    //setup schema for key and value if needed
     if (null == this.config.valueSchema || null == this.config.keySchema) {
       log.info("Key or Value schema was not defined. Running schema generator.");
       SchemaGenerator<CONF> generator = generator(settings);
@@ -93,24 +93,7 @@ public abstract class SpoolDirSourceConnector<CONF extends SpoolDirSourceConnect
           schemas.put(schema, schemaEntry);
         }
 
-        Map<String, Collection<File>> schemaToFilesMap = schemaToFiles.asMap();
-        if (1 != schemaToFilesMap.keySet().size()) {
-          StringBuilder builder = new StringBuilder();
-          builder.append("More than one schema was found for the input pattern.\n");
-          for (String schema : schemaToFilesMap.keySet()) {
-            builder.append("Schema: ");
-            builder.append(schema);
-            builder.append("\n");
-
-            for (File f : schemaToFilesMap.get(schema)) {
-              builder.append("  ");
-              builder.append(f);
-              builder.append("\n");
-            }
-          }
-
-          throw new DataException(builder.toString());
-        }
+        throwDataExceptionIfMoreThanOneSchemaFound(schemaToFiles.asMap());
 
         Map.Entry<Schema, Schema> schemaPair = null;
         for (Map.Entry<Schema, Schema> s : schemas.values()) {
@@ -135,6 +118,26 @@ public abstract class SpoolDirSourceConnector<CONF extends SpoolDirSourceConnect
     }
 
     this.settings = settings;
+  }
+
+  private void throwDataExceptionIfMoreThanOneSchemaFound(Map<String, Collection<File>> schemaToFilesMap) {
+    if (1 != schemaToFilesMap.keySet().size()) {
+      StringBuilder builder = new StringBuilder();
+      builder.append("More than one schema was found for the input pattern.\n");
+      for (String schema : schemaToFilesMap.keySet()) {
+        builder.append("Schema: ");
+        builder.append(schema);
+        builder.append("\n");
+
+        for (File f : schemaToFilesMap.get(schema)) {
+          builder.append("  ");
+          builder.append(f);
+          builder.append("\n");
+        }
+      }
+
+      throw new DataException(builder.toString());
+    }
   }
 
   @Override

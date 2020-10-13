@@ -301,7 +301,7 @@ abstract class SpoolDirSourceConnectorConfig extends AbstractConfig {
         .define(PARSER_TIMESTAMP_TIMEZONE_CONF, ConfigDef.Type.STRING, PARSER_TIMESTAMP_TIMEZONE_DEFAULT, ConfigDef.Importance.LOW, PARSER_TIMESTAMP_TIMEZONE_DOC)
         .define(PARSER_TIMESTAMP_DATE_FORMATS_CONF, ConfigDef.Type.LIST, PARSER_TIMESTAMP_DATE_FORMATS_DEFAULT, ConfigDef.Importance.LOW, PARSER_TIMESTAMP_DATE_FORMATS_DOC)
 
-        .define(EMPTY_POLL_WAIT_MS_CONF, ConfigDef.Type.LONG, 1000L, ConfigDef.Range.between(1L, Long.MAX_VALUE), ConfigDef.Importance.LOW, EMPTY_POLL_WAIT_MS_DOC)
+        .define(EMPTY_POLL_WAIT_MS_CONF, ConfigDef.Type.LONG, 10000L, ConfigDef.Range.between(1L, Long.MAX_VALUE), ConfigDef.Importance.LOW, EMPTY_POLL_WAIT_MS_DOC)
         .define(TIMESTAMP_MODE_CONF, Type.STRING, TimestampMode.PROCESS_TIME.toString(), ValidEnum.of(TimestampMode.class), ConfigDef.Importance.MEDIUM, TIMESTAMP_MODE_DOC)
         .define(TIMESTAMP_FIELD_CONF, Type.STRING, "", ConfigDef.Importance.MEDIUM, TIMESTAMP_FIELD_DOC)
         .define(SCHEMA_GENERATION_KEY_FIELDS_CONF, Type.LIST, new ArrayList<>(), ConfigDef.Importance.MEDIUM, SCHEMA_GENERATION_KEY_FIELDS_DOC)
