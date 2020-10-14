@@ -24,7 +24,6 @@ import com.github.jcustenborder.kafka.connect.utils.data.type.TypeParser;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 import com.hurence.logisland.utils.SynchronizedFileLister;
 import org.apache.kafka.connect.data.Date;
 import org.apache.kafka.connect.data.Schema;
@@ -45,7 +44,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorConfig> extends SourceTask {
     private static final Logger log = LoggerFactory.getLogger(SpoolDirSourceTask.class);
@@ -152,7 +150,13 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
 
     @Override
     public void stop() {
-        //TODO stop thread
+        if (this.inputStream != null) {
+            try {
+                this.inputStream.close();
+            } catch (IOException e) {
+                log.error("Exception thrown while closing inputstream of class : " +  this.getClass().getCanonicalName(), e);
+            }
+        }
     }
 
     @Override
@@ -174,7 +178,8 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
     private List<SourceRecord> read() {
         try {
             if (!hasRecords) {
-                fileLister.closeAndMoveToFinished(this.inputStream, this.inputFile, this.config.inputPath, this.config.finishedPath, false);
+                fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.finishedPath);
+                this.inputStream.close();
                 this.inputStream = null;
 
                 File nextFile = fileLister.take();
@@ -211,12 +216,18 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
             return records;
         } catch (Exception ex) {
             log.error("Exception encountered processing line {} of {}.", recordOffset(), this.inputFile, ex);
-
             try {
-                fileLister.closeAndMoveToFinished(this.inputStream, this.inputFile, this.config.inputPath, this.config.errorPath, false);
-                this.inputStream = null;
-            } catch (IOException | InterruptedException ex0) {
-                log.error("Exception thrown while moving {} to {}", this.inputFile, this.config.errorPath, ex0);
+                log.info("Moving file {} to error folder {}", this.inputFile, this.config.errorPath);
+                fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.errorPath);
+            } catch (IOException ex0) {
+                log.error("Exception thrown while moving file {} to error folder {}", this.inputFile, this.config.errorPath, ex0);
+            } finally {
+                try {
+                    this.inputStream.close();
+                    this.inputStream = null;
+                } catch (IOException e) {
+                    log.error("Exception while closing inputstream od file " +this.inputFile, e);
+                }
             }
             if (this.config.haltOnError) {
                 throw new ConnectException(ex);

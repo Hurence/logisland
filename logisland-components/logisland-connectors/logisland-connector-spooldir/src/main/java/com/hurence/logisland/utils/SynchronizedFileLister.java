@@ -63,6 +63,10 @@ public class SynchronizedFileLister {
         return this;
     }
 
+    /**
+     * Fill up queue with files to be processed
+     * Does not create the processing file.
+     */
     public void updateList() {
         updateLock.lock();
         try {
@@ -96,19 +100,15 @@ public class SynchronizedFileLister {
                         });
             }
         } catch (IOException e) {
-            log.error("error in upadteList()", e);
+            log.error("error in updateList()", e);
         } finally {
             updateLock.unlock();
         }
     }
 
-    public void closeAndMoveToFinished(InputStream inputStream, File inputFile, File inputDirectory, File outputDirectory, boolean errored) throws IOException {
+    public void moveTo(File inputFile, File inputDirectory, File outputDirectory) throws IOException {
         updateLock.lock();
         try {
-            if (null != inputStream) {
-                log.info("Closing {}", inputFile);
-                inputStream.close();
-
                 String enclosingFolderName = inputFile.getAbsolutePath()
                         .replaceAll(inputDirectory.getAbsolutePath(), "")
                         .replaceAll(inputFile.getName(), "");
@@ -117,31 +117,33 @@ public class SynchronizedFileLister {
                 if (!realOutputDir.exists())
                     realOutputDir.mkdirs();
 
-                File finishedFile = new File(realOutputDir, inputFile.getName());
 
-                if (errored) {
-                    log.error("Error during processing, moving {} to {}.", inputFile, outputDirectory);
-                }
+                File finishedFile = new File(realOutputDir, inputFile.getName());
 
                 if (inputFile.exists()) {
                     Files.move(inputFile, finishedFile);
                 } else {
-                    log.trace("Unable to move file {}, may be already moved.", inputFile);
+                    log.warn("file {} does not exist anymore (should not happen if there is only one VM).", inputFile);
                 }
 
                 File processingFile = getProcessingFile(inputFile);
                 if (processingFile.exists()) {
-                    log.info("Removing processing file {}", processingFile);
                     processingFile.delete();
+                    log.info("Deleted processing file {}", processingFile);
+                } else {
+                    log.warn("Processing file {} is already deleted (should not happen if there is only one VM).",
+                            processingFile);
                 }
-
-            }
         } finally {
             updateLock.unlock();
         }
-
     }
 
+    /**
+     * if it return a files, it creates the processing file in the process.
+     * If this creation fail then it return null.
+     * @return the next file in queue (can be null)
+     */
     public File take() {
         updateLock.lock();
 
@@ -150,7 +152,11 @@ public class SynchronizedFileLister {
             file = fileQueue.poll();
             if (file != null) {
                 File processingFile = getProcessingFile(file);
-                Files.touch(processingFile);
+                if (processingFile.createNewFile()) {
+                    return file;
+                } else {
+                    return null;
+                }
             }
         } catch (IOException e) {
             log.error("error in take()", e);

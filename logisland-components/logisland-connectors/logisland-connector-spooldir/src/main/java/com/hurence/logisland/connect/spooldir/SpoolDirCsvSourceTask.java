@@ -49,6 +49,7 @@ public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceC
 
   @Override
   protected void configure(InputStream inputStream, Map<String, String> metadata, final Long lastOffset) throws IOException {
+    releaseCurrentRessources();
     log.trace("configure() - creating csvParser");
     this.csvParser = this.config.createCSVParserBuilder().build();
     this.streamReader = new InputStreamReader(inputStream, this.config.charset);
@@ -89,12 +90,36 @@ public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceC
   }
 
   @Override
+  public void stop() {
+    releaseCurrentRessources();
+    super.stop();
+  }
+
+  private void releaseCurrentRessources() {
+    log.trace("releaseCurrentRessources()");
+    if (this.csvReader != null) {
+      try {
+        this.csvReader.close();
+      } catch (IOException e) {
+        log.error("Exception thrown while closing CsvReader of class : " +  this.getClass().getCanonicalName(), e);
+      }
+    }
+    if (this.streamReader != null) {
+      try {
+        this.streamReader.close();
+      } catch (IOException e) {
+        log.error("Exception thrown while closing InputStreamReader of class : " +  this.getClass().getCanonicalName(), e);
+      }
+    }
+  }
+
+  @Override
   public long recordOffset() {
     return this.csvReader.getLinesRead();
   }
 
   @Override
-  public List<SourceRecord> process() throws IOException {
+  public List<SourceRecord> process() throws IOException, DataException {
     List<SourceRecord> records = new ArrayList<>(this.config.batchSize);
 
     while (records.size() < this.config.batchSize) {
