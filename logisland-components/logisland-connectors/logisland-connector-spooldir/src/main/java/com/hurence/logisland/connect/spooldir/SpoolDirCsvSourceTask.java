@@ -96,7 +96,7 @@ public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceC
   }
 
   private void releaseCurrentRessources() {
-    log.trace("releaseCurrentRessources()");
+    log.debug("releaseCurrentRessources()");
     if (this.csvReader != null) {
       try {
         this.csvReader.close();
@@ -115,7 +115,11 @@ public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceC
 
   @Override
   public long recordOffset() {
-    return this.csvReader.getLinesRead();
+    if (this.csvReader != null) {
+      return this.csvReader.getLinesRead();
+    } else {
+      return -1;
+    }
   }
 
   @Override
@@ -128,7 +132,10 @@ public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceC
       if (row == null) {
         break;
       }
-      log.trace("process() - Row on line {} has {} field(s)", recordOffset(), row.length);
+
+      if (log.isDebugEnabled() && (this.csvReader.getLinesRead() % 1000) == 0) {
+        log.debug("process() - Row on line {} has {} field(s)", recordOffset(), row.length);
+      }
 
       Struct keyStruct = new Struct(this.config.keySchema);
       Struct valueStruct = new Struct(this.config.valueSchema);

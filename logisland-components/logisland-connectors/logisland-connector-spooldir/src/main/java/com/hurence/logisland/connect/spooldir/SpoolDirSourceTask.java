@@ -161,12 +161,12 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
 
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
-        log.trace("Polling for new data (files)");
+        log.debug("Polling for new data (files)");
         fileLister.updateList();
         List<SourceRecord> results = read();
 
         if (results.isEmpty()) {
-            log.trace("read() returned empty list. Sleeping {} ms.", this.config.emptyPollWaitMs);
+            log.debug("read() returned empty list. Sleeping {} ms.", this.config.emptyPollWaitMs);
             Thread.sleep(this.config.emptyPollWaitMs);
         } else {
             log.info("read() returning {} result(s)", results.size());
@@ -178,9 +178,13 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
     private List<SourceRecord> read() {
         try {
             if (!hasRecords) {
-                fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.finishedPath);
-                this.inputStream.close();
-                this.inputStream = null;
+                if (this.inputFile != null) {
+                    log.info("Moving file {} to finished folder {}", this.inputFile, this.config.finishedPath);
+                    fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.finishedPath);
+                    this.inputStream.close();
+                    this.inputStream = null;
+                }
+
 
                 File nextFile = fileLister.take();
                 if (null == nextFile) {
@@ -197,7 +201,7 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
                     );
                     log.info("Opening {}", this.inputFile);
                     Long lastOffset = null;
-                    log.trace("looking up offset for {}", this.sourcePartition);
+                    log.debug("looking up offset for {}", this.sourcePartition);
                     Map<String, Object> offset = this.context.offsetStorageReader().offset(this.sourcePartition);
                     if (null != offset && !offset.isEmpty()) {
                         Number number = (Number) offset.get("offset");
@@ -206,6 +210,7 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
                     this.inputStream = new FileInputStream(this.inputFile);
                     configure(this.inputStream, this.metadata, lastOffset);
                 } catch (Exception ex) {
+                    log.error("Exception during inputStream configuration", ex);
                     throw new ConnectException(ex);
                 }
                 processingTime.reset();
@@ -215,12 +220,18 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
             this.hasRecords = !records.isEmpty();
             return records;
         } catch (Exception ex) {
-            log.error("Exception encountered processing line {} of {}.", recordOffset(), this.inputFile, ex);
+            log.error(
+                    String.format("Exception encountered processing line %s of %s.",
+                            recordOffset(), this.inputFile),
+                    ex);
             try {
                 log.info("Moving file {} to error folder {}", this.inputFile, this.config.errorPath);
                 fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.errorPath);
             } catch (IOException ex0) {
-                log.error("Exception thrown while moving file {} to error folder {}", this.inputFile, this.config.errorPath, ex0);
+                log.error(
+                        String.format("Exception thrown while moving file %s to error folder %s",
+                                this.inputFile, this.config.errorPath),
+                        ex0);
             } finally {
                 try {
                     this.inputStream.close();
@@ -242,6 +253,7 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
                 "offset",
                 recordOffset()
         );
+
         log.trace("addRecord() - {}", sourceOffset);
         if (this.config.hasKeyMetadataField && null != keyStruct) {
             keyStruct.put(this.config.keyMetadataField, this.metadata);
@@ -255,7 +267,7 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
 
         switch (this.config.timestampMode) {
             case FIELD:
-                log.trace("addRecord() - Reading date from timestamp field '{}'", this.config.timestampField);
+                log.debug("addRecord() - Reading date from timestamp field '{}'", this.config.timestampField);
                 java.util.Date date = (java.util.Date) valueStruct.get(this.config.timestampField);
                 timestamp = date.getTime();
                 break;
