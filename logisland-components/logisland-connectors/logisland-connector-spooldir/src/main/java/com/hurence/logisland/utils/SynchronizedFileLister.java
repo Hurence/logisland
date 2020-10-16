@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 public class SynchronizedFileLister {
 
@@ -83,46 +85,49 @@ public class SynchronizedFileLister {
      * Does not create the processing file.
      */
     public void updateList() {
-        try {
-            OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-            if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
-                log.debug("before updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
-            }
-            log.debug("before updateList(), size of file queue is {}", fileQueue.size());
-            java.nio.file.Files.find(Paths.get(inputPath.getAbsolutePath()),
-                    10,
-                    (filePath, fileAttr) -> fileAttr.isRegularFile() &&
-                            !filePath.toUri().getPath().contains(processingFileExtension) &&
-                            inputFilenameFilter.accept(filePath.getParent().toFile(), filePath.getFileName().toString()))
-                    .filter(f -> {
-                                File newFile = f.toFile();
-                                long fileAgeMS = System.currentTimeMillis() - newFile.lastModified();
-                                if (fileAgeMS < 0L) {
-                                    log.error("File {} has a date in the future.", newFile);
-                                }
-                                File processingFile = getProcessingFile(newFile);
-                                if (processingFile.exists()) {
-                                    log.trace("Skipping file {} because a processing file already exists.", newFile);
-                                    return false;
-                                } else if (minimumFileAgeMS > 0L && fileAgeMS < minimumFileAgeMS) {
-                                    log.debug("Skipping file {} because it does not meet the minimum age.", newFile);
-                                    return false;
-                                } else {
-                                    return true;
-                                }
-                            })
-                    .limit(200)
-                    .forEach(f -> {
-                        File newFile = f.toFile();
-                        fileQueue.add(newFile);
-                    });
-            if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
-                log.debug("after updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
-            }
-            log.debug("after updateList(), size of file queue is {}", fileQueue.size());
+        OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+        if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
+            log.debug("before updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
+        }
+        log.debug("before updateList(), size of file queue is {}", fileQueue.size());
+        try (Stream<Path> pathsToQueue = getFilesStreamToQueue()) {//so that stream is closed at end (to releases file ressources)
+            pathsToQueue.forEach(f -> {
+                File newFile = f.toFile();
+                fileQueue.add(newFile);
+            });
         } catch (IOException e) {
             log.error("error in updateList()", e);
         }
+        if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
+            log.debug("after updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
+        }
+        log.debug("after updateList(), size of file queue is {}", fileQueue.size());
+    }
+
+    public Stream<Path> getFilesStreamToQueue() throws IOException {
+        return java.nio.file.Files.find(Paths.get(inputPath.getAbsolutePath()),
+                10,
+                (filePath, fileAttr) -> fileAttr.isRegularFile() &&
+                        !filePath.toUri().getPath().contains(processingFileExtension) &&
+                        inputFilenameFilter.accept(filePath.getParent().toFile(), filePath.getFileName().toString()))
+                .filter(f -> {
+                    File newFile = f.toFile();
+                    long fileAgeMS = System.currentTimeMillis() - newFile.lastModified();
+                    if (fileAgeMS < 0L) {
+                        log.error("File {} has a date in the future.", newFile);
+                    }
+                    File processingFile = getProcessingFile(newFile);
+                    if (processingFile.exists()) {
+                        log.trace("Skipping file {} because a processing file already exists.", newFile);
+                        return false;
+                    } else if (minimumFileAgeMS > 0L && fileAgeMS < minimumFileAgeMS) {
+                        log.debug("Skipping file {} because it does not meet the minimum age.", newFile);
+                        return false;
+                    } else {
+                        return true;
+                    }
+                })
+                .limit(200);
     }
 
     public void moveTo(File inputFile, File inputDirectory, File outputDirectory) throws IOException {

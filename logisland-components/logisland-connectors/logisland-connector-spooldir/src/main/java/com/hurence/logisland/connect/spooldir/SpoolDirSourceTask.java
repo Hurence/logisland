@@ -59,7 +59,7 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
     private Map<String, String> metadata;
 
 
-    private boolean currentFileFinished = false;
+    private boolean currentFileFinished = true;
     private SynchronizedFileLister fileLister;
 
     private static void checkDirectory(String key, File directoryPath) {
