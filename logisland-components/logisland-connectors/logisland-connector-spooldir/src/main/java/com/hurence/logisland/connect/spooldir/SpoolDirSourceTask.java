@@ -42,6 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -51,12 +52,14 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
     protected Map<String, ?> sourcePartition;
     CONF config;
     Stopwatch processingTime = Stopwatch.createStarted();
+    //those 4 properties are set up in openNextFileAndConfigureIt
     private File inputFile;
-    private long inputFileModifiedTime;
     private InputStream inputStream;
-    private boolean hasRecords = false;
+    private long inputFileModifiedTime;
     private Map<String, String> metadata;
 
+
+    private boolean currentFileFinished = false;
     private SynchronizedFileLister fileLister;
 
     private static void checkDirectory(String key, File directoryPath) {
@@ -162,12 +165,30 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
         log.debug("Polling for new data (files)");
-        fileLister.updateList();
+        if (fileLister.needToUpdateList()) {
+            fileLister.lock();
+            try {
+                if (fileLister.needToUpdateList()) {
+                    fileLister.updateList();
+                }
+            } finally {
+                fileLister.unlock();
+            }
+        }
+        if (currentFileFinished) {
+            moveCurrentFileToFinishedFolder();
+            openNextFileAndConfigureIt();
+            if (this.inputFile == null) {//no file available
+                log.debug("No more files available. Sleeping {} ms.", this.config.emptyPollWaitMs);
+                Thread.sleep(this.config.emptyPollWaitMs);
+                return Collections.emptyList();
+            }
+        }
+
         List<SourceRecord> results = read();
 
         if (results.isEmpty()) {
-            log.debug("read() returned empty list. Sleeping {} ms.", this.config.emptyPollWaitMs);
-            Thread.sleep(this.config.emptyPollWaitMs);
+            log.debug("read() returned empty list.");
         } else {
             log.info("read() returning {} result(s)", results.size());
         }
@@ -175,49 +196,62 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
         return results;
     }
 
+    public void moveCurrentFileToFinishedFolder() {
+        if (this.inputFile != null) {
+            log.info("Moving file {} to finished folder {}", this.inputFile, this.config.finishedPath);
+            try {
+                fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.finishedPath);
+            } catch (IOException e) {
+                log.error(
+                        String.format("Exception encountered moving file %s to finished folder %s",
+                                this.inputFile, this.config.finishedPath),
+                        e);
+            }
+            try {
+                this.inputStream.close();
+            } catch (IOException e) {
+                log.error("Exception encountered while closing InputStream.", e);
+            }
+            this.inputStream = null;
+        }
+    }
+
+    private void openNextFileAndConfigureIt() {
+        File nextFile = fileLister.take();
+        if (null == nextFile) {
+            return;
+        }
+
+        this.metadata = ImmutableMap.of();
+        this.inputFile = nextFile;
+        this.inputFileModifiedTime = this.inputFile.lastModified();
+
+        try {
+            this.sourcePartition = ImmutableMap.of(
+                    "fileName", this.inputFile.getName()
+            );
+            log.info("Opening {}", this.inputFile);
+            Long lastOffset = null;
+            log.debug("looking up offset for {}", this.sourcePartition);
+            Map<String, Object> offset = this.context.offsetStorageReader().offset(this.sourcePartition);
+            if (null != offset && !offset.isEmpty()) {
+                Number number = (Number) offset.get("offset");
+                lastOffset = number.longValue();
+            }
+            this.inputStream = new FileInputStream(this.inputFile);
+            configure(this.inputStream, this.metadata, lastOffset);
+        } catch (Exception ex) {
+            log.error("Exception during inputStream configuration", ex);
+            throw new ConnectException(ex);
+        }
+        processingTime.reset();
+        processingTime.start();
+    }
+
     private List<SourceRecord> read() {
         try {
-            if (!hasRecords) {
-                if (this.inputFile != null) {
-                    log.info("Moving file {} to finished folder {}", this.inputFile, this.config.finishedPath);
-                    fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.finishedPath);
-                    this.inputStream.close();
-                    this.inputStream = null;
-                }
-
-
-                File nextFile = fileLister.take();
-                if (null == nextFile) {
-                    return new ArrayList<>();
-                }
-
-                this.metadata = ImmutableMap.of();
-                this.inputFile = nextFile;
-                this.inputFileModifiedTime = this.inputFile.lastModified();
-
-                try {
-                    this.sourcePartition = ImmutableMap.of(
-                            "fileName", this.inputFile.getName()
-                    );
-                    log.info("Opening {}", this.inputFile);
-                    Long lastOffset = null;
-                    log.debug("looking up offset for {}", this.sourcePartition);
-                    Map<String, Object> offset = this.context.offsetStorageReader().offset(this.sourcePartition);
-                    if (null != offset && !offset.isEmpty()) {
-                        Number number = (Number) offset.get("offset");
-                        lastOffset = number.longValue();
-                    }
-                    this.inputStream = new FileInputStream(this.inputFile);
-                    configure(this.inputStream, this.metadata, lastOffset);
-                } catch (Exception ex) {
-                    log.error("Exception during inputStream configuration", ex);
-                    throw new ConnectException(ex);
-                }
-                processingTime.reset();
-                processingTime.start();
-            }
             List<SourceRecord> records = process();
-            this.hasRecords = !records.isEmpty();
+            this.currentFileFinished = records.isEmpty();
             return records;
         } catch (Exception ex) {
             log.error(
@@ -237,7 +271,8 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
                     this.inputStream.close();
                     this.inputStream = null;
                 } catch (IOException e) {
-                    log.error("Exception while closing inputstream od file " +this.inputFile, e);
+                    log.error("Exception while closing inputstream of file " + this.inputFile, e);
+                    this.inputFile = null;
                 }
             }
             if (this.config.haltOnError) {

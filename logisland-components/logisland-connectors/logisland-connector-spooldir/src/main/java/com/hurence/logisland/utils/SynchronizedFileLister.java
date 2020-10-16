@@ -1,6 +1,7 @@
 package com.hurence.logisland.utils;
 
 import com.google.common.io.Files;
+import com.sun.management.UnixOperatingSystemMXBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,6 +9,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.nio.file.Paths;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,80 +66,103 @@ public class SynchronizedFileLister {
         return this;
     }
 
+    public void unlock() {
+        updateLock.unlock();
+    }
+
+    public void lock() {
+        updateLock.lock();
+    }
+
+    public boolean needToUpdateList() {
+        return fileQueue.size() < 20;
+    }
+
     /**
      * Fill up queue with files to be processed
      * Does not create the processing file.
      */
     public void updateList() {
-        updateLock.lock();
         try {
-            if (fileQueue.size() < 20) {
-                java.nio.file.Files.find(Paths.get(inputPath.getAbsolutePath()),
-                        10,
-                        (filePath, fileAttr) -> fileAttr.isRegularFile() &&
-                                !filePath.toUri().getPath().contains(processingFileExtension) &&
-                                inputFilenameFilter.accept(filePath.getParent().toFile(), filePath.getFileName().toString()))
-                        .filter(f -> {
-                                    File newFile = f.toFile();
-                                    long fileAgeMS = System.currentTimeMillis() - newFile.lastModified();
-                                    if (fileAgeMS < 0L) {
-                                        log.error("File {} has a date in the future.", newFile);
-                                    }
-                                    File processingFile = getProcessingFile(newFile);
-                                    if (processingFile.exists()) {
-                                        log.trace("Skipping file {} because a processing file already exists.", newFile);
-                                        return false;
-                                    } else if (minimumFileAgeMS > 0L && fileAgeMS < minimumFileAgeMS) {
-                                        log.debug("Skipping file {} because it does not meet the minimum age.", newFile);
-                                        return false;
-                                    } else {
-                                        return true;
-                                    }
-                                })
-                        .limit(20)
-                        .forEach(f -> {
-                            File newFile = f.toFile();
-                            fileQueue.add(newFile);
-                        });
+            OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+            if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
+                log.debug("before updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
             }
+            log.debug("before updateList(), size of file queue is {}", fileQueue.size());
+            java.nio.file.Files.find(Paths.get(inputPath.getAbsolutePath()),
+                    10,
+                    (filePath, fileAttr) -> fileAttr.isRegularFile() &&
+                            !filePath.toUri().getPath().contains(processingFileExtension) &&
+                            inputFilenameFilter.accept(filePath.getParent().toFile(), filePath.getFileName().toString()))
+                    .filter(f -> {
+                                File newFile = f.toFile();
+                                long fileAgeMS = System.currentTimeMillis() - newFile.lastModified();
+                                if (fileAgeMS < 0L) {
+                                    log.error("File {} has a date in the future.", newFile);
+                                }
+                                File processingFile = getProcessingFile(newFile);
+                                if (processingFile.exists()) {
+                                    log.trace("Skipping file {} because a processing file already exists.", newFile);
+                                    return false;
+                                } else if (minimumFileAgeMS > 0L && fileAgeMS < minimumFileAgeMS) {
+                                    log.debug("Skipping file {} because it does not meet the minimum age.", newFile);
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            })
+                    .limit(200)
+                    .forEach(f -> {
+                        File newFile = f.toFile();
+                        fileQueue.add(newFile);
+                    });
+            if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
+                log.debug("after updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
+            }
+            log.debug("after updateList(), size of file queue is {}", fileQueue.size());
         } catch (IOException e) {
             log.error("error in updateList()", e);
-        } finally {
-            updateLock.unlock();
         }
     }
 
     public void moveTo(File inputFile, File inputDirectory, File outputDirectory) throws IOException {
-        updateLock.lock();
-        try {
-                String enclosingFolderName = inputFile.getAbsolutePath()
-                        .replaceAll(inputDirectory.getAbsolutePath(), "")
-                        .replaceAll(inputFile.getName(), "");
-
-                File realOutputDir = new File(outputDirectory.getAbsolutePath() + enclosingFolderName);
-                if (!realOutputDir.exists())
-                    realOutputDir.mkdirs();
-
-
-                File finishedFile = new File(realOutputDir, inputFile.getName());
-
-                if (inputFile.exists()) {
-                    Files.move(inputFile, finishedFile);
-                } else {
-                    log.warn("file {} does not exist anymore (should not happen if there is only one VM).", inputFile);
-                }
-
-                File processingFile = getProcessingFile(inputFile);
-                if (processingFile.exists()) {
-                    processingFile.delete();
-                    log.info("Deleted processing file {}", processingFile);
-                } else {
-                    log.warn("Processing file {} is already deleted (should not happen if there is only one VM).",
-                            processingFile);
-                }
-        } finally {
-            updateLock.unlock();
+//        updateLock.lock();
+//        try {
+        OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+        if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
+            log.debug("before moveTo(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
         }
+        String enclosingFolderName = inputFile.getAbsolutePath()
+                .replaceAll(inputDirectory.getAbsolutePath(), "")
+                .replaceAll(inputFile.getName(), "");
+
+        File realOutputDir = new File(outputDirectory.getAbsolutePath() + enclosingFolderName);
+        if (!realOutputDir.exists())
+            realOutputDir.mkdirs();
+
+
+        File finishedFile = new File(realOutputDir, inputFile.getName());
+
+        if (inputFile.exists()) {
+            Files.move(inputFile, finishedFile);
+        } else {
+            log.warn("file {} does not exist anymore (should not happen if there is only one VM).", inputFile);
+        }
+
+        File processingFile = getProcessingFile(inputFile);
+        if (processingFile.exists()) {
+            processingFile.delete();
+            log.info("Deleted processing file {}", processingFile);
+        } else {
+            log.warn("Processing file {} is already deleted (should not happen if there is only one VM).",
+                    processingFile);
+        }
+        if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
+            log.debug("after moveTo(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
+        }
+//        } finally {
+//            updateLock.unlock();
+//        }
     }
 
     /**
@@ -146,7 +172,7 @@ public class SynchronizedFileLister {
      */
     public File take() {
         updateLock.lock();
-
+        log.debug("before take(), size of file queue is {}", fileQueue.size());
         File file = null;
         try {
             file = fileQueue.poll();
@@ -161,6 +187,7 @@ public class SynchronizedFileLister {
         } catch (IOException e) {
             log.error("error in take()", e);
         } finally {
+            log.debug("after take(), size of file queue is {}", fileQueue.size());
             updateLock.unlock();
         }
 
