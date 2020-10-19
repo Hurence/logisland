@@ -179,8 +179,8 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
             moveCurrentFileToFinishedFolder();
             openNextFileAndConfigureIt();
             if (this.inputFile == null) {//no file available
-                log.debug("No more files available. Sleeping {} ms.", this.config.emptyPollWaitMs);
-                Thread.sleep(this.config.emptyPollWaitMs);
+                log.info("No more files available. Sleeping {} ms.", this.config.emptyPollWaitMs * 2);
+                Thread.sleep(this.config.emptyPollWaitMs * 2);
                 return Collections.emptyList();
             }
         }
@@ -188,9 +188,10 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
         List<SourceRecord> results = read();
 
         if (results.isEmpty()) {
-            log.debug("read() returned empty list.");
+            log.info("Current file is ended. Sleeping {} ms before processing next file.", this.config.emptyPollWaitMs);
+            Thread.sleep(this.config.emptyPollWaitMs);
         } else {
-            log.info("read() returning {} result(s)", results.size());
+            log.trace("read() returning {} result(s)", results.size());
         }
 
         return results;
