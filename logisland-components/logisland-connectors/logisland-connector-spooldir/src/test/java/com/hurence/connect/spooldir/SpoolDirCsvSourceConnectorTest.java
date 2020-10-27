@@ -52,6 +52,7 @@ public class SpoolDirCsvSourceConnectorTest {
                 properties.put(SpoolDirCsvSourceConnectorConfig.FINISHED_PATH_CONFIG, outputDir.getPath());
                 properties.put(SpoolDirCsvSourceConnectorConfig.ERROR_PATH_CONFIG, outputErrorDir.getPath());
                 properties.put(SpoolDirCsvSourceConnectorConfig.EMPTY_POLL_WAIT_MS_CONF, "500");
+                properties.put(SpoolDirCsvSourceConnectorConfig.DELAY_ON_ERROR_BEFORE_RETRYING_MS_CONF, "100");
                 properties.put(SpoolDirCsvSourceConnectorConfig.INPUT_FILE_PATTERN_CONF, "^.*.csv$");
                 properties.put(SpoolDirCsvSourceConnectorConfig.HALT_ON_ERROR_CONF, "false");
                 properties.put(SpoolDirCsvSourceConnectorConfig.TOPIC_CONF, "evoa_measures");
@@ -74,6 +75,14 @@ public class SpoolDirCsvSourceConnectorTest {
                     counter += records.size();
                 }
                 Assert.assertEquals(20000, counter);
+                Assert.assertFalse(new File(outputErrorDir, koFileName).exists());
+                empty = false;
+                while (!empty) {
+                    List<SourceRecord> records = task.poll();
+                    empty = records.isEmpty();
+                    counter += records.size();
+                }
+                Assert.assertEquals(40000, counter);//recomputed all data ass offset is not stored without kafka
                 Assert.assertTrue(new File(outputErrorDir, koFileName).exists());
             } catch (Exception e){
                 logger.error("error while processing", e);

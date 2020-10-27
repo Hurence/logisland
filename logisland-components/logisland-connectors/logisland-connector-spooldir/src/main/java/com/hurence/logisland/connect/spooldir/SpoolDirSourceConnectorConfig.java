@@ -59,6 +59,8 @@ abstract class SpoolDirSourceConnectorConfig extends AbstractConfig {
   public static final String HALT_ON_ERROR_CONF = "halt.on.error";
   public static final String FILE_MINIMUM_AGE_MS_CONF = "file.minimum.age.ms";
   public static final String PROCESSING_FILE_EXTENSION_CONF = "processing.file.extension";
+  public static final String DELAY_ON_ERROR_BEFORE_RETRYING_MS_CONF = "file.error.delay.ms";
+
   //RecordProcessorConfig
   public static final String BATCH_SIZE_CONF = "batch.size";
   public static final String PROCESSING_FILE_EXTENSION_DEFAULT = ".PROCESSING";
@@ -95,6 +97,8 @@ abstract class SpoolDirSourceConnectorConfig extends AbstractConfig {
       "must match the entire filename. The equivalent of Matcher.matches().";
   static final String HALT_ON_ERROR_DOC = "Should the task halt when it encounters an error or continue to the next file.";
   static final String FILE_MINIMUM_AGE_MS_DOC = "The amount of time in milliseconds after the file was last written to before the file can be processed.";
+  static final String DELAY_ON_ERROR_BEFORE_RETRYING_DOC = "The amount of time in milliseconds to wait before retrying a file that ended in error earlier.";
+
   static final String PROCESSING_FILE_EXTENSION_DOC = "Before a file is processed, it is renamed to indicate that it is currently being processed. This setting is appended to the end of the file.";
   static final String PARSER_TIMESTAMP_DATE_FORMATS_DOC = "The date formats that are expected in the file. This is a list " +
       "of strings that will be used to parse the date fields in order. The most accurate date format should be the first " +
@@ -116,6 +120,7 @@ abstract class SpoolDirSourceConnectorConfig extends AbstractConfig {
   public final File errorPath;
   public final boolean haltOnError;
   public final long minimumFileAgeMS;
+  public final long delayOnErrorMs;
   public final int batchSize;
   public final String topic;
   public final Schema keySchema;
@@ -143,6 +148,7 @@ abstract class SpoolDirSourceConnectorConfig extends AbstractConfig {
     this.errorPath = ConfigUtils.getAbsoluteFile(this, ERROR_PATH_CONFIG);
     this.haltOnError = this.getBoolean(HALT_ON_ERROR_CONF);
     this.minimumFileAgeMS = this.getLong(FILE_MINIMUM_AGE_MS_CONF);
+    this.delayOnErrorMs = this.getLong(DELAY_ON_ERROR_BEFORE_RETRYING_MS_CONF);
     this.batchSize = this.getInt(BATCH_SIZE_CONF);
     this.topic = this.getString(TOPIC_CONF);
     this.emptyPollWaitMs = this.getLong(EMPTY_POLL_WAIT_MS_CONF);
@@ -291,6 +297,7 @@ abstract class SpoolDirSourceConnectorConfig extends AbstractConfig {
         .define(INPUT_FILE_PATTERN_CONF, ConfigDef.Type.STRING, ConfigDef.Importance.HIGH, INPUT_FILE_PATTERN_DOC)
         .define(HALT_ON_ERROR_CONF, ConfigDef.Type.BOOLEAN, true, ConfigDef.Importance.HIGH, HALT_ON_ERROR_DOC)
         .define(FILE_MINIMUM_AGE_MS_CONF, ConfigDef.Type.LONG, 0L, ConfigDef.Range.between(0L, Long.MAX_VALUE), ConfigDef.Importance.LOW, FILE_MINIMUM_AGE_MS_DOC)
+        .define(DELAY_ON_ERROR_BEFORE_RETRYING_MS_CONF, ConfigDef.Type.LONG, 10000L, ConfigDef.Range.between(0L, Long.MAX_VALUE), ConfigDef.Importance.LOW, DELAY_ON_ERROR_BEFORE_RETRYING_DOC)
         .define(PROCESSING_FILE_EXTENSION_CONF, ConfigDef.Type.STRING, PROCESSING_FILE_EXTENSION_DEFAULT, ValidPattern.of("^.*\\..+$"), ConfigDef.Importance.LOW, PROCESSING_FILE_EXTENSION_DOC)
 
         .define(BATCH_SIZE_CONF, ConfigDef.Type.INT, BATCH_SIZE_DEFAULT, ConfigDef.Importance.LOW, BATCH_SIZE_DOC)

@@ -24,6 +24,8 @@ import com.github.jcustenborder.kafka.connect.utils.data.type.TypeParser;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
+import com.hurence.logisland.connect.spooldir.modele.DelayedFile;
+import com.hurence.logisland.utils.LinkedHashSetBlockingQueue;
 import com.hurence.logisland.utils.SynchronizedFileLister;
 import org.apache.kafka.connect.data.Date;
 import org.apache.kafka.connect.data.Schema;
@@ -45,6 +47,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.TimeUnit;
 
 public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorConfig> extends SourceTask {
     private static final Logger log = LoggerFactory.getLogger(SpoolDirSourceTask.class);
@@ -61,8 +66,11 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
 
     private boolean currentFileFinished = false;
     private boolean currentFileInError = false;
+    private boolean lastChance = false;
     private boolean firstPoll = true;
     private SynchronizedFileLister fileLister;
+    final DelayQueue<DelayedFile> errorFileQueue = new DelayQueue<>();
+
 
     private static void checkDirectory(String key, File directoryPath) {
         if (log.isInfoEnabled()) {
@@ -197,7 +205,13 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
         this.currentFileFinished = results.isEmpty();
         if (currentFileFinished) {
             if (currentFileInError) {
-                moveCurrentFileToErrorFolder();
+                if (lastChance) {
+                    moveCurrentFileToErrorFolder();
+                } else {
+                    log.error("parsing file {} resulted in an error. Will try once more time after a delay", this.inputFile);
+                    errorFileQueue.add(new DelayedFile(this.inputFile, this.config.delayOnErrorMs, TimeUnit.MILLISECONDS));
+                }
+                lastChance = false;
                 currentFileInError = false;
             } else {
                 moveCurrentFileToFinishedFolder();
@@ -240,7 +254,14 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
      * @return true if there is a next file otherwise return false
      */
     private boolean openNextFileAndConfigureIt() {
-        this.inputFile = fileLister.take();
+        DelayedFile failedFile = errorFileQueue.poll();
+        if (failedFile != null) {
+            this.inputFile = failedFile.getFailedFile();
+            lastChance = true;
+            log.info("Opening {}, this file produced an error last time trying to parse it", this.inputFile);
+        } else {
+            this.inputFile = fileLister.take();
+        }
         if (null == this.inputFile) {
             return false;
         }
