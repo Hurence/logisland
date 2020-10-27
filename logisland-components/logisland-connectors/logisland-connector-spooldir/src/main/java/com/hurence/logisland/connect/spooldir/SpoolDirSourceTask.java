@@ -59,7 +59,9 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
     private Map<String, String> metadata;
 
 
-    private boolean currentFileFinished = true;
+    private boolean currentFileFinished = false;
+    private boolean currentFileInError = false;
+    private boolean firstPoll = true;
     private SynchronizedFileLister fileLister;
 
     private static void checkDirectory(String key, File directoryPath) {
@@ -175,10 +177,16 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
                 fileLister.unlock();
             }
         }
+        if (firstPoll) {
+            firstPoll = false;
+            if (!openNextFileAndConfigureIt()) {//no file available
+                log.info("No more files available. Sleeping {} ms.", this.config.emptyPollWaitMs * 2);
+                Thread.sleep(this.config.emptyPollWaitMs * 2);
+                return Collections.emptyList();
+            }
+        }
         if (currentFileFinished) {
-            moveCurrentFileToFinishedFolder();
-            openNextFileAndConfigureIt();
-            if (this.inputFile == null) {//no file available
+            if (!openNextFileAndConfigureIt()) {//no file available
                 log.info("No more files available. Sleeping {} ms.", this.config.emptyPollWaitMs * 2);
                 Thread.sleep(this.config.emptyPollWaitMs * 2);
                 return Collections.emptyList();
@@ -186,8 +194,14 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
         }
 
         List<SourceRecord> results = read();
-
-        if (results.isEmpty()) {
+        this.currentFileFinished = results.isEmpty();
+        if (currentFileFinished) {
+            if (currentFileInError) {
+                moveCurrentFileToErrorFolder();
+                currentFileInError = false;
+            } else {
+                moveCurrentFileToFinishedFolder();
+            }
             log.info("Current file is ended. Sleeping {} ms before processing next file.", this.config.emptyPollWaitMs);
             Thread.sleep(this.config.emptyPollWaitMs);
         } else {
@@ -197,34 +211,40 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
         return results;
     }
 
-    public void moveCurrentFileToFinishedFolder() {
-        if (this.inputFile != null) {
-            log.info("Moving file {} to finished folder {}", this.inputFile, this.config.finishedPath);
-            try {
-                fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.finishedPath);
-            } catch (IOException e) {
-                log.error(
-                        String.format("Exception encountered moving file %s to finished folder %s",
-                                this.inputFile, this.config.finishedPath),
-                        e);
-            }
-            try {
-                this.inputStream.close();
-            } catch (IOException e) {
-                log.error("Exception encountered while closing InputStream.", e);
-            }
-            this.inputStream = null;
+    public void moveCurrentFileToErrorFolder() {
+        try {
+            log.info("Moving file {} to error folder {}", this.inputFile, this.config.errorPath);
+            fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.errorPath);
+        } catch (IOException ex0) {
+            log.error(
+                    String.format("Exception thrown while moving file %s to error folder %s",
+                            this.inputFile, this.config.errorPath),
+                    ex0);
         }
     }
 
-    private void openNextFileAndConfigureIt() {
-        File nextFile = fileLister.take();
-        if (null == nextFile) {
-            return;
+    public void moveCurrentFileToFinishedFolder() {
+        log.info("Moving file {} to finished folder {}", this.inputFile, this.config.finishedPath);
+        try {
+            fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.finishedPath);
+        } catch (IOException e) {
+            log.error(
+                    String.format("Exception encountered moving file %s to finished folder %s",
+                            this.inputFile, this.config.finishedPath),
+                    e);
         }
+    }
 
+    /**
+     *
+     * @return true if there is a next file otherwise return false
+     */
+    private boolean openNextFileAndConfigureIt() {
+        this.inputFile = fileLister.take();
+        if (null == this.inputFile) {
+            return false;
+        }
         this.metadata = ImmutableMap.of();
-        this.inputFile = nextFile;
         this.inputFileModifiedTime = this.inputFile.lastModified();
 
         try {
@@ -234,10 +254,19 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
             log.info("Opening {}", this.inputFile);
             Long lastOffset = null;
             log.debug("looking up offset for {}", this.sourcePartition);
-            Map<String, Object> offset = this.context.offsetStorageReader().offset(this.sourcePartition);
-            if (null != offset && !offset.isEmpty()) {
-                Number number = (Number) offset.get("offset");
-                lastOffset = number.longValue();
+            if (this.context != null) {
+                Map<String, Object> offset = this.context.offsetStorageReader().offset(this.sourcePartition);
+                if (null != offset && !offset.isEmpty()) {
+                    Number number = (Number) offset.get("offset");
+                    lastOffset = number.longValue();
+                }
+            }
+            if (this.inputStream != null) {
+                try {
+                    this.inputStream.close();
+                } catch (Exception ex) {
+                    log.error("Exception during inputStream close", ex);
+                }
             }
             this.inputStream = new FileInputStream(this.inputFile);
             configure(this.inputStream, this.metadata, lastOffset);
@@ -247,35 +276,18 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
         }
         processingTime.reset();
         processingTime.start();
+        return true;
     }
 
     private List<SourceRecord> read() {
         try {
-            List<SourceRecord> records = process();
-            this.currentFileFinished = records.isEmpty();
-            return records;
+            return process();
         } catch (Exception ex) {
             log.error(
                     String.format("Exception encountered processing line %s of %s.",
                             recordOffset(), this.inputFile),
                     ex);
-            try {
-                log.info("Moving file {} to error folder {}", this.inputFile, this.config.errorPath);
-                fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.errorPath);
-            } catch (IOException ex0) {
-                log.error(
-                        String.format("Exception thrown while moving file %s to error folder %s",
-                                this.inputFile, this.config.errorPath),
-                        ex0);
-            } finally {
-                try {
-                    this.inputStream.close();
-                    this.inputStream = null;
-                } catch (IOException e) {
-                    log.error("Exception while closing inputstream of file " + this.inputFile, e);
-                    this.inputFile = null;
-                }
-            }
+            currentFileInError = true;
             if (this.config.haltOnError) {
                 throw new ConnectException(ex);
             } else {

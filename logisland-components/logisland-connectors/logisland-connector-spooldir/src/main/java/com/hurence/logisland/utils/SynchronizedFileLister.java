@@ -86,8 +86,8 @@ public class SynchronizedFileLister {
      */
     public void updateList() {
         OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-        if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
-            log.debug("before updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
+        if(log.isTraceEnabled() && os instanceof UnixOperatingSystemMXBean){
+            log.trace("before updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
         }
         log.debug("before updateList(), size of file queue is {}", fileQueue.size());
         try (Stream<Path> pathsToQueue = getFilesStreamToQueue()) {//so that stream is closed at end (to releases file ressources)
@@ -98,8 +98,8 @@ public class SynchronizedFileLister {
         } catch (IOException e) {
             log.error("error in updateList()", e);
         }
-        if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
-            log.debug("after updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
+        if(log.isTraceEnabled() && os instanceof UnixOperatingSystemMXBean){
+            log.trace("after updateList(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
         }
         log.debug("after updateList(), size of file queue is {}", fileQueue.size());
     }
@@ -134,8 +134,8 @@ public class SynchronizedFileLister {
 //        updateLock.lock();
 //        try {
         OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-        if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
-            log.debug("before moveTo(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
+        if(log.isTraceEnabled() && os instanceof UnixOperatingSystemMXBean){
+            log.trace("before moveTo(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
         }
         String enclosingFolderName = inputFile.getAbsolutePath()
                 .replaceAll(inputDirectory.getAbsolutePath(), "")
@@ -162,8 +162,8 @@ public class SynchronizedFileLister {
             log.warn("Processing file {} is already deleted (should not happen if there is only one VM).",
                     processingFile);
         }
-        if(log.isDebugEnabled() && os instanceof UnixOperatingSystemMXBean){
-            log.debug("after moveTo(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
+        if(log.isTraceEnabled() && os instanceof UnixOperatingSystemMXBean){
+            log.trace("after moveTo(), number of open file descriptors is {}", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
         }
 //        } finally {
 //            updateLock.unlock();
