@@ -598,7 +598,8 @@ public class IncrementalWebSession
     /**
      * This interface defines the result of a check a of session against an event.
      * If the result is valid then the reason is empty; otherwise the reason contains a description of why the check
-     * is not valid.
+     * is not valid.oduire des trucs
+     *
      */
     interface SessionCheckResult
     {
@@ -858,7 +859,7 @@ public class IncrementalWebSession
 
             // Store all events to elasticsearch through a bulk processor.
             events.stream()
-                  .flatMap(event -> event.stream())
+                  .flatMap(Collection::stream)
                   .forEach(event ->
                   {
                       final Map<String, Object> map = toMap(event.cloneRecord());
@@ -883,8 +884,7 @@ public class IncrementalWebSession
                                                    Collections.singletonMap(MAPPING_FIELD, sessions.getLastSessionId()),
                                                    Optional.of(sessions.getSessionId())));
 
-
-
+//            elasticsearchClientService.bulkFlush();
             debug("Processing done. Outcoming records size=%d ", result.size());
 
             return result;

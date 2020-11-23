@@ -18,6 +18,8 @@ package com.hurence.logisland.processor.webAnalytics;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
+import com.hurence.logisland.processor.webAnalytics.util.WebEvent;
+import com.hurence.logisland.processor.webAnalytics.util.WebSessionChecker;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
@@ -68,103 +70,104 @@ public class IncrementalWebSessionTest
                     "h2kTimestamp", 1529673912936L,
                     "userId", null}};
 
+    static String SESSIONID = "SESSIONID";
     Object[] data2 = new Object[]{
             new Object[]{
         "h2kTimestamp" , 1538753339113L,
         "location" , "https://www.zitec-shop.com/en/",
-        "sessionId" , "SESSIONID" // "0:jmw62hh3:ef5kWpbpKDNBG5IyGBARUQLemW3JP0PP"
+        "sessionId" , SESSIONID // "0:jmw62hh3:ef5kWpbpKDNBG5IyGBARUQLemW3JP0PP"
     }, new Object[]{
         "h2kTimestamp" , 1538753689109L,
         "location" , "https://www.zitec-shop.com/en/",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538753753964L,
         "location" , "https://www.zitec-shop.com/en/",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538753768489L,
         "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538756201154L, // timeout
         "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538756215043L,
         "location" , "https://www.zitec-shop.com/en/search/?text=rotex%2Cgg%2C48",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538756216242L,
         "location" , "https://www.zitec-shop.com/en/search/?text=rotex%2Cgg%2C48",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538756232483L,
         "location" , "https://www.zitec-shop.com/en/rotex-48-gg/p-G1184000392",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538756400671L,
         "location" , "https://www.zitec-shop.com/en/rotex-48-gg/p-G1184000392",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538756417237L,
         "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538767062429L, // timeout
         "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538767070188L,
         "location" , "https://www.zitec-shop.com/en/search/?text=nah25",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538767073907L,
         "location" , "https://www.zitec-shop.com/en/search/?text=nah25",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538767077273L,
         "location" , "https://www.zitec-shop.com/en/search/?text=nah",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780539746L, // timeout
         "location" , "https://www.zitec-shop.com/en/search/?text=nah",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780546243L,
         "location" , "https://www.zitec-shop.com/en/search/?text=hj234",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780578259L,
         "location" , "https://www.zitec-shop.com/en/search/?text=hj234",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780595932L,
         "location" , "https://www.zitec-shop.com/en/search/?text=hj+234",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780666747L,
         "location" , "https://www.zitec-shop.com/en/search/?text=hj+234",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780680777L,
         "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780684232L,
         "location" , "https://www.zitec-shop.com/en/login",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780691752L,
         "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780748044L,
         "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
-        "sessionId" , "SESSIONID"
+        "sessionId" , SESSIONID
     }, new Object[]{
         "h2kTimestamp" , 1538780763016L,
         "location" , "https://www.zitec-shop.com/en/roller-bearing-spherical-radial-multi-row/p-G1321019550",
-        "sessionId" , "SESSIONID"}};
+        "sessionId" , SESSIONID}};
 
 
     Object[] data3 = new Object[]{
@@ -300,11 +303,12 @@ public class IncrementalWebSessionTest
 
     private static final String FIELDS_TO_RETURN = Stream.of(PARTY_ID, B2BUNIT).collect(Collectors.joining(","));
 
-    private final ESC elasticsearchClient = new ESC();
+    private final ESC elasticsearchClient = new ESC();//MockElasticSearchClientService
 
-    private MockRecord getRecord(final String session, final List<MockRecord> records)
+
+    private MockRecord getFirstRecordWithId(final String id, final List<MockRecord> records)
     {
-        return records.stream().filter(record -> record.getId().equals(session)).findFirst().get();
+        return records.stream().filter(record -> record.getId().equals(id)).findFirst().get();
     }
 
     @Test
@@ -323,10 +327,10 @@ public class IncrementalWebSessionTest
 
         // One webSession expected.
         testRunner.assertOutputRecordsCount(1);
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
 
-        new WebSessionChecker(doc).sessionId(SESSION1)
+        new WebSessionChecker(session).sessionId(SESSION1)
                                   .Userid(USER1)
                                   .record_type("consolidate-session")
                                   .record_id(SESSION1)
@@ -359,7 +363,7 @@ public class IncrementalWebSessionTest
 
         // One webSession expected.
         testRunner.assertOutputRecordsCount(1);
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -410,6 +414,67 @@ public class IncrementalWebSessionTest
 
         // One webSession expected.
         testRunner.assertOutputRecordsCount(4);
+        List<MockRecord> sessions = testRunner.getOutputRecords();
+        sessions.sort(new Comparator<MockRecord>() {
+            @Override
+            public int compare(MockRecord o1, MockRecord o2) {
+                long t1 = (long) o1.getField("h2kTimestamp").getRawValue();
+                long t2 = (long) o2.getField("h2kTimestamp").getRawValue();
+                return Long.compare(t1, t2);
+            }
+        });
+        new WebSessionChecker(sessions.get(0)).sessionId(SESSIONID)
+                .Userid(null)
+                .record_type("consolidate-session")
+                .record_id(SESSIONID)
+                .firstEventDateTime(1538753339113L)
+                .h2kTimestamp(1538753339113L)
+                .firstVisitedPage("https://www.zitec-shop.com/en/")
+                .eventsCounter(4)
+                .lastEventDateTime(1538753768489L)
+                .lastVisitedPage("https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137")
+                .sessionDuration(429L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(1800L);
+        new WebSessionChecker(sessions.get(1)).sessionId(SESSIONID + "#2")
+                .Userid(null)
+                .record_type("consolidate-session")
+                .record_id(SESSIONID + "#2")
+                .firstEventDateTime(1538756201154L)
+                .h2kTimestamp(1538756201154L)
+                .firstVisitedPage("https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137")
+                .eventsCounter(6)
+                .lastEventDateTime(1538756417237L)
+                .lastVisitedPage("https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584")
+                .sessionDuration(216L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(1800L);
+        new WebSessionChecker(sessions.get(2)).sessionId(SESSIONID + "#3")
+                .Userid(null)
+                .record_type("consolidate-session")
+                .record_id(SESSIONID + "#3")
+                .firstEventDateTime(1538767062429L)
+                .h2kTimestamp(1538767062429L)
+                .firstVisitedPage("https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584")
+                .eventsCounter(4)
+                .lastEventDateTime(1538767077273L)
+                .lastVisitedPage("https://www.zitec-shop.com/en/search/?text=nah")
+                .sessionDuration(14L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(1800L);
+        new WebSessionChecker(sessions.get(3)).sessionId(SESSIONID + "#4")
+                .Userid(null)
+                .record_type("consolidate-session")
+                .record_id(SESSIONID + "#4")
+                .firstEventDateTime(1538780539746L)
+                .h2kTimestamp(1538780539746L)
+                .firstVisitedPage("https://www.zitec-shop.com/en/search/?text=nah")
+                .eventsCounter(10)
+                .lastEventDateTime(1538780763016L)
+                .lastVisitedPage("https://www.zitec-shop.com/en/roller-bearing-spherical-radial-multi-row/p-G1321019550")
+                .sessionDuration(223L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(1800L);
     }
 
     //    @Test
@@ -450,7 +515,7 @@ public class IncrementalWebSessionTest
         final Record lastEvent = events.get(2);
         final String user = firstEvent.getField(USER_ID)==null?null:firstEvent.getField(USER_ID).asString();
 
-        final MockRecord doc = getRecord((String)firstEvent.getField(SESSION_ID).getRawValue(), testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId((String)firstEvent.getField(SESSION_ID).getRawValue(), testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(firstEvent.getField(SESSION_ID).getRawValue())
                                   .Userid(user)
@@ -487,8 +552,8 @@ public class IncrementalWebSessionTest
         // Two webSession expected.
         testRunner.assertOutputRecordsCount(2);
 
-        final MockRecord doc1 = getRecord(SESSION1, testRunner.getOutputRecords());
-        final MockRecord doc2 = getRecord(SESSION2, testRunner.getOutputRecords());
+        final MockRecord doc1 = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc2 = getFirstRecordWithId(SESSION2, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc1).sessionId(SESSION1)
                                    .Userid(USER1)
@@ -537,7 +602,7 @@ public class IncrementalWebSessionTest
 
         // One webSession expected.
         testRunner.assertOutputRecordsCount(1);
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -571,7 +636,7 @@ public class IncrementalWebSessionTest
 
         // One webSession expected.
         testRunner.assertOutputRecordsCount(1);
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -606,7 +671,7 @@ public class IncrementalWebSessionTest
 
         // One webSession expected .
         testRunner.assertOutputRecordsCount(1);
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -667,7 +732,7 @@ public class IncrementalWebSessionTest
 
         // One webSession expected .
         testRunner.assertOutputRecordsCount(1);
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -700,7 +765,7 @@ public class IncrementalWebSessionTest
 
         // One webSession expected.
         testRunner.assertOutputRecordsCount(1);
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -735,7 +800,7 @@ public class IncrementalWebSessionTest
 
         // One webSession expected.
         testRunner.assertOutputRecordsCount(1);
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -784,6 +849,7 @@ public class IncrementalWebSessionTest
         testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, lastEvent.toEpochMilli(), URL3)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
         testRunner.getOutputRecords().forEach(record -> this.elasticsearchClient.save(record));
 
         // One webSession expected.
@@ -792,7 +858,7 @@ public class IncrementalWebSessionTest
         Set<String> ids = this.elasticsearchClient.documents.keySet().stream().map(id->id.getKeyProperty("id")).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
 
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -1020,7 +1086,7 @@ public class IncrementalWebSessionTest
 
         Assert.assertNull(event.get(CURRENT_CART));
 
-        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
 
 
         new WebSessionChecker(doc).sessionId(SESSION1)
@@ -1071,89 +1137,9 @@ public class IncrementalWebSessionTest
         return runner;
     }
 
-    /**
-     * The class represents a web event.
-     */
-    private static class WebEvent extends StandardRecord
-    {
-        /**
-         * Creates a new instance of this class with the provided parameter.
-         *
-         * @param id the event identifier.
-         * @param sessionId the session identifier.
-         * @param userId the user identifier.
-         * @param timestamp the h2kTimestamp.
-         * @param url the visited address.
-         */
-        public WebEvent(final int id, final String sessionId, final String userId, final Long timestamp,
-                        final String url)
-        {
-            this.setField(SESSION_ID, FieldType.STRING, sessionId)
-                .setField(USER_ID, FieldType.STRING, userId)
-                .setField(TIMESTAMP, FieldType.STRING, timestamp)
-                .setField(SESSION_INDEX, FieldType.STRING, SESSION_INDEX)
-                .setField(VISITED_PAGE, FieldType.STRING, url)
-                .setField(CURRENT_CART, FieldType.ARRAY, null)
-                .setField("record_id", FieldType.STRING, String.valueOf(id));
-        }
 
-        public WebEvent add(final String name, final String value)
-        {
-            this.setStringField(name, value);
-            return this;
-        }
-    }
 
-    /**
-     * A class for testing web session.
-     */
-    private static class WebSessionChecker
-    {
-        private final Record record;
 
-        /**
-         * Creates a new instance of this class with the provided parameter.
-         *
-         * @param record the fields to check.
-         */
-        public WebSessionChecker(final Record record)
-        {
-            this.record = record;
-        }
-
-        public WebSessionChecker sessionId(final Object value) { return check("sessionId", value); }
-        public WebSessionChecker Userid(final Object value) { return check("Userid", value); }
-        public WebSessionChecker record_type(final Object value) { return check("record_type", value); }
-        public WebSessionChecker record_id(final Object value) { return check("record_id", value); }
-        public WebSessionChecker currentCart(final Object value) { return check(CURRENT_CART, value); }
-        public WebSessionChecker firstEventDateTime(final long value) { return check("firstEventDateTime", new Date(value).toString()); }
-        public WebSessionChecker h2kTimestamp(final long value) { return check("h2kTimestamp", value); }
-        public WebSessionChecker firstVisitedPage(final Object value) { return check("firstVisitedPage", value); }
-        public WebSessionChecker eventsCounter(final long value) { return check("eventsCounter", value); }
-        public WebSessionChecker lastEventDateTime(final long value) { return check("lastEventDateTime", new Date(value).toString()); }
-        public WebSessionChecker lastVisitedPage(final Object value) { return check("lastVisitedPage", value); }
-        public WebSessionChecker sessionDuration(final Object value) { return check("sessionDuration", value); }
-        public WebSessionChecker is_sessionActive(final Object value) { return check("is_sessionActive", value); }
-        public WebSessionChecker sessionInactivityDuration(final Object value) { return check("sessionInactivityDuration", value); }
-        public WebSessionChecker record_time(final Object value) { return check("record_time", value); }
-
-        /**
-         * Checks the value associated to the specified name against the provided expected value.
-         * An exception is thrown if the check fails.
-         *
-         * @param name the name of the field to check.
-         * @param expectedValue the expected value.
-         *
-         * @return this object for convenience.
-         */
-        public WebSessionChecker check(final String name, final Object expectedValue)
-        {
-            final Field field = this.record.getField(name);
-            Assert.assertEquals(expectedValue,
-                                field!=null?field.getRawValue():null);
-            return this;
-        }
-    }
 
     /**
      * A test implementation of ElasticsearchClientService that performs read/write in a map.

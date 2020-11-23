@@ -30,6 +30,10 @@
     <name>Web Analytics Processor Plugin</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <test.containers>1.12.2</test.containers>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -76,7 +80,25 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
 
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!--Docker-->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${test.containers}</version>
+        </dependency>
     </dependencies>
 
     <build>

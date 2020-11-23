@@ -131,7 +131,7 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
      */
     protected void createElasticsearchClient(ControllerServiceInitializationContext context) throws ProcessException {
         if (esClient != null) {
-            return;
+            shutdown();
         }
 
         try {
@@ -673,6 +673,7 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
                 } else {
                     getLogger().info("all requests have been submitted to es");
                 }
+                bulkProcessor = null;
             } catch (InterruptedException e) {
                 getLogger().error(e.getMessage());
             }
