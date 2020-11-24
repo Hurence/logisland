@@ -90,15 +90,7 @@ public class LogislandRepackagerMojo extends AbstractMojo {
     }
 
     private File getTargetFile() {
-        if (project.getBuild().getFinalName().equalsIgnoreCase(
-                "logisland-service-elasticsearch_2_4_0-client-1.4.0"
-        )) {
-            return new File(project.getBuild().getDirectory(), project.getBuild().getFinalName()  + "-repackaged" + "."
-                    + this.project.getArtifact().getArtifactHandler().getExtension());
-        } else {
-            return new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + "."
-                    + this.project.getArtifact().getArtifactHandler().getExtension());
-        }
-
+        return new File(project.getBuild().getDirectory(), project.getBuild().getFinalName()  + "-repackaged" + "."
+                + this.project.getArtifact().getArtifactHandler().getExtension());
     }
 }

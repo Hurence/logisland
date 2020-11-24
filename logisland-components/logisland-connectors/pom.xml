@@ -35,10 +35,13 @@
                     <version>2.0.0.RELEASE</version>
                     <executions>
                         <execution>
+                            <configuration>
+                                <classifier>repackaged</classifier>
+                            </configuration>
+                            <phase>none</phase>
                             <goals>
                                 <goal>repackage</goal>
                             </goals>
-                            <phase>none</phase>
                         </execution>
                     </executions>
                     <configuration>

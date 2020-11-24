@@ -77,6 +77,7 @@
                 <outputDirectory>lib/plugins</outputDirectory>
                 <includeDependencies>false</includeDependencies>
                 <unpack>false</unpack>
+                <attachmentClassifier>repackaged</attachmentClassifier>
             </binaries>
         </moduleSet>
     </moduleSets>
