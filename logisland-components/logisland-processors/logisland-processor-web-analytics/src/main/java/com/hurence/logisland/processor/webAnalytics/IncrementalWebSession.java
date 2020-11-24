@@ -842,14 +842,7 @@ public class IncrementalWebSession
         public Collection<Record> process(final Collection<Record> records)
             throws ProcessException
         {
-//            debug("\n\n--------------------------------------------------------------------");
-//            debug("Starting processing on %s '%s' %s. Incoming records size=%d ",
-//                  ManagementFactory.getRuntimeMXBean().getName(),
-//                  Thread.currentThread().getName(),
-//                  Thread.currentThread().getId(),
-//                  records.size());
-//            records.forEach(record -> debug(record.getId()));
-
+            elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, 30000L);
             // Convert records to web-events grouped by session-id. Indeed each instance of Events contains a list of
             // sorted web-event grouped by session identifiers.
             final Collection<Events> events = toWebEvents(records);
@@ -884,7 +877,7 @@ public class IncrementalWebSession
                                                    Collections.singletonMap(MAPPING_FIELD, sessions.getLastSessionId()),
                                                    Optional.of(sessions.getSessionId())));
 
-//            elasticsearchClientService.bulkFlush();
+            elasticsearchClientService.bulkFlush();
             debug("Processing done. Outcoming records size=%d ", result.size());
 
             return result;
@@ -998,6 +991,7 @@ public class IncrementalWebSession
                     // Retrieve the name of the index that contains the websessions.
                     // The chaining calls are on purpose as any NPE would mean something is wrong.
                     final String sessionIndexName = events.first().getValue(_ES_SESSION_INDEX_FIELD).toString();
+                    elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(sessionIndexName, 30000L);
                     sessionBuilder.add(sessionIndexName, _ES_SESSION_TYPE_NAME,
                                        null, mappedSessionId!=null?mappedSessionId:sessionId);
                 });

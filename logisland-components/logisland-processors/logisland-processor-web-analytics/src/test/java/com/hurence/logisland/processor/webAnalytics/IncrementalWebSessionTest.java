@@ -1285,6 +1285,11 @@ public class IncrementalWebSessionTest
         }
 
         @Override
+        public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String index, long timeoutMilli) throws DatastoreClientServiceException {
+
+        }
+
+        @Override
         public void bulkFlush() {}
 
         @Override
@@ -1298,6 +1303,11 @@ public class IncrementalWebSessionTest
 
         @Override
         public long countCollection(String indexName) throws DatastoreClientServiceException { return 0; }
+
+        @Override
+        public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+
+        }
 
         @Override
         public void createCollection(String indexName, int numShards, int numReplicas) throws DatastoreClientServiceException {}

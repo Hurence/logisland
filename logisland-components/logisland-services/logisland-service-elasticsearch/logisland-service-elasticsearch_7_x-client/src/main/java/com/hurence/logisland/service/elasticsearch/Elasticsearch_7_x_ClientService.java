@@ -36,6 +36,8 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
@@ -52,6 +54,7 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.PutMappingRequest;
+import org.elasticsearch.common.Priority;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
@@ -351,6 +354,45 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         }
 
         bulkProcessor.add(request);
+    }
+
+    /**
+     * Wait until specified collection is ready to be used.
+     */
+    @Override
+    public void waitUntilCollectionReady(String collection, long timeoutMilli) throws DatastoreClientServiceException {
+        getIndexHealth(collection, timeoutMilli);
+    }
+
+    @Override
+    public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String index, long timeoutMilli) throws DatastoreClientServiceException {
+        ClusterHealthResponse rsp = getIndexHealth(index, timeoutMilli);
+        if (rsp == null) {
+            getLogger().error("index {} seems to not be ready (query failed) !", new Object[]{index});
+            return;
+        }
+        if (rsp.isTimedOut()) {
+            getLogger().error("index {} is not ready !", new Object[]{index});
+        } else {
+            if (rsp.getNumberOfPendingTasks() != 0) {
+                this.refreshCollection(index);
+            }
+        }
+    }
+
+    private ClusterHealthResponse getIndexHealth(String index, long timeoutMilli) {
+        ClusterHealthRequest request = new ClusterHealthRequest(index)
+                .timeout(TimeValue.timeValueMillis(timeoutMilli))
+                .waitForGreenStatus()
+                .waitForEvents(Priority.LOW);
+        ClusterHealthResponse response = null;
+        try {
+            response = esClient.cluster().health(request, RequestOptions.DEFAULT);
+            getLogger().trace("health response for index {} is {}", new Object[]{index, response});
+        } catch (Exception e) {
+            getLogger().error("health query failed : {}", new Object[]{e.getMessage()});
+        }
+        return response;
     }
 
     @Override

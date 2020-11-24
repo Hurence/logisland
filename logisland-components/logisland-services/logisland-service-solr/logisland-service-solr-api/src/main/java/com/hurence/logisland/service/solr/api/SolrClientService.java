@@ -523,6 +523,13 @@ abstract public class SolrClientService extends AbstractControllerService implem
         }
     }
 
+
+
+    @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        throw new UnsupportedOperationException("not yet supported for SolrClientService");
+    }
+
     @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
         try {

@@ -61,6 +61,18 @@ public interface DatastoreClientService extends ControllerService {
      * ********************************************************************/
 
     /**
+     * Wait until specified collection is ready to be used.
+     */
+    void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException;
+
+    /**
+     * Wait until specified collection is ready to be used.
+     */
+    default void waitUntilCollectionReady(String name) throws DatastoreClientServiceException {
+        waitUntilCollectionReady(name, 10000L);
+    }
+
+    /**
      * Create the specified collection or index or table or bucket.
      * Specify namespace as dotted notation like in `global.users`
      */

@@ -172,6 +172,11 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
     }
 
     @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        throw new DatastoreClientServiceException("not implemented yet");
+    }
+
+    @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         throw new DatastoreClientServiceException("not implemented yet");
     }

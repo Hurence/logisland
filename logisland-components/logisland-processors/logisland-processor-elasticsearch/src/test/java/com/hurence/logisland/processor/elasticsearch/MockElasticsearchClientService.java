@@ -92,6 +92,11 @@ public class MockElasticsearchClientService extends AbstractControllerService im
     }
 
     @Override
+    public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String index, long timeoutMilli) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords){
 
         List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
@@ -149,6 +154,11 @@ public class MockElasticsearchClientService extends AbstractControllerService im
     @Override
     public long countCollection(String indexName) throws DatastoreClientServiceException {
         return stringDocuments.size() + mapDocuments.size();
+    }
+
+    @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+
     }
 
     @Override

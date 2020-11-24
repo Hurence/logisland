@@ -35,6 +35,16 @@ public class MockDatastoreService implements DatastoreClientService {
     Map<String, Map<String, Record>> collections = new HashMap<>();
 
     @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void waitUntilCollectionReady(String name) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         collections.computeIfAbsent(name, k -> new HashMap<>());
     }

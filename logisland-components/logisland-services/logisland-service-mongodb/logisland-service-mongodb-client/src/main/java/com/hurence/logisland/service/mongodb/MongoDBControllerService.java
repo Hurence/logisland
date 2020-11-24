@@ -227,6 +227,11 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
     }
 
     @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        getLogger().warn("not implemented for Mongo");
+    }
+
+    @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
 
     }

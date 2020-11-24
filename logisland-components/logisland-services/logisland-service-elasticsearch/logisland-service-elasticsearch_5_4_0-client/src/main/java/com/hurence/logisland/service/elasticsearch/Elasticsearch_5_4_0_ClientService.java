@@ -33,6 +33,8 @@ import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.ActionRequestValidationException;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -49,6 +51,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.Priority;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.ByteSizeUnit;
@@ -369,6 +372,36 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         bulkProcessor.add(result.request());
     }
 
+    /**
+     * Wait until specified collection is ready to be used.
+     */
+    @Override
+    public void waitUntilCollectionReady(String collection, long timeoutMilli) throws DatastoreClientServiceException {
+        getIndexHealth(collection, timeoutMilli);
+    }
+
+    @Override
+    public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String index, long timeoutMilli) throws DatastoreClientServiceException {
+        ClusterHealthResponse rsp = getIndexHealth(index, timeoutMilli);
+        if (rsp.isTimedOut()) {
+            getLogger().error("index {} is not ready !", new Object[]{index});
+        } else {
+            if (rsp.getNumberOfPendingTasks() != 0) {
+                this.refreshCollection(index);
+            }
+        }
+    }
+
+    private ClusterHealthResponse getIndexHealth(String index, long timeoutMilli) {
+        ClusterHealthRequest request = new ClusterHealthRequest(index)
+                .timeout(TimeValue.timeValueMillis(timeoutMilli))
+                .waitForGreenStatus()
+                .waitForEvents(Priority.LOW);
+        ClusterHealthResponse response = esClient.admin().cluster().health(request).actionGet();
+        getLogger().trace("health response for index {} is {}", new Object[]{index, response});
+        return response;
+    }
+
     @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
 
@@ -458,6 +491,9 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         }
         return rsp.getHits().getTotalHits();
     }
+
+
+
 
     @Override
     public void createCollection(String indexName, int numShards, int numReplicas) throws DatastoreClientServiceException {

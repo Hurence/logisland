@@ -285,6 +285,11 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
 
 
     @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         throw new UnsupportedOperationException();
     }

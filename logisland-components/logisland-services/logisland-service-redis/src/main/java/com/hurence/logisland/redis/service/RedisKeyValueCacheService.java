@@ -350,6 +350,11 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     }
 
     @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
 
     }

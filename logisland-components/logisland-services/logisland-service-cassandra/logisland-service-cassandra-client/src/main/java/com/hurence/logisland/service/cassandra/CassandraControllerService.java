@@ -274,6 +274,11 @@ public class CassandraControllerService extends AbstractControllerService implem
     }
 
     @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for Cassandra");
+    }
+
+    @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         throw new NotImplementedException("Not yet supported for Cassandra");
     }

@@ -807,6 +807,11 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
     }
 
     @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for InfluxDB");
+    }
+
+    @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         throw new NotImplementedException("Not yet supported for InfluxDB");
     }

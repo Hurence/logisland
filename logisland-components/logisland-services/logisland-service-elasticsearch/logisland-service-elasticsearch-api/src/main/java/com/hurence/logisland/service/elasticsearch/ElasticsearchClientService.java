@@ -21,6 +21,7 @@ import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
@@ -221,6 +222,12 @@ public interface ElasticsearchClientService extends DatastoreClientService {
      * @param document document to index
      */
     void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId);
+
+    /**
+     * Wait until specified collection is ready to be used. Then if it is ready before timeout,
+     * wait until there is no pending task in the index.
+     */
+    void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String index, long timeoutMilli) throws DatastoreClientServiceException;
 
 
     /**
