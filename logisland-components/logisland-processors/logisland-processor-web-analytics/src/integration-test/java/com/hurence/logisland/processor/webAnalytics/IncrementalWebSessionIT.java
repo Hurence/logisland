@@ -30,9 +30,12 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.query.MatchAllQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +51,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.hurence.logisland.processor.webAnalytics.util.WebEvent.SESSION_INDEX;
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test incremental web-session processor.
@@ -417,6 +422,364 @@ public class IncrementalWebSessionIT
                 .sessionInactivityDuration(SESSION_TIMEOUT);
     }
 
+
+    @Test
+    public void testRewind1(Client esclient, DockerComposeContainer container)
+            throws Exception
+    {
+        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
+        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user =  "user";
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
+        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
+        List<Record> events = createEvents(url, session, user, times);
+
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(5);
+        MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
+        MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
+        MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
+        MockRecord session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
+        MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
+
+        new WebSessionChecker(session1).sessionId(session)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        new WebSessionChecker(session5).sessionId(session + "#5")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session + "#5")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session1);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session2);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session3);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session4);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session5);
+        this.elasticsearchClientService.bulkFlush();
+        Thread.sleep(1000L);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        SearchResponse rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        assertEquals(5, rsp.getHits().getTotalHits());
+        //rewind batch1
+        times = Arrays.asList(time1, time2);
+        events = createEvents(url, session, user, times);
+        testRunner.clearQueues();
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(2);
+        session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
+        session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
+
+        new WebSessionChecker(session1).sessionId(session)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        new WebSessionChecker(session2).sessionId(session + "#2")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session + "#2")
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time2)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        //rewind batch 2
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session1);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session2);
+        this.elasticsearchClientService.bulkFlush();
+        Thread.sleep(1000L);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        assertEquals(2, rsp.getHits().getTotalHits());
+        //third run
+        //rewind
+        times = Arrays.asList(time3, time4, time5);
+        events = createEvents(url, session, user, times);
+        testRunner.clearQueues();
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(3);
+        session3 = getFirstRecordWithId(session+ "#3", testRunner.getOutputRecords());
+        session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
+        session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
+
+        new WebSessionChecker(session3).sessionId(session+ "#3")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session+ "#3")
+                .firstEventDateTime(time3)
+                .h2kTimestamp(time3)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time3)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        new WebSessionChecker(session4).sessionId(session + "#4")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session + "#4")
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time4)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        new WebSessionChecker(session5).sessionId(session + "#5")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session + "#5")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        Thread.sleep(1000L);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        assertEquals(5, rsp.getHits().getTotalHits());
+    }
+
+    @Test
+    public void testRewind2(Client esclient, DockerComposeContainer container)
+            throws Exception
+    {
+        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
+        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user =  "user";
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
+        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
+        List<Record> events = createEvents(url, session, user, times);
+
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(5);
+        MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
+        MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
+        MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
+        MockRecord session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
+        MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
+
+        new WebSessionChecker(session1).sessionId(session)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        new WebSessionChecker(session5).sessionId(session + "#5")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session + "#5")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session1);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session2);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session3);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session4);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session5);
+        this.elasticsearchClientService.bulkFlush();
+        Thread.sleep(1000L);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        SearchResponse rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        assertEquals(5, rsp.getHits().getTotalHits());
+        //rewind from time3
+        times = Arrays.asList(time3, time4, time5);
+        events = createEvents(url, session, user, times);
+        testRunner.clearQueues();
+        testRunner.enqueue(events);
+        testRunner.run();
+        List<MockRecord> outputSessions = testRunner.getOutputRecords();
+        outputSessions.forEach(s -> {
+            this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", s);
+        });
+        this.elasticsearchClientService.bulkFlush();
+        Thread.sleep(1000L);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        assertEquals(5, rsp.getHits().getTotalHits());
+    }
+
+    @Test
+    public void testRewindFailThenRestart(Client esclient, DockerComposeContainer container)
+            throws Exception
+    {
+        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
+        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user =  "user";
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
+        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
+        List<Record> events = createEvents(url, session, user, times);
+
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(5);
+        MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
+        MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
+        MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
+        MockRecord session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
+        MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
+
+        new WebSessionChecker(session1).sessionId(session)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        new WebSessionChecker(session5).sessionId(session + "#5")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session + "#5")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session1);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session2);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session3);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session4);
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session5);
+        this.elasticsearchClientService.bulkFlush();
+        Thread.sleep(1000L);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        SearchResponse rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        assertEquals(5, rsp.getHits().getTotalHits());
+        //rewind from time3 but fail during regestering session so regestering only session 3
+        times = Arrays.asList(time3, time4, time5);
+        events = createEvents(url, session, user, times);
+        testRunner.clearQueues();
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertOutputRecordsCount(3);
+        session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
+        this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session3);
+        this.elasticsearchClientService.bulkFlush();
+        Thread.sleep(1000L);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        assertEquals(3, rsp.getHits().getTotalHits());
+        //restart from time3 because offset was not commited
+        times = Arrays.asList(time3, time4, time5);
+        events = createEvents(url, session, user, times);
+        testRunner.clearQueues();
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertOutputRecordsCount(3);
+        List<MockRecord> outputSessions = testRunner.getOutputRecords();
+        outputSessions.forEach(s -> {
+            this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", s);
+        });
+        this.elasticsearchClientService.bulkFlush();
+        Thread.sleep(1000L);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        assertEquals(5, rsp.getHits().getTotalHits());
+    }
 
     private int eventCount = 0;
     @NotNull

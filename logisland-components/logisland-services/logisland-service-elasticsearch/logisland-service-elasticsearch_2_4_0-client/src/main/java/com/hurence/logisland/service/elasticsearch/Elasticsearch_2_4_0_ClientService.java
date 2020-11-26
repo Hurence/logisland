@@ -496,7 +496,8 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
     public void refreshCollection(String indexName) throws DatastoreClientServiceException {
         try {
             RefreshResponse rsp = esClient.admin().indices().prepareRefresh(indexName).execute().get();
-            getLogger().trace("refresh response for index " + indexName + " is " + rsp);
+            getLogger().trace("refresh response for index " + indexName + ", failed shards : " + rsp.getFailedShards()
+                    + ", successfull shards : " + rsp.getSuccessfulShards());
         }
         catch (Exception e){
             throw new DatastoreClientServiceException(e);
