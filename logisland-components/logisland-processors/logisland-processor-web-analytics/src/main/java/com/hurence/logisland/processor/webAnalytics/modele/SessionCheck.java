@@ -14,5 +14,5 @@ public interface SessionCheck {
      * @param event   the event to apply to the session.
      * @return {@code true} is the event is applicable to the session, {@code false} otherwise.
      */
-    SessionCheckResult isValid(WebSession session, WebEvent event);
+    SessionCheckResult isValid(WebSession session, Event event);
 }

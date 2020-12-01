@@ -99,6 +99,15 @@ public interface DatastoreClientService extends ControllerService {
      */
     void refreshCollection(String name) throws DatastoreClientServiceException;
 
+    /**
+     * Wait until the specified collection has integrated all previously-saved data.
+     */
+    default void refreshCollections(String[] names) throws DatastoreClientServiceException {
+        for (String name : names) {
+            refreshCollection(name);
+        }
+    }
+
 
     /**
      * Copy the contents of srcIndex into dstIndex.

@@ -11,9 +11,9 @@ import java.time.ZonedDateTime;
  * This class represents a web event that can be optionally renamed if a new session should have
  * been created.
  */
-public class WebEvent
+public class Event
         extends RecordItem
-        implements Comparable<WebEvent> {
+        implements Comparable<Event> {
 
     /**
      * The timestamp to sort web event from.
@@ -21,7 +21,7 @@ public class WebEvent
     private final ZonedDateTime timestamp;
     private final IncrementalWebSession processor;
 
-    public WebEvent(final Record record, IncrementalWebSession processor) {
+    public Event(final Record record, IncrementalWebSession processor) {
         super(record);
         this.processor = processor;
         this.timestamp = this.fromEpoch(getTimeStampAsLong());
@@ -32,7 +32,7 @@ public class WebEvent
     }
 
     @Override
-    public int compareTo(final WebEvent webEvent) {
+    public int compareTo(final Event webEvent) {
         return this.timestamp.compareTo(webEvent.getTimestamp());
     }
 

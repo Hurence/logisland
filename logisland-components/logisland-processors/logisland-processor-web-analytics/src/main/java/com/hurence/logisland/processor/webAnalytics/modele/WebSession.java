@@ -29,7 +29,7 @@ public class WebSession
      *
      * @param webEvent the web event to fetch information from.
      */
-    public WebSession(final WebEvent webEvent, IncrementalWebSession processor) {
+    public WebSession(final Event webEvent, IncrementalWebSession processor) {
         super(new StandardRecord(IncrementalWebSession.OUTPUT_RECORD_TYPE));
         this.processor = processor;
         this.record.setId(webEvent.getSessionId());
@@ -66,7 +66,7 @@ public class WebSession
      *
      * @param event the event to apply.
      */
-    public void add(final WebEvent event) {
+    public void add(final Event event) {
         // Handle case where web-event is older that first event of session.
         // In case there are few events older than the current web-session, all those events must
         // be taken into account despite the fact that setting the timestamp of the first event

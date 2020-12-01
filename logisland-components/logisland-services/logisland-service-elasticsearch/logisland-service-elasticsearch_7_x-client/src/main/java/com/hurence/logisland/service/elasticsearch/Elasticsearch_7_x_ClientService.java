@@ -25,9 +25,7 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -42,6 +40,7 @@ import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.bulk.*;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -60,7 +59,11 @@ import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.ReindexRequest;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
@@ -356,39 +359,125 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         bulkProcessor.add(request);
     }
 
+    @Override
+    public void bulkDelete(String docIndex, String docType, String id) {
+        DeleteRequest request = new DeleteRequest(docIndex, id);
+        bulkProcessor.add(request);
+    }
+
+
+    @Override
+    public void deleteByQuery(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        String[] indices = new String[queryRecord.getCollections().size()];
+        DeleteByQueryRequest request = new DeleteByQueryRequest(queryRecord.getCollections().toArray(indices));
+        QueryBuilder builder = toQueryBuilder(queryRecord);
+        request.setQuery(builder);
+        request.setRefresh(queryRecord.getRefresh());
+        try {
+            BulkByScrollResponse bulkResponse =
+                    esClient.deleteByQuery(request, RequestOptions.DEFAULT);
+            getLogger().info("deleted {} documents, got {} failure(s).", new Object[]{bulkResponse.getDeleted(), bulkResponse.getBulkFailures().size()});
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("response was {}", new Object[]{bulkResponse});
+            }
+        } catch (IOException e) {
+            getLogger().error("error while deleteByQuery", e);
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    @Override
+    public List<QueryResponseRecord> queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        String[] indices = new String[queryRecord.getCollections().size()];
+        SearchRequest searchRequest = new SearchRequest(indices);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        QueryBuilder queryBuilder = toQueryBuilder(queryRecord);
+        searchSourceBuilder.query(queryBuilder);
+        searchSourceBuilder.size(Integer.MAX_VALUE);
+        searchRequest.source(searchSourceBuilder);
+        SearchRequest request = new SearchRequest(queryRecord.getCollections().toArray(indices));
+        try {
+            SearchResponse searchRsp = esClient.search(request, RequestOptions.DEFAULT);
+            getLogger().info("Number of documents returned is {}, Total number of documents that matched is {}.",
+                    new Object[]{
+                            searchRsp.getHits().getHits().length,
+                            searchRsp.getHits().getTotalHits().value
+            });
+            if (getLogger().isTraceEnabled()) {
+                getLogger().trace("response was {}", new Object[]{searchRsp});
+            }
+//           TODO response have to work
+//            searchRsp.getHits().getHits().length shoulb equal to searchRsp.getHits().getTotalHits().value in some cases.
+            return null;
+        } catch (IOException e) {
+            getLogger().error("error while deleteByQuery", e);
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+
+    private QueryBuilder toQueryBuilder(QueryRecord queryRecord) {
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        for (TermQueryRecord termQuery : queryRecord.getTermQueries()) {
+            boolQuery = boolQuery
+                    .must(QueryBuilders.termQuery(termQuery.getFieldName(), termQuery.getFieldValue()));
+        }
+        for (RangeQueryRecord rangeQuery : queryRecord.getRangeQueries()) {
+            boolQuery = boolQuery
+                    .must(
+                            QueryBuilders
+                                    .rangeQuery(rangeQuery.getFieldName())
+                                    .from(rangeQuery.getFrom(), rangeQuery.isIncludeLower())
+                                    .to(rangeQuery.getTo(), rangeQuery.isIncludeUpper())
+                    );
+        }
+        return boolQuery;
+    }
+
+
     /**
      * Wait until specified collection is ready to be used.
      */
     @Override
     public void waitUntilCollectionReady(String collection, long timeoutMilli) throws DatastoreClientServiceException {
-        getIndexHealth(collection, timeoutMilli);
+        getIndexHealth(new String[]{collection}, timeoutMilli);
     }
 
     @Override
-    public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String index, long timeoutMilli) throws DatastoreClientServiceException {
-        ClusterHealthResponse rsp = getIndexHealth(index, timeoutMilli);
+    public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String[] indices, long timeoutMilli) throws DatastoreClientServiceException {
+        ClusterHealthResponse rsp = getIndexHealth(indices, timeoutMilli);
         if (rsp == null) {
-            getLogger().error("index {} seems to not be ready (query failed) !", new Object[]{index});
+            getLogger().error("index {} seems to not be ready (query failed) !", new Object[]{indices});
             return;
         }
         if (rsp.isTimedOut()) {
-            getLogger().error("index {} is not ready !", new Object[]{index});
+            getLogger().error("index {} is not ready !", new Object[]{indices});
         } else {
             if (rsp.getNumberOfPendingTasks() != 0) {
-                this.refreshCollection(index);
+                this.refreshCollections(indices);
             }
         }
     }
 
-    private ClusterHealthResponse getIndexHealth(String index, long timeoutMilli) {
-        ClusterHealthRequest request = new ClusterHealthRequest(index)
+    @Override
+    public void refreshCollections(String[] indices) throws DatastoreClientServiceException {
+        try {
+            RefreshRequest request = new RefreshRequest(indices);
+            esClient.indices().refresh(request, RequestOptions.DEFAULT);
+        } catch (Exception e){
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    private ClusterHealthResponse getIndexHealth(String[] indices, long timeoutMilli) {
+        ClusterHealthRequest request = new ClusterHealthRequest(indices)
                 .timeout(TimeValue.timeValueMillis(timeoutMilli))
                 .waitForGreenStatus()
                 .waitForEvents(Priority.LOW);
         ClusterHealthResponse response = null;
         try {
             response = esClient.cluster().health(request, RequestOptions.DEFAULT);
-            getLogger().trace("health response for index {} is {}", new Object[]{index, response});
+            getLogger().trace("health response for indices {} is {}", new Object[]{indices, response});
         } catch (Exception e) {
             getLogger().error("health query failed : {}", new Object[]{e.getMessage()});
         }
@@ -456,16 +545,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         return exists;
     }
 
-    @Override
-    public void refreshCollection(String indexName) throws DatastoreClientServiceException {
-        try {
-            RefreshRequest request = new RefreshRequest(indexName);
-            esClient.indices().refresh(request, RequestOptions.DEFAULT);
-        }
-        catch (Exception e){
-            throw new DatastoreClientServiceException(e);
-        }
-    }
+
 
     @Override
     public void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception {

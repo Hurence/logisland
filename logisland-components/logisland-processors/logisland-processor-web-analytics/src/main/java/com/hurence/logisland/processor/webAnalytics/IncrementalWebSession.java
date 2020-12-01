@@ -25,17 +25,17 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.webAnalytics.modele.*;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.hurence.logisland.processor.webAnalytics.util.Utils.isFieldAssigned;
 
@@ -402,6 +402,7 @@ public class IncrementalWebSession
     public ElasticsearchClientService elasticsearchClientService;
     public CacheService<String/*sessionId*/, WebSession> cacheService;
     public long _SESSION_INACTIVITY_TIMEOUT;
+    public String _ORIGINAL_SESSION_ID_FIELD = "originalSessionId";
     public String _SESSION_ID_FIELD;
     public String _TIMESTAMP_FIELD;
     public String _VISITED_PAGE_FIELD;
@@ -550,40 +551,22 @@ public class IncrementalWebSession
                                       final Collection<Record> records)
         throws ProcessException
     {
-        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, 60000L);
-        // Convert records to web-events grouped by session-id. Indeed each instance of Events contains a list of
-        // sorted web-event grouped by session identifiers.
-        final Collection<Events> events = toWebEvents(records);
-//            final Map<String/*sessionId*/, Long/*firstTimeStamp*/> sessionIdToFirstTs = events
-//                    .stream().collect(Collectors.toMap(
-//                            Events::getSessionId,
-//                            eventsInSession -> eventsInSession.first().getTimestamp().toInstant().toEpochMilli()
-//                    ));
+        return processRecords(records);
+    }
 
-//        final SortedEvents sortedEvents = null;//TODO
-//        final Collection<Events> eventsInRewindMode = Collections.emptyList();//TODO
-//        final Collection<Events> eventsInNominalMode = Collections.emptyList();//TODO
-//
-//        events.forEach(eventsForSession -> {
-//            String sessionId = eventsForSession.getSessionId();
-//            WebSession lastSubSession = cacheService.get(sessionId);
-//            if (lastSubSession == null) {
-//                //TODO query elasticsearch
-//            }
-//            if (lastSubSession.getLastEvent().toInstant().toEpochMilli() >
-//                    eventsForSession.first().getTimestamp().toInstant().toEpochMilli()) {
-//                //TODO rewind
-//            } else {
-//                //TODO not rewind
-//            }
-//        });
+    public Collection<Record> processRecords(final Collection<Record> records) {
+        Collection<Events> allEvents = handleRewindAndGetAllNeededEvents(records);
+        final Collection<SessionsCalculator> calculatedSessions = this.processEvents(allEvents);
+        saveEventsToEs(allEvents);
+        final Collection<Record> flattenedSessions = calculatedSessions.stream()
+                .flatMap(sessionsCalculator -> sessionsCalculator.getSessions().stream())
+                .collect(Collectors.toList());
+        debug("Processing done. Outcoming records size=%d ", flattenedSessions.size());
+        return flattenedSessions;
+    }
 
-
-        //
-        final Collection<Sessions> rewriters = this.processEvents(events);
-
-        // Store all events to elasticsearch through a bulk processor.
-        events.stream()
+    private void saveEventsToEs(Collection<Events> allEvents) {
+        allEvents.stream()
                 .flatMap(Collection::stream)
                 .forEach(event ->
                 {
@@ -595,30 +578,102 @@ public class IncrementalWebSession
                             Optional.of((String) map.get(FieldDictionary.RECORD_ID)));
                 });
         elasticsearchClientService.bulkFlush();
+    }
 
-        // Convert all created sessions to records.
-        final Collection<Record> result = rewriters.stream()
-                .flatMap(rewriter -> rewriter.getSessions().stream())
-                .collect(Collectors.toList());
+    private Collection<Events> handleRewindAndGetAllNeededEvents(final Collection<Record> records) {
+        final Collection<Events> groupOfEvents = toWebEvents(records);
+        Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping = getMapping(groupOfEvents);
+        final SplittedEvents splittedEvents = getSplittedEvents(groupOfEvents, lastSessionMapping);
+        final Collection<Events> eventsFromPast = splittedEvents.getEventsfromPast();
+        final Collection<Events> eventsInNominalMode = splittedEvents.getEventsInNominalMode();
 
-        // Save last sessionId in mapping index.
-        // <sessionId> -> <sessionId>#?
-        rewriters.stream()
-                .forEach(sessions ->
-                        elasticsearchClientService.bulkPut(_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, ES_MAPPING_EVENT_TO_SESSION_TYPE_NAME,
-                                Collections.singletonMap(MAPPING_FIELD, sessions.getLastSessionId()),
-                                Optional.of(sessions.getSessionId())));
+        if (!eventsFromPast.isEmpty()) {
+            deleteFuturSessions(eventsFromPast);
+            Collection<Event> eventsFromEs = getNeededEventsFromEs(eventsFromPast);//TODO
+            Map<String/*sessionId*/, List<Event>> eventsFromEsBySessionId = eventsFromEs
+                    .stream()
+                    .collect(Collectors.groupingBy(Event::getSessionId));
+            //merge those events into the list
+            for (Events events : eventsFromPast) {
+                List<Event> eventsFromEsForSession = eventsFromEsBySessionId.get(events.getSessionId());
+                events.addAll(eventsFromEsForSession);//TODO faire un test qui verifie que les events deja dans events sont prioritaire
+            }
+        }
+        return Stream.concat(
+                eventsFromPast.stream(),
+                eventsInNominalMode.stream()
+        ).collect(Collectors.toList());
+    }
 
+    private Collection<Event> getNeededEventsFromEs(Collection<Events> eventsFromPast) {
+//        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES, 60000L);
+        //            TODO get needed events for current session
+            /*
+                Pour chaque events trouver les evènements de la session en cour nécessaire.
+                Le plus simple si on a le nouvel sessionId (change tout les jours)
+                C'est de requêter tous les events de la sessionId et timestamp <= firstEventTs(input events)
+            */
+        String[] indicesToRefresh = null;
+        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToRefresh, 60000L);
+        elasticsearchClientService.searchNumb
+        allEvents.stream()
+                .flatMap(Collection::stream)
+                .forEach(event ->
+                {
+                    final Map<String, Object> map = toMap(event.cloneRecord());
+
+                    elasticsearchClientService.bulkPut(toEventIndexName(event.getTimestamp()),
+                            _ES_EVENT_TYPE_NAME,
+                            map,
+                            Optional.of((String) map.get(FieldDictionary.RECORD_ID)));
+                });
         elasticsearchClientService.bulkFlush();
-        debug("Processing done. Outcoming records size=%d ", result.size());
+        return null;//TODO
+    }
 
-        return result;
+    private void deleteFuturSessions(Collection<Events> eventsFromPast) {
+        /*
+            Pour chaque events trouver le min, effacer toutes les sessions avec
+            originalSessionId = sessionId && firstEventTs(session) > firstEventTs(input events)
+           ==> du coup on a plus que les sessions plus ancienne ou la session actuelle dans es.
+        */
+        //TODO We could use a deleteByQuery here, but in 2.4 this is a plugin and may not be available.
+        // Another solution is to use the Bulk api with delete query using id of documents.
+        // We could add a method in ElasticSearchCLient interface isSupportingDeleteByQuery() to use it when available.
+        QueryRecord queryRecord = new QueryRecord();
+        queryRecord.setRefresh(false);
+        for (Events events : eventsFromPast) {
+            final String sessionIndexName = events.first().getValue(_ES_SESSION_INDEX_FIELD).toString();
+            queryRecord.addCollection(sessionIndexName);
+            final String sessionId = events.getSessionId();
+            queryRecord.addTermQuery(new TermQueryRecord(_ORIGINAL_SESSION_ID_FIELD, sessionId));
+            queryRecord.addRangeQuery(
+                    new RangeQueryRecord(_TIMESTAMP_FIELD)
+                    .setFrom(events.first().getTimeStampAsLong())
+            );
+        }
+        elasticsearchClientService.deleteByQuery(queryRecord);
+    }
+
+    private SplittedEvents getSplittedEvents(Collection<Events> groupOfEvents, Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping) {
+        final Collection<Events> eventsFromPast = new ArrayList<>();
+        final Collection<Events> eventsOk = new ArrayList<>();
+        for (Events events : groupOfEvents) {
+            Optional<WebSession> lastSession = lastSessionMapping.get(events.getSessionId());
+            if (lastSession.isPresent() && lastSession.get().getLastEvent().toInstant().toEpochMilli() > events.first().getTimeStampAsLong()) {//> ou >= ?
+                eventsFromPast.add(events);
+            } else {
+                eventsOk.add(events);
+            }
+        }
+        return new SplittedEvents(eventsOk, eventsFromPast);
     }
 
     /**
-     * Returns the provided records as a collection of Events instances.
-     * Provided records are grouped by session identifier and their remaining collection wrapped in Events
-     * instances.
+     * Filter out record without sessionId or timestamp
+     * Returns the provided remaining records as a collection of Events instances.
+     *
+     * Provided records are grouped by session identifier so that each Events contains all events from a specific sessionId.
      *
      * @param records a collection of records representing web-events.
      * @return the provided records as a collection of Events instances.
@@ -632,9 +687,9 @@ public class IncrementalWebSession
                         .filter(record -> isFieldAssigned(record.getField(_SESSION_ID_FIELD))
                                 && isFieldAssigned(record.getField(_TIMESTAMP_FIELD)))
                         // Create web-event from record.
-                        .map(record -> new WebEvent(record, this))
+                        .map(record -> new Event(record, this))
                         // Group records per session Id.
-                        .collect(Collectors.groupingBy(WebEvent::getSessionId))
+                        .collect(Collectors.groupingBy(Event::getSessionId))
                         // Ignore keys (sessionId) and stream over list of associated events.
                         .values()
                         .stream()
@@ -665,13 +720,26 @@ public class IncrementalWebSession
 
     /**
      * Processes the provided events and returns their resulting sessions.
-     * All sessions are retrieved from elasticsearch and then updated with the specified web events.
+     * All sessions are retrieved from the cache or elasticsearch and then updated with the specified web events.
+     * One serie of events may result into multiple sessions.
      *
-     * @param webEvents the web events to process.
+     * @param webEvents the web events from a same session to process.
      * @return web sessions resulting of the processing of the web events.
      */
-    private Collection<Sessions> processEvents(final Collection<Events> webEvents) {
-        // First retrieve mapping of last sessions.
+    private Collection<SessionsCalculator> processEvents(final Collection<Events> webEvents) {
+        Map<String, WebSession> lastSessionMapping = getMapping(webEvents);//TODO
+        // Applies all events to session documents and collect results.
+        final Collection<SessionsCalculator> result =
+                webEvents.stream()
+                        .map(events -> new SessionsCalculator(this, events.getSessionId(),
+                                lastSessionMapping.get(events.getSessionId())).processEvents(events))
+                        .collect(Collectors.toList());
+
+        return result;
+    }
+
+    private Map<String, Optional<WebSession>> getMapping(final Collection<Events> webEvents) {
+        //First retrieve mapping of last sessions.
         // Eg sessionId -> sessionId#XX
         final MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
         webEvents.forEach(events -> mgqrBuilder.add(_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, ES_MAPPING_EVENT_TO_SESSION_TYPE_NAME,
@@ -732,14 +800,7 @@ public class IncrementalWebSession
                         .collect(Collectors.groupingBy(record -> record.getSessionId()
                                 .split(EXTRA_SESSION_DELIMITER)[0]));
 
-        // Applies all events to session documents and collect results.
-        final Collection<Sessions> result =
-                webEvents.stream()
-                        .map(events -> new Sessions(this, events.getSessionId(),
-                                sessionDocs.get(events.getSessionId())).processEvents(events))
-                        .collect(Collectors.toList());
-
-        return result;
+        return null;//TODO
     }
 
     /**

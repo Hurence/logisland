@@ -6,10 +6,10 @@ import java.util.*;
  * This class represents a collection of events and is provided for convenience.
  */
 public class Events
-        implements SortedSet<WebEvent> {
-    private final SortedSet<WebEvent> set;
+        implements SortedSet<Event> {
+    private final SortedSet<Event> set;
 
-    public Events(Collection<WebEvent> events) {
+    public Events(Collection<Event> events) {
         this.set = new TreeSet<>(events);
     }
 
@@ -18,32 +18,32 @@ public class Events
     }
 
     @Override
-    public Comparator<? super WebEvent> comparator() {
+    public Comparator<? super Event> comparator() {
         return this.set.comparator();
     }
 
     @Override
-    public SortedSet<WebEvent> subSet(WebEvent fromElement, WebEvent toElement) {
+    public SortedSet<Event> subSet(Event fromElement, Event toElement) {
         return this.set.subSet(fromElement, toElement);
     }
 
     @Override
-    public SortedSet<WebEvent> headSet(WebEvent toElement) {
+    public SortedSet<Event> headSet(Event toElement) {
         return this.set.headSet(toElement);
     }
 
     @Override
-    public SortedSet<WebEvent> tailSet(WebEvent fromElement) {
+    public SortedSet<Event> tailSet(Event fromElement) {
         return this.set.tailSet(fromElement);
     }
 
     @Override
-    public WebEvent first() {
+    public Event first() {
         return this.set.first();
     }
 
     @Override
-    public WebEvent last() {
+    public Event last() {
         return this.set.last();
     }
 
@@ -63,7 +63,7 @@ public class Events
     }
 
     @Override
-    public Iterator<WebEvent> iterator() {
+    public Iterator<Event> iterator() {
         return this.set.iterator();
     }
 
@@ -78,7 +78,7 @@ public class Events
     }
 
     @Override
-    public boolean add(WebEvent t) {
+    public boolean add(Event t) {
         return this.set.add(t);
     }
 
@@ -93,7 +93,7 @@ public class Events
     }
 
     @Override
-    public boolean addAll(Collection<? extends WebEvent> c) {
+    public boolean addAll(Collection<? extends Event> c) {
         return this.set.addAll(c);
     }
 
