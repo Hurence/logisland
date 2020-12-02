@@ -35,6 +35,7 @@ import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.*;
 
@@ -63,31 +64,34 @@ public class URLCleaner extends AbstractProcessor {
             .build();
 
     public static final PropertyDescriptor URL_FIELDS = new PropertyDescriptor.Builder()
-        .name("url.fields")
-        .description("List of fields (URL) to decode and optionnaly the output field for the url modified. Syntax should be " +
-                "<name>,<name:newName>,...,<name>. So fields name can not contain ',' nor ':'")
-        .required(true)
-        .addValidator(StandardValidators.COMMA_SEPARATED_LIST_COLON_SUB_SEPARATOR_VALIDATOR)
-        .build();
+            .name("url.fields")
+            .description("List of fields (URL) to decode and optionnaly the output field for the url modified. Syntax should be " +
+                    "<name>,<name:newName>,...,<name>. So fields name can not contain ',' nor ':'")
+            .required(true)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_COLON_SUB_SEPARATOR_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
 
     public static final String PARAM_NAMES_INCLUDE_PROP_NAME = "param.names.include";
-    public static final String PARAM_NAMES_EXCLUDE_PROP_NAME = "param.names.exclude";
+    public static final String REMOVE_PARAMS_PROP_NAME = "param.names.exclude";
     public static final String REMOVE_ALL_PARAMS_PROP_NAME = "remove.all.params";
 
     public static final PropertyDescriptor KEEP_PARAMS = new PropertyDescriptor.Builder()
             .name(PARAM_NAMES_INCLUDE_PROP_NAME)
             .description("List of param names to keep in the input url (others will be removed). Can not be given at the same time as " +
-                    PARAM_NAMES_EXCLUDE_PROP_NAME + " or " + REMOVE_ALL_PARAMS_PROP_NAME)
+                    REMOVE_PARAMS_PROP_NAME + " or " + REMOVE_ALL_PARAMS_PROP_NAME)
             .required(false)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor REMOVE_PARAMS = new PropertyDescriptor.Builder()
-            .name(PARAM_NAMES_EXCLUDE_PROP_NAME)
+            .name(REMOVE_PARAMS_PROP_NAME)
             .description("List of param names to remove from the input url (others will be kept). Can not be given at the same time as " +
                     PARAM_NAMES_INCLUDE_PROP_NAME + " or "  + REMOVE_ALL_PARAMS_PROP_NAME)
             .required(false)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor REMOVE_ALL_PARAMS = new PropertyDescriptor.Builder()
@@ -126,6 +130,15 @@ public class URLCleaner extends AbstractProcessor {
                             new ValidationResult.Builder()
                                     .explanation(KEEP_PARAMS.getName() + " and " + REMOVE_PARAMS.getName() +
                                             " properties are mutually exclusive and can not be set if " + REMOVE_ALL_PARAMS.getName() + " is set to true")
+                                    .valid(false)
+                                    .build());
+                }
+            } else {
+                if (!context.getPropertyValue(KEEP_PARAMS).isSet() && !context.getPropertyValue(REMOVE_PARAMS).isSet()) {
+                    validationResults.add(
+                            new ValidationResult.Builder()
+                                    .explanation(KEEP_PARAMS.getName() + " or " + REMOVE_PARAMS.getName() +
+                                            " properties is required when " + REMOVE_ALL_PARAMS.getName() + " is set to false")
                                     .valid(false)
                                     .build());
                 }
@@ -179,7 +192,7 @@ public class URLCleaner extends AbstractProcessor {
             this.remover = new RemoveSomeQueryParameterRemover(removeParams);
             return;
         }
-        if (context.getPropertyValue(REMOVE_ALL_PARAMS).asBoolean()) {
+        if (!context.getPropertyValue(REMOVE_ALL_PARAMS).isSet() || context.getPropertyValue(REMOVE_ALL_PARAMS).asBoolean()) {
             this.remover = new AllQueryParameterRemover();
         } else {
             throw new InitializationException("No remover was built, should never happen !" +
@@ -211,9 +224,9 @@ public class URLCleaner extends AbstractProcessor {
                 String cleanedUrl = null;
                 try {
                     cleanedUrl = remover.removeQueryParameters(value);
-                } catch (URISyntaxException e) {
+                } catch (URISyntaxException | UnsupportedEncodingException e) {
                     getLogger().error("Error for url {}, for record {}.", new Object[]{value, record}, e);
-                    String msg = "Could not parse url : '" + value + "' into URI, for record: '" + record.toString() + "'.\n Cause: " + e.getMessage();
+                    String msg = "Could not parse url : '" + value + "' into URI.\n Cause: " + e.getMessage();
                     record.addError(ProcessError.STRING_FORMAT_ERROR.toString(), getLogger(), msg);
                     return;
                 }

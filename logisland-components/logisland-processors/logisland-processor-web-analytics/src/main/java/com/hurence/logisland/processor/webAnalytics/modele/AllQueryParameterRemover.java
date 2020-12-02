@@ -4,10 +4,10 @@ import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URISyntaxException;
 
-public class AllQueryParameterRemover implements QueryParameterRemover {
+public class AllQueryParameterRemover extends AbstractQueryParameterRemover implements QueryParameterRemover {
 
-    public String removeQueryParameters(String url) throws URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(url);
+    @Override
+    protected String removeQueryParameters(URIBuilder uriBuilder) throws URISyntaxException {
         uriBuilder.removeQuery();
         return uriBuilder.build().toString();
     }
