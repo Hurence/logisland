@@ -35,14 +35,9 @@ import java.util.*;
 @Tags({"record", "fields", "Decode"})
 @CapabilityDescription("Decode one or more field containing an URL with possibly special chars encoded\n" +
         "...")
-@DynamicProperty(name = "fields to decode",
-        supportsExpressionLanguage = false,
-        value = "a default value",
-        description = "Decode one or more fields from the record ")
 @ExtraDetailFile("./details/URLDecoder-Detail.rst")
 public class URLDecoder extends AbstractProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(URLDecoder.class);
     private static final String UTF8_CHARSET = "UTF-8";
     private final HashSet<String> fieldsToDecode = new HashSet();
     private final static String UTF8_PERCENT_ENCODED_CHAR = "%25";
@@ -71,18 +66,6 @@ public class URLDecoder extends AbstractProcessor {
         return Collections.unmodifiableList(descriptors);
     }
 
-
-    @Override
-    protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
-        return new PropertyDescriptor.Builder()
-                .name(propertyDescriptorName)
-                .expressionLanguageSupported(true)
-                .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-                .required(false)
-                .dynamic(true)
-                .build();
-    }
-
     public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         String commaSeparatedFields = context.getPropertyValue(FIELDS_TO_DECODE_PROP).asString();
@@ -97,7 +80,7 @@ public class URLDecoder extends AbstractProcessor {
             percentEncodedChar = java.net.URLEncoder.encode("%", charset);
         } catch (UnsupportedEncodingException e1) {
             percentEncodedChar=UTF8_PERCENT_ENCODED_CHAR; // Default to UTF-8 encoded char
-            logger.warn(e1.toString());
+            getLogger().warn("Error while initializing percentEncodedChar", e1);
         }
     }
 
@@ -111,7 +94,6 @@ public class URLDecoder extends AbstractProcessor {
 
 
     private void updateRecord(ProcessContext context, Record record, HashSet<String> fields) {
-
         String charset = context.getPropertyValue(CHARSET_PROP).asString();
         if ((fields == null) || fields.isEmpty()) {
             return;
@@ -141,10 +123,10 @@ public class URLDecoder extends AbstractProcessor {
                 decode(value, charset, record, fieldName, false);
             }
             else {
-                logger.warn(e.toString());
+                getLogger().warn(e.toString());
             }
         } catch (Exception e){
-            logger.warn(e.toString());
+            getLogger().warn(e.toString());
         }
     }
 
