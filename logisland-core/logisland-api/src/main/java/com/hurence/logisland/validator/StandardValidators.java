@@ -262,6 +262,39 @@ public class StandardValidators {
         }
     };
 
+    /**
+     * input should be separated by "," and optionnaly separated again with ":". Sub group should not be more than 2
+     *
+     * Valid example :
+     * -a,b,v,d
+     * -a:r,b,v:m,d
+     * -a:i,b:zzz,v:pp,d:po
+     * Not Valid example :
+     * -a:a:a,b,v,d
+     * -a:b,b:p,v:g:g,d:a
+     */
+    public static final Validator COMMA_SEPARATED_LIST_COLON_SUB_SEPARATOR_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                String[] fieldsArr = value.split("\\s*,\\s*");
+                for (String field : fieldsArr) {
+                    if (field.contains(":")) {
+                        String[] fieldPair = field.split("\\s*:\\s*");
+                        if (fieldPair.length > 2) {
+                            reason = "An element of the list contain several ':'";
+                        }
+                    }
+                }
+            } catch (final Exception e) {
+                reason = "not a comma separated list";
+            }
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+
     public static final Validator COMMA_SEPARATED_LIST_VALIDATOR = new Validator() {
         @Override
         public ValidationResult validate(final String subject, final String value) {
