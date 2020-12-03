@@ -5,8 +5,7 @@ import org.apache.http.client.utils.URIBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RemoveSomeQueryParameterRemover extends AbstractQueryParameterRemover implements QueryParameterRemover {
@@ -29,5 +28,34 @@ public class RemoveSomeQueryParameterRemover extends AbstractQueryParameterRemov
             uriBuilder.setParameters(queryParameters);
         }
         return uriBuilder.build().toString();
+    }
+
+    @Override
+    protected String tryHandlingCaseNotAValidURI(String urlStr) throws UnsupportedEncodingException, URISyntaxException {
+        SplittedURI guessSplittedURI = SplittedURI.fromMalFormedURI(urlStr);
+        Map<String, String> paramsNameValue = Arrays.stream(guessSplittedURI.getQuery().split("&"))
+                .map(queryString -> queryString.split("="))
+                .collect(Collectors.toMap(
+                        keyValueArr -> keyValueArr[0],
+                        keyValueArr -> {
+                            String[] values = Arrays.copyOfRange(keyValueArr, 1, keyValueArr.length);
+                            return String.join("", values);
+                        },
+                        (x, y) -> y,
+                        LinkedHashMap::new
+                ));
+        List<Map.Entry<String, String>> paramsNameValueFiltred = paramsNameValue.entrySet().stream()
+                .filter(p -> !parameterToRemove.contains(p.getKey()))
+                .collect(Collectors.toList());
+        if (paramsNameValueFiltred.isEmpty()) {
+            return guessSplittedURI.getBeforeQueryWithoutQuestionMark() + guessSplittedURI.getAfterQuery();
+        } else {
+            String newQueryString = paramsNameValueFiltred.stream()
+                    .map(entry -> entry.getKey() + "=" + entry.getValue())
+                    .collect(Collectors.joining("&"));
+            return guessSplittedURI.getBeforeQuery() +
+                    newQueryString +
+                    guessSplittedURI.getAfterQuery();
+        }
     }
 }

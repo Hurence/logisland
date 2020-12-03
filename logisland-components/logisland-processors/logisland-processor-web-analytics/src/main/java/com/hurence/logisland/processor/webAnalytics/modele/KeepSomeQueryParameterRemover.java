@@ -1,13 +1,13 @@
 package com.hurence.logisland.processor.webAnalytics.modele;
 
+import org.apache.avro.reflect.MapEntry;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class KeepSomeQueryParameterRemover extends AbstractQueryParameterRemover implements QueryParameterRemover {
@@ -32,46 +32,33 @@ public class KeepSomeQueryParameterRemover extends AbstractQueryParameterRemover
         return  uriBuilder.build().toString();
     }
 
-//    private void toString(URI uri) {
-//        StringBuffer sb = new StringBuffer();
-//        if (uri.getScheme() != null) {
-//            sb.append(uri.getScheme());
-//            sb.append(':');
-//        }
-//        if (isOpaque()) {
-//            sb.append(schemeSpecificPart);
-//        } else {
-//            if (host != null) {
-//                sb.append("//");
-//                if (userInfo != null) {
-//                    sb.append(userInfo);
-//                    sb.append('@');
-//                }
-//                boolean needBrackets = ((host.indexOf(':') >= 0)
-//                        && !host.startsWith("[")
-//                        && !host.endsWith("]"));
-//                if (needBrackets) sb.append('[');
-//                sb.append(host);
-//                if (needBrackets) sb.append(']');
-//                if (port != -1) {
-//                    sb.append(':');
-//                    sb.append(port);
-//                }
-//            } else if (authority != null) {
-//                sb.append("//");
-//                sb.append(authority);
-//            }
-//            if (path != null)
-//                sb.append(path);
-//            if (query != null) {
-//                sb.append('?');
-//                sb.append(query);
-//            }
-//        }
-//        if (fragment != null) {
-//            sb.append('#');
-//            sb.append(fragment);
-//        }
-//        string = sb.toString();
-//    }
+    @Override
+    protected String tryHandlingCaseNotAValidURI(String urlStr) throws UnsupportedEncodingException, URISyntaxException {
+            SplittedURI guessSplittedURI = SplittedURI.fromMalFormedURI(urlStr);
+            Map<String, String> paramsNameValue = Arrays.stream(guessSplittedURI.getQuery().split("&"))
+                    .map(queryString -> queryString.split("="))
+                    .collect(Collectors.toMap(
+                            keyValueArr -> keyValueArr[0],
+                            keyValueArr -> {
+                                String[] values = Arrays.copyOfRange(keyValueArr, 1, keyValueArr.length);
+                                return String.join("", values);
+                            },
+                            (x, y) -> y,
+                            LinkedHashMap::new
+                    ));
+
+        List<Map.Entry<String, String>> paramsNameValueFiltred = paramsNameValue.entrySet().stream()
+                .filter(p -> parameterToKeep.contains(p.getKey()))
+                .collect(Collectors.toList());
+        if (paramsNameValueFiltred.isEmpty()) {
+            return guessSplittedURI.getBeforeQueryWithoutQuestionMark() + guessSplittedURI.getAfterQuery();
+        } else {
+            String newQueryString = paramsNameValueFiltred.stream()
+                    .map(entry -> entry.getKey() + "=" + entry.getValue())
+                    .collect(Collectors.joining("&"));
+            return guessSplittedURI.getBeforeQuery() +
+                    newQueryString +
+                    guessSplittedURI.getAfterQuery();
+        }
+    }
 }
