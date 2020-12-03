@@ -32,8 +32,6 @@ public class URLDecoderTest {
         return new URLDecoder();
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(URLDecoderTest.class);
-
     private static final String urlVal1 = "https://www.test.com/de/search/?text=toto";
     private static final String expectedDecodedUrlVal1 = urlVal1;
 

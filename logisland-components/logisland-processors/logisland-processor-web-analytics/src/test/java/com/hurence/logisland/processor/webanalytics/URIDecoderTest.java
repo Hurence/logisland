@@ -33,8 +33,6 @@ public class URIDecoderTest  {
         return new URIDecoder();
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(URIDecoderTest.class);
-
     private static final String urlVal1 = "https://www.test.com/de/search/?text=toto";
     private static final String expectedDecodedUrlVal1 = urlVal1;
 
@@ -48,10 +46,8 @@ public class URIDecoderTest  {
     private static final String expectedDecodedVal4 = "key1+ key2 +(key3-key4)";
 
     private static final String val5 = "%co";
-    private static final String expectedDecodedVal5 = "%co";
 
     private static final String val6 = "%%";
-    private static final String expectedDecodedVal6 = "%%";
 
     private static final String value1 = "value1";
     private static final String value2 = "value2";

@@ -127,7 +127,7 @@ public class StandardValidators {
                     if (value.length() != 1) {
                         reason = "Not a valid character !";
                     } else {
-                        char character = value.charAt(0);
+                        value.charAt(0);
                     }
                 }
             } catch (final NumberFormatException e) {

@@ -36,8 +36,6 @@ import java.util.*;
 @ExtraDetailFile("./details/URLDecoder-Detail.rst")
 public class URIDecoder extends AbstractProcessor {
 
-    private final static String UTF8_CHARSET = "UTF-8";
-
     private static final PropertyDescriptor FIELDS_TO_DECODE_PROP = new PropertyDescriptor.Builder()
             .name("decode.fields")
             .description("List of fields (URL) to decode")

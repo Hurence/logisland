@@ -34,8 +34,6 @@ import java.nio.charset.StandardCharsets;
 
 public class URLCleanerTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(URLCleanerTest.class);
-
     private static final String url1 = "https://www.test.com/de/search/?text=toto";
     private static final String expectedUrl1WithoutParams = "https://www.test.com/de/search/";
     private static final String expectedUrl1KeepText = url1;
@@ -43,13 +41,11 @@ public class URLCleanerTest {
 
     private static final String url2 = "https://www.t%888est%20.com/de/search/?text=calendrier%20%20%202019";
     private static final String expectedUrl2WithoutParams = "https://www.t%888est%20.com/de/search/";
-//    private static final String expectedUrl2KeepText = "https://www.t%888est%20.com/de/search/?text=calendrier+++2019";
     private static final String expectedUrl2KeepText = url2;
     private static final String expectedUrl2RemoveText = expectedUrl2WithoutParams;
 
     private static final String url3 = "https://www.test.com/en/search/?text=key1+%20key2%20+%28key3-key4%29";
     private static final String expectedUrl3WithoutParams = "https://www.test.com/en/search/";
-//    private static final String expectedUrl3KeepText = "https://www.test.com/en/search/?text=key1++key2++%28key3-key4%29";
     private static final String expectedUrl3KeepText = url3;
     private static final String expectedUrl3RemoveText = expectedUrl3WithoutParams;
 
@@ -74,12 +70,8 @@ public class URLCleanerTest {
     private static final String expectedVal1WithoutParams = "key1+%20key2%20+%28key3-key4%29";
 
     private static final String val2 = "%co";
-    private static final String expectedVal5 = "%co";
-    private static final String expectedVal2WithoutParams = "%co";
-
     private static final String val3 = "%%";
-    private static final String expectedVal6 = "%%";
-    private static final String expectedVal3WithoutParams = "%%";
+
 
     @Test
     public void testUriBuilder() throws URISyntaxException {

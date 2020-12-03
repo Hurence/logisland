@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class AbstractQueryParameterRemover implements  QueryParameterRemover {
-    final char keyValueSeparator;
-    final char parameterSeparator;
+    private final char keyValueSeparator;
+    private final char parameterSeparator;
 
     public AbstractQueryParameterRemover(char keyValueSeparator, char parameterSeparator) {
         this.keyValueSeparator = keyValueSeparator;

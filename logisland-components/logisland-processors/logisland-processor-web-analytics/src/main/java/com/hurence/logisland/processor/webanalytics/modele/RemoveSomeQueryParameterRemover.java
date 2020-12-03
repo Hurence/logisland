@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 public class RemoveSomeQueryParameterRemover extends AbstractQueryParameterRemover implements QueryParameterRemover {
 
-    final Set<String> parameterToRemove;
+    private final Set<String> parameterToRemove;
 
 
     public RemoveSomeQueryParameterRemover(Set<String> parameterToRemove, char keyValueSeparator, char parameterSeparator) {
