@@ -26,15 +26,9 @@ import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import com.sun.jndi.toolkit.url.Uri;
-import org.apache.http.client.utils.URIBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Tags({"record", "fields", "Decode"})
 @CapabilityDescription("Decode one or more field containing an URI with possibly special chars encoded\n" +

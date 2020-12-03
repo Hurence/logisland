@@ -74,9 +74,9 @@ public class URLCleaner extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    public static final String PARAM_NAMES_INCLUDE_PROP_NAME = "param.names.include";
-    public static final String REMOVE_PARAMS_PROP_NAME = "param.names.exclude";
-    public static final String REMOVE_ALL_PARAMS_PROP_NAME = "remove.all.params";
+    public static final String PARAM_NAMES_INCLUDE_PROP_NAME = "url.keep.params";
+    public static final String REMOVE_PARAMS_PROP_NAME = "url.remove.params";
+    public static final String REMOVE_ALL_PARAMS_PROP_NAME = "url.remove.all";
 
     public static final PropertyDescriptor KEEP_PARAMS = new PropertyDescriptor.Builder()
             .name(PARAM_NAMES_INCLUDE_PROP_NAME)
