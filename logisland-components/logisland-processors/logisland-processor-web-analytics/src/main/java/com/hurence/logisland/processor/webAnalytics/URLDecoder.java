@@ -23,6 +23,7 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
@@ -121,12 +122,15 @@ public class URLDecoder extends AbstractProcessor {
             if (tryTrick) {
                 value = value.replaceAll("%(?![0-9a-fA-F]{2})", percentEncodedChar);
                 decode(value, charset, record, fieldName, false);
+            } else {
+                getLogger().error("Error while trying to decode url {}, for record {}.", new Object[]{value, record.getId()}, e);
+                String msg = "Could not process url : '" + value + "'.\n Cause: " + e.getMessage();
+                record.addError(ProcessError.STRING_FORMAT_ERROR.toString(), getLogger(), msg);
             }
-            else {
-                getLogger().warn(e.toString());
-            }
-        } catch (Exception e){
-            getLogger().warn(e.toString());
+        } catch (Exception e) {
+            getLogger().error("Error while trying to decode url {}, for record {}.", new Object[]{value, record.getId()}, e);
+            String msg = "Could not process url : '" + value + "'.\n Cause: " + e.getMessage();
+            record.addError(ProcessError.STRING_FORMAT_ERROR.toString(), getLogger(), msg);
         }
     }
 
