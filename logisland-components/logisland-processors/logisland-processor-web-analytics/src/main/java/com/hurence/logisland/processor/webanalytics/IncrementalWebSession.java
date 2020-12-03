@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
 import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginProxy;

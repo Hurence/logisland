@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.webAnalytics.modele;
+package com.hurence.logisland.processor.webanalytics.modele;
 
 public class SplittedURI {
         private String beforeQuery;

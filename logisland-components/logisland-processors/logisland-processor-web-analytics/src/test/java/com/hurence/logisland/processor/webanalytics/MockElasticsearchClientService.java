@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
@@ -23,7 +23,6 @@ import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 
-import java.io.IOException;
 import java.util.*;
 
 public class MockElasticsearchClientService extends AbstractControllerService implements ElasticsearchClientService {

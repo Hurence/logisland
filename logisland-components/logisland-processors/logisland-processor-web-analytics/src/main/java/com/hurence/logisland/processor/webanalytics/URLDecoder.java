@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
-import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -27,8 +26,6 @@ import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;

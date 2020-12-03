@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
 import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginProxy;
@@ -39,7 +39,7 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static com.hurence.logisland.processor.webAnalytics.SetSourceOfTraffic.*;
+import static com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic.*;
 
 @Category(ComponentCategory.ANALYTICS)
 @Tags({"session", "traffic", "source", "web", "analytics"})

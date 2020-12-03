@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
-import com.hurence.logisland.processor.webAnalytics.modele.SplittedURI;
+import com.hurence.logisland.processor.webanalytics.modele.SplittedURI;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
@@ -24,10 +24,10 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
-import com.hurence.logisland.processor.webAnalytics.modele.AllQueryParameterRemover;
-import com.hurence.logisland.processor.webAnalytics.modele.KeepSomeQueryParameterRemover;
-import com.hurence.logisland.processor.webAnalytics.modele.QueryParameterRemover;
-import com.hurence.logisland.processor.webAnalytics.modele.RemoveSomeQueryParameterRemover;
+import com.hurence.logisland.processor.webanalytics.modele.AllQueryParameterRemover;
+import com.hurence.logisland.processor.webanalytics.modele.KeepSomeQueryParameterRemover;
+import com.hurence.logisland.processor.webanalytics.modele.QueryParameterRemover;
+import com.hurence.logisland.processor.webanalytics.modele.RemoveSomeQueryParameterRemover;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;

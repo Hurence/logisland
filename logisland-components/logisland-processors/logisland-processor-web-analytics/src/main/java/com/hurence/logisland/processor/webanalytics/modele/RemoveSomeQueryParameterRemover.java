@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.webAnalytics.modele;
+package com.hurence.logisland.processor.webanalytics.modele;
 
 import java.util.List;
 import java.util.Map;
