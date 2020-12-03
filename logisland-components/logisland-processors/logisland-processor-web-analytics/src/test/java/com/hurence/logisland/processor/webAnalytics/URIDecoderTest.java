@@ -22,17 +22,18 @@ import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class URLDecoderTest {
+public class URIDecoderTest  {
 
     public Processor getDecoder() {
-        return new URLDecoder();
+        return new URIDecoder();
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(URLDecoderTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(URIDecoderTest.class);
 
     private static final String urlVal1 = "https://www.test.com/de/search/?text=toto";
     private static final String expectedDecodedUrlVal1 = urlVal1;
@@ -41,10 +42,10 @@ public class URLDecoderTest {
     private static final String expectedDecodedUrlVal2 = "https://www.test.com/de/search/?text=calendrier   2019";
 
     private static final String urlVal3 = "https://www.test.com/en/search/?text=key1+%20key2%20+%28key3-key4%29";
-    private static final String expectedDecodedUrlVal3 = "https://www.test.com/en/search/?text=key1  key2  (key3-key4)";
+    private static final String expectedDecodedUrlVal3 = "https://www.test.com/en/search/?text=key1+ key2 +(key3-key4)";
 
     private static final String val4 = "key1+%20key2%20+%28key3-key4%29";
-    private static final String expectedDecodedVal4 = "key1  key2  (key3-key4)";
+    private static final String expectedDecodedVal4 = "key1+ key2 +(key3-key4)";
 
     private static final String val5 = "%co";
     private static final String expectedDecodedVal5 = "%co";
@@ -52,10 +53,14 @@ public class URLDecoderTest {
     private static final String val6 = "%%";
     private static final String expectedDecodedVal6 = "%%";
 
+    private static final String value1 = "value1";
+    private static final String value2 = "value2";
+
+
     private Record getRecord1() {
         Record record1 = new StandardRecord();
-        record1.setField("string1", FieldType.STRING, "value1");
-        record1.setField("string2", FieldType.STRING, "value2");
+        record1.setField("string1", FieldType.STRING, value1);
+        record1.setField("string2", FieldType.STRING, value2);
         record1.setField("long1", FieldType.LONG, 1);
         record1.setField("long2", FieldType.LONG, 2);
         record1.setField("url1", FieldType.STRING, urlVal1);
@@ -67,8 +72,8 @@ public class URLDecoderTest {
 
     private Record getRecord2() {
         Record record1 = new StandardRecord();
-        record1.setField("string1", FieldType.STRING, "value1");
-        record1.setField("string2", FieldType.STRING, "value2");
+        record1.setField("string1", FieldType.STRING, value1);
+        record1.setField("string2", FieldType.STRING, value2);
         record1.setField("long1", FieldType.LONG, 1);
         record1.setField("long2", FieldType.LONG, 2);
         record1.setField("url1", FieldType.STRING, urlVal1);
@@ -94,7 +99,7 @@ public class URLDecoderTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record1.size());
-        out.assertFieldEquals("string1", "value1");
+        out.assertFieldEquals("string1", value1);
         out.assertFieldTypeEquals("string1", FieldType.STRING);
     }
 
@@ -113,7 +118,7 @@ public class URLDecoderTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record1.size());
-        out.assertFieldEquals("string1", "value1");
+        out.assertFieldEquals("string1", value1);
         out.assertFieldEquals("url1", expectedDecodedUrlVal1);
     }
 
@@ -132,7 +137,7 @@ public class URLDecoderTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record1.size());
-        out.assertFieldEquals("string1", "value1");
+        out.assertFieldEquals("string1", value1);
         out.assertFieldEquals("url1", expectedDecodedUrlVal1);
         out.assertFieldEquals("url2", expectedDecodedUrlVal2);
     }
@@ -152,7 +157,7 @@ public class URLDecoderTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record1.size());
-        out.assertFieldEquals("string1", "value1");
+        out.assertFieldEquals("string1", value1);
         out.assertFieldEquals("url1", expectedDecodedUrlVal1);
         out.assertFieldEquals("url2", expectedDecodedUrlVal2);
         out.assertFieldEquals("url3", expectedDecodedUrlVal3);
@@ -173,7 +178,7 @@ public class URLDecoderTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record1.size());
-        out.assertFieldEquals("string1", "value1");
+        out.assertFieldEquals("string1", value1);
         out.assertFieldEquals("url1", expectedDecodedUrlVal1);
         out.assertFieldEquals("url2", expectedDecodedUrlVal2);
         out.assertFieldEquals("val4", expectedDecodedVal4);
@@ -194,7 +199,7 @@ public class URLDecoderTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record1.size());
-        out.assertFieldEquals("string1", "value1");
+        out.assertFieldEquals("string1", value1);
         out.assertFieldEquals("url1", urlVal1);
         out.assertFieldEquals("url2", urlVal2);
         out.assertFieldEquals("val4", val4);
@@ -211,11 +216,10 @@ public class URLDecoderTest {
         testRunner.enqueue(record2);
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1);
+        testRunner.assertOutputRecordsCount(0);
+        testRunner.assertOutputErrorCount(1);
 
-        MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertRecordSizeEquals(record2.size());
-        out.assertFieldEquals("val5", expectedDecodedVal5);
-        out.assertFieldEquals("val6", expectedDecodedVal6);
+        MockRecord out = testRunner.getErrorRecords().get(0);
+        Assert.assertEquals(2, out.getErrors().size());
     }
 }
