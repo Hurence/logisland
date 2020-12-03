@@ -219,14 +219,14 @@ public class URLCleaner extends AbstractProcessor {
         String inputFieldName = kv.getKey();
         String outputFieldName = kv.getValue();
         if (record.hasField(inputFieldName)) {
-            String value = record.getField(inputFieldName).asString();//TODO test if null in field
+            String value = record.getField(inputFieldName).asString();
             if (value != null) {
                 String cleanedUrl = null;
                 try {
                     cleanedUrl = remover.removeQueryParameters(value);
-                } catch (URISyntaxException | UnsupportedEncodingException e) {
-                    getLogger().error("Error for url {}, for record {}.", new Object[]{value, record}, e);
-                    String msg = "Could not parse url : '" + value + "' into URI.\n Cause: " + e.getMessage();
+                } catch (Exception e) {
+                    getLogger().error("Error for url {}, for record {}.", new Object[]{value, record.getId()}, e);
+                    String msg = "Could not process url : '" + value + "'.\n Cause: " + e.getMessage();
                     record.addError(ProcessError.STRING_FORMAT_ERROR.toString(), getLogger(), msg);
                     return;
                 }

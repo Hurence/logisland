@@ -1,16 +1,11 @@
 package com.hurence.logisland.processor.webAnalytics.modele;
 
-import org.apache.avro.reflect.MapEntry;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
-
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class KeepSomeQueryParameterRemover extends AbstractQueryParameterRemover implements QueryParameterRemover {
+public class KeepSomeQueryParameterRemover implements QueryParameterRemover {
 
     final Set<String> parameterToKeep;
 
@@ -18,22 +13,7 @@ public class KeepSomeQueryParameterRemover extends AbstractQueryParameterRemover
         this.parameterToKeep = parameterToKeep;
     }
 
-    @Override
-    protected String removeQueryParameters(URIBuilder uriBuilder) throws URISyntaxException {
-        List<NameValuePair> queryParameters = uriBuilder.getQueryParams()
-                .stream()
-                .filter(p -> parameterToKeep.contains(p.getName()))
-                .collect(Collectors.toList());
-        if (queryParameters.isEmpty()) {
-            uriBuilder.removeQuery();
-        } else {
-            uriBuilder.setParameters(queryParameters);
-        }
-        return  uriBuilder.build().toString();
-    }
-
-    @Override
-    protected String tryHandlingCaseNotAValidURI(String urlStr) throws UnsupportedEncodingException, URISyntaxException {
+    public String removeQueryParameters(String urlStr) {
             SplittedURI guessSplittedURI = SplittedURI.fromMalFormedURI(urlStr);
             Map<String, String> paramsNameValue = Arrays.stream(guessSplittedURI.getQuery().split("&"))
                     .map(queryString -> queryString.split("="))

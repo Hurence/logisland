@@ -578,5 +578,43 @@ public class URLCleanerTest {
     }
 
 
+    @Test
+    public void testNullField() {
+        Record record = new StandardRecord();
+        record.setField("url", FieldType.STRING, null);
 
+        TestRunner testRunner = TestRunners.newTestRunner(new URLCleaner());
+        testRunner.setProperty(URLCleaner.URL_FIELDS, "url");
+        testRunner.setProperty(URLCleaner.CONFLICT_RESOLUTION_POLICY, URLCleaner.OVERWRITE_EXISTING);
+        testRunner.setProperty(URLCleaner.REMOVE_PARAMS, "b");
+        testRunner.assertValid();
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(record.size());
+        out.assertNullField("url");
+    }
+
+    @Test
+    public void testEmptyField() {
+        Record record = new StandardRecord();
+        record.setField("url", FieldType.STRING, "");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new URLCleaner());
+        testRunner.setProperty(URLCleaner.URL_FIELDS, "url");
+        testRunner.setProperty(URLCleaner.CONFLICT_RESOLUTION_POLICY, URLCleaner.OVERWRITE_EXISTING);
+        testRunner.setProperty(URLCleaner.REMOVE_PARAMS, "b");
+        testRunner.assertValid();
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(record.size());
+        out.assertFieldEquals("url","");
+    }
 }
