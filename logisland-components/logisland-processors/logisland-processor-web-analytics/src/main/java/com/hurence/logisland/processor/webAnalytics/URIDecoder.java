@@ -52,29 +52,18 @@ public class URIDecoder extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    private static final PropertyDescriptor CHARSET_PROP = new PropertyDescriptor.Builder()
-            .name("charset")
-            .description("Charset to use to decode the URL")
-            .required(true)
-            .defaultValue(UTF8_CHARSET)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
     private Set<String> fieldsToDecode;
-    private String charset;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(FIELDS_TO_DECODE_PROP);
-        descriptors.add(CHARSET_PROP);
         return Collections.unmodifiableList(descriptors);
     }
 
 
     public void init(ProcessContext context) throws InitializationException {
         super.init(context);
-        charset = context.getPropertyValue(CHARSET_PROP).asString();
         initFieldsToDecode(context);
     }
 
