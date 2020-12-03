@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.processor.webAnalytics;
 
-import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -35,17 +34,20 @@ import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.util.*;
 
-@Tags({"record", "fields", "Decode"})
-@CapabilityDescription("Decode one or more field containing an URL with possibly special chars encoded\n" +
-        "...")
-@DynamicProperty(name = "fields to decode",
-        supportsExpressionLanguage = false,
-        value = "a default value",
-        description = "Decode one or more fields from the record ")
+@Tags({"record", "fields", "url", "params", "param", "remove", "keep", "query", "uri", "parameter", "clean", "decoded", "raw"})
+@CapabilityDescription("Remove some or all query parameters from one or more field containing an uri which should be preferably encoded.\n" +
+        "If the uri is not encoded the behaviour is not defined in case the decoded uri contains '#', '?', '=', '&' which were encoded.\n" +
+        "Indeed this processor assumes that the start of query part of the uri start at the first '?' then end at the first '#' or at the end of the uri as\n"+
+        "specified by rfc3986 available at https://tools.ietf.org/html/rfc3986#section-3.4. \n" +
+        "We assume as well that key value pairs are separed by '=', and are separed by '&': exemple 'param1=value1&param2=value2'.\n" +
+        "The processor can remove also parameters that have only a name and no value. The character used to separate the key and the value '=' is configurable.\n" +
+        "The character used to separate two parameters '&' is also configurable.")
+//Another solution could be to use the regex specified here https://tools.ietf.org/html/rfc3986#appendix-B
+//to get the query part.
+//the query part can be anything ! and is not necessary a list of key value apram...
+//exemple http://host.com/path?mysyntax&pretty&size=2#anchor
 @ExtraDetailFile("./details/URLDecoder-Detail.rst")
 public class URLCleaner extends AbstractProcessor {
 
@@ -101,6 +103,22 @@ public class URLCleaner extends AbstractProcessor {
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor PARAMETER_SEPARATOR = new PropertyDescriptor.Builder()
+            .name("parameter.separator")
+            .description("the character to use to separate the parameters in the query part of the uris")
+            .required(true)
+            .defaultValue("&")
+            .addValidator(StandardValidators.CHAR_VALIDATOR)
+            .build();
+
+    public static final PropertyDescriptor KEY_VALUE_SEPARATOR = new PropertyDescriptor.Builder()
+            .name("key.value.separator")
+            .description("the character to use to separate the parameter name from the parameter value in the query part of the uris")
+            .required(true)
+            .defaultValue("=")
+            .addValidator(StandardValidators.CHAR_VALIDATOR)
+            .build();
+
     private final Map<String, String> fieldsToDecodeToOutputField = new HashMap<>();
     private String conflictPolicy;
     private QueryParameterRemover remover;
@@ -113,6 +131,8 @@ public class URLCleaner extends AbstractProcessor {
         descriptors.add(KEEP_PARAMS);
         descriptors.add(REMOVE_PARAMS);
         descriptors.add(REMOVE_ALL_PARAMS);
+        descriptors.add(PARAMETER_SEPARATOR);
+        descriptors.add(KEY_VALUE_SEPARATOR);
         return Collections.unmodifiableList(descriptors);
     }
 
@@ -178,18 +198,20 @@ public class URLCleaner extends AbstractProcessor {
     }
 
     public void initRemover(ProcessContext context) throws InitializationException {
+        char keyValueSeparator = context.getPropertyValue(KEY_VALUE_SEPARATOR).asChar();
+        char parameterSeparator = context.getPropertyValue(PARAMETER_SEPARATOR).asChar();
         if (context.getPropertyValue(KEEP_PARAMS).isSet()) {
             String commaSeparatedKeepParams = context.getPropertyValue(KEEP_PARAMS).asString();
             String[] keepParamsArr = commaSeparatedKeepParams.split("\\s*,\\s*");
             final Set<String> keepParams = new HashSet<>(Arrays.asList(keepParamsArr));
-            this.remover = new KeepSomeQueryParameterRemover(keepParams);
+            this.remover = new KeepSomeQueryParameterRemover(keepParams, keyValueSeparator, parameterSeparator);
             return;
         }
         if (context.getPropertyValue(REMOVE_PARAMS).isSet()) {
             String commaSeparatedRemoveParam = context.getPropertyValue(REMOVE_PARAMS).asString();
             String[] removeParamsArr = commaSeparatedRemoveParam.split("\\s*,\\s*");
             final Set<String> removeParams = new HashSet<>(Arrays.asList(removeParamsArr));
-            this.remover = new RemoveSomeQueryParameterRemover(removeParams);
+            this.remover = new RemoveSomeQueryParameterRemover(removeParams, keyValueSeparator, parameterSeparator);
             return;
         }
         if (!context.getPropertyValue(REMOVE_ALL_PARAMS).isSet() || context.getPropertyValue(REMOVE_ALL_PARAMS).asBoolean()) {

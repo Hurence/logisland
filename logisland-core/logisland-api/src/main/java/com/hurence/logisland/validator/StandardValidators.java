@@ -116,6 +116,28 @@ public class StandardValidators {
         }
     };
 
+    public static final Validator CHAR_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                if (value == null) {
+                    reason = "null is not a valid character";
+                } else {
+                    if (value.length() != 1) {
+                        reason = "Not a valid character !";
+                    } else {
+                        char character = value.charAt(0);
+                    }
+                }
+            } catch (final NumberFormatException e) {
+                reason = "Not a valid character";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
     public static final Validator POSITIVE_DOUBLE_VALIDATOR = new Validator() {
         @Override
         public ValidationResult validate(final String subject, final String value) {

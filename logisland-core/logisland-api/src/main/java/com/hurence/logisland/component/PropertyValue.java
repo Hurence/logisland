@@ -62,19 +62,23 @@ public interface PropertyValue extends Serializable {
 
 
     /**
-     * @return a byte[] representation of the property value, of
-     * <code>null</code> if not set
+     * @return a byte[] representation of the property value
      * @throws IllegalArgumentException if not able to parse
      */
     byte[] asBytes();
 
 
     /**
-     * @return a char[] representation of the property value, of
-     * <code>null</code> if not set
+     * @return a char[] representation of the property value
      * @throws IllegalArgumentException if not able to parse
      */
     char[] asChars();
+
+    /**
+     * @return a char representation of the property value
+     * @throws IllegalArgumentException if not able to parse
+     */
+    char asChar();
 
     /**
      * @return a Record representation of the property value, or

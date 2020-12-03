@@ -573,7 +573,7 @@ public class URLCleanerTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record.size());
-        out.assertFieldEquals("url", "https://mydomain.com/my/path/to/file.html?a=kaka&oc=&h=on#myfragment");
+        out.assertFieldEquals("url", "https://mydomain.com/my/path/to/file.html?a=kaka&oc&h=on#myfragment");
         out.assertFieldEquals("urlEncode", "https://mydomain.com/my/path/to/file.html?a=kaka&h=on#myfragment");
     }
 
@@ -616,5 +616,45 @@ public class URLCleanerTest {
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record.size());
         out.assertFieldEquals("url","");
+    }
+
+    @Test
+    public void testJustKeyInQuery() {
+        Record record = new StandardRecord();
+        record.setField("url", FieldType.STRING, "http://host.com/path?mysyntax&pretty&size=2#anchor");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new URLCleaner());
+        testRunner.setProperty(URLCleaner.URL_FIELDS, "url");
+        testRunner.setProperty(URLCleaner.CONFLICT_RESOLUTION_POLICY, URLCleaner.OVERWRITE_EXISTING);
+        testRunner.setProperty(URLCleaner.REMOVE_PARAMS, "mysyntax");
+        testRunner.assertValid();
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(record.size());
+        out.assertFieldEquals("url","http://host.com/path?pretty&size=2#anchor");
+    }
+
+    @Test
+    public void testJustKeyInQuery2() {
+        Record record = new StandardRecord();
+        record.setField("url", FieldType.STRING, "http://host.com/path?mysyntax&pretty&size=2#anchor");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new URLCleaner());
+        testRunner.setProperty(URLCleaner.URL_FIELDS, "url");
+        testRunner.setProperty(URLCleaner.CONFLICT_RESOLUTION_POLICY, URLCleaner.OVERWRITE_EXISTING);
+        testRunner.setProperty(URLCleaner.REMOVE_PARAMS, "pretty");
+        testRunner.assertValid();
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(record.size());
+        out.assertFieldEquals("url","http://host.com/path?mysyntax&size=2#anchor");
     }
 }
