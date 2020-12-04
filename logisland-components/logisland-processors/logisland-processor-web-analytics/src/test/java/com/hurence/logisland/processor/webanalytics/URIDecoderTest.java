@@ -27,10 +27,6 @@ import org.junit.Test;
 
 public class URIDecoderTest  {
 
-    public Processor getDecoder() {
-        return new URIDecoder();
-    }
-
     private static final String urlVal1 = "https://www.test.com/de/search/?text=toto";
     private static final String expectedDecodedUrlVal1 = urlVal1;
 
@@ -50,6 +46,9 @@ public class URIDecoderTest  {
     private static final String value1 = "value1";
     private static final String value2 = "value2";
 
+    public Processor getDecoder() {
+        return new URIDecoder();
+    }
 
     private Record getRecord1() {
         Record record1 = new StandardRecord();

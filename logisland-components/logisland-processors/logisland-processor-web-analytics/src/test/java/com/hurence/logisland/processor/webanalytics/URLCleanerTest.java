@@ -72,33 +72,28 @@ public class URLCleanerTest {
 
 
     @Test
-    public void testUriBuilder() throws URISyntaxException {
+    public void testSplittedUri() {
         SplittedURI url = SplittedURI.fromMalFormedURI("https://www.orexad.com/fr/search?q=sauterelle%7C%7Crelevance&page=2&sort=relevance");
-//        private static final String url4 = "https://www.orexad.com/fr/search?q=sauterelle%7C%7Crelevance&page=2&sort=relevance";
         Assert.assertEquals("https://www.orexad.com/fr/search?", url.getBeforeQuery());
         Assert.assertEquals("q=sauterelle%7C%7Crelevance&page=2&sort=relevance", url.getQuery());
         Assert.assertEquals("", url.getAfterQuery());
 
         SplittedURI urlDecoded = SplittedURI.fromMalFormedURI("https://www.orexad.com/fr/search?q=sauterelle||relevance&page=2&sort=relevance");
-//        private static final String url4Decoded = "https://www.orexad.com/fr/search?q=sauterelle||relevance&page=2&sort=relevance";
         Assert.assertEquals("https://www.orexad.com/fr/search?", urlDecoded.getBeforeQuery());
         Assert.assertEquals("q=sauterelle||relevance&page=2&sort=relevance", urlDecoded.getQuery());
         Assert.assertEquals("", urlDecoded.getAfterQuery());
 
         SplittedURI urlWithHashTag = SplittedURI.fromMalFormedURI("https://www.orexad.com/fr/search?q=sauterelle||relevance&page=2&sort=relevance#myTitle");
-//        private static final String url4Decoded = "https://www.orexad.com/fr/search?q=sauterelle||relevance&page=2&sort=relevance";
         Assert.assertEquals("https://www.orexad.com/fr/search?", urlWithHashTag.getBeforeQuery());
         Assert.assertEquals("q=sauterelle||relevance&page=2&sort=relevance", urlWithHashTag.getQuery());
         Assert.assertEquals("#myTitle", urlWithHashTag.getAfterQuery());
 
         SplittedURI simpleUrl = SplittedURI.fromMalFormedURI("https://www.orexad.com/fr/");
-//        private static final String url4Decoded = "https://www.orexad.com/fr/search?q=sauterelle||relevance&page=2&sort=relevance";
         Assert.assertEquals("https://www.orexad.com/fr/", simpleUrl.getBeforeQuery());
         Assert.assertEquals("", simpleUrl.getQuery());
         Assert.assertEquals("", simpleUrl.getAfterQuery());
 
         SplittedURI simpleUrlWithFragment = SplittedURI.fromMalFormedURI("https://www.orexad.com/fr/#gggg");
-//        private static final String url4Decoded = "https://www.orexad.com/fr/search?q=sauterelle||relevance&page=2&sort=relevance";
         Assert.assertEquals("https://www.orexad.com/fr/", simpleUrlWithFragment.getBeforeQuery());
         Assert.assertEquals("", simpleUrlWithFragment.getQuery());
         Assert.assertEquals("#gggg", simpleUrlWithFragment.getAfterQuery());
