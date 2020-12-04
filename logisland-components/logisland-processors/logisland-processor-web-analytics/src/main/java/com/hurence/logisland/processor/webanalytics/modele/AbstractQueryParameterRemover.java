@@ -34,23 +34,32 @@ public abstract class AbstractQueryParameterRemover implements  QueryParameterRe
         SplittedURI guessSplittedURI = SplittedURI.fromMalFormedURI(urlStr);
         if (guessSplittedURI.getQuery().isEmpty()) return urlStr;
         Map<String, String> paramsNameValue = Arrays.stream(guessSplittedURI.getQuery().split(String.valueOf(parameterSeparator)))
-                .map(queryString -> queryString.split(String.valueOf(keyValueSeparator)))
-                .collect(Collectors.toMap(
-                        keyValueArr -> keyValueArr[0],
-                        keyValueArr -> {
+                .map(queryString -> {
+                    String[] split = queryString.split(String.valueOf(keyValueSeparator));
+                    if (split.length==1 && queryString.contains(String.valueOf(keyValueSeparator))) {
+                        return new String[]{split[0], ""};
+                    } else {
+                        return split;
+                    }
+                })
+                .collect(LinkedHashMap::new,
+                        (map, keyValueArr) -> {
                             String[] values = Arrays.copyOfRange(keyValueArr, 1, keyValueArr.length);
-                            return String.join("", values);
+                            if (values.length == 0) {
+                                map.put(keyValueArr[0], null);
+                            } else {
+                                map.put(keyValueArr[0], String.join("", values));
+                            }
                         },
-                        (x, y) -> y,
-                        LinkedHashMap::new
-                ));
+                        LinkedHashMap::putAll);
+
         List<Map.Entry<String, String>> paramsNameValueFiltred = filterParams(paramsNameValue);
         if (paramsNameValueFiltred.isEmpty()) {
             return guessSplittedURI.getBeforeQueryWithoutQuestionMark() + guessSplittedURI.getAfterQuery();
         } else {
             String newQueryString = paramsNameValueFiltred.stream()
                     .map(entry -> {
-                        if (entry.getValue().isEmpty()) {
+                        if (entry.getValue() == null) {
                             return entry.getKey();
                         } else {
                             return entry.getKey() + keyValueSeparator + entry.getValue();

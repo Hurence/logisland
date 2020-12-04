@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor.webanalytics;
 
+import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.webanalytics.modele.SplittedURI;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -26,9 +27,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class URLCleanerTest {
 
@@ -641,5 +647,465 @@ public class URLCleanerTest {
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(record.size());
         out.assertFieldEquals("url","http://host.com/path?mysyntax&size=2#anchor");
+    }
+
+    @Test
+    public void testQuerywithoutValueAndEmptyValue() {
+        Record record = new StandardRecord();
+        record.setField("url", FieldType.STRING, "http://host.com/path?a=b&c=&d&z=w");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new URLCleaner());
+        testRunner.setProperty(URLCleaner.URL_FIELDS, "url");
+        testRunner.setProperty(URLCleaner.CONFLICT_RESOLUTION_POLICY, URLCleaner.OVERWRITE_EXISTING);
+        testRunner.setProperty(URLCleaner.REMOVE_PARAMS, "pretty");
+        testRunner.assertValid();
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(record.size());
+        out.assertFieldEquals("url","http://host.com/path?a=b&c=&d&z=w");
+    }
+
+    @Test
+    public void bulkRemoveAllTest() {
+        Map<String, String> inputUrlToExpectedUrl = new HashMap<String, String>();
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=loupe+las33300",
+                "https://mydomain.com/fr/search/"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/elingue-ronde-haute-resistance/r-PR_G1408003386?q=elingue%7C%7Crelevance%7C%7CmanufacturerNameFacet%7C%7CGISS&text=elingue&classif=",
+                "https://mydomain.com/fr/elingue-ronde-haute-resistance/r-PR_G1408003386"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/protection-usage-court/c-40-10-21?q=%7C%7Crelevance&page=6",
+                "https://mydomain.com/fr/protection-usage-court/c-40-10-21"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/ensemble-ebavurage-chanfreinage-en-coffret/p-G1111003763",
+                "https://mydomain.com/fr/ensemble-ebavurage-chanfreinage-en-coffret/p-G1111003763"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200?q=||||attribute157||Gris||attribute228||225x150x125%20mm||&classif=45&sortAttribute=&sortOrder=",
+                "https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200"
+        );
+//        decoded -> https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200?q=||||attribute157||Gris||attribute228||225x150x125 mm||&classif=45&sortAttribute=&sortOrder=
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=Chaine+9.25+inox",
+                "https://mydomain.com/fr/search/"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/moraillon-porte-cadenas/p-G1164000013?t=cadenas+pompier",
+                "https://mydomain.com/fr/moraillon-porte-cadenas/p-G1164000013"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/facom/c-1111?q=%7C%7C%7C%7CcategoryLevel1%7C%7C45&page=5",
+                "https://mydomain.com/fr/facom/c-1111"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://www.btshop.nl/nl/veiligheidsschoen-sl-80-blue-esd-s2/r-PR_G1021004878?q=||relevance||attribute891||43&sortAttribute=attribute891,attribute109,attribute5041,attribute157&sortOrder=asc",
+                "https://www.btshop.nl/nl/veiligheidsschoen-sl-80-blue-esd-s2/r-PR_G1021004878"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/cart#",
+                "https://mydomain.com/fr/cart#"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=smc+aq+240f-06-00",
+                "https://mydomain.com/fr/search/"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://es.world.com/es/herramientas-de-mano/c-35-10?q=||relevance||manufacturerNameFacet||Roebuck||categoryLevel3%7C%7C35-10-20",
+                "https://es.world.com/es/herramientas-de-mano/c-35-10"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/search/?text=piquage%20&q=piquage%20||relevance||manufacturerNameFacet||Parker%20Legris||attribute1875%7C%7CM5%20%27%27",
+                "https://mydomain.com/search/"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractContent.aspx?abstractID=9GrIawodOyWmVAXM%2b9Bq3eJFWUiAKhB2Toh3Oct0zIH%2fCbISTIls4l4Ox45ROTAWHCUzXjOonos%3d",
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractContent.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congress/ESC-CONGRESS-2019/Expert-Advice-Tips-and-tricks-in-imaging-your-patient-with-valvular-heart-d/189866-tips-and-tricks-for-imaging-in-aortic-stenosis#video",
+                "https://mydomain.com/Congress/ESC-CONGRESS-2019/Expert-Advice-Tips-and-tricks-in-imaging-your-patient-with-valvular-heart-d/189866-tips-and-tricks-for-imaging-in-aortic-stenosis#video"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Councils/Council-on-Hypertension-(CHT)/News/position-statement-of-the-world-council-on-hypertension-on-ace-inhibitors-and-ang",
+                "https://mydomain.com/Councils/Council-on-Hypertension-(CHT)/News/position-statement-of-the-world-council-on-hypertension-on-ace-inhibitors-and-ang"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Journals/E-Journal-of-Cardiology-Practice/Volume-14/Treatment-of-right-heart-failure-is-there-a-solution-to-the-problem",
+                "https://mydomain.com/Journals/E-Journal-of-Cardiology-Practice/Volume-14/Treatment-of-right-heart-failure-is-there-a-solution-to-the-problem"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congress/EuroCMR-2019/Special-Course-8-how-to-read-CMR-for-extra-cardiac-findings/187189-how-to-interpret-common-organ-specific-findings-in-the-lungs-skeletal-system-liver-kidneys-breast-case-based-interactive-discussion#slide",
+                "https://mydomain.com/Congress/EuroCMR-2019/Special-Course-8-how-to-read-CMR-for-extra-cardiac-findings/187189-how-to-interpret-common-organ-specific-findings-in-the-lungs-skeletal-system-liver-kidneys-breast-case-based-interactive-discussion#slide"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/apex/ESCUserProfileInfo",
+                "https://my--domain.force.org/apex/ESCUserProfileInfo"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Education/COVID-19-and-Cardiology/ESC-COVID-19-Guidance?hit=home&urlorig=/vgn-ext-templating/#tbl07",
+                "https://mydomain.com/Education/COVID-19-and-Cardiology/ESC-COVID-19-Guidance#tbl07"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/ESCMyProfile?utm_medium=Email&utm_source=&utm_campaign=ESC+-+ESC+Congress+2020+-+registration+confirmation#",
+                "https://my--domain.force.org/ESCMyProfile#"
+        );
+        inputUrlToExpectedUrl.put(
+                "http://spo.hurence.org/default.aspx?eevtid=1482&showResults=False&_ga=2.267591435.481963044.1578999296-479375258.1578999295",
+                "http://spo.hurence.org/default.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congresses-&-Events/Frontiers-in-Cardiovascular-Biomedicine/Registration?utm_medium=Email&utm_source=Councils&utm_campaign=Councils+-+FCVB+2020+-+Early+registration+fee+-++Last+call",
+                "https://mydomain.com/Congresses-&-Events/Frontiers-in-Cardiovascular-Biomedicine/Registration"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractAuthors.aspx?abstractID=9GrIawodOyXZLPpXgJHtvCxG5gTt5TznJt97rA1Jy%2bzH7V5eLZVqUnyoo903fiw9nf7mbxKuI14%3d",
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractAuthors.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congresses-&-Events/ESC-Congress/Scientific-sessions",
+                "https://mydomain.com/Congresses-&-Events/ESC-Congress/Scientific-sessions"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://idp.hurence.org/idp/login.jsp?loginFailed=true&actionUrl=%2Fidp%2FAuthn%2FESCUserPassword",
+                "https://idp.hurence.org/idp/login.jsp"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://aa.net/2016/formulaResult.aspx?model=europelow&exam=&patient=370532",
+                "https://aa.net/2016/formulaResult.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://aa.net/login.aspx?ReturnUrl=%2fpercutaneous-interventions%2fhomepage.aspx",
+                "https://aa.net/login.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Education/Practice-Tools/EACVI-toolboxes/3D-Echo/Atlas-of-Three%E2%80%93dimensional-Echocardiography/Volumes-and-Ejection-Fraction",
+                "https://mydomain.com/Education/Practice-Tools/EACVI-toolboxes/3D-Echo/Atlas-of-Three%E2%80%93dimensional-Echocardiography/Volumes-and-Ejection-Fraction"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/ESCMyPublications",
+                "https://my--domain.force.org/ESCMyPublications"
+        );
+        runTestWithRemoveAll(inputUrlToExpectedUrl);
+    }
+
+    @Test
+    public void bulkRemoveQTest() {
+        Map<String, String> inputUrlToExpectedUrl = new HashMap<String, String>();
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=loupe+las33300",
+                "https://mydomain.com/fr/search/?text=loupe+las33300"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/elingue-ronde-haute-resistance/r-PR_G1408003386?q=elingue%7C%7Crelevance%7C%7CmanufacturerNameFacet%7C%7CGISS&text=elingue&classif=",
+                "https://mydomain.com/fr/elingue-ronde-haute-resistance/r-PR_G1408003386?text=elingue&classif="
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/protection-usage-court/c-40-10-21?q=%7C%7Crelevance&page=6",
+                "https://mydomain.com/fr/protection-usage-court/c-40-10-21?page=6"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/ensemble-ebavurage-chanfreinage-en-coffret/p-G1111003763",
+                "https://mydomain.com/fr/ensemble-ebavurage-chanfreinage-en-coffret/p-G1111003763"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200?q=||||attribute157||Gris||attribute228||225x150x125%20mm||&classif=45&sortAttribute=&sortOrder=",
+                "https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200?classif=45&sortAttribute=&sortOrder="
+        );
+//        decoded -> https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200?q=||||attribute157||Gris||attribute228||225x150x125 mm||&classif=45&sortAttribute=&sortOrder=
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=Chaine+9.25+inox",
+                "https://mydomain.com/fr/search/?text=Chaine+9.25+inox"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/moraillon-porte-cadenas/p-G1164000013?t=cadenas+pompier",
+                "https://mydomain.com/fr/moraillon-porte-cadenas/p-G1164000013?t=cadenas+pompier"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/facom/c-1111?q=%7C%7C%7C%7CcategoryLevel1%7C%7C45&page=5",
+                "https://mydomain.com/fr/facom/c-1111?page=5"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://www.btshop.nl/nl/veiligheidsschoen-sl-80-blue-esd-s2/r-PR_G1021004878?q=||relevance||attribute891||43&sortAttribute=attribute891,attribute109,attribute5041,attribute157&sortOrder=asc",
+                "https://www.btshop.nl/nl/veiligheidsschoen-sl-80-blue-esd-s2/r-PR_G1021004878?sortAttribute=attribute891,attribute109,attribute5041,attribute157&sortOrder=asc"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/cart#",
+                "https://mydomain.com/fr/cart#"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=smc+aq+240f-06-00",
+                "https://mydomain.com/fr/search/?text=smc+aq+240f-06-00"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://es.world.com/es/herramientas-de-mano/c-35-10?q=||relevance||manufacturerNameFacet||Roebuck||categoryLevel3%7C%7C35-10-20",
+                "https://es.world.com/es/herramientas-de-mano/c-35-10"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/search/?text=piquage%20&q=piquage%20||relevance||manufacturerNameFacet||Parker%20Legris||attribute1875%7C%7CM5%20%27%27",
+                "https://mydomain.com/search/?text=piquage%20"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractContent.aspx?abstractID=9GrIawodOyWmVAXM%2b9Bq3eJFWUiAKhB2Toh3Oct0zIH%2fCbISTIls4l4Ox45ROTAWHCUzXjOonos%3d",
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractContent.aspx?abstractID=9GrIawodOyWmVAXM%2b9Bq3eJFWUiAKhB2Toh3Oct0zIH%2fCbISTIls4l4Ox45ROTAWHCUzXjOonos%3d"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congress/ESC-CONGRESS-2019/Expert-Advice-Tips-and-tricks-in-imaging-your-patient-with-valvular-heart-d/189866-tips-and-tricks-for-imaging-in-aortic-stenosis#video",
+                "https://mydomain.com/Congress/ESC-CONGRESS-2019/Expert-Advice-Tips-and-tricks-in-imaging-your-patient-with-valvular-heart-d/189866-tips-and-tricks-for-imaging-in-aortic-stenosis#video"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Councils/Council-on-Hypertension-(CHT)/News/position-statement-of-the-world-council-on-hypertension-on-ace-inhibitors-and-ang",
+                "https://mydomain.com/Councils/Council-on-Hypertension-(CHT)/News/position-statement-of-the-world-council-on-hypertension-on-ace-inhibitors-and-ang"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Journals/E-Journal-of-Cardiology-Practice/Volume-14/Treatment-of-right-heart-failure-is-there-a-solution-to-the-problem",
+                "https://mydomain.com/Journals/E-Journal-of-Cardiology-Practice/Volume-14/Treatment-of-right-heart-failure-is-there-a-solution-to-the-problem"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congress/EuroCMR-2019/Special-Course-8-how-to-read-CMR-for-extra-cardiac-findings/187189-how-to-interpret-common-organ-specific-findings-in-the-lungs-skeletal-system-liver-kidneys-breast-case-based-interactive-discussion#slide",
+                "https://mydomain.com/Congress/EuroCMR-2019/Special-Course-8-how-to-read-CMR-for-extra-cardiac-findings/187189-how-to-interpret-common-organ-specific-findings-in-the-lungs-skeletal-system-liver-kidneys-breast-case-based-interactive-discussion#slide"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/apex/ESCUserProfileInfo",
+                "https://my--domain.force.org/apex/ESCUserProfileInfo"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Education/COVID-19-and-Cardiology/ESC-COVID-19-Guidance?hit=home&urlorig=/vgn-ext-templating/#tbl07",
+                "https://mydomain.com/Education/COVID-19-and-Cardiology/ESC-COVID-19-Guidance?hit=home&urlorig=/vgn-ext-templating/#tbl07"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/ESCMyProfile?utm_medium=Email&utm_source=&utm_campaign=ESC+-+ESC+Congress+2020+-+registration+confirmation#",
+                "https://my--domain.force.org/ESCMyProfile?utm_medium=Email&utm_source=&utm_campaign=ESC+-+ESC+Congress+2020+-+registration+confirmation#"
+        );
+        inputUrlToExpectedUrl.put(
+                "http://spo.hurence.org/default.aspx?eevtid=1482&showResults=False&_ga=2.267591435.481963044.1578999296-479375258.1578999295",
+                "http://spo.hurence.org/default.aspx?eevtid=1482&showResults=False&_ga=2.267591435.481963044.1578999296-479375258.1578999295"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congresses-&-Events/Frontiers-in-Cardiovascular-Biomedicine/Registration?utm_medium=Email&utm_source=Councils&utm_campaign=Councils+-+FCVB+2020+-+Early+registration+fee+-++Last+call",
+                "https://mydomain.com/Congresses-&-Events/Frontiers-in-Cardiovascular-Biomedicine/Registration?utm_medium=Email&utm_source=Councils&utm_campaign=Councils+-+FCVB+2020+-+Early+registration+fee+-++Last+call"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractAuthors.aspx?abstractID=9GrIawodOyXZLPpXgJHtvCxG5gTt5TznJt97rA1Jy%2bzH7V5eLZVqUnyoo903fiw9nf7mbxKuI14%3d",
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractAuthors.aspx?abstractID=9GrIawodOyXZLPpXgJHtvCxG5gTt5TznJt97rA1Jy%2bzH7V5eLZVqUnyoo903fiw9nf7mbxKuI14%3d"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congresses-&-Events/ESC-Congress/Scientific-sessions",
+                "https://mydomain.com/Congresses-&-Events/ESC-Congress/Scientific-sessions"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://idp.hurence.org/idp/login.jsp?loginFailed=true&actionUrl=%2Fidp%2FAuthn%2FESCUserPassword",
+                "https://idp.hurence.org/idp/login.jsp?loginFailed=true&actionUrl=%2Fidp%2FAuthn%2FESCUserPassword"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://aa.net/2016/formulaResult.aspx?model=europelow&exam=&patient=370532",
+                "https://aa.net/2016/formulaResult.aspx?model=europelow&exam=&patient=370532"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://aa.net/login.aspx?ReturnUrl=%2fpercutaneous-interventions%2fhomepage.aspx",
+                "https://aa.net/login.aspx?ReturnUrl=%2fpercutaneous-interventions%2fhomepage.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Education/Practice-Tools/EACVI-toolboxes/3D-Echo/Atlas-of-Three%E2%80%93dimensional-Echocardiography/Volumes-and-Ejection-Fraction",
+                "https://mydomain.com/Education/Practice-Tools/EACVI-toolboxes/3D-Echo/Atlas-of-Three%E2%80%93dimensional-Echocardiography/Volumes-and-Ejection-Fraction"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/ESCMyPublications",
+                "https://my--domain.force.org/ESCMyPublications"
+        );
+        runTestWithRemoveQ(inputUrlToExpectedUrl);
+    }
+
+
+    @Test
+    public void bulkKeepQTest() {
+        Map<String, String> inputUrlToExpectedUrl = new HashMap<String, String>();
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=loupe+las33300",
+                "https://mydomain.com/fr/search/"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/elingue-ronde-haute-resistance/r-PR_G1408003386?q=elingue%7C%7Crelevance%7C%7CmanufacturerNameFacet%7C%7CGISS&text=elingue&classif=",
+                "https://mydomain.com/fr/elingue-ronde-haute-resistance/r-PR_G1408003386?q=elingue%7C%7Crelevance%7C%7CmanufacturerNameFacet%7C%7CGISS"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/protection-usage-court/c-40-10-21?q=%7C%7Crelevance&page=6",
+                "https://mydomain.com/fr/protection-usage-court/c-40-10-21?q=%7C%7Crelevance"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/ensemble-ebavurage-chanfreinage-en-coffret/p-G1111003763",
+                "https://mydomain.com/fr/ensemble-ebavurage-chanfreinage-en-coffret/p-G1111003763"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200?q=||||attribute157||Gris||attribute228||225x150x125%20mm||&classif=45&sortAttribute=&sortOrder=",
+                "https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200?q=||||attribute157||Gris||attribute228||225x150x125%20mm||"
+        );
+//        decoded -> https://mydomain.com/fr/bac-a-bec/r-PR_G1408000200?q=||||attribute157||Gris||attribute228||225x150x125 mm||&classif=45&sortAttribute=&sortOrder=
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=Chaine+9.25+inox",
+                "https://mydomain.com/fr/search/"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/moraillon-porte-cadenas/p-G1164000013?t=cadenas+pompier",
+                "https://mydomain.com/fr/moraillon-porte-cadenas/p-G1164000013"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/facom/c-1111?q=%7C%7C%7C%7CcategoryLevel1%7C%7C45&page=5",
+                "https://mydomain.com/fr/facom/c-1111?q=%7C%7C%7C%7CcategoryLevel1%7C%7C45"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://www.btshop.nl/nl/veiligheidsschoen-sl-80-blue-esd-s2/r-PR_G1021004878?q=||relevance||attribute891||43&sortAttribute=attribute891,attribute109,attribute5041,attribute157&sortOrder=asc",
+                "https://www.btshop.nl/nl/veiligheidsschoen-sl-80-blue-esd-s2/r-PR_G1021004878?q=||relevance||attribute891||43"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/cart#",
+                "https://mydomain.com/fr/cart#"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/fr/search/?text=smc+aq+240f-06-00",
+                "https://mydomain.com/fr/search/"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://es.world.com/es/herramientas-de-mano/c-35-10?q=||relevance||manufacturerNameFacet||Roebuck||categoryLevel3%7C%7C35-10-20",
+                "https://es.world.com/es/herramientas-de-mano/c-35-10?q=||relevance||manufacturerNameFacet||Roebuck||categoryLevel3%7C%7C35-10-20"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/search/?text=piquage%20&q=piquage%20||relevance||manufacturerNameFacet||Parker%20Legris||attribute1875%7C%7CM5%20%27%27",
+                "https://mydomain.com/search/?q=piquage%20||relevance||manufacturerNameFacet||Parker%20Legris||attribute1875%7C%7CM5%20%27%27"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractContent.aspx?abstractID=9GrIawodOyWmVAXM%2b9Bq3eJFWUiAKhB2Toh3Oct0zIH%2fCbISTIls4l4Ox45ROTAWHCUzXjOonos%3d",
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractContent.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congress/ESC-CONGRESS-2019/Expert-Advice-Tips-and-tricks-in-imaging-your-patient-with-valvular-heart-d/189866-tips-and-tricks-for-imaging-in-aortic-stenosis#video",
+                "https://mydomain.com/Congress/ESC-CONGRESS-2019/Expert-Advice-Tips-and-tricks-in-imaging-your-patient-with-valvular-heart-d/189866-tips-and-tricks-for-imaging-in-aortic-stenosis#video"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Councils/Council-on-Hypertension-(CHT)/News/position-statement-of-the-world-council-on-hypertension-on-ace-inhibitors-and-ang",
+                "https://mydomain.com/Councils/Council-on-Hypertension-(CHT)/News/position-statement-of-the-world-council-on-hypertension-on-ace-inhibitors-and-ang"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Journals/E-Journal-of-Cardiology-Practice/Volume-14/Treatment-of-right-heart-failure-is-there-a-solution-to-the-problem",
+                "https://mydomain.com/Journals/E-Journal-of-Cardiology-Practice/Volume-14/Treatment-of-right-heart-failure-is-there-a-solution-to-the-problem"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congress/EuroCMR-2019/Special-Course-8-how-to-read-CMR-for-extra-cardiac-findings/187189-how-to-interpret-common-organ-specific-findings-in-the-lungs-skeletal-system-liver-kidneys-breast-case-based-interactive-discussion#slide",
+                "https://mydomain.com/Congress/EuroCMR-2019/Special-Course-8-how-to-read-CMR-for-extra-cardiac-findings/187189-how-to-interpret-common-organ-specific-findings-in-the-lungs-skeletal-system-liver-kidneys-breast-case-based-interactive-discussion#slide"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/apex/ESCUserProfileInfo",
+                "https://my--domain.force.org/apex/ESCUserProfileInfo"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Education/COVID-19-and-Cardiology/ESC-COVID-19-Guidance?hit=home&urlorig=/vgn-ext-templating/#tbl07",
+                "https://mydomain.com/Education/COVID-19-and-Cardiology/ESC-COVID-19-Guidance#tbl07"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/ESCMyProfile?utm_medium=Email&utm_source=&utm_campaign=ESC+-+ESC+Congress+2020+-+registration+confirmation#",
+                "https://my--domain.force.org/ESCMyProfile#"
+        );
+        inputUrlToExpectedUrl.put(
+                "http://spo.hurence.org/default.aspx?eevtid=1482&showResults=False&_ga=2.267591435.481963044.1578999296-479375258.1578999295",
+                "http://spo.hurence.org/default.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congresses-&-Events/Frontiers-in-Cardiovascular-Biomedicine/Registration?utm_medium=Email&utm_source=Councils&utm_campaign=Councils+-+FCVB+2020+-+Early+registration+fee+-++Last+call",
+                "https://mydomain.com/Congresses-&-Events/Frontiers-in-Cardiovascular-Biomedicine/Registration"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractAuthors.aspx?abstractID=9GrIawodOyXZLPpXgJHtvCxG5gTt5TznJt97rA1Jy%2bzH7V5eLZVqUnyoo903fiw9nf7mbxKuI14%3d",
+                "https://mydomain.com/MyESC/modules/congress/Abstract/AbstractAuthors.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Congresses-&-Events/ESC-Congress/Scientific-sessions",
+                "https://mydomain.com/Congresses-&-Events/ESC-Congress/Scientific-sessions"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://idp.hurence.org/idp/login.jsp?loginFailed=true&actionUrl=%2Fidp%2FAuthn%2FESCUserPassword",
+                "https://idp.hurence.org/idp/login.jsp"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://aa.net/2016/formulaResult.aspx?model=europelow&exam=&patient=370532",
+                "https://aa.net/2016/formulaResult.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://aa.net/login.aspx?ReturnUrl=%2fpercutaneous-interventions%2fhomepage.aspx",
+                "https://aa.net/login.aspx"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://mydomain.com/Education/Practice-Tools/EACVI-toolboxes/3D-Echo/Atlas-of-Three%E2%80%93dimensional-Echocardiography/Volumes-and-Ejection-Fraction",
+                "https://mydomain.com/Education/Practice-Tools/EACVI-toolboxes/3D-Echo/Atlas-of-Three%E2%80%93dimensional-Echocardiography/Volumes-and-Ejection-Fraction"
+        );
+        inputUrlToExpectedUrl.put(
+                "https://my--domain.force.org/ESCMyPublications",
+                "https://my--domain.force.org/ESCMyPublications"
+        );
+        runTestWithKeepQ(inputUrlToExpectedUrl);
+    }
+    private void runTestWithRemoveAll(Map<String, String> inputUrlToExpectedUrl) {
+        Map<PropertyDescriptor, String> conf = new HashMap<>();
+        conf.put(URLCleaner.REMOVE_ALL_PARAMS, "true");
+        runTestWithConfig(inputUrlToExpectedUrl, conf);
+    }
+
+    private void runTestWithRemoveQ(Map<String, String> inputUrlToExpectedUrl) {
+        Map<PropertyDescriptor, String> conf = new HashMap<>();
+        conf.put(URLCleaner.REMOVE_PARAMS, "q");
+        runTestWithConfig(inputUrlToExpectedUrl, conf);
+    }
+
+    private void runTestWithKeepQ(Map<String, String> inputUrlToExpectedUrl) {
+        Map<PropertyDescriptor, String> conf = new HashMap<>();
+        conf.put(URLCleaner.KEEP_PARAMS, "q");
+        runTestWithConfig(inputUrlToExpectedUrl, conf);
+    }
+
+    private void runTestWithConfig(Map<String, String> inputUrlToExpectedUrl, Map<PropertyDescriptor, String> conf) {
+        List<String> fieldsNames = IntStream.range(1, inputUrlToExpectedUrl.size() + 1)
+                .mapToObj(i -> "url" + i)
+                .collect(Collectors.toList());
+        List<String> inputValues = new ArrayList<>(inputUrlToExpectedUrl.keySet());
+        Record record = buildRecordFromMap(fieldsNames, inputValues);
+        final Record myCopyOfInitialRecord = new StandardRecord(record);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new URLCleaner());
+        testRunner.setProperty(URLCleaner.URL_FIELDS, String.join(",", fieldsNames));
+        testRunner.setProperty(URLCleaner.CONFLICT_RESOLUTION_POLICY, URLCleaner.OVERWRITE_EXISTING);
+        conf.entrySet().forEach(kv -> {
+            testRunner.setProperty(kv.getKey(), kv.getValue());
+        });
+        testRunner.assertValid();
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(record.size());
+
+        fieldsNames.forEach(fieldName -> {
+            String inputValue = myCopyOfInitialRecord.getField(fieldName).asString();
+            String expectedValue = inputUrlToExpectedUrl.get(inputValue);
+            out.assertFieldEquals(fieldName, expectedValue);
+        });
+    }
+
+    private Record buildRecordFromMap(List<String> fieldsNames, List<String> values) {
+        if (fieldsNames.size() != values.size()) throw new IllegalArgumentException("list should be of same size");
+        final Record record = new StandardRecord();
+        IntStream
+                .range(0, fieldsNames.size())
+                .forEach(i -> {
+                    record.setStringField(fieldsNames.get(i), values.get(i));
+                });
+        return record;
     }
 }
