@@ -26,11 +26,8 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.*;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.datastore.QueryRecord;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.ActionRequestValidationException;
@@ -385,6 +382,16 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
 
     @Override
     public void deleteByQuery(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 2.4.0");
+    }
+
+    @Override
+    public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 2.4.0");
+    }
+
+    @Override
+    public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException {
         throw new NotImplementedException("Not yet supported for ElasticSearch 2.4.0");
     }
 

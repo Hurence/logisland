@@ -102,7 +102,6 @@ public class IncrementalWebSession
     public static final String PROP_ES_EVENT_TYPE_NAME = "es.event.type.name";
 
     public static final String ES_MAPPING_EVENT_TO_SESSION_TYPE_NAME = "mapping";
-    public static final String MAPPING_FIELD = "sessionId";
 
     /**
      * Extra fields - for convenience - avoiding to parse the human readable first and last timestamps.
@@ -346,6 +345,7 @@ public class IncrementalWebSession
     protected static final String PROP_SOURCE_OF_TRAFFIC_SUFFIX = "source_of_traffic.suffix";
     protected static final String SOURCE_OF_TRAFFIC_SUFFIX_NAME = "source_of_traffic";
     public static final String DIRECT_TRAFFIC = "direct";
+    public static final String websessionsIndexPrefix = "new_openanalytics_websessions-";//TODO put this as parameter
 
     public final String FLAT_SEPARATOR = "_";
     public static final PropertyDescriptor SOURCE_OF_TRAFFIC_PREFIX_FIELD =
@@ -562,6 +562,7 @@ public class IncrementalWebSession
                 .flatMap(sessionsCalculator -> sessionsCalculator.getSessions().stream())
                 .collect(Collectors.toList());
         debug("Processing done. Outcoming records size=%d ", flattenedSessions.size());
+        //TODO update cache at end with new last sub sessions !
         return flattenedSessions;
     }
 
@@ -593,7 +594,7 @@ public class IncrementalWebSession
             Map<String/*sessionId*/, List<Event>> eventsFromEsBySessionId = eventsFromEs
                     .stream()
                     .collect(Collectors.groupingBy(Event::getSessionId));
-            //merge those events into the list
+            //merge those events into the lists
             for (Events events : eventsFromPast) {
                 List<Event> eventsFromEsForSession = eventsFromEsBySessionId.get(events.getSessionId());
                 events.addAll(eventsFromEsForSession);//TODO faire un test qui verifie que les events deja dans events sont prioritaire
@@ -615,21 +616,25 @@ public class IncrementalWebSession
             */
         String[] indicesToRefresh = null;
         elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToRefresh, 60000L);
-        elasticsearchClientService.searchNumb
-        allEvents.stream()
-                .flatMap(Collection::stream)
-                .forEach(event ->
-                {
-                    final Map<String, Object> map = toMap(event.cloneRecord());
-
-                    elasticsearchClientService.bulkPut(toEventIndexName(event.getTimestamp()),
-                            _ES_EVENT_TYPE_NAME,
-                            map,
-                            Optional.of((String) map.get(FieldDictionary.RECORD_ID)));
-                });
+//        elasticsearchClientService.searchNumb
+//        allEvents.stream()
+//                .flatMap(Collection::stream)
+//                .forEach(event ->
+//                {
+//                    final Map<String, Object> map = toMap(event.cloneRecord());
+//
+//                    elasticsearchClientService.bulkPut(toEventIndexName(event.getTimestamp()),
+//                            _ES_EVENT_TYPE_NAME,
+//                            map,
+//                            Optional.of((String) map.get(FieldDictionary.RECORD_ID)));
+//                });
         elasticsearchClientService.bulkFlush();
         return null;//TODO
     }
+
+//    private Collection<Event> getLastHurenceSessionFromEs(String divolteSession) {
+//
+//    }
 
     private void deleteFuturSessions(Collection<Events> eventsFromPast) {
         /*
@@ -727,7 +732,7 @@ public class IncrementalWebSession
      * @return web sessions resulting of the processing of the web events.
      */
     private Collection<SessionsCalculator> processEvents(final Collection<Events> webEvents) {
-        Map<String, WebSession> lastSessionMapping = getMapping(webEvents);//TODO
+        Map<String, WebSession> lastSessionMapping = null;//getMapping(webEvents);//TODO
         // Applies all events to session documents and collect results.
         final Collection<SessionsCalculator> result =
                 webEvents.stream()
@@ -738,69 +743,74 @@ public class IncrementalWebSession
         return result;
     }
 
-    private Map<String, Optional<WebSession>> getMapping(final Collection<Events> webEvents) {
-        //First retrieve mapping of last sessions.
-        // Eg sessionId -> sessionId#XX
-        final MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
-        webEvents.forEach(events -> mgqrBuilder.add(_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, ES_MAPPING_EVENT_TO_SESSION_TYPE_NAME,
-                null, events.getSessionId()));
+//    GET new_openanalytics_websessions-*/_search
+//{
+//    "query": {
+//    "wildcard": {
+//        "sessionId.raw": {
+//            "value": "<divolte_session>*"
+//        }
+//    }
+//},
+//    "sort": [
+//    {
+//        "h2kTimestamp": {
+//        "order": "desc"
+//    }
+//    }
+//  ],
+//    "size": 1
+//}
 
-        List<MultiGetResponseRecord> esResponse = null;
-        try {
-            esResponse = elasticsearchClientService.multiGet(mgqrBuilder.build());
-        } catch (final InvalidMultiGetQueryRecordException e) {
-            // should never happen
-            getLogger().error("error while executing multiGet elasticsearch", e);
-        }
+    private Map<String/*divolteSession*/, Optional<WebSession>/*lastHurenceSession*/> getMapping(final Collection<Events> webEvents) {
+        final Collection<String> divolteSessions = webEvents.stream()
+                .map(Events::getSessionId)
+                .collect(Collectors.toList());
 
-        // Documents have only one field "sessionId" that corresponds to last session.
-        Map<String/*sessionId*/, String/*sessionId#<last>*/> _mappings = Collections.emptyMap();
-        if (!esResponse.isEmpty()) {
-            _mappings =
-                    esResponse.stream()
-                            .collect(Collectors.toMap(response -> response.getDocumentId(),
-                                    response -> response.getRetrievedFields().get(MAPPING_FIELD)));
-        }
+        final Map<String, Optional<WebSession>> mappingToReturn = new HashMap<>();
+        final List<QueryRecord> sessionsRequests = new ArrayList<>();
+        divolteSessions.forEach(divoltSession -> {
+            WebSession cachedSession = cacheService.get(divoltSession);
+            if (cachedSession != null) {
+                mappingToReturn.put(divoltSession, Optional.of(cachedSession));
+            } else {
+                QueryRecord request = new QueryRecord();
+                request.addCollection(websessionsIndexPrefix + "*");//TODO P2 put this on root, I think we should create a MultiQueryRecord instead...
+                request.addWildCardQuery(new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divoltSession + "*"));
+                request.addSortQuery(new SortQueryRecord(_TIMESTAMP_FIELD, SortOrder.DESC));
+                request.size(1);//only need the last mapping
+                sessionsRequests.add(request);
+            }
+        });
 
-        final Map<String/*sessionId*/, String/*sessionId#<last>*/> mappings = _mappings;
+        MultiQueryResponseRecord multiQueryResponses = this.elasticsearchClientService.multiQueryGet(
+                new MultiQueryRecord(sessionsRequests)
+        );
+        Map<String, WebSession> sessionsFromEs = transformIntoWebSessions(multiQueryResponses);
 
-        // Retrieve all last sessionId from elasticsearch.
-        final MultiGetQueryRecordBuilder sessionBuilder = new MultiGetQueryRecordBuilder();
-        if (!mappings.isEmpty()) {
-            webEvents.forEach(events ->
-            {
-                String sessionId = events.getSessionId();
-                String mappedSessionId = mappings.get(sessionId); // last processed session id (#?)
-                // Retrieve the name of the index that contains the websessions.
-                // The chaining calls are on purpose as any NPE would mean something is wrong.
-                final String sessionIndexName = events.first().getValue(_ES_SESSION_INDEX_FIELD).toString();
-                elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(sessionIndexName, 60000L);
-                sessionBuilder.add(sessionIndexName, _ES_SESSION_TYPE_NAME,
-                        null, mappedSessionId != null ? mappedSessionId : sessionId);
-            });
-        }
+        divolteSessions.forEach(divoltSession -> {
+            if (!mappingToReturn.containsKey(divoltSession)) {
+                if (!sessionsFromEs.containsKey(divoltSession)) {
+                    mappingToReturn.put(divoltSession, Optional.empty());//TODO P2 how to tell the cache there is no value in es !
+                } else {
+                    WebSession lastSessionInEs = sessionsFromEs.get(divoltSession);
+                    cacheService.set(divoltSession, lastSessionInEs);
+                    mappingToReturn.put(divoltSession, Optional.of(lastSessionInEs));
+                }
+            }
+        });
+        return mappingToReturn;
+    }
 
-        esResponse = null;
-        try {
-            esResponse = elasticsearchClientService.multiGet(sessionBuilder.build());
-        } catch (final InvalidMultiGetQueryRecordException e) {
-            // should never happen
-            getLogger().error("error while executing multiGet elasticsearch", e);
-        }
-
-        debug("Retrieved %d documents from elasticsearch.", esResponse.size());
-
-        // Grouped all retrieved elasticsearch documents by their session identifier.
-        final Map<String/*doc id without #*/,
-                List<WebSession>/*session-id or session-id#0,...,session-id#N*/> sessionDocs =
-                esResponse.isEmpty()
-                        ? Collections.emptyMap()
-                        : esResponse.stream()
-                        .map(response -> new WebSession(esDoc2Record(response.getRetrievedFields()), this))
-                        .collect(Collectors.groupingBy(record -> record.getSessionId()
-                                .split(EXTRA_SESSION_DELIMITER)[0]));
-
-        return null;//TODO
+    private Map<String/*divolteId*/, WebSession> transformIntoWebSessions(MultiQueryResponseRecord multiQueryResponses) {
+        return multiQueryResponses.getDocs().stream()
+                .map(doc -> {
+                    return new WebSession(esDoc2Record(doc.getRetrievedFields()), this);
+                })
+                .collect(Collectors.toMap(
+                        WebSession::getOriginalId,
+                        Function.identity()
+                ));
     }
 
     /**

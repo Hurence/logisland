@@ -51,6 +51,10 @@ public class WebSession
         return this.getStringValue(processor._SESSION_ID_FIELD);
     }
 
+    public String getOriginalId() {
+        return this.getStringValue(processor._ORIGINAL_SESSION_ID_FIELD);
+    }
+
     /**
      * Creates a new instance of this class that wraps the provided record.
      *

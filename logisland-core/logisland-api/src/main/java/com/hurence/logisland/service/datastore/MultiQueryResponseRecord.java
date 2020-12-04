@@ -17,31 +17,37 @@ package com.hurence.logisland.service.datastore;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class QueryResponseRecord {
+public class MultiQueryResponseRecord {
 
-    private final long totalMatched;
-    private final List<ResponseRecord> docs;
+    private final List<QueryResponseRecord> responses;
 
-
-    public QueryResponseRecord(long totalMatched, List<ResponseRecord> docs) {
-        this.totalMatched = totalMatched;
-        this.docs = docs;
+    public MultiQueryResponseRecord(List<QueryResponseRecord> responses) {
+        this.responses = responses;
     }
 
     public long getTotalMatched() {
-        return totalMatched;
+        return responses.stream()
+                .map(QueryResponseRecord::getTotalMatched)
+                .reduce(0L, Long::sum);
+    }
+
+    public List<QueryResponseRecord> getResponses() {
+        return responses;
     }
 
     public List<ResponseRecord> getDocs() {
-        return docs;
+        return responses.stream()
+                .map(QueryResponseRecord::getDocs)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     @Override
     public String toString() {
-        return "QueryResponseRecord{" +
-                "totalMatched=" + totalMatched +
-                ", docs=" + docs +
+        return "MultiQueryResponseRecord{" +
+                "responses=" + responses +
                 '}';
     }
 }

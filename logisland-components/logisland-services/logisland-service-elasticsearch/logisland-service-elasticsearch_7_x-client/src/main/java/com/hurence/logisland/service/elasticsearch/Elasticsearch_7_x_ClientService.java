@@ -43,6 +43,7 @@ import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
@@ -387,7 +388,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     }
 
     @Override
-    public List<QueryResponseRecord> queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
+    public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
         String[] indices = new String[queryRecord.getCollections().size()];
         SearchRequest searchRequest = new SearchRequest(indices);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -530,6 +531,55 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         }
 
         return multiGetResponseRecords;
+    }
+
+    @Override
+    public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException{
+
+        List<QueryResponseRecord> queryResponseRecords = new ArrayList<>();
+        //TODO
+//
+//        MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+//
+//        for (MultiGetQueryRecord multiGetQueryRecord : multiGetQueryRecords)
+//        {
+//            String index = multiGetQueryRecord.getIndexName();
+//            List<String> documentIds = multiGetQueryRecord.getDocumentIds();
+//            String[] fieldsToInclude = multiGetQueryRecord.getFieldsToInclude();
+//            String[] fieldsToExclude = multiGetQueryRecord.getFieldsToExclude();
+//            if ((fieldsToInclude != null && fieldsToInclude.length > 0) || (fieldsToExclude != null && fieldsToExclude.length > 0)) {
+//                for (String documentId : documentIds) {
+//                    MultiGetRequest.Item item = new MultiGetRequest.Item(index, documentId);
+//                    item.fetchSourceContext(new FetchSourceContext(true, fieldsToInclude, fieldsToExclude));
+//                    multiSearchRequest.add(item);
+//                }
+//            } else {
+//                for (String documentId : documentIds) {
+//                    multiSearchRequest.add(index, documentId);
+//                }
+//            }
+//        }
+//
+//        MultiGetResponse multiGetItemResponses = null;
+//        try {
+//            multiGetItemResponses = esClient.mget(multiSearchRequest, RequestOptions.DEFAULT);
+//        } catch (Exception e) {
+//            getLogger().error("MultiGet query failed : {}", new Object[]{e.getMessage()});
+//        }
+//
+//        if (multiGetItemResponses != null) {
+//            for (MultiGetItemResponse itemResponse : multiGetItemResponses) {
+//                GetResponse response = itemResponse.getResponse();
+//                if (response != null && response.isExists()) {
+//                    Map<String,Object> responseMap = response.getSourceAsMap();
+//                    Map<String,String> retrievedFields = new HashMap<>();
+//                    responseMap.forEach((k,v) -> {if (v!=null) retrievedFields.put(k, v.toString());});
+//                    multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
+//                }
+//            }
+//        }
+
+        return null;
     }
 
     @Override

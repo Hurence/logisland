@@ -25,10 +25,8 @@ import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
+import com.hurence.logisland.service.datastore.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -1285,7 +1283,32 @@ public class IncrementalWebSessionTest
         }
 
         @Override
+        public void bulkDelete(String docIndex, String docType, String id) {
+
+        }
+
+        @Override
+        public void deleteByQuery(QueryRecord queryRecord) throws DatastoreClientServiceException {
+
+        }
+
+        @Override
+        public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
+            return null;
+        }
+
+        @Override
+        public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException {
+            return null;
+        }
+
+        @Override
         public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String index, long timeoutMilli) throws DatastoreClientServiceException {
+
+        }
+
+        @Override
+        public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String[] indices, long timeoutMilli) throws DatastoreClientServiceException {
 
         }
 

@@ -21,15 +21,20 @@ import java.util.List;
 
 public class QueryRecord {
 
+    private int size = -1;
     private boolean refresh = false;
     private final List<String> collections;
     private final List<TermQueryRecord> termQueries;
+    private final List<WildCardQueryRecord> wildCardQueries;
     private final List<RangeQueryRecord> rangeQueries;
+    private final List<SortQueryRecord> sortQueries;
 
     public QueryRecord() {
         this.collections = new ArrayList<>();
         this.termQueries = new ArrayList<>();
         this.rangeQueries = new ArrayList<>();
+        this.wildCardQueries = new ArrayList<>();
+        this.sortQueries = new ArrayList<>();
     }
 
     public QueryRecord addTermQuery(TermQueryRecord termQuery) {
@@ -42,8 +47,23 @@ public class QueryRecord {
         return this;
     }
 
+    public QueryRecord addWildCardQuery(WildCardQueryRecord wildCardQuery) {
+        this.wildCardQueries.add(wildCardQuery);
+        return this;
+    }
+
+    public QueryRecord addSortQuery(SortQueryRecord sortQuery) {
+        this.sortQueries.add(sortQuery);
+        return this;
+    }
+
     public QueryRecord addCollection(String collection) {
         this.collections.add(collection);
+        return this;
+    }
+
+    public QueryRecord size(int size) {
+        this.size = size;
         return this;
     }
 

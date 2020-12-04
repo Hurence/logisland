@@ -18,30 +18,16 @@ package com.hurence.logisland.service.datastore;
 
 import java.util.List;
 
-public class QueryResponseRecord {
+public class MultiQueryRecord {
 
-    private final long totalMatched;
-    private final List<ResponseRecord> docs;
+    private final List<QueryRecord> querys;
 
 
-    public QueryResponseRecord(long totalMatched, List<ResponseRecord> docs) {
-        this.totalMatched = totalMatched;
-        this.docs = docs;
+    public MultiQueryRecord(List<QueryRecord> querys) {
+        this.querys = querys;
     }
 
-    public long getTotalMatched() {
-        return totalMatched;
-    }
-
-    public List<ResponseRecord> getDocs() {
-        return docs;
-    }
-
-    @Override
-    public String toString() {
-        return "QueryResponseRecord{" +
-                "totalMatched=" + totalMatched +
-                ", docs=" + docs +
-                '}';
+    public List<QueryRecord> getQuerys() {
+        return querys;
     }
 }

@@ -332,6 +332,16 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
         }
     }
 
+    @Override
+    public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 6.6.2");
+    }
+
+    @Override
+    public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 2.4.0");
+    }
+
     private QueryBuilder toQueryBuilder(QueryRecord queryRecord) {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         for (TermQueryRecord termQuery : queryRecord.getTermQueries()) {

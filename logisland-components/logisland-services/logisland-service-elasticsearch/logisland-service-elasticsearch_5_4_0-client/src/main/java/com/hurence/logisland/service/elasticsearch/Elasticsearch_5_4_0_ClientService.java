@@ -389,6 +389,16 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
     }
 
+    @Override
+    public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
+    @Override
+    public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
     /**
      * Wait until specified collection is ready to be used.
      */

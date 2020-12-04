@@ -237,7 +237,9 @@ public interface ElasticsearchClientService extends DatastoreClientService {
      * @param queryRecord query to do
      * @return the list of fetched documents
      */
-    List<MultiGetResponseRecord> queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException;
+    QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException;
+
+    MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException;
 
     /**
      * Wait until specified collection is ready to be used. Then if it is ready before timeout,
