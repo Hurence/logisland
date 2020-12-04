@@ -106,7 +106,7 @@ public class URLCleaner extends AbstractProcessor {
     public static final PropertyDescriptor PARAMETER_SEPARATOR = new PropertyDescriptor.Builder()
             .name("parameter.separator")
             .description("the character to use to separate the parameters in the query part of the uris")
-            .required(true)
+            .required(false)
             .defaultValue("&")
             .addValidator(StandardValidators.CHAR_VALIDATOR)
             .build();
@@ -114,7 +114,7 @@ public class URLCleaner extends AbstractProcessor {
     public static final PropertyDescriptor KEY_VALUE_SEPARATOR = new PropertyDescriptor.Builder()
             .name("key.value.separator")
             .description("the character to use to separate the parameter name from the parameter value in the query part of the uris")
-            .required(true)
+            .required(false)
             .defaultValue("=")
             .addValidator(StandardValidators.CHAR_VALIDATOR)
             .build();
