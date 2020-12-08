@@ -32,6 +32,7 @@ import com.hurence.logisland.service.datastore.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -99,13 +100,14 @@ public class IncrementalWebSession
      */
     public static final String OUTPUT_RECORD_TYPE = "consolidate-session";
 
-    public static final String PROP_ES_SESSION_INDEX_FIELD = "es.session.index.field";
-    public static final String PROP_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME = "es.mapping.event.to.session.index.name";
+    //Session Elasticsearch indices
+    public static final String PROP_ES_SESSION_INDEX_PREFIX = "es.event.index.prefix";
+    public static final String PROP_ES_SESSION_INDEX_SUFFIX_FORMATTER = "es.session.index.suffix.date";
     public static final String PROP_ES_SESSION_TYPE_NAME = "es.session.type.name";
+    //Event Elasticsearch indices
     public static final String PROP_ES_EVENT_INDEX_PREFIX = "es.event.index.prefix";
+    public static final String PROP_ES_EVENT_INDEX_SUFFIX_FORMATTER = "es.event.index.suffix.date";
     public static final String PROP_ES_EVENT_TYPE_NAME = "es.event.type.name";
-
-    public static final String ES_MAPPING_EVENT_TO_SESSION_TYPE_NAME = "mapping";
 
     /**
      * Extra fields - for convenience - avoiding to parse the human readable first and last timestamps.
@@ -130,10 +132,18 @@ public class IncrementalWebSession
                     .defaultValue("false")
                     .build();
 
-    public static final PropertyDescriptor ES_SESSION_INDEX_FIELD =
+    public static final PropertyDescriptor ES_SESSION_INDEX_PREFIX =
             new PropertyDescriptor.Builder()
-                    .name(PROP_ES_SESSION_INDEX_FIELD)
-                    .description("Name of the field in the record defining the ES index containing the web session documents.")
+                    .name(PROP_ES_SESSION_INDEX_PREFIX)
+                    .description("Prefix of the indices containing the web session documents.")
+                    .required(true)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .build();
+
+    public static final PropertyDescriptor ES_SESSION_INDEX_SUFFIX_FORMATTER =//TODO P2 date validator SimpleDateFormat
+            new PropertyDescriptor.Builder()
+                    .name(PROP_ES_SESSION_INDEX_SUFFIX_FORMATTER)
+                    .description("suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
@@ -142,14 +152,6 @@ public class IncrementalWebSession
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_SESSION_TYPE_NAME)
                     .description("Name of the ES type of web session documents.")
-                    .required(true)
-                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                    .build();
-
-    public static final PropertyDescriptor ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME =
-            new PropertyDescriptor.Builder()
-                    .name(PROP_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME)
-                    .description("Name of the ES index containing the mapping of web session documents.")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
@@ -176,6 +178,14 @@ public class IncrementalWebSession
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_EVENT_INDEX_PREFIX)
                     .description("Prefix of the index containing the web event documents.")
+                    .required(true)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .build();
+
+    public static final PropertyDescriptor ES_EVENT_INDEX_SUFFIX_FORMATTER =//TODO P2 date validator DateTimeFormatter
+            new PropertyDescriptor.Builder()
+                    .name(PROP_ES_EVENT_INDEX_SUFFIX_FORMATTER)
+                    .description("suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
@@ -367,11 +377,12 @@ public class IncrementalWebSession
     private final static List<PropertyDescriptor> SUPPORTED_PROPERTY_DESCRIPTORS =
             Collections.unmodifiableList(Arrays.asList(
                     DEBUG,
-                    ES_SESSION_INDEX_FIELD,
+                    ES_SESSION_INDEX_PREFIX,
+                    ES_SESSION_INDEX_SUFFIX_FORMATTER,
                     ES_SESSION_TYPE_NAME,
                     ES_EVENT_INDEX_PREFIX,
+                    ES_EVENT_INDEX_SUFFIX_FORMATTER,
                     ES_EVENT_TYPE_NAME,
-                    ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME,
                     SESSION_ID_FIELD,
                     TIMESTAMP_FIELD,
                     VISITED_PAGE_FIELD,
@@ -429,12 +440,13 @@ public class IncrementalWebSession
     public String _SOT_MEDIUM_FIELD;
     public String _SOT_CONTENT_FIELD;
     public String _SOT_KEYWORD_FIELD;
-    public String _ES_SESSION_INDEX_FIELD;
+    public String _ES_SESSION_INDEX_PREFIX;
+    public SimpleDateFormat _ES_SESSION_INDEX_SUFFIX_FORMATTER;
     public String _ES_SESSION_TYPE_NAME;
     public String _ES_EVENT_INDEX_PREFIX;
+    public DateTimeFormatter _ES_EVENT_INDEX_SUFFIX_FORMATTER;
     public String _ES_EVENT_TYPE_NAME;
-    public String _ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME;
-    private long maxNumberOfEventForCurrentSessionRequested = 10000L;
+    private final long maxNumberOfEventForCurrentSessionRequested = 10000L;
     public Collection<SessionCheck> checker;
 
     @Override
@@ -484,16 +496,29 @@ public class IncrementalWebSession
         this._SOT_CONTENT_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_CONTENT;
         this._SOT_KEYWORD_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_KEYWORD;
 
-        this._ES_SESSION_INDEX_FIELD = context.getPropertyValue(ES_SESSION_INDEX_FIELD).asString();
-        Objects.requireNonNull(this._ES_SESSION_INDEX_FIELD, "Property required: " + ES_SESSION_INDEX_FIELD);
+        //Sessions indices
+        this._ES_SESSION_INDEX_PREFIX = context.getPropertyValue(ES_SESSION_INDEX_PREFIX).asString();
+        Objects.requireNonNull(this._ES_SESSION_INDEX_PREFIX, "Property required: " + ES_SESSION_INDEX_PREFIX);
+        //TODO try to use same way to convert dates... But it is the deployed way in a prod environment so
+        // think this a lot before changing it
+        this._ES_SESSION_INDEX_SUFFIX_FORMATTER = new java.text.SimpleDateFormat(
+                context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER).asString()
+        );
+        Objects.requireNonNull(this._ES_SESSION_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_SESSION_INDEX_SUFFIX_FORMATTER);
         this._ES_SESSION_TYPE_NAME = context.getPropertyValue(ES_SESSION_TYPE_NAME).asString();
         Objects.requireNonNull(this._ES_SESSION_TYPE_NAME, "Property required: " + ES_SESSION_TYPE_NAME);
+        //Events indices
         this._ES_EVENT_INDEX_PREFIX = context.getPropertyValue(ES_EVENT_INDEX_PREFIX).asString();
         Objects.requireNonNull(this._ES_EVENT_INDEX_PREFIX, "Property required: " + ES_EVENT_INDEX_PREFIX);
+        //TODO try to use same way to convert dates... But it is the deployed way in a prod environment so
+        // think this a lot before changing it
+        this._ES_EVENT_INDEX_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
+                context.getPropertyValue(ES_EVENT_INDEX_SUFFIX_FORMATTER).asString(),
+                Locale.ENGLISH
+        );
+        Objects.requireNonNull(this._ES_EVENT_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_EVENT_INDEX_SUFFIX_FORMATTER);
         this._ES_EVENT_TYPE_NAME = context.getPropertyValue(ES_EVENT_TYPE_NAME).asString();
         Objects.requireNonNull(this._ES_EVENT_TYPE_NAME, "Property required: " + ES_EVENT_TYPE_NAME);
-        this._ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME = context.getPropertyValue(ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME).asString();
-        Objects.requireNonNull(this._ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, "Property required: " + ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME);
 
         this.checker = Arrays.asList(
                 // Day overlap
@@ -603,7 +628,7 @@ public class IncrementalWebSession
         //merge those events into the lists
         for (Events events : eventsFromPast) {
             List<Event> eventsFromEsForSession = eventsFromEsBySessionId.get(events.getSessionId());
-            events.addAll(eventsFromEsForSession);//TODO 2 faire un test qui verifie que les events deja dans events sont prioritaire
+            events.addAll(eventsFromEsForSession);//TODO P2 faire un test qui verifie que les events deja dans events sont prioritaire
         }
 
         return Stream.concat(
@@ -635,10 +660,10 @@ public class IncrementalWebSession
             Pour chaque events trouver les evènements de la session en cour nécessaire.
             C'est de requêter tous les events de la sessionId et timestamp <= firstEventTs(input events)
         */
-        //TODO 2 look when do we need to refresh some indices
+        //TODO P2 look when do we need to refresh some indices
 //        String[] indicesToRefresh = null;
 //        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToRefresh, 60000L);
-        //TODO 2 END
+        //TODO P2 END
         Map<String, ZonedDateTime> divoltSessionToFirstEvent = eventsFromPast.stream()
                 .collect(Collectors.toMap(
                         Events::getSessionId,
@@ -724,7 +749,8 @@ public class IncrementalWebSession
                             new TermQueryRecord(_SESSION_ID_FIELD + ".raw", currentSession.getSessionId())
                     ).addRangeQuery(
                             new RangeQueryRecord(_TIMESTAMP_FIELD)
-                                    .setTo(firstEventTimeStamp.toInstant().toEpochMilli())//TODO +1000 car dans session / 1000...? Mais je crois que c'est un timestamp qui vient dun event donc non c okay ?
+                                    .setTo(firstEventTimeStamp.toInstant().toEpochMilli())
+    //TODO P2 +1000 car dans session / 1000...? Mais je crois que c'est un timestamp qui vient dun event donc non c okay ?
                                     .setIncludeUpper(true)
                     ).size(10000);
             queries.add(query);
@@ -764,6 +790,7 @@ public class IncrementalWebSession
             long epochSecondFirstEvent = events.first().getEpochTimeStampSeconds();
             QueryRecord query = new QueryRecord()
                     .addCollection(websessionsIndexPrefix + "*")
+                    .addType(_ES_SESSION_TYPE_NAME)
                     .addWildCardQuery(
                             new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divolteSession + "*")
                     ).addRangeQuery(
@@ -781,11 +808,29 @@ public class IncrementalWebSession
         return elasticsearchClientService.multiQueryGet(multiQuery);
     }
 
-
-//    private Collection<Event> getLastHurenceSessionFromEs(String divolteSession) {
-//
+//    GET new_openanalytics_websessions-*/_search
+//{
+//    "query": {
+//      "bool": {
+//          "must": [
+//          {
+//              "wildcard": {
+//              "sessionId.raw": {
+//                  "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al*"
+//              }
+//          }
+//          },
+//          {
+//              "range": {
+//              "h2kTimestamp": {
+//                  "gt": 1601448439663
+//              }
+//          }
+//          }
+//        ]
+//      }
 //    }
-
+//}
     private void deleteFuturSessions(Collection<Events> eventsFromPast) {
         /*
             Pour chaque events trouver le min, effacer toutes les sessions avec
@@ -800,14 +845,17 @@ public class IncrementalWebSession
         queryRecord.setRefresh(false);
         for (Events events : eventsFromPast) {
             Event firstEvent = events.first();
-            final String sessionIndexName = firstEvent.getValue(_ES_SESSION_INDEX_FIELD).toString();//TODO look for all session
-            queryRecord.addCollection(sessionIndexName);
-            final String sessionId = events.getSessionId();//divolt session
-            queryRecord.addTermQuery(new TermQueryRecord(_ORIGINAL_SESSION_ID_FIELD, sessionId));
-            queryRecord.addRangeQuery(
-                    new RangeQueryRecord(_TIMESTAMP_FIELD)
-                    .setFrom(firstEvent.getEpochTimeStampMilli())
-            );
+            final String sessionIndexName = toSessionIndexName(firstEvent.getEpochTimeStampMilli());
+            final String divolteSession = events.getSessionId();//divolt session
+            queryRecord
+                    .addCollection(sessionIndexName)
+                    .addType(_ES_SESSION_TYPE_NAME)
+                    .addWildCardQuery(new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divolteSession + "*"))
+                    .addRangeQuery(
+                            new RangeQueryRecord(_TIMESTAMP_FIELD)
+                                    .setFrom(firstEvent.getEpochTimeStampMilli())
+                                    .setIncludeLower(false)
+                    );
         }
         elasticsearchClientService.deleteByQuery(queryRecord);
     }
@@ -858,12 +906,6 @@ public class IncrementalWebSession
     }
 
     /**
-     * The events' index suffix formatter.
-     */
-    private final DateTimeFormatter EVENT_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd",
-            Locale.ENGLISH);
-
-    /**
      * Returns the name of the event index corresponding to the specified date such as
      * ${event-index-name}.${event-suffix}.
      * Eg. openanalytics-webevents.2018.01.31
@@ -872,7 +914,20 @@ public class IncrementalWebSession
      * @return the name of the event index corresponding to the specified date.
      */
     private String toEventIndexName(final ZonedDateTime date) {
-        return _ES_EVENT_INDEX_PREFIX + "." + EVENT_SUFFIX_FORMATTER.format(date);
+        return _ES_EVENT_INDEX_PREFIX + _ES_EVENT_INDEX_SUFFIX_FORMATTER.format(date);
+    }
+
+    /**
+     * Returns the name of the event index corresponding to the specified date such as
+     * ${session-index-name}${session-suffix}.
+     * Eg. openanalytics-webevents.2018.01.31
+     *
+     * @param epochMilli the milli timestamp epoc of the event of the session.
+     * @return the name of the session index corresponding to the specified timestamp.
+     */
+    private String toSessionIndexName(long epochMilli) {
+        Date date = new java.util.Date(epochMilli);
+        return websessionsIndexPrefix + _ES_SESSION_INDEX_SUFFIX_FORMATTER.format(date);
     }
 
     /**
@@ -940,11 +995,12 @@ public class IncrementalWebSession
             if (cachedSession != null) {
                 mappingToReturn.put(divoltSession, Optional.of(cachedSession));
             } else {
-                QueryRecord request = new QueryRecord();
-                request.addCollection(websessionsIndexPrefix + "*");//TODO P2 put this on root, I think we should create a MultiQueryRecord instead...
-                request.addWildCardQuery(new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divoltSession + "*"));
-                request.addSortQuery(new SortQueryRecord(_TIMESTAMP_FIELD, SortOrder.DESC));
-                request.size(1);//only need the last mapping
+                QueryRecord request = new QueryRecord()
+                        .addCollection(websessionsIndexPrefix + "*")//TODO P2 put this on root, I think we should create a MultiQueryRecord instead...
+                        .addType(_ES_SESSION_TYPE_NAME)
+                        .addWildCardQuery(new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divoltSession + "*"))
+                        .addSortQuery(new SortQueryRecord(_TIMESTAMP_FIELD, SortOrder.DESC))
+                        .size(1);//only need the last mapping
                 sessionsRequests.add(request);
             }
         });

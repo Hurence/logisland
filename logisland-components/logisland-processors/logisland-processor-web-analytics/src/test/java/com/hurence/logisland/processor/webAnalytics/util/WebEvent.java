@@ -8,7 +8,6 @@ import com.hurence.logisland.record.StandardRecord;
  */
 public class WebEvent extends StandardRecord
 {
-    public static final String SESSION_INDEX = "openanalytics_websessions";
     private static final String SESSION_ID = "sessionId";
     private static final String TIMESTAMP = "h2kTimestamp";
     private static final String VISITED_PAGE = "VISITED_PAGE";
@@ -29,7 +28,6 @@ public class WebEvent extends StandardRecord
         this.setField(SESSION_ID, FieldType.STRING, sessionId)
                 .setField(USER_ID, FieldType.STRING, userId)
                 .setField(TIMESTAMP, FieldType.STRING, timestamp)
-                .setField(SESSION_INDEX, FieldType.STRING, SESSION_INDEX)
                 .setField(VISITED_PAGE, FieldType.STRING, url)
                 .setField(CURRENT_CART, FieldType.ARRAY, null)
                 .setField("record_id", FieldType.STRING, String.valueOf(id));

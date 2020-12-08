@@ -1128,11 +1128,10 @@ public class IncrementalWebSessionTest
         runner.enableControllerService(elasticsearchClient);
         runner.setProperty(SetSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
 
-        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_FIELD, SESSION_INDEX);
+        //TODO add new props if fixing those tests
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME, SESSION_TYPE);
         runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX, EVENT_INDEX);
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME, EVENT_TYPE);
-        runner.setProperty(IncrementalWebSession.ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, MAPPING_INDEX);
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD, SESSION_ID);
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD, TIMESTAMP);
         runner.setProperty(IncrementalWebSession.VISITED_PAGE_FIELD, VISITED_PAGE);
