@@ -52,7 +52,8 @@ public class WebSession
     }
 
     public String getOriginalSessionId() {
-        return this.getStringValue(processor._ORIGINAL_SESSION_ID_FIELD);
+        String sessionsId = getSessionId();
+        return SessionsCalculator.extractOrignalSessionsId(sessionsId);
     }
 
     /**

@@ -22,22 +22,23 @@ import com.hurence.logisland.processor.webAnalytics.modele.WebSession;
 import com.hurence.logisland.processor.webAnalytics.util.WebEvent;
 import com.hurence.logisland.processor.webAnalytics.util.WebSessionChecker;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.PutIndexTemplateRequest;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -49,12 +50,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,26 +69,52 @@ public class IncrementalWebSessionIT
 {
     private static Logger logger = LoggerFactory.getLogger(IncrementalWebSessionIT.class);
     public static final String SESSION_INDEX_PREFIX = "openanalytics_websessions-";
+    public static final String EVENT_INDEX_PREFIX = "openanalytics_webevents.";
 
 
     @BeforeEach
-    public void clean(RestHighLevelClient esClient) throws InterruptedException, ExecutionException, IOException {
-        ClusterHealthRequest clHealtRequest = new ClusterHealthRequest();
-        ClusterHealthResponse response = esClient.cluster().health(clHealtRequest, RequestOptions.DEFAULT);
-        Set<String> indices = response.getIndices().keySet();
+    public void clean(RestHighLevelClient esClient) throws IOException {
+        try {
+            Set<String> indices = Arrays.stream(esClient.indices().get(
+                    new GetIndexRequest("*"),
+                    RequestOptions.DEFAULT).getIndices()
+            ).collect(Collectors.toSet());
 
-        if (!indices.isEmpty()) {
-            DeleteIndexRequest deleteRequest = new DeleteIndexRequest(indices.toArray(new String[0]));
-            Assert.assertTrue(esClient.indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
+            if (!indices.isEmpty()) {
+                logger.info("Will delete following indices :{}", indices);
+                DeleteIndexRequest deleteRequest = new DeleteIndexRequest(indices.toArray(new String[0]));
+                Assert.assertTrue(esClient.indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
+            }
+        } catch (Exception ex) {
+            //when there is no index
         }
-        PutIndexTemplateRequest templateRequest = new PutIndexTemplateRequest("my-template")
-                .patterns(Arrays.asList("*"));
-        templateRequest.settings(Settings.builder()
-                .put("index.number_of_shards", 5)
-                .put("index.number_of_replicas", 0)
-        );
+        PutIndexTemplateRequest templateRequest = new PutIndexTemplateRequest("all-indices")
+                .patterns(Arrays.asList("*"))
+                .settings(Settings.builder()
+                        .put("index.number_of_shards", 5)
+                        .put("index.number_of_replicas", 0)
+                );
+        String mappingJson = loadFromFile("/rawStringMappingFile.json");
+        templateRequest.mapping(mappingJson, XContentType.JSON);
         AcknowledgedResponse putTemplateResponse = esClient.indices().putTemplate(templateRequest, RequestOptions.DEFAULT);
         logger.info("putTemplateResponse is " + putTemplateResponse);
+
+    }
+
+    private String loadFromFile(String fileResource) throws IOException {
+        return readFromInputStream(getClass().getResourceAsStream(fileResource));
+    }
+
+    private String readFromInputStream(InputStream inputStream) throws IOException {
+        StringBuilder resultStringBuilder = new StringBuilder();
+        try (BufferedReader br
+                     = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                resultStringBuilder.append(line).append("\n");
+            }
+        }
+        return resultStringBuilder.toString();
     }
 
     private MockRecord getFirstRecordWithId(final String id, final List<MockRecord> records)
@@ -97,8 +124,8 @@ public class IncrementalWebSessionIT
 
 
     private final long SESSION_TIMEOUT = 1800L;
-    private final String MAPPING_COLLECTION = "openanalytics_mappings";
     private ElasticsearchClientService elasticsearchClientService;
+    private CacheService lruCache;
     /**
      * Creates a new TestRunner set with the appropriate properties.
      *
@@ -115,21 +142,21 @@ public class IncrementalWebSessionIT
         configureElasticsearchClientService(runner, container);
         configureCacheService(runner);
         runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
-        runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
-        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_PREFIX, SESSION_INDEX_PREFIX);
-        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_SUFFIX_FORMATTER, "yyyy.MM");
-        runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME, "sessions");
-        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX, "openanalytics_webevents.");
-        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_SUFFIX_FORMATTER, "yyyy.MM.dd");
-        runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME, "event");
-        runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD, "sessionId");
-        runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD, "h2kTimestamp");
+        runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
+        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_PREFIX_CONF, SESSION_INDEX_PREFIX);
+        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF, "yyyy.MM");
+        runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME_CONF, "sessions");
+        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX_CONF, EVENT_INDEX_PREFIX);
+        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF, "yyyy.MM.dd");
+        runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, "event");
+        runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD_CONF, "sessionId");
+        runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD_CONF, "h2kTimestamp");
         runner.setProperty(IncrementalWebSession.VISITED_PAGE_FIELD, "VISITED_PAGE");
         runner.setProperty(IncrementalWebSession.USER_ID_FIELD, "Userid");
-        runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT, String.valueOf(SESSION_TIMEOUT));
+        runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT));
         runner.setProperty(IncrementalWebSession.FIELDS_TO_RETURN, FIELDS_TO_RETURN);
         this.elasticsearchClientService = PluginProxy.unwrap(runner.getProcessContext()
-                .getPropertyValue(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
+                .getPropertyValue(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF).asControllerService());
         return runner;
     }
 
@@ -140,6 +167,7 @@ public class IncrementalWebSessionIT
                 LRUKeyValueCacheService.CACHE_SIZE, "1000");
         runner.assertValid(cacheService);
         runner.enableControllerService(cacheService);
+        this.lruCache = cacheService;
     }
 
     private void configureElasticsearchClientService(final TestRunner runner,
@@ -248,9 +276,7 @@ public class IncrementalWebSessionIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
         //saves sessions
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session1);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session2);
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(Arrays.asList(session1, session2));
         //second run
         final long time8 = 1601882662402L;
         final long time9 = 1601882676592L;
@@ -294,6 +320,24 @@ public class IncrementalWebSessionIT
                 .sessionDuration(14L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
+    }
+
+    private void injectSessions(List<MockRecord> sessions) {
+        final String sessionType = "sessions";
+        sessions.forEach(session -> {
+            String sessionIndex = toSessionIndexName(session.getField(WebEvent.TIMESTAMP).asLong());
+            this.elasticsearchClientService.bulkPut( sessionIndex + "," + sessionType, session);
+        });
+        this.elasticsearchClientService.bulkFlush();
+        try {
+            Thread.sleep(2000L);
+            String[] indicesToWaitFor = sessions.stream()
+                    .map(session -> toSessionIndexName(session.getField(WebEvent.TIMESTAMP).asLong()))
+                    .toArray(String[]::new);
+            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -353,12 +397,7 @@ public class IncrementalWebSessionIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session1);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session2);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session3);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session4);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session5);
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
         //second run
         final long time6 = time5 + 24L * 60L * 60L * 1000L;
         final long time7 = time6 + 1000L;
@@ -403,9 +442,7 @@ public class IncrementalWebSessionIT
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
         //saves sessions
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session5);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session6);
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(Arrays.asList(session5, session6));
         //third run
         final long time9 = time8 + 1000L;
         final long time10 = time9 + 1000L;
@@ -493,18 +530,13 @@ public class IncrementalWebSessionIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session1);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session2);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session3);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session4);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session5);
-        this.elasticsearchClientService.bulkFlush();
-        Thread.sleep(1000L);
+        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
         SearchResponse rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits());
+        assertEquals(5, rsp.getHits().getTotalHits().value);
         //rewind batch1
         times = Arrays.asList(time1, time2);
         events = createEvents(url, session, user, times);
+        resetCache(testRunner);
         testRunner.clearQueues();
         testRunner.enqueue(events);
         testRunner.run();
@@ -542,12 +574,10 @@ public class IncrementalWebSessionIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
         //rewind batch 2
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session1);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session2);
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(Arrays.asList(session1, session2));
         Thread.sleep(1000L);
         rsp = getAllSessions(esclient);
-        assertEquals(2, rsp.getHits().getTotalHits());
+        assertEquals(2, rsp.getHits().getTotalHits().value);
         //third run
         //rewind
         times = Arrays.asList(time3, time4, time5);
@@ -605,12 +635,17 @@ public class IncrementalWebSessionIT
                 .sessionInactivityDuration(SESSION_TIMEOUT);
         Thread.sleep(1000L);
         rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits());
+        assertEquals(5, rsp.getHits().getTotalHits().value);
+    }
+
+    public void resetCache(TestRunner testRunner) {
+        testRunner.disableControllerService(lruCache);
+        testRunner.enableControllerService(lruCache);
     }
 
     public SearchResponse getAllSessions(RestHighLevelClient esclient) throws IOException {
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX_PREFIX, 100000L);
-        SearchRequest searchRequest = new SearchRequest(SESSION_INDEX_PREFIX);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX_PREFIX + "*", 100000L);
+        SearchRequest searchRequest = new SearchRequest(SESSION_INDEX_PREFIX + "*");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         searchRequest.source(searchSourceBuilder);
@@ -674,15 +709,10 @@ public class IncrementalWebSessionIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session1);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session2);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session3);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session4);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session5);
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
         Thread.sleep(1000L);
         SearchResponse rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits());
+        assertEquals(5, rsp.getHits().getTotalHits().value);
         //rewind from time3
         times = Arrays.asList(time3, time4, time5);
         events = createEvents(url, session, user, times);
@@ -690,13 +720,10 @@ public class IncrementalWebSessionIT
         testRunner.enqueue(events);
         testRunner.run();
         List<MockRecord> outputSessions = testRunner.getOutputRecords();
-        outputSessions.forEach(s -> {
-            this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", s);
-        });
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(outputSessions);
         Thread.sleep(1000L);
         rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits());
+        assertEquals(5, rsp.getHits().getTotalHits().value);
     }
 
     @Test
@@ -756,15 +783,10 @@ public class IncrementalWebSessionIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session1);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session2);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session3);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session4);
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session5);
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
         Thread.sleep(1000L);
         SearchResponse rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits());
+        assertEquals(5, rsp.getHits().getTotalHits().value);
         //rewind from time3 but fail during regestering session so regestering only session 3
         times = Arrays.asList(time3, time4, time5);
         events = createEvents(url, session, user, times);
@@ -773,11 +795,10 @@ public class IncrementalWebSessionIT
         testRunner.run();
         testRunner.assertOutputRecordsCount(3);
         session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-        this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", session3);
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(Arrays.asList(session3));
         Thread.sleep(1000L);
         rsp = getAllSessions(esclient);
-        assertEquals(3, rsp.getHits().getTotalHits());
+        assertEquals(3, rsp.getHits().getTotalHits().value);
         //restart from time3 because offset was not commited
         times = Arrays.asList(time3, time4, time5);
         events = createEvents(url, session, user, times);
@@ -786,22 +807,33 @@ public class IncrementalWebSessionIT
         testRunner.run();
         testRunner.assertOutputRecordsCount(3);
         List<MockRecord> outputSessions = testRunner.getOutputRecords();
-        outputSessions.forEach(s -> {
-            this.elasticsearchClientService.bulkPut(SESSION_INDEX_PREFIX + ",sessions", s);
-        });
-        this.elasticsearchClientService.bulkFlush();
+        injectSessions(outputSessions);
         Thread.sleep(1000L);
         rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits());
+        assertEquals(5, rsp.getHits().getTotalHits().value);
     }
 
-    private int eventCount = 0;
     @NotNull
     public List<Record> createEvents(String url, String session, String user, List<Long> times) {
         List<Record> events = new ArrayList<>();
         for (Long time : times) {
+            String id = "event-" + time + "-" + session;
             events.add(new WebEvent(eventCount++, session, user, time, url));
         }
         return events;
+    }
+
+    private static SimpleDateFormat SESSION_SUFFIX_FORMATTER = new SimpleDateFormat("yyyy.MM");
+    /**
+     * Returns the name of the event index corresponding to the specified date such as
+     * ${session-index-name}${session-suffix}.
+     * Eg. openanalytics-webevents.2018.01.31
+     *
+     * @param epochMilli the milli timestamp epoc of the event of the session.
+     * @return the name of the session index corresponding to the specified timestamp.
+     */
+    private String toSessionIndexName(long epochMilli) {
+        Date date = new java.util.Date(epochMilli);
+        return SESSION_INDEX_PREFIX + SESSION_SUFFIX_FORMATTER.format(date);
     }
 }

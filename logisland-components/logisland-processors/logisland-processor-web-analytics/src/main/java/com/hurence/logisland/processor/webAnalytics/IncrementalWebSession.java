@@ -101,7 +101,7 @@ public class IncrementalWebSession
     public static final String OUTPUT_RECORD_TYPE = "consolidate-session";
 
     //Session Elasticsearch indices
-    public static final String PROP_ES_SESSION_INDEX_PREFIX = "es.event.index.prefix";
+    public static final String PROP_ES_SESSION_INDEX_PREFIX = "es.session.index.prefix";
     public static final String PROP_ES_SESSION_INDEX_SUFFIX_FORMATTER = "es.session.index.suffix.date";
     public static final String PROP_ES_SESSION_TYPE_NAME = "es.session.type.name";
     //Event Elasticsearch indices
@@ -115,7 +115,7 @@ public class IncrementalWebSession
     public static final String _FIRST_EVENT_EPOCH_SECONDS_FIELD = "firstEventEpochSeconds";
     public static final String _LAST_EVENT_EPOCH_SECONDS_FIELD = "lastEventEpochSeconds";
 
-    public static final PropertyDescriptor ELASTICSEARCH_CLIENT_SERVICE =
+    public static final PropertyDescriptor ELASTICSEARCH_CLIENT_SERVICE_CONF =
             new PropertyDescriptor.Builder()
                     .name("elasticsearch.client.service")
                     .description("The instance of the Controller Service to use for accessing Elasticsearch.")
@@ -123,7 +123,7 @@ public class IncrementalWebSession
                     .identifiesControllerService(ElasticsearchClientService.class)
                     .build();
 
-    public static final PropertyDescriptor DEBUG =
+    public static final PropertyDescriptor DEBUG_CONF =
             new PropertyDescriptor.Builder()
                     .name("debug")
                     .description("Enable debug. If enabled, debug information are logged.")
@@ -132,7 +132,7 @@ public class IncrementalWebSession
                     .defaultValue("false")
                     .build();
 
-    public static final PropertyDescriptor ES_SESSION_INDEX_PREFIX =
+    public static final PropertyDescriptor ES_SESSION_INDEX_PREFIX_CONF =
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_SESSION_INDEX_PREFIX)
                     .description("Prefix of the indices containing the web session documents.")
@@ -140,7 +140,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor ES_SESSION_INDEX_SUFFIX_FORMATTER =//TODO P2 date validator SimpleDateFormat
+    public static final PropertyDescriptor ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF =//TODO P2 date validator SimpleDateFormat
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_SESSION_INDEX_SUFFIX_FORMATTER)
                     .description("suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].")
@@ -148,7 +148,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor ES_SESSION_TYPE_NAME =
+    public static final PropertyDescriptor ES_SESSION_TYPE_NAME_CONF =
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_SESSION_TYPE_NAME)
                     .description("Name of the ES type of web session documents.")
@@ -156,7 +156,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor SESSION_INACTIVITY_TIMEOUT =
+    public static final PropertyDescriptor SESSION_INACTIVITY_TIMEOUT_CONF =
             new PropertyDescriptor.Builder()
                     .name("session.timeout")
                     .description("session timeout in sec")
@@ -165,7 +165,7 @@ public class IncrementalWebSession
                     .defaultValue("1800")
                     .build();
 
-    public static final PropertyDescriptor SESSION_ID_FIELD =
+    public static final PropertyDescriptor SESSION_ID_FIELD_CONF =
             new PropertyDescriptor.Builder()
                     .name("sessionid.field")
                     .description("the name of the field containing the session id => will override default value if set")
@@ -174,7 +174,7 @@ public class IncrementalWebSession
                     .defaultValue("sessionId")
                     .build();
 
-    public static final PropertyDescriptor ES_EVENT_INDEX_PREFIX =
+    public static final PropertyDescriptor ES_EVENT_INDEX_PREFIX_CONF =
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_EVENT_INDEX_PREFIX)
                     .description("Prefix of the index containing the web event documents.")
@@ -182,7 +182,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor ES_EVENT_INDEX_SUFFIX_FORMATTER =//TODO P2 date validator DateTimeFormatter
+    public static final PropertyDescriptor ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF =//TODO P2 date validator DateTimeFormatter
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_EVENT_INDEX_SUFFIX_FORMATTER)
                     .description("suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].")
@@ -190,7 +190,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor ES_EVENT_TYPE_NAME =
+    public static final PropertyDescriptor ES_EVENT_TYPE_NAME_CONF =
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_EVENT_TYPE_NAME)
                     .description("Name of the ES type of web event documents.")
@@ -198,7 +198,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor TIMESTAMP_FIELD =
+    public static final PropertyDescriptor TIMESTAMP_FIELD_CONF =
             new PropertyDescriptor.Builder()
                     .name("timestamp.field")
                     .description("the name of the field containing the timestamp => will override default value if set")
@@ -359,7 +359,6 @@ public class IncrementalWebSession
     protected static final String PROP_SOURCE_OF_TRAFFIC_SUFFIX = "source_of_traffic.suffix";
     protected static final String SOURCE_OF_TRAFFIC_SUFFIX_NAME = "source_of_traffic";
     public static final String DIRECT_TRAFFIC = "direct";
-    public static final String websessionsIndexPrefix = "new_openanalytics_websessions-";//TODO P2 put this as parameter
 
     public final String FLAT_SEPARATOR = "_";
     public static final PropertyDescriptor SOURCE_OF_TRAFFIC_PREFIX_FIELD =
@@ -376,15 +375,15 @@ public class IncrementalWebSession
      */
     private final static List<PropertyDescriptor> SUPPORTED_PROPERTY_DESCRIPTORS =
             Collections.unmodifiableList(Arrays.asList(
-                    DEBUG,
-                    ES_SESSION_INDEX_PREFIX,
-                    ES_SESSION_INDEX_SUFFIX_FORMATTER,
-                    ES_SESSION_TYPE_NAME,
-                    ES_EVENT_INDEX_PREFIX,
-                    ES_EVENT_INDEX_SUFFIX_FORMATTER,
-                    ES_EVENT_TYPE_NAME,
-                    SESSION_ID_FIELD,
-                    TIMESTAMP_FIELD,
+                    DEBUG_CONF,
+                    ES_SESSION_INDEX_PREFIX_CONF,
+                    ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF,
+                    ES_SESSION_TYPE_NAME_CONF,
+                    ES_EVENT_INDEX_PREFIX_CONF,
+                    ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF,
+                    ES_EVENT_TYPE_NAME_CONF,
+                    SESSION_ID_FIELD_CONF,
+                    TIMESTAMP_FIELD_CONF,
                     VISITED_PAGE_FIELD,
                     USER_ID_FIELD,
                     FIELDS_TO_RETURN,
@@ -393,7 +392,7 @@ public class IncrementalWebSession
                     IS_SESSION_ACTIVE_FIELD,
                     SESSION_DURATION_FIELD,
                     SESSION_INACTIVITY_DURATION_FIELD,
-                    SESSION_INACTIVITY_TIMEOUT,
+                    SESSION_INACTIVITY_TIMEOUT_CONF,
                     EVENTS_COUNTER_FIELD,
                     FIRST_EVENT_DATETIME_FIELD,
                     LAST_EVENT_DATETIME_FIELD,
@@ -401,7 +400,7 @@ public class IncrementalWebSession
                     TRANSACTION_IDS,
                     SOURCE_OF_TRAFFIC_PREFIX_FIELD,
                     // Service
-                    ELASTICSEARCH_CLIENT_SERVICE,
+                    ELASTICSEARCH_CLIENT_SERVICE_CONF,
                     CONFIG_CACHE_SERVICE
             ));
 
@@ -453,7 +452,7 @@ public class IncrementalWebSession
     public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
-        this.elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE)
+        this.elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE_CONF)
                 .asControllerService());
         if (elasticsearchClientService == null)
         {
@@ -463,9 +462,9 @@ public class IncrementalWebSession
         if (cacheService == null) {
             getLogger().error("Cache service is not initialized!");
         }
-        this._SESSION_INACTIVITY_TIMEOUT = context.getPropertyValue(SESSION_INACTIVITY_TIMEOUT).asLong();
-        this._SESSION_ID_FIELD = context.getPropertyValue(SESSION_ID_FIELD).asString();
-        this._TIMESTAMP_FIELD = context.getPropertyValue(TIMESTAMP_FIELD).asString();
+        this._SESSION_INACTIVITY_TIMEOUT = context.getPropertyValue(SESSION_INACTIVITY_TIMEOUT_CONF).asLong();
+        this._SESSION_ID_FIELD = context.getPropertyValue(SESSION_ID_FIELD_CONF).asString();
+        this._TIMESTAMP_FIELD = context.getPropertyValue(TIMESTAMP_FIELD_CONF).asString();
         this._VISITED_PAGE_FIELD = context.getPropertyValue(VISITED_PAGE_FIELD).asString();
 
         String fieldsToReturn = context.getPropertyValue(FIELDS_TO_RETURN).asString();
@@ -497,28 +496,28 @@ public class IncrementalWebSession
         this._SOT_KEYWORD_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_KEYWORD;
 
         //Sessions indices
-        this._ES_SESSION_INDEX_PREFIX = context.getPropertyValue(ES_SESSION_INDEX_PREFIX).asString();
-        Objects.requireNonNull(this._ES_SESSION_INDEX_PREFIX, "Property required: " + ES_SESSION_INDEX_PREFIX);
+        this._ES_SESSION_INDEX_PREFIX = context.getPropertyValue(ES_SESSION_INDEX_PREFIX_CONF).asString();
+        Objects.requireNonNull(this._ES_SESSION_INDEX_PREFIX, "Property required: " + ES_SESSION_INDEX_PREFIX_CONF);
         //TODO try to use same way to convert dates... But it is the deployed way in a prod environment so
         // think this a lot before changing it
         this._ES_SESSION_INDEX_SUFFIX_FORMATTER = new java.text.SimpleDateFormat(
-                context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER).asString()
+                context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF).asString()
         );
-        Objects.requireNonNull(this._ES_SESSION_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_SESSION_INDEX_SUFFIX_FORMATTER);
-        this._ES_SESSION_TYPE_NAME = context.getPropertyValue(ES_SESSION_TYPE_NAME).asString();
-        Objects.requireNonNull(this._ES_SESSION_TYPE_NAME, "Property required: " + ES_SESSION_TYPE_NAME);
+        Objects.requireNonNull(this._ES_SESSION_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF);
+        this._ES_SESSION_TYPE_NAME = context.getPropertyValue(ES_SESSION_TYPE_NAME_CONF).asString();
+        Objects.requireNonNull(this._ES_SESSION_TYPE_NAME, "Property required: " + ES_SESSION_TYPE_NAME_CONF);
         //Events indices
-        this._ES_EVENT_INDEX_PREFIX = context.getPropertyValue(ES_EVENT_INDEX_PREFIX).asString();
-        Objects.requireNonNull(this._ES_EVENT_INDEX_PREFIX, "Property required: " + ES_EVENT_INDEX_PREFIX);
+        this._ES_EVENT_INDEX_PREFIX = context.getPropertyValue(ES_EVENT_INDEX_PREFIX_CONF).asString();
+        Objects.requireNonNull(this._ES_EVENT_INDEX_PREFIX, "Property required: " + ES_EVENT_INDEX_PREFIX_CONF);
         //TODO try to use same way to convert dates... But it is the deployed way in a prod environment so
         // think this a lot before changing it
         this._ES_EVENT_INDEX_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
-                context.getPropertyValue(ES_EVENT_INDEX_SUFFIX_FORMATTER).asString(),
+                context.getPropertyValue(ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF).asString(),
                 Locale.ENGLISH
         );
-        Objects.requireNonNull(this._ES_EVENT_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_EVENT_INDEX_SUFFIX_FORMATTER);
-        this._ES_EVENT_TYPE_NAME = context.getPropertyValue(ES_EVENT_TYPE_NAME).asString();
-        Objects.requireNonNull(this._ES_EVENT_TYPE_NAME, "Property required: " + ES_EVENT_TYPE_NAME);
+        Objects.requireNonNull(this._ES_EVENT_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF);
+        this._ES_EVENT_TYPE_NAME = context.getPropertyValue(ES_EVENT_TYPE_NAME_CONF).asString();
+        Objects.requireNonNull(this._ES_EVENT_TYPE_NAME, "Property required: " + ES_EVENT_TYPE_NAME_CONF);
 
         this.checker = Arrays.asList(
                 // Day overlap
@@ -590,13 +589,26 @@ public class IncrementalWebSession
         Collection<Events> allEvents = handleRewindAndGetAllNeededEvents(records);
         final Collection<SessionsCalculator> calculatedSessions = this.processEvents(allEvents);
         saveEventsToEs(allEvents);
-        final Collection<Record> flattenedSessions = calculatedSessions.stream()
+        //update cache
+        calculatedSessions
+                .forEach(sessionsCalculator -> {
+                    String divolteSession = sessionsCalculator.getOriginalSessionId();
+                    WebSession lastSession = sessionsCalculator.getSessions().stream()
+                            .filter(session -> session.getSessionId().equals(sessionsCalculator.getLastSessionId()))
+                            .findFirst().get();
+                    cacheService.set(divolteSession, lastSession);
+                });
+
+        final Collection<WebSession> flattenedSessions = calculatedSessions.stream()
                 .flatMap(sessionsCalculator -> sessionsCalculator.getSessions().stream())
                 .collect(Collectors.toList());
         debug("Processing done. Outcoming records size=%d ", flattenedSessions.size());
-        //TODO P2 update cache at end with new last sub sessions !
-        return flattenedSessions;
+
+        return flattenedSessions
+                .stream().map(WebSession::getRecord)
+                .collect(Collectors.toList());
     }
+
 
     private void saveEventsToEs(Collection<Events> allEvents) {
         allEvents.stream()
@@ -789,7 +801,7 @@ public class IncrementalWebSession
             String divolteSession = events.getSessionId();
             long epochSecondFirstEvent = events.first().getEpochTimeStampSeconds();
             QueryRecord query = new QueryRecord()
-                    .addCollection(websessionsIndexPrefix + "*")
+                    .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
                     .addType(_ES_SESSION_TYPE_NAME)
                     .addWildCardQuery(
                             new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divolteSession + "*")
@@ -927,7 +939,7 @@ public class IncrementalWebSession
      */
     private String toSessionIndexName(long epochMilli) {
         Date date = new java.util.Date(epochMilli);
-        return websessionsIndexPrefix + _ES_SESSION_INDEX_SUFFIX_FORMATTER.format(date);
+        return _ES_SESSION_INDEX_PREFIX + _ES_SESSION_INDEX_SUFFIX_FORMATTER.format(date);
     }
 
     /**
@@ -987,16 +999,18 @@ public class IncrementalWebSession
      * @param divolteSessions
      * @return
      */
+    //TODO P3 (can we avoid two query of this method ?)
     private Map<String/*divolteSession*/, Optional<WebSession>/*lastHurenceSession*/> getMapping(final Collection<String> divolteSessions) {
         final Map<String, Optional<WebSession>> mappingToReturn = new HashMap<>();
         final List<QueryRecord> sessionsRequests = new ArrayList<>();
         divolteSessions.forEach(divoltSession -> {
             WebSession cachedSession = cacheService.get(divoltSession);
             if (cachedSession != null) {
+                //TODO reset cache when rewind detected ? AFter delete by query not same mapping
                 mappingToReturn.put(divoltSession, Optional.of(cachedSession));
             } else {
                 QueryRecord request = new QueryRecord()
-                        .addCollection(websessionsIndexPrefix + "*")//TODO P2 put this on root, I think we should create a MultiQueryRecord instead...
+                        .addCollection(_ES_SESSION_INDEX_PREFIX + "*")//TODO P2 put this on root, I think we should create a MultiQueryRecord instead...
                         .addType(_ES_SESSION_TYPE_NAME)
                         .addWildCardQuery(new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divoltSession + "*"))
                         .addSortQuery(new SortQueryRecord(_TIMESTAMP_FIELD, SortOrder.DESC))
@@ -1004,7 +1018,9 @@ public class IncrementalWebSession
                 sessionsRequests.add(request);
             }
         });
+        if (sessionsRequests.isEmpty()) return mappingToReturn;
 
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
         MultiQueryResponseRecord multiQueryResponses = this.elasticsearchClientService.multiQueryGet(
                 new MultiQueryRecord(sessionsRequests)
         );

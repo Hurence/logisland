@@ -411,6 +411,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     }
 
     public QueryResponseRecord buildQueryResponseRecord(SearchResponse searchRsp) {
+        Objects.requireNonNull(searchRsp);
         if (getLogger().isTraceEnabled()) {
             getLogger().trace("response was {}", new Object[]{searchRsp});
         }
@@ -608,7 +609,13 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
                 MultiSearchResponse.Item[] items = multiSearchResponse.getResponses();
                 for (MultiSearchResponse.Item item : items) {
                     SearchResponse searchResponse = item.getResponse();
-                    searchResponses.add(buildQueryResponseRecord(searchResponse));
+                    if (searchResponse != null) {
+                        searchResponses.add(buildQueryResponseRecord(searchResponse));
+                    } else {
+                        if (item.isFailure()) {
+                            getLogger().error("a search request failed because :\n'{}'", new Object[]{item.getFailureMessage()});
+                        }
+                    }
                 }
             }
 

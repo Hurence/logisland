@@ -149,6 +149,11 @@ public class SessionsCalculator {
         }
     }
 
+    public static String extractOrignalSessionsId(String sessionId) {
+        final String[] splittedSessionId = sessionId.split(IncrementalWebSession.EXTRA_SESSION_DELIMITER);
+        return splittedSessionId[0];
+    }
+
 
     /**
      * Returns {@code true} if the specified web-event checked against the provided web-session is valid;
@@ -173,15 +178,14 @@ public class SessionsCalculator {
         return result;
     }
 
+
     /**
-     * Returns the processed sessions as records.
+     * Returns the processed web sessions.
      *
-     * @return the processed sessions as records.
+     * @return the processed web sessions.
      */
-    public Collection<Record> getSessions() {
-        return processedSessions.stream()
-                .map(item -> item.record)
-                .collect(Collectors.toSet());
+    public Collection<WebSession> getSessions() {
+        return processedSessions;
     }
 
     /**

@@ -8,11 +8,11 @@ import com.hurence.logisland.record.StandardRecord;
  */
 public class WebEvent extends StandardRecord
 {
-    private static final String SESSION_ID = "sessionId";
-    private static final String TIMESTAMP = "h2kTimestamp";
-    private static final String VISITED_PAGE = "VISITED_PAGE";
-    private static final String CURRENT_CART = "currentCart";
-    private static final String USER_ID = "Userid";
+    public static final String SESSION_ID = "sessionId";
+    public static final String TIMESTAMP = "h2kTimestamp";
+    public static final String VISITED_PAGE = "VISITED_PAGE";
+    public static final String CURRENT_CART = "currentCart";
+    public static final String USER_ID = "Userid";
     /**
      * Creates a new instance of this class with the provided parameter.
      *

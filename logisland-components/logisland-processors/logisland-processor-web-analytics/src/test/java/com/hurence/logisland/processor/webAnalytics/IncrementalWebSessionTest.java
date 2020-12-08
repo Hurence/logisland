@@ -25,7 +25,6 @@ import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.service.cache.CSVKeyValueCacheService;
 import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
 import com.hurence.logisland.service.datastore.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
@@ -388,7 +387,7 @@ public class IncrementalWebSessionTest
         int eventCount = 0;
 
         TestRunner testRunner = newTestRunner();
-        testRunner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT, "1800");
+        testRunner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, "1800");
         testRunner.assertValid();
         List<Record> events = new ArrayList<>(3);
         for(final Object line: data2)
@@ -722,7 +721,7 @@ public class IncrementalWebSessionTest
                          URL2));
 
         TestRunner testRunner = newTestRunner();
-        testRunner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT, String.valueOf(SESSION_TIMEOUT));
+        testRunner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT));
         testRunner.assertValid();
         testRunner.enqueue(events);
 
@@ -1129,14 +1128,14 @@ public class IncrementalWebSessionTest
         runner.setProperty(SetSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
 
         //TODO add new props if fixing those tests
-        runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME, SESSION_TYPE);
-        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX, EVENT_INDEX);
-        runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME, EVENT_TYPE);
-        runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD, SESSION_ID);
-        runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD, TIMESTAMP);
+        runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME_CONF, SESSION_TYPE);
+        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX_CONF, EVENT_INDEX);
+        runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, EVENT_TYPE);
+        runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD_CONF, SESSION_ID);
+        runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD_CONF, TIMESTAMP);
         runner.setProperty(IncrementalWebSession.VISITED_PAGE_FIELD, VISITED_PAGE);
         runner.setProperty(IncrementalWebSession.USER_ID_FIELD, USER_ID);
-        runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT, String.valueOf(SESSION_TIMEOUT));
+        runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT));
         runner.setProperty(IncrementalWebSession.FIELDS_TO_RETURN, FIELDS_TO_RETURN);
         return runner;
     }

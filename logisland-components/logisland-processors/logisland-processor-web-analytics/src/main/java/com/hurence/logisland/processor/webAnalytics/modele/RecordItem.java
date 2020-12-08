@@ -75,4 +75,8 @@ public class RecordItem {
                 .append(utmTerm == null ? "" : utmTerm).append(':')
                 .append(utmContent == null ? "" : utmContent).toString();
     }
+
+    public Record getRecord() {
+        return record;
+    }
 }
