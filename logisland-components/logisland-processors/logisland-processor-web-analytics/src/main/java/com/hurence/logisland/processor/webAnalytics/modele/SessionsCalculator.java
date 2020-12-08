@@ -26,7 +26,7 @@ public class SessionsCalculator {
     /**
      *
      * @param processor
-     * @param originalSessionId3
+     * @param originalSessionId
      * @param lastSessionBeforeProcessing
      */
     public SessionsCalculator(IncrementalWebSession processor,

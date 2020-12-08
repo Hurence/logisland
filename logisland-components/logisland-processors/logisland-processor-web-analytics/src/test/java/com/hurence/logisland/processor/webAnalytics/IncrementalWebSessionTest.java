@@ -25,6 +25,8 @@ import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.service.cache.CSVKeyValueCacheService;
+import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
 import com.hurence.logisland.service.datastore.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.util.runner.MockRecord;
@@ -302,7 +304,7 @@ public class IncrementalWebSessionTest
     private static final String FIELDS_TO_RETURN = Stream.of(PARTY_ID, B2BUNIT).collect(Collectors.joining(","));
 
     private final ESC elasticsearchClient = new ESC();//MockElasticSearchClientService
-
+    private final LRUKeyValueCacheService lruCacheService = new LRUKeyValueCacheService();
 
     private MockRecord getFirstRecordWithId(final String id, final List<MockRecord> records)
     {
@@ -1115,6 +1117,13 @@ public class IncrementalWebSessionTest
     {
         final TestRunner runner = TestRunners.newTestRunner(new IncrementalWebSession());
 
+
+        runner.addControllerService("lruCache", lruCacheService);
+        runner.setProperty(lruCacheService, LRUKeyValueCacheService.CACHE_SIZE, "1000");
+        runner.enableControllerService(lruCacheService);
+        runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
+
+
         runner.addControllerService("elasticsearchClient", elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
         runner.setProperty(SetSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
@@ -1124,13 +1133,11 @@ public class IncrementalWebSessionTest
         runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX, EVENT_INDEX);
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME, EVENT_TYPE);
         runner.setProperty(IncrementalWebSession.ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, MAPPING_INDEX);
-
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD, SESSION_ID);
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD, TIMESTAMP);
         runner.setProperty(IncrementalWebSession.VISITED_PAGE_FIELD, VISITED_PAGE);
         runner.setProperty(IncrementalWebSession.USER_ID_FIELD, USER_ID);
         runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT, String.valueOf(SESSION_TIMEOUT));
-
         runner.setProperty(IncrementalWebSession.FIELDS_TO_RETURN, FIELDS_TO_RETURN);
         return runner;
     }
@@ -1299,6 +1306,8 @@ public class IncrementalWebSessionTest
 
         @Override
         public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException {
+            //TODO can we do a mock ? Do we want to do a mock ? Hard to simulate...
+            //TODO maybe we should transform this into IT test with a real Elasticsearch service and docker.
             return null;
         }
 

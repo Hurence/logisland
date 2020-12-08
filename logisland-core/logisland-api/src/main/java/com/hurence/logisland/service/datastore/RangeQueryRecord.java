@@ -27,15 +27,26 @@ public class RangeQueryRecord {
         return from;
     }
 
+    /**
+     * set min
+     * @param from
+     * @return
+     */
     public RangeQueryRecord setFrom(Object from) {
         this.from = from;
         return this;
     }
 
+
     public Object getTo() {
         return to;
     }
 
+    /**
+     * set max
+     * @param to
+     * @return
+     */
     public RangeQueryRecord setTo(Object to) {
         this.to = to;
         return this;
@@ -45,6 +56,11 @@ public class RangeQueryRecord {
         return includeLower;
     }
 
+    /**
+     * include min ?
+     * @param includeLower
+     * @return
+     */
     public RangeQueryRecord setIncludeLower(boolean includeLower) {
         this.includeLower = includeLower;
         return this;
@@ -54,6 +70,11 @@ public class RangeQueryRecord {
         return includeUpper;
     }
 
+    /**
+     * include max ?
+     * @param includeUpper
+     * @return
+     */
     public RangeQueryRecord setIncludeUpper(boolean includeUpper) {
         this.includeUpper = includeUpper;
         return this;

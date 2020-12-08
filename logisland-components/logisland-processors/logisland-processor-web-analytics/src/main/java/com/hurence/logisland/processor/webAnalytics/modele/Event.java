@@ -24,11 +24,15 @@ public class Event
     public Event(final Record record, IncrementalWebSession processor) {
         super(record);
         this.processor = processor;
-        this.timestamp = this.fromEpoch(getTimeStampAsLong());
+        this.timestamp = this.fromEpoch(getEpochTimeStampMilli());
     }
 
-    public long getTimeStampAsLong() {
+    public long getEpochTimeStampMilli() {
         return record.getField(processor._TIMESTAMP_FIELD).asLong();
+    }
+
+    public long getEpochTimeStampSeconds() {
+        return record.getField(processor._TIMESTAMP_FIELD).asLong() / 1000L;
     }
 
     @Override

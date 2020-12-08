@@ -44,6 +44,7 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.MultiSearchRequest;
+import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
@@ -66,8 +67,13 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.ReindexRequest;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -78,6 +84,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 @Tags({ "elasticsearch", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although " +
@@ -373,6 +380,10 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         DeleteByQueryRequest request = new DeleteByQueryRequest(queryRecord.getCollections().toArray(indices));
         QueryBuilder builder = toQueryBuilder(queryRecord);
         request.setQuery(builder);
+        if (queryRecord.getSize() >= 0) {
+            request.setSize(queryRecord.getSize());
+        }
+        //TODO sort
         request.setRefresh(queryRecord.getRefresh());
         try {
             BulkByScrollResponse bulkResponse =
@@ -389,31 +400,72 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
-        String[] indices = new String[queryRecord.getCollections().size()];
-        SearchRequest searchRequest = new SearchRequest(indices);
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        QueryBuilder queryBuilder = toQueryBuilder(queryRecord);
-        searchSourceBuilder.query(queryBuilder);
-        searchSourceBuilder.size(Integer.MAX_VALUE);
-        searchRequest.source(searchSourceBuilder);
-        SearchRequest request = new SearchRequest(queryRecord.getCollections().toArray(indices));
+        final SearchRequest searchRequest = buildSearchRequest(queryRecord);
         try {
-            SearchResponse searchRsp = esClient.search(request, RequestOptions.DEFAULT);
-            getLogger().info("Number of documents returned is {}, Total number of documents that matched is {}.",
-                    new Object[]{
-                            searchRsp.getHits().getHits().length,
-                            searchRsp.getHits().getTotalHits().value
-            });
-            if (getLogger().isTraceEnabled()) {
-                getLogger().trace("response was {}", new Object[]{searchRsp});
-            }
-//           TODO response have to work
-//            searchRsp.getHits().getHits().length shoulb equal to searchRsp.getHits().getTotalHits().value in some cases.
-            return null;
+            SearchResponse searchRsp = esClient.search(searchRequest, RequestOptions.DEFAULT);
+            return buildQueryResponseRecord(searchRsp);
         } catch (IOException e) {
-            getLogger().error("error while deleteByQuery", e);
+            getLogger().error("error while queryGet", e);
             throw new DatastoreClientServiceException(e);
         }
+    }
+
+    public QueryResponseRecord buildQueryResponseRecord(SearchResponse searchRsp) {
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("response was {}", new Object[]{searchRsp});
+        }
+        if (searchRsp.getHits() != null &&
+                searchRsp.getHits().getHits() != null &&
+                searchRsp.getHits().getTotalHits() != null) {
+            long totalMatched = searchRsp.getHits().getTotalHits().value;
+            long totalReturned = searchRsp.getHits().getHits().length;
+            getLogger().info("Number of documents returned is {}, Total number of documents that matched is {}.",
+                    new Object[]{
+                            totalReturned,
+                            totalMatched
+                    });
+            List<ResponseRecord> docs = new ArrayList<>();
+            for (SearchHit hit : searchRsp.getHits().getHits()) {
+                Map<String,Object> responseMap = hit.getSourceAsMap();
+                Map<String,String> retrievedFields = new HashMap<>();
+                responseMap.forEach((k,v) -> {if (v!=null) retrievedFields.put(k, v.toString());});//TODO why putting this as string ?
+                docs.add(new ResponseRecord(hit.getIndex(), hit.getType(), hit.getId(), retrievedFields));
+            }
+            return new QueryResponseRecord(totalMatched, docs);
+        }
+        return new QueryResponseRecord(-1, Collections.emptyList());
+    }
+
+    public SearchRequest buildSearchRequest(QueryRecord queryRecord) {
+        //build SearchSourceBuilder
+        final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        final QueryBuilder queryBuilder = toQueryBuilder(queryRecord);
+        searchSourceBuilder.query(queryBuilder);
+        if (queryRecord.getSize() >= 0) {
+            searchSourceBuilder.size(queryRecord.getSize());
+        }
+        List<SortBuilder<?>> sortBuilders = toSortBuilders(queryRecord);
+        sortBuilders.forEach(searchSourceBuilder::sort);
+        //build SearchRequest
+        String[] indices = new String[queryRecord.getCollections().size()];
+        return new SearchRequest(queryRecord.getCollections().toArray(indices), searchSourceBuilder);
+    }
+
+    private List<SortBuilder<?>> toSortBuilders(QueryRecord queryRecord) {
+        List<SortBuilder<?>> sortBuilders = new ArrayList<>();
+        for (SortQueryRecord sortQuery : queryRecord.getSortQueries()) {
+            FieldSortBuilder sortBuilder = SortBuilders.fieldSort(sortQuery.getFieldName());
+            switch (sortQuery.getSortingOrder()) {
+                case ASC:
+                    sortBuilder = sortBuilder.order(SortOrder.ASC);
+                    break;
+                case DESC:
+                    sortBuilder = sortBuilder.order(SortOrder.DESC);
+                    break;
+            }
+            sortBuilders.add(sortBuilder);
+        }
+        return sortBuilders;
     }
 
 
@@ -430,6 +482,13 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
                                     .rangeQuery(rangeQuery.getFieldName())
                                     .from(rangeQuery.getFrom(), rangeQuery.isIncludeLower())
                                     .to(rangeQuery.getTo(), rangeQuery.isIncludeUpper())
+                    );
+        }
+        for (WildCardQueryRecord wildCardQuery : queryRecord.getWildCardQueries()) {
+            boolQuery = boolQuery
+                    .must(
+                            QueryBuilders
+                                    .wildcardQuery(wildCardQuery.getFieldName(), wildCardQuery.getFieldValue())
                     );
         }
         return boolQuery;
@@ -535,51 +594,35 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException{
+        final MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+        List<SearchRequest> searchRequests = buildSearchRequests(queryRecords);
+        searchRequests.forEach(multiSearchRequest::add);
+        try {
+            MultiSearchResponse multiSearchResponse = esClient.msearch(multiSearchRequest, RequestOptions.DEFAULT);
+            if (getLogger().isTraceEnabled()) {
+                getLogger().trace("response was {}", new Object[]{multiSearchResponse});
+            }
+            List<QueryResponseRecord> searchResponses = new ArrayList<>();
 
-        List<QueryResponseRecord> queryResponseRecords = new ArrayList<>();
-        //TODO
-//
-//        MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
-//
-//        for (MultiGetQueryRecord multiGetQueryRecord : multiGetQueryRecords)
-//        {
-//            String index = multiGetQueryRecord.getIndexName();
-//            List<String> documentIds = multiGetQueryRecord.getDocumentIds();
-//            String[] fieldsToInclude = multiGetQueryRecord.getFieldsToInclude();
-//            String[] fieldsToExclude = multiGetQueryRecord.getFieldsToExclude();
-//            if ((fieldsToInclude != null && fieldsToInclude.length > 0) || (fieldsToExclude != null && fieldsToExclude.length > 0)) {
-//                for (String documentId : documentIds) {
-//                    MultiGetRequest.Item item = new MultiGetRequest.Item(index, documentId);
-//                    item.fetchSourceContext(new FetchSourceContext(true, fieldsToInclude, fieldsToExclude));
-//                    multiSearchRequest.add(item);
-//                }
-//            } else {
-//                for (String documentId : documentIds) {
-//                    multiSearchRequest.add(index, documentId);
-//                }
-//            }
-//        }
-//
-//        MultiGetResponse multiGetItemResponses = null;
-//        try {
-//            multiGetItemResponses = esClient.mget(multiSearchRequest, RequestOptions.DEFAULT);
-//        } catch (Exception e) {
-//            getLogger().error("MultiGet query failed : {}", new Object[]{e.getMessage()});
-//        }
-//
-//        if (multiGetItemResponses != null) {
-//            for (MultiGetItemResponse itemResponse : multiGetItemResponses) {
-//                GetResponse response = itemResponse.getResponse();
-//                if (response != null && response.isExists()) {
-//                    Map<String,Object> responseMap = response.getSourceAsMap();
-//                    Map<String,String> retrievedFields = new HashMap<>();
-//                    responseMap.forEach((k,v) -> {if (v!=null) retrievedFields.put(k, v.toString());});
-//                    multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
-//                }
-//            }
-//        }
+            if (multiSearchResponse.getResponses() != null) {
+                MultiSearchResponse.Item[] items = multiSearchResponse.getResponses();
+                for (MultiSearchResponse.Item item : items) {
+                    SearchResponse searchResponse = item.getResponse();
+                    searchResponses.add(buildQueryResponseRecord(searchResponse));
+                }
+            }
 
-        return null;
+            return new MultiQueryResponseRecord(searchResponses);
+        } catch (IOException e) {
+            getLogger().error("error while queryGet", e);
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    private List<SearchRequest> buildSearchRequests(MultiQueryRecord queryRecords) {
+        return queryRecords.getQuerys().stream()
+                .map(this::buildSearchRequest)
+                .collect(Collectors.toList());
     }
 
     @Override

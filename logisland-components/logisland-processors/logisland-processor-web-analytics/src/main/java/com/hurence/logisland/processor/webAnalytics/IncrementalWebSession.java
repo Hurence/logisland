@@ -23,13 +23,17 @@ import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.webAnalytics.modele.*;
-import com.hurence.logisland.record.*;
+import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
@@ -106,8 +110,8 @@ public class IncrementalWebSession
     /**
      * Extra fields - for convenience - avoiding to parse the human readable first and last timestamps.
      */
-    public static final String _FIRST_EVENT_EPOCH_FIELD = "firstEventEpochSeconds";
-    public static final String _LAST_EVENT_EPOCH_FIELD = "lastEventEpochSeconds";
+    public static final String _FIRST_EVENT_EPOCH_SECONDS_FIELD = "firstEventEpochSeconds";
+    public static final String _LAST_EVENT_EPOCH_SECONDS_FIELD = "lastEventEpochSeconds";
 
     public static final PropertyDescriptor ELASTICSEARCH_CLIENT_SERVICE =
             new PropertyDescriptor.Builder()
@@ -345,7 +349,7 @@ public class IncrementalWebSession
     protected static final String PROP_SOURCE_OF_TRAFFIC_SUFFIX = "source_of_traffic.suffix";
     protected static final String SOURCE_OF_TRAFFIC_SUFFIX_NAME = "source_of_traffic";
     public static final String DIRECT_TRAFFIC = "direct";
-    public static final String websessionsIndexPrefix = "new_openanalytics_websessions-";//TODO put this as parameter
+    public static final String websessionsIndexPrefix = "new_openanalytics_websessions-";//TODO P2 put this as parameter
 
     public final String FLAT_SEPARATOR = "_";
     public static final PropertyDescriptor SOURCE_OF_TRAFFIC_PREFIX_FIELD =
@@ -361,35 +365,37 @@ public class IncrementalWebSession
      * The properties of this processor.
      */
     private final static List<PropertyDescriptor> SUPPORTED_PROPERTY_DESCRIPTORS =
-            Collections.unmodifiableList(Arrays.asList(DEBUG,
-                                                       ES_SESSION_INDEX_FIELD,
-                                                       ES_SESSION_TYPE_NAME,
-                                                       ES_EVENT_INDEX_PREFIX,
-                                                       ES_EVENT_TYPE_NAME,
+            Collections.unmodifiableList(Arrays.asList(
+                    DEBUG,
+                    ES_SESSION_INDEX_FIELD,
+                    ES_SESSION_TYPE_NAME,
+                    ES_EVENT_INDEX_PREFIX,
+                    ES_EVENT_TYPE_NAME,
                     ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME,
-                                                       SESSION_ID_FIELD,
-                                                       TIMESTAMP_FIELD,
-                                                       VISITED_PAGE_FIELD,
-                                                       USER_ID_FIELD,
-                                                       FIELDS_TO_RETURN,
-                                                       FIRST_VISITED_PAGE_FIELD,
-                                                       LAST_VISITED_PAGE_FIELD,
-                                                       IS_SESSION_ACTIVE_FIELD,
-                                                       SESSION_DURATION_FIELD,
-                                                       SESSION_INACTIVITY_DURATION_FIELD,
-                                                       SESSION_INACTIVITY_TIMEOUT,
-                                                       EVENTS_COUNTER_FIELD,
-                                                       FIRST_EVENT_DATETIME_FIELD,
-                                                       LAST_EVENT_DATETIME_FIELD,
-                                                       NEW_SESSION_REASON_FIELD,
-                                                       TRANSACTION_IDS,
-                                                       SOURCE_OF_TRAFFIC_PREFIX_FIELD,
-                                                       // Service
-                                                       ELASTICSEARCH_CLIENT_SERVICE));
+                    SESSION_ID_FIELD,
+                    TIMESTAMP_FIELD,
+                    VISITED_PAGE_FIELD,
+                    USER_ID_FIELD,
+                    FIELDS_TO_RETURN,
+                    FIRST_VISITED_PAGE_FIELD,
+                    LAST_VISITED_PAGE_FIELD,
+                    IS_SESSION_ACTIVE_FIELD,
+                    SESSION_DURATION_FIELD,
+                    SESSION_INACTIVITY_DURATION_FIELD,
+                    SESSION_INACTIVITY_TIMEOUT,
+                    EVENTS_COUNTER_FIELD,
+                    FIRST_EVENT_DATETIME_FIELD,
+                    LAST_EVENT_DATETIME_FIELD,
+                    NEW_SESSION_REASON_FIELD,
+                    TRANSACTION_IDS,
+                    SOURCE_OF_TRAFFIC_PREFIX_FIELD,
+                    // Service
+                    ELASTICSEARCH_CLIENT_SERVICE,
+                    CONFIG_CACHE_SERVICE
+            ));
 
     @Override
-    public List<PropertyDescriptor> getSupportedPropertyDescriptors()
-    {
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return SUPPORTED_PROPERTY_DESCRIPTORS;
     }
 
@@ -428,6 +434,7 @@ public class IncrementalWebSession
     public String _ES_EVENT_INDEX_PREFIX;
     public String _ES_EVENT_TYPE_NAME;
     public String _ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME;
+    private long maxNumberOfEventForCurrentSessionRequested = 10000L;
     public Collection<SessionCheck> checker;
 
     @Override
@@ -562,7 +569,7 @@ public class IncrementalWebSession
                 .flatMap(sessionsCalculator -> sessionsCalculator.getSessions().stream())
                 .collect(Collectors.toList());
         debug("Processing done. Outcoming records size=%d ", flattenedSessions.size());
-        //TODO update cache at end with new last sub sessions !
+        //TODO P2 update cache at end with new last sub sessions !
         return flattenedSessions;
     }
 
@@ -582,55 +589,198 @@ public class IncrementalWebSession
     }
 
     private Collection<Events> handleRewindAndGetAllNeededEvents(final Collection<Record> records) {
-        final Collection<Events> groupOfEvents = toWebEvents(records);
-        Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping = getMapping(groupOfEvents);
-        final SplittedEvents splittedEvents = getSplittedEvents(groupOfEvents, lastSessionMapping);
+        final SplittedEvents splittedEvents = SplitEvents(records);
         final Collection<Events> eventsFromPast = splittedEvents.getEventsfromPast();
         final Collection<Events> eventsInNominalMode = splittedEvents.getEventsInNominalMode();
-
-        if (!eventsFromPast.isEmpty()) {
-            deleteFuturSessions(eventsFromPast);
-            Collection<Event> eventsFromEs = getNeededEventsFromEs(eventsFromPast);//TODO
-            Map<String/*sessionId*/, List<Event>> eventsFromEsBySessionId = eventsFromEs
-                    .stream()
-                    .collect(Collectors.groupingBy(Event::getSessionId));
-            //merge those events into the lists
-            for (Events events : eventsFromPast) {
-                List<Event> eventsFromEsForSession = eventsFromEsBySessionId.get(events.getSessionId());
-                events.addAll(eventsFromEsForSession);//TODO faire un test qui verifie que les events deja dans events sont prioritaire
-            }
+        if (eventsFromPast.isEmpty()) {
+            return eventsInNominalMode;
         }
+        deleteFuturSessions(eventsFromPast);
+        Collection<Event> eventsFromEs = getNeededEventsFromEs(eventsFromPast);
+        Map<String/*sessionId*/, List<Event>> eventsFromEsBySessionId = eventsFromEs
+                .stream()
+                .collect(Collectors.groupingBy(Event::getSessionId));
+        //merge those events into the lists
+        for (Events events : eventsFromPast) {
+            List<Event> eventsFromEsForSession = eventsFromEsBySessionId.get(events.getSessionId());
+            events.addAll(eventsFromEsForSession);//TODO 2 faire un test qui verifie que les events deja dans events sont prioritaire
+        }
+
         return Stream.concat(
                 eventsFromPast.stream(),
                 eventsInNominalMode.stream()
         ).collect(Collectors.toList());
     }
 
-    private Collection<Event> getNeededEventsFromEs(Collection<Events> eventsFromPast) {
-//        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES, 60000L);
-        //            TODO get needed events for current session
-            /*
-                Pour chaque events trouver les evènements de la session en cour nécessaire.
-                Le plus simple si on a le nouvel sessionId (change tout les jours)
-                C'est de requêter tous les events de la sessionId et timestamp <= firstEventTs(input events)
-            */
-        String[] indicesToRefresh = null;
-        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToRefresh, 60000L);
-//        elasticsearchClientService.searchNumb
-//        allEvents.stream()
-//                .flatMap(Collection::stream)
-//                .forEach(event ->
-//                {
-//                    final Map<String, Object> map = toMap(event.cloneRecord());
-//
-//                    elasticsearchClientService.bulkPut(toEventIndexName(event.getTimestamp()),
-//                            _ES_EVENT_TYPE_NAME,
-//                            map,
-//                            Optional.of((String) map.get(FieldDictionary.RECORD_ID)));
-//                });
-        elasticsearchClientService.bulkFlush();
-        return null;//TODO
+    private SplittedEvents SplitEvents(Collection<Record> records) {
+        final Collection<Events> groupOfEvents = toWebEvents(records);
+        final Collection<String> inputDivolteSessions = groupOfEvents.stream()
+                .map(Events::getSessionId)
+                .collect(Collectors.toList());
+        Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping = getMapping(inputDivolteSessions);
+        final SplittedEvents splittedEvents = getSplittedEvents(groupOfEvents, lastSessionMapping);
+        return splittedEvents;
     }
+
+    /**
+     * For all Events, find current session of the first event (from ES).
+     * Then Find all events from this session that are before or at the same time than the first event in input.
+     * Return those events.
+     * @param eventsFromPast
+     * @return
+     */
+    private Collection<Event> getNeededEventsFromEs(Collection<Events> eventsFromPast) {
+
+        /*
+            Pour chaque events trouver les evènements de la session en cour nécessaire.
+            C'est de requêter tous les events de la sessionId et timestamp <= firstEventTs(input events)
+        */
+        //TODO 2 look when do we need to refresh some indices
+//        String[] indicesToRefresh = null;
+//        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToRefresh, 60000L);
+        //TODO 2 END
+        Map<String, ZonedDateTime> divoltSessionToFirstEvent = eventsFromPast.stream()
+                .collect(Collectors.toMap(
+                        Events::getSessionId,
+                        events -> events.first().getTimestamp()
+                ));
+        Map<String/*divolteSession*/, WebSession> currentSessionsOfEvents = requestCurrentSessionsToEs(eventsFromPast);
+        Collection<Event> neededEventsFromEs = requestEventsFromSessiosnToEs(
+                currentSessionsOfEvents.values(),
+                divoltSessionToFirstEvent
+        );
+        return neededEventsFromEs;
+    }
+
+
+    private Collection<Event> requestEventsFromSessiosnToEs(Collection<WebSession> currentSessionsOfEvents,
+                                                            Map<String, ZonedDateTime> divoltSessionToFirstEvent) {
+        MultiQueryResponseRecord eventsRsp = getNeededEventsFromEs(currentSessionsOfEvents, divoltSessionToFirstEvent);
+        return convertEsRToEvents(eventsRsp);
+    }
+
+
+    private Collection<Event> convertEsRToEvents(MultiQueryResponseRecord eventsRsp) {
+        final List<Event> events = new ArrayList<>();
+        eventsRsp.getResponses().forEach(rsp -> {
+            if (rsp.getTotalMatched() > maxNumberOfEventForCurrentSessionRequested) {
+                Event firstEvent = esDoc2Event(rsp.getDocs().get(0).getRetrievedFields());
+                String errorMsg = "A query to search events for current session exceeds " + maxNumberOfEventForCurrentSessionRequested +
+                        " events ! either increases maximum expected either verify if this sessions '" +
+                        firstEvent.getSessionId() +"' has really this much of events !";
+                getLogger().error(errorMsg);
+                throw new IllegalStateException(errorMsg);
+            }
+            rsp.getDocs().stream().forEach(rspRecord -> {
+                events.add(esDoc2Event(rspRecord.getRetrievedFields()));
+            });
+        });
+        return events;
+    }
+
+/*
+    GET new_openanalytics_webevents.2020.10/_search
+    {
+        "query": {
+        "bool": {
+            "must": [
+            {
+                "term": {
+                "sessionId.raw": {
+                    "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#4"
+                }
+            }
+            },
+            {
+                "range": {
+                "h2kTimestamp": {
+                    "lte": Tmin
+                }
+            }
+            }
+          ]
+        }
+    },
+        "sort": [
+        {
+            "h2kTimestamp": {
+            "order": "desc"
+        }
+        }
+      ],
+        "size": 10000
+    }
+*/
+    private MultiQueryResponseRecord getNeededEventsFromEs(Collection<WebSession> currentSessionsOfEvents,
+                                                           Map<String, ZonedDateTime> divoltSessionToFirstEvent) {
+        final List<QueryRecord> queries = new ArrayList<>();
+        currentSessionsOfEvents.forEach(currentSession -> {
+            ZonedDateTime firstEventTimeStamp = divoltSessionToFirstEvent.get(currentSession.getOriginalSessionId());
+            String indexName = toEventIndexName(firstEventTimeStamp);
+            QueryRecord query = new QueryRecord()
+                    .addCollection(indexName)
+                    .addType(_ES_EVENT_TYPE_NAME)
+                    .addTermQuery(
+                            new TermQueryRecord(_SESSION_ID_FIELD + ".raw", currentSession.getSessionId())
+                    ).addRangeQuery(
+                            new RangeQueryRecord(_TIMESTAMP_FIELD)
+                                    .setTo(firstEventTimeStamp.toInstant().toEpochMilli())//TODO +1000 car dans session / 1000...? Mais je crois que c'est un timestamp qui vient dun event donc non c okay ?
+                                    .setIncludeUpper(true)
+                    ).size(10000);
+            queries.add(query);
+        });
+        MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
+        return elasticsearchClientService.multiQueryGet(multiQuery);
+    }
+
+    private Map<String, WebSession> requestCurrentSessionsToEs(Collection<Events> eventsFromPast) {
+        MultiQueryResponseRecord sessionEsRsp = requestSessions(eventsFromPast);
+        return checkAndTransformToMap(sessionEsRsp);
+    }
+
+    /**
+     * ensure there is only one response by query and return as map with divolte session as key.
+     * @param sessionEsRsp
+     * @return
+     */
+    private Map<String, WebSession> checkAndTransformToMap(MultiQueryResponseRecord sessionEsRsp) {
+        final Map<String, WebSession> divoltSessionToCurrentSessions = new HashMap<>();
+        sessionEsRsp.getResponses().forEach(rsp -> {
+            if (rsp.getTotalMatched() != 1) {
+                String errorMsg = "A query to search for current session does not matched exactly one document but matched " + rsp.getTotalMatched() + " documents. That should never happen ! Exiting";
+                getLogger().error(errorMsg);
+                throw new IllegalStateException(errorMsg);
+            }
+            WebSession currentSession = esDoc2WebSession(rsp.getDocs().get(0).getRetrievedFields());
+            divoltSessionToCurrentSessions.put(currentSession.getOriginalSessionId(), currentSession);
+        });
+        return divoltSessionToCurrentSessions;
+    }
+
+    private MultiQueryResponseRecord requestSessions(Collection<Events> eventsFromPast) {
+        final List<QueryRecord> queries = new ArrayList<>();
+        eventsFromPast.stream().forEach(events -> {
+            String divolteSession = events.getSessionId();
+            long epochSecondFirstEvent = events.first().getEpochTimeStampSeconds();
+            QueryRecord query = new QueryRecord()
+                    .addCollection(websessionsIndexPrefix + "*")
+                    .addWildCardQuery(
+                            new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divolteSession + "*")
+                    ).addRangeQuery(
+                            new RangeQueryRecord(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
+                                    .setTo(epochSecondFirstEvent)
+                                    .setIncludeUpper(true)
+                    ).addRangeQuery(
+                            new RangeQueryRecord(_LAST_EVENT_EPOCH_SECONDS_FIELD)
+                                    .setFrom(epochSecondFirstEvent)
+                                    .setIncludeLower(true)
+                    ).size(1);
+            queries.add(query);
+        });
+        MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
+        return elasticsearchClientService.multiQueryGet(multiQuery);
+    }
+
 
 //    private Collection<Event> getLastHurenceSessionFromEs(String divolteSession) {
 //
@@ -642,19 +792,21 @@ public class IncrementalWebSession
             originalSessionId = sessionId && firstEventTs(session) > firstEventTs(input events)
            ==> du coup on a plus que les sessions plus ancienne ou la session actuelle dans es.
         */
-        //TODO We could use a deleteByQuery here, but in 2.4 this is a plugin and may not be available.
+        //We could use a deleteByQuery here, but in 2.4 this is a plugin and may not be available.
         // Another solution is to use the Bulk api with delete query using id of documents.
         // We could add a method in ElasticSearchCLient interface isSupportingDeleteByQuery() to use it when available.
+        //TODO bugged ! should use a  (session1 & t1 >) || (session2 & t2 >) || ... || (session & tn >)
         QueryRecord queryRecord = new QueryRecord();
         queryRecord.setRefresh(false);
         for (Events events : eventsFromPast) {
-            final String sessionIndexName = events.first().getValue(_ES_SESSION_INDEX_FIELD).toString();
+            Event firstEvent = events.first();
+            final String sessionIndexName = firstEvent.getValue(_ES_SESSION_INDEX_FIELD).toString();//TODO look for all session
             queryRecord.addCollection(sessionIndexName);
-            final String sessionId = events.getSessionId();
+            final String sessionId = events.getSessionId();//divolt session
             queryRecord.addTermQuery(new TermQueryRecord(_ORIGINAL_SESSION_ID_FIELD, sessionId));
             queryRecord.addRangeQuery(
                     new RangeQueryRecord(_TIMESTAMP_FIELD)
-                    .setFrom(events.first().getTimeStampAsLong())
+                    .setFrom(firstEvent.getEpochTimeStampMilli())
             );
         }
         elasticsearchClientService.deleteByQuery(queryRecord);
@@ -665,7 +817,7 @@ public class IncrementalWebSession
         final Collection<Events> eventsOk = new ArrayList<>();
         for (Events events : groupOfEvents) {
             Optional<WebSession> lastSession = lastSessionMapping.get(events.getSessionId());
-            if (lastSession.isPresent() && lastSession.get().getLastEvent().toInstant().toEpochMilli() > events.first().getTimeStampAsLong()) {//> ou >= ?
+            if (lastSession.isPresent() && lastSession.get().getLastEvent().toInstant().toEpochMilli() > events.first().getEpochTimeStampMilli()) {//> ou >= ?
                 eventsFromPast.add(events);
             } else {
                 eventsOk.add(events);
@@ -732,12 +884,24 @@ public class IncrementalWebSession
      * @return web sessions resulting of the processing of the web events.
      */
     private Collection<SessionsCalculator> processEvents(final Collection<Events> webEvents) {
-        Map<String, WebSession> lastSessionMapping = null;//getMapping(webEvents);//TODO
+        Collection<String> divoltSessionsIds = webEvents.stream()
+                .map(Events::getSessionId)
+                .collect(Collectors.toList());
+        Map<String, Optional<WebSession>> lastSessionMapping = getMapping(divoltSessionsIds);
         // Applies all events to session documents and collect results.
         final Collection<SessionsCalculator> result =
                 webEvents.stream()
-                        .map(events -> new SessionsCalculator(this, events.getSessionId(),
-                                lastSessionMapping.get(events.getSessionId())).processEvents(events))
+                        .map(events -> {
+                            if (lastSessionMapping.get(events.getSessionId()).isPresent()) {
+                                return new SessionsCalculator(this,
+                                        events.getSessionId(),
+                                        lastSessionMapping.get(events.getSessionId()).get()).processEvents(events);
+                            } else {
+                                return new SessionsCalculator(this,
+                                        events.getSessionId(),
+                                        null).processEvents(events);
+                            }
+                        })
                         .collect(Collectors.toList());
 
         return result;
@@ -762,11 +926,13 @@ public class IncrementalWebSession
 //    "size": 1
 //}
 
-    private Map<String/*divolteSession*/, Optional<WebSession>/*lastHurenceSession*/> getMapping(final Collection<Events> webEvents) {
-        final Collection<String> divolteSessions = webEvents.stream()
-                .map(Events::getSessionId)
-                .collect(Collectors.toList());
-
+    /**
+     * query all last hurence session for each divolte session in ES if it is not already present in cache.
+     * THen fill up cache with new data, finally return the <code>mapping[divolte_session,last_hurence_session]</code>
+     * @param divolteSessions
+     * @return
+     */
+    private Map<String/*divolteSession*/, Optional<WebSession>/*lastHurenceSession*/> getMapping(final Collection<String> divolteSessions) {
         final Map<String, Optional<WebSession>> mappingToReturn = new HashMap<>();
         final List<QueryRecord> sessionsRequests = new ArrayList<>();
         divolteSessions.forEach(divoltSession -> {
@@ -805,10 +971,10 @@ public class IncrementalWebSession
     private Map<String/*divolteId*/, WebSession> transformIntoWebSessions(MultiQueryResponseRecord multiQueryResponses) {
         return multiQueryResponses.getDocs().stream()
                 .map(doc -> {
-                    return new WebSession(esDoc2Record(doc.getRetrievedFields()), this);
+                    return esDoc2WebSession(doc.getRetrievedFields());
                 })
                 .collect(Collectors.toMap(
-                        WebSession::getOriginalId,
+                        WebSession::getOriginalSessionId,
                         Function.identity()
                 ));
     }
@@ -819,35 +985,82 @@ public class IncrementalWebSession
      * @param sourceAsMap the web session stored in elasticsearch.
      * @return a new record based on the specified map that represents a web session in elasticsearch.
      */
-    public Record esDoc2Record(final Map<String, String> sourceAsMap) {
-        final Record record = new StandardRecord(OUTPUT_RECORD_TYPE);
+    public WebSession esDoc2WebSession(final Map<String, String> sourceAsMap) {
+        return esDoc2WebSession(sourceAsMap, OUTPUT_RECORD_TYPE);
+    }
+
+    /**
+     * Returns a new WebSession based on the specified map that represents a web session in elasticsearch.
+     *
+     * @param sourceAsMap the web session stored in elasticsearch.
+     * @param recordType the recordType value for record.
+     * @return a new WebSession based on the specified map that represents a web session in elasticsearch.
+     */
+    public WebSession esDoc2WebSession(final Map<String, String> sourceAsMap, String recordType) {
+        final Record record = new StandardRecord(recordType);
         sourceAsMap.forEach((key, value) ->
         {
             if (_IS_SESSION_ACTIVE_FIELD.equals(key)) {
-                // Boolean
                 record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
             } else if (_SESSION_DURATION_FIELD.equals(key)
                     || _EVENTS_COUNTER_FIELD.equals(key)
                     || _TIMESTAMP_FIELD.equals(key)
                     || _SESSION_INACTIVITY_DURATION_FIELD.equals(key)
-                    || _FIRST_EVENT_EPOCH_FIELD.equals(key)
-                    || _LAST_EVENT_EPOCH_FIELD.equals(key)
+                    || _FIRST_EVENT_EPOCH_SECONDS_FIELD.equals(key)
+                    || _LAST_EVENT_EPOCH_SECONDS_FIELD.equals(key)
                     || _SESSION_INACTIVITY_DURATION_FIELD.equals(key)
-                    || "record_time".equals(key)) {
-                // Long
+                    || FieldDictionary.RECORD_TIME.equals(key)) {
                 record.setField(key, FieldType.LONG, Long.valueOf(value));
             } else {
-                // String
                 record.setField(key, FieldType.STRING, value);
             }
         });
-
         record.setId(record.getField(_SESSION_ID_FIELD).asString());
-
-        return record;
+        return new WebSession(record, this);
     }
 
 
+    /**
+     * return a new Event based on the specified map that represents a web event in elasticsearch.
+     *
+     * @param sourceAsMap the event stored in elasticsearch.
+     * @return a new Event based on the specified map that represents a web event in elasticsearch.
+     */
+    public Event esDoc2Event(final Map<String, String> sourceAsMap) {
+        return esDoc2Event(sourceAsMap, OUTPUT_RECORD_TYPE);
+    }
+
+    /**
+     * return a new Event based on the specified map that represents a web event in elasticsearch.
+     *
+     * @param sourceAsMap the event stored in elasticsearch.
+     * @param recordType the recordType value for record.
+     * @return a new Event based on the specified map that represents a web event in elasticsearch.
+     */
+    public Event esDoc2Event(final Map<String, String> sourceAsMap, String recordType) {
+        final Record record = new StandardRecord(recordType);
+        sourceAsMap.forEach((key, value) ->
+        {
+//            if (_IS_SESSION_ACTIVE_FIELD.equals(key)) {
+//                record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
+//            } else if (_SESSION_DURATION_FIELD.equals(key)
+//                    || _EVENTS_COUNTER_FIELD.equals(key)
+//                    || _TIMESTAMP_FIELD.equals(key)
+//                    || _SESSION_INACTIVITY_DURATION_FIELD.equals(key)
+//                    || _FIRST_EVENT_EPOCH_SECONDS_FIELD.equals(key)
+//                    || _LAST_EVENT_EPOCH_SECONDS_FIELD.equals(key)
+//                    || _SESSION_INACTIVITY_DURATION_FIELD.equals(key)
+//                    || FieldDictionary.RECORD_TIME.equals(key)) {
+//                record.setField(key, FieldType.LONG, Long.valueOf(value));
+//            } else {
+//                record.setField(key, FieldType.STRING, value);
+//            }
+            record.setField(key, FieldType.STRING, value);
+        });
+//        record.setId(record.getField(_SESSION_ID_FIELD).asString());
+        //TODO P2 verify id is okay in tests, and verify if okay generally to just store as string.
+        return new Event(record, this);
+    }
 
     /**
      * The pattern to detect parameter 'gclid' in URL.

@@ -16,9 +16,11 @@
 
 package com.hurence.junit5.extension;
 
+import org.apache.http.HttpHost;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.junit.jupiter.api.extension.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,28 +38,28 @@ import java.util.HashSet;
  * not sufficient - eg when testing DAO-specific code.
  * </p>
  */
-public class EsDockerExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
+public class Es7DockerExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
 
-    private static Logger logger = LoggerFactory.getLogger(EsDockerExtension.class);
+    private static Logger logger = LoggerFactory.getLogger(Es7DockerExtension.class);
     public final static String ES_SERVICE_NAME = "elasticsearch";
     public final static int ES_PORT_HTTP = 9200;
     public final static int ES_PORT_TCP = 9300;
     private static final HashSet<Class> INJECTABLE_TYPES = new HashSet<Class>() {
         {
-            add(Client.class);
+            add(RestHighLevelClient.class);
             add(DockerComposeContainer.class);
         }
     };
     /**
      * The internal-transport client that talks to the local node.
      */
-    private Client client;
+    private RestHighLevelClient client;
     private DockerComposeContainer dockerComposeContainer;
 
     /**
      * Return the object through which operations can be performed on the ES cluster.
      */
-    public Client getClient() {
+    public RestHighLevelClient getClient() {
         return client;
     }
 
@@ -82,15 +84,12 @@ public class EsDockerExtension implements BeforeAllCallback, AfterAllCallback, P
         logger.info("httpUrl of es http://" + httpUrl);
         logger.info("tcpUrl of es tcp://" + tcpUrl);
 
-        // Create new transport client using the Builder pattern
-        TransportClient transportClient = TransportClient.builder().build();
-        transportClient.addTransportAddress(new InetSocketTransportAddress(
-                new InetSocketAddress(
-                        dockerComposeContainer.getServiceHost(ES_SERVICE_NAME, ES_PORT_TCP),
-                        dockerComposeContainer.getServicePort(ES_SERVICE_NAME, ES_PORT_TCP))
-        ));
-
-        this.client = transportClient;
+        client = new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost(dockerComposeContainer.getServiceHost(ES_SERVICE_NAME, ES_PORT_HTTP),
+                                dockerComposeContainer.getServicePort(ES_SERVICE_NAME, ES_PORT_HTTP),
+                                "http")
+                ));
     }
 
     @Override
@@ -105,7 +104,7 @@ public class EsDockerExtension implements BeforeAllCallback, AfterAllCallback, P
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         Class<?> type = parameterType(parameterContext);
-        if (type == Client.class) {
+        if (type == RestHighLevelClient.class) {
             return getClient();
         }
         if (type == DockerComposeContainer.class) {

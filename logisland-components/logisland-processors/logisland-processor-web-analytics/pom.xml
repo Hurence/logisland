@@ -80,9 +80,21 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.hurence.logisland</groupId>-->
+<!--            <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>-->
+<!--            <version>${project.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>
+            <artifactId>logisland-service-elasticsearch_7_x-client</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-inmemory-cache</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

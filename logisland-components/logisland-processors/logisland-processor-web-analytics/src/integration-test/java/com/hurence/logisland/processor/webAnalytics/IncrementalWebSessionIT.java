@@ -15,27 +15,31 @@
  */
 package com.hurence.logisland.processor.webAnalytics;
 
-import com.hurence.junit5.extension.EsDockerExtension;
+import com.hurence.junit5.extension.Es7DockerExtension;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.processor.webAnalytics.modele.WebSession;
 import com.hurence.logisland.processor.webAnalytics.util.WebEvent;
 import com.hurence.logisland.processor.webAnalytics.util.WebSessionChecker;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService;
+import com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.PutIndexTemplateRequest;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.index.query.MatchAllQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,19 +49,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.hurence.logisland.processor.webAnalytics.util.WebEvent.SESSION_INDEX;
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test incremental web-session processor.
  */
-@ExtendWith({EsDockerExtension.class})
+@ExtendWith({Es7DockerExtension.class})
 public class IncrementalWebSessionIT
 {
     private static Logger logger = LoggerFactory.getLogger(IncrementalWebSessionIT.class);
@@ -65,24 +72,22 @@ public class IncrementalWebSessionIT
 
 
     @BeforeEach
-    public void clean(Client esClient) throws InterruptedException, ExecutionException {
+    public void clean(RestHighLevelClient esClient) throws InterruptedException, ExecutionException, IOException {
         ClusterHealthRequest clHealtRequest = new ClusterHealthRequest();
-        ClusterHealthResponse response = esClient.admin().cluster().health(clHealtRequest).get();
+        ClusterHealthResponse response = esClient.cluster().health(clHealtRequest, RequestOptions.DEFAULT);
         Set<String> indices = response.getIndices().keySet();
 
         if (!indices.isEmpty()) {
             DeleteIndexRequest deleteRequest = new DeleteIndexRequest(indices.toArray(new String[0]));
-            Assert.assertTrue(esClient.admin().indices().delete(deleteRequest).get().isAcknowledged());
+            Assert.assertTrue(esClient.indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
         }
-
-        PutIndexTemplateRequest templateRequest = new PutIndexTemplateRequest(
-                "my-template"
-        ).template("*");
+        PutIndexTemplateRequest templateRequest = new PutIndexTemplateRequest("my-template")
+                .patterns(Arrays.asList("*"));
         templateRequest.settings(Settings.builder()
                 .put("index.number_of_shards", 5)
                 .put("index.number_of_replicas", 0)
         );
-        AcknowledgedResponse putTemplateResponse = esClient.admin().indices().putTemplate(templateRequest).actionGet();
+        AcknowledgedResponse putTemplateResponse = esClient.indices().putTemplate(templateRequest, RequestOptions.DEFAULT);
         logger.info("putTemplateResponse is " + putTemplateResponse);
     }
 
@@ -107,10 +112,10 @@ public class IncrementalWebSessionIT
     {
         final TestRunner runner = TestRunners.newTestRunner(new IncrementalWebSession());
         final String FIELDS_TO_RETURN = Stream.of("partyId",  "B2BUnit").collect(Collectors.joining(","));
-
 //        fields.to.return: partyId,Company,remoteHost,tagOrigin,sourceOrigin,spamOrigin,referer,userAgentString,utm_source,utm_campaign,utm_medium,utm_content,utm_term,alert_match_name,alert_match_query,referer_hostname,DeviceClass,AgentName,ImportanceCode,B2BUnit,libelle_zone,Userid,customer_category,source_of_traffic_source,source_of_traffic_medium,source_of_traffic_keyword,source_of_traffic_campaign,source_of_traffic_organic_search,source_of_traffic_content,source_of_traffic_referral_path,websessionIndex
-
         configureElasticsearchClientService(runner, container);
+        configureCacheService(runner);
+        runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
         runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_FIELD, SESSION_INDEX);
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME, "sessions");
@@ -128,19 +133,27 @@ public class IncrementalWebSessionIT
         return runner;
     }
 
+    private void configureCacheService(TestRunner runner) throws InitializationException {
+        final LRUKeyValueCacheService<String, WebSession> cacheService = new LRUKeyValueCacheService<>();
+        runner.addControllerService("lruCache", cacheService);
+        runner.setProperty(cacheService,
+                LRUKeyValueCacheService.CACHE_SIZE, "1000");
+        runner.assertValid(cacheService);
+        runner.enableControllerService(cacheService);
+    }
+
     private void configureElasticsearchClientService(final TestRunner runner,
-                                                                           DockerComposeContainer container) throws InitializationException
-    {
-        final Elasticsearch_2_4_0_ClientService elasticsearchClientService = new Elasticsearch_2_4_0_ClientService();
+                                                     DockerComposeContainer container) throws InitializationException {
+        final Elasticsearch_7_x_ClientService elasticsearchClientService = new Elasticsearch_7_x_ClientService();
         runner.addControllerService("elasticsearchClient", elasticsearchClientService);
         runner.setProperty(elasticsearchClientService,
-                Elasticsearch_2_4_0_ClientService.HOSTS, EsDockerExtension.getEsTcpUrl(container));
+                Elasticsearch_7_x_ClientService.HOSTS, Es7DockerExtension.getEsHttpUrl(container));
         runner.setProperty(elasticsearchClientService,
-                Elasticsearch_2_4_0_ClientService.CLUSTER_NAME, "elasticsearch");
+                Elasticsearch_7_x_ClientService.CLUSTER_NAME, "elasticsearch");
         runner.setProperty(elasticsearchClientService,
-                Elasticsearch_2_4_0_ClientService.BATCH_SIZE, "2000");
+                Elasticsearch_7_x_ClientService.BATCH_SIZE, "2000");
         runner.setProperty(elasticsearchClientService,
-                Elasticsearch_2_4_0_ClientService.FLUSH_INTERVAL, "2");
+                Elasticsearch_7_x_ClientService.FLUSH_INTERVAL, "2");
         runner.assertValid(elasticsearchClientService);
         runner.enableControllerService(elasticsearchClientService);
     }
@@ -424,7 +437,7 @@ public class IncrementalWebSessionIT
 
 
     @Test
-    public void testRewind1(Client esclient, DockerComposeContainer container)
+    public void testRewind1(RestHighLevelClient esclient, DockerComposeContainer container)
             throws Exception
     {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
@@ -487,8 +500,7 @@ public class IncrementalWebSessionIT
         this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session5);
         this.elasticsearchClientService.bulkFlush();
         Thread.sleep(1000L);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
-        SearchResponse rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        SearchResponse rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits());
         //rewind batch1
         times = Arrays.asList(time1, time2);
@@ -534,8 +546,7 @@ public class IncrementalWebSessionIT
         this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session2);
         this.elasticsearchClientService.bulkFlush();
         Thread.sleep(1000L);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
-        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        rsp = getAllSessions(esclient);
         assertEquals(2, rsp.getHits().getTotalHits());
         //third run
         //rewind
@@ -593,13 +604,21 @@ public class IncrementalWebSessionIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
         Thread.sleep(1000L);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
-        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits());
     }
 
+    public SearchResponse getAllSessions(RestHighLevelClient esclient) throws IOException {
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
+        SearchRequest searchRequest = new SearchRequest(SESSION_INDEX);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchRequest.source(searchSourceBuilder);
+        return esclient.search(searchRequest, RequestOptions.DEFAULT);
+    }
+
     @Test
-    public void testRewind2(Client esclient, DockerComposeContainer container)
+    public void testRewind2(RestHighLevelClient esclient, DockerComposeContainer container)
             throws Exception
     {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
@@ -662,8 +681,7 @@ public class IncrementalWebSessionIT
         this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session5);
         this.elasticsearchClientService.bulkFlush();
         Thread.sleep(1000L);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
-        SearchResponse rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        SearchResponse rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits());
         //rewind from time3
         times = Arrays.asList(time3, time4, time5);
@@ -677,13 +695,12 @@ public class IncrementalWebSessionIT
         });
         this.elasticsearchClientService.bulkFlush();
         Thread.sleep(1000L);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
-        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits());
     }
 
     @Test
-    public void testRewindFailThenRestart(Client esclient, DockerComposeContainer container)
+    public void testRewindFailThenRestart(RestHighLevelClient esclient, DockerComposeContainer container)
             throws Exception
     {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
@@ -746,8 +763,7 @@ public class IncrementalWebSessionIT
         this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session5);
         this.elasticsearchClientService.bulkFlush();
         Thread.sleep(1000L);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
-        SearchResponse rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        SearchResponse rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits());
         //rewind from time3 but fail during regestering session so regestering only session 3
         times = Arrays.asList(time3, time4, time5);
@@ -760,8 +776,7 @@ public class IncrementalWebSessionIT
         this.elasticsearchClientService.bulkPut(SESSION_INDEX + ",sessions", session3);
         this.elasticsearchClientService.bulkFlush();
         Thread.sleep(1000L);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
-        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        rsp = getAllSessions(esclient);
         assertEquals(3, rsp.getHits().getTotalHits());
         //restart from time3 because offset was not commited
         times = Arrays.asList(time3, time4, time5);
@@ -776,8 +791,7 @@ public class IncrementalWebSessionIT
         });
         this.elasticsearchClientService.bulkFlush();
         Thread.sleep(1000L);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX, 100000L);
-        rsp = esclient.prepareSearch(SESSION_INDEX).setQuery(matchAllQuery()).get();
+        rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits());
     }
 

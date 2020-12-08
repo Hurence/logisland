@@ -34,10 +34,10 @@ public class WebSession
         this.processor = processor;
         this.record.setId(webEvent.getSessionId());
         this.record.setField(processor._SESSION_ID_FIELD, FieldType.STRING, webEvent.getSessionId());
-        final long eventTimestamp = webEvent.getTimeStampAsLong();
+        final long eventTimestamp = webEvent.getEpochTimeStampMilli();
         this.setFirstEvent(eventTimestamp);
         this.setLastEvent(eventTimestamp);
-        if ((processor._FIELDS_TO_RETURN != null) && (!processor._FIELDS_TO_RETURN.isEmpty())) {
+        if ((processor._FIELDS_TO_RETURN != null) && (!processor._FIELDS_TO_RETURN.isEmpty())) {//TODO what is the purpose of this part !
             for (final String fieldnameToAdd : processor._FIELDS_TO_RETURN) {
                 final Field field = webEvent.record.getField(fieldnameToAdd);
                 if (isFieldAssigned(field)) {
@@ -51,7 +51,7 @@ public class WebSession
         return this.getStringValue(processor._SESSION_ID_FIELD);
     }
 
-    public String getOriginalId() {
+    public String getOriginalSessionId() {
         return this.getStringValue(processor._ORIGINAL_SESSION_ID_FIELD);
     }
 
@@ -80,7 +80,7 @@ public class WebSession
         final long eventTimestamp = eventTimestampField.asLong();
 
         // Sanity check.
-        final Field lastEventField = record.getField(IncrementalWebSession._LAST_EVENT_EPOCH_FIELD);
+        final Field lastEventField = record.getField(IncrementalWebSession._LAST_EVENT_EPOCH_SECONDS_FIELD);
         if (lastEventField != null) {
             final long lastEvent = lastEventField.asLong();
 
@@ -212,7 +212,7 @@ public class WebSession
     }
 
     public ZonedDateTime getFirstEvent() {
-        final Field field = record.getField(IncrementalWebSession._FIRST_EVENT_EPOCH_FIELD);
+        final Field field = record.getField(IncrementalWebSession._FIRST_EVENT_EPOCH_SECONDS_FIELD);
         if (field == null) {
             // Fallback by parsing the equivalent human readable field.
             return fromEpoch(DateUtils.toEpoch(record.getField(processor._FIRST_EVENT_DATETIME_FIELD).asString()));
@@ -222,16 +222,16 @@ public class WebSession
 
     private void setFirstEvent(final long eventTimestamp) {
         this.record.setField(processor._FIRST_EVENT_DATETIME_FIELD, FieldType.STRING, DateUtils.toFormattedDate(eventTimestamp));
-        this.record.setField(IncrementalWebSession._FIRST_EVENT_EPOCH_FIELD, FieldType.LONG, eventTimestamp / 1000);
+        this.record.setField(IncrementalWebSession._FIRST_EVENT_EPOCH_SECONDS_FIELD, FieldType.LONG, eventTimestamp / 1000);
     }
 
     private void setLastEvent(final long eventTimestamp) {
         this.record.setField(processor._LAST_EVENT_DATETIME_FIELD, FieldType.STRING, DateUtils.toFormattedDate(eventTimestamp));
-        this.record.setField(IncrementalWebSession._LAST_EVENT_EPOCH_FIELD, FieldType.LONG, eventTimestamp / 1000);
+        this.record.setField(IncrementalWebSession._LAST_EVENT_EPOCH_SECONDS_FIELD, FieldType.LONG, eventTimestamp / 1000);
     }
 
     public ZonedDateTime getLastEvent() {
-        final Field field = record.getField(IncrementalWebSession._LAST_EVENT_EPOCH_FIELD);
+        final Field field = record.getField(IncrementalWebSession._LAST_EVENT_EPOCH_SECONDS_FIELD);
         if (field == null) {
             // Fallback by parsing the equivalent human readable field.
             return fromEpoch(DateUtils.toEpoch(record.getField(processor._LAST_EVENT_DATETIME_FIELD).asString()));

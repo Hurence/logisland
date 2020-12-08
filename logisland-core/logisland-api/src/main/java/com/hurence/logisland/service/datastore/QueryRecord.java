@@ -24,6 +24,7 @@ public class QueryRecord {
     private int size = -1;
     private boolean refresh = false;
     private final List<String> collections;
+    private final List<String> types;
     private final List<TermQueryRecord> termQueries;
     private final List<WildCardQueryRecord> wildCardQueries;
     private final List<RangeQueryRecord> rangeQueries;
@@ -35,6 +36,7 @@ public class QueryRecord {
         this.rangeQueries = new ArrayList<>();
         this.wildCardQueries = new ArrayList<>();
         this.sortQueries = new ArrayList<>();
+        this.types = new ArrayList<>();
     }
 
     public QueryRecord addTermQuery(TermQueryRecord termQuery) {
@@ -91,5 +93,26 @@ public class QueryRecord {
     public QueryRecord setRefresh(boolean refresh) {
         this.refresh = refresh;
         return this;
+    }
+
+    public QueryRecord addType(String type) {
+        this.types.add(type);
+        return this;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public List<String> getTypes() {
+        return types;
+    }
+
+    public List<WildCardQueryRecord> getWildCardQueries() {
+        return wildCardQueries;
+    }
+
+    public List<SortQueryRecord> getSortQueries() {
+        return sortQueries;
     }
 }
