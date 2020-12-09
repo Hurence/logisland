@@ -3,6 +3,10 @@ package com.hurence.logisland.processor.webAnalytics.util;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.StandardRecord;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 /**
  * The class represents a web event.
  */
@@ -37,5 +41,14 @@ public class WebEvent extends StandardRecord
     {
         this.setStringField(name, value);
         return this;
+    }
+
+    ZonedDateTime getZonedDateTime() {
+        long epochMilli = this.getField(TIMESTAMP).asLong();
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(epochMilli), ZoneId.systemDefault());
+    }
+
+    long getTimestamp() {
+        return this.getField(TIMESTAMP).asLong();
     }
 }

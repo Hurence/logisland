@@ -19,10 +19,10 @@ import com.hurence.junit5.extension.Es7DockerExtension;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.processor.webAnalytics.modele.WebSession;
+import com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil;
 import com.hurence.logisland.processor.webAnalytics.util.WebEvent;
 import com.hurence.logisland.processor.webAnalytics.util.WebSessionChecker;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService;
@@ -30,8 +30,6 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -39,9 +37,6 @@ import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.PutIndexTemplateRequest;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,16 +45,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.EVENT_INDEX_PREFIX;
+import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.SESSION_INDEX_PREFIX;
 
 /**
  * Test incremental web-session processor.
@@ -67,10 +61,37 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith({Es7DockerExtension.class})
 public class IncrementalWebSessionIT
 {
-    private static Logger logger = LoggerFactory.getLogger(IncrementalWebSessionIT.class);
-    public static final String SESSION_INDEX_PREFIX = "openanalytics_websessions-";
-    public static final String EVENT_INDEX_PREFIX = "openanalytics_webevents.";
+    private static final Logger logger = LoggerFactory.getLogger(IncrementalWebSessionIT.class);
 
+    private static final String SESSIONID = "SESSIONID";
+    private static final String SESSION_ID = "sessionId";
+    private static final String TIMESTAMP = "h2kTimestamp";
+    private static final String VISITED_PAGE = "VISITED_PAGE";
+    private static final String CURRENT_CART = "currentCart";
+    private static final String USER_ID = "Userid";
+
+    private static final String SESSION1 = "session1";
+    private static final String SESSION2 = "session2";
+
+    private static final long SESSION_TIMEOUT_SECONDS = 1800L; // but should be 30*60;
+
+    private static final String URL1 = "http://page1";
+    private static final String URL2 = "http://page2";
+    private static final String URL3 = "http://page3";
+
+    private static final String USER1 = "user1";
+    private static final String USER2 = "user2";
+
+    private static final String PARTY_ID1 = "partyId1";
+
+    private static final Long DAY1 = 1493197966584L;  // Wed Apr 26 11:12:46 CEST 2017
+    private static final Long DAY2 = 1493297966584L;  // Thu Apr 27 14:59:26 CEST 2017
+
+    private static final String PARTY_ID = "partyId";
+    private static final String B2BUNIT = "B2BUnit";
+
+    private IncrementalWebSession proc;
+    private ElasticsearchClientService elasticsearchClientService;
 
     @BeforeEach
     public void clean(RestHighLevelClient esClient) throws IOException {
@@ -94,38 +115,932 @@ public class IncrementalWebSessionIT
                         .put("index.number_of_shards", 5)
                         .put("index.number_of_replicas", 0)
                 );
-        String mappingJson = loadFromFile("/rawStringMappingFile.json");
+        String mappingJson = TestFileHelper.loadFromFile("/rawStringMappingFile.json");
         templateRequest.mapping(mappingJson, XContentType.JSON);
         AcknowledgedResponse putTemplateResponse = esClient.indices().putTemplate(templateRequest, RequestOptions.DEFAULT);
         logger.info("putTemplateResponse is " + putTemplateResponse);
 
     }
 
-    private String loadFromFile(String fileResource) throws IOException {
-        return readFromInputStream(getClass().getResourceAsStream(fileResource));
-    }
-
-    private String readFromInputStream(InputStream inputStream) throws IOException {
-        StringBuilder resultStringBuilder = new StringBuilder();
-        try (BufferedReader br
-                     = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                resultStringBuilder.append(line).append("\n");
-            }
-        }
-        return resultStringBuilder.toString();
-    }
-
-    private MockRecord getFirstRecordWithId(final String id, final List<MockRecord> records)
+    @Test
+    public void testCreateOneSessionOneEvent(DockerComposeContainer container)
+            throws Exception
     {
-        return records.stream().filter(record -> record.getId().equals(id)).findFirst().get();
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+        final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+
+        new WebSessionChecker(session).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(DAY1)
+                                  .h2kTimestamp(DAY1)
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(DAY1)
+                                  .lastVisitedPage(URL1)
+                                  .sessionDuration(null)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+    }
+
+    @Test
+    public void testCreateOneSessionMultipleEvents(DockerComposeContainer container)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, null, DAY1, URL1),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1+1000L, URL2),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION1, null, DAY1+2000L, URL3)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(DAY1)
+                                  .h2kTimestamp(DAY1)
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(3)
+                                  .lastEventDateTime(DAY1+2000L)
+                                  .lastVisitedPage(URL3)
+                                  .sessionDuration(2L)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+    }
+
+    @Test
+    public void testCreateOneSessionMultipleEventsData2(DockerComposeContainer container)
+            throws Exception
+    {
+        Object[] data2 = new Object[]{
+                new Object[]{
+                        "h2kTimestamp" , 1538753339113L,
+                        "location" , "https://www.zitec-shop.com/en/",
+                        "sessionId" , SESSIONID // "0:jmw62hh3:ef5kWpbpKDNBG5IyGBARUQLemW3JP0PP"
+                }, new Object[]{
+                "h2kTimestamp" , 1538753689109L,
+                "location" , "https://www.zitec-shop.com/en/",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538753753964L,
+                "location" , "https://www.zitec-shop.com/en/",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538753768489L,
+                "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538756201154L, // timeout
+                "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538756215043L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=rotex%2Cgg%2C48",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538756216242L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=rotex%2Cgg%2C48",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538756232483L,
+                "location" , "https://www.zitec-shop.com/en/rotex-48-gg/p-G1184000392",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538756400671L,
+                "location" , "https://www.zitec-shop.com/en/rotex-48-gg/p-G1184000392",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538756417237L,
+                "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538767062429L, // timeout
+                "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538767070188L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=nah25",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538767073907L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=nah25",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538767077273L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=nah",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780539746L, // timeout
+                "location" , "https://www.zitec-shop.com/en/search/?text=nah",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780546243L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=hj234",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780578259L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=hj234",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780595932L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=hj+234",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780666747L,
+                "location" , "https://www.zitec-shop.com/en/search/?text=hj+234",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780680777L,
+                "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780684232L,
+                "location" , "https://www.zitec-shop.com/en/login",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780691752L,
+                "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780748044L,
+                "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
+                "sessionId" , SESSIONID
+        }, new Object[]{
+                "h2kTimestamp" , 1538780763016L,
+                "location" , "https://www.zitec-shop.com/en/roller-bearing-spherical-radial-multi-row/p-G1321019550",
+                "sessionId" , SESSIONID}};
+
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, "1800");
+        testRunner.assertValid();
+        List<Record> events = new ArrayList<>(3);
+        for(final Object line: data2)
+        {
+            final Iterator iterator = Arrays.asList((Object[])line).iterator();
+            final Map fields = new HashMap();
+            while (iterator.hasNext())
+            {
+                Object name = iterator.next();
+                Object value = iterator.next();
+                fields.put(name, value);
+            }
+            events.add(new WebEvent(String.valueOf(eventCount++),
+                                    (String)fields.get("sessionId"),
+                                    (String)fields.get("userId"),
+                                    (Long)fields.get("h2kTimestamp"),
+                                    (String)fields.get("location")));
+        }
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(4);
+        List<MockRecord> sessions = testRunner.getOutputRecords();
+        sessions.sort(new Comparator<MockRecord>() {
+            @Override
+            public int compare(MockRecord o1, MockRecord o2) {
+                long t1 = (long) o1.getField("h2kTimestamp").getRawValue();
+                long t2 = (long) o2.getField("h2kTimestamp").getRawValue();
+                return Long.compare(t1, t2);
+            }
+        });
+        new WebSessionChecker(sessions.get(0)).sessionId(SESSIONID)
+                .Userid(null)
+                .record_type("consolidate-session")
+                .record_id(SESSIONID)
+                .firstEventDateTime(1538753339113L)
+                .h2kTimestamp(1538753339113L)
+                .firstVisitedPage("https://www.zitec-shop.com/en/")
+                .eventsCounter(4)
+                .lastEventDateTime(1538753768489L)
+                .lastVisitedPage("https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137")
+                .sessionDuration(429L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(1800L);
+        new WebSessionChecker(sessions.get(1)).sessionId(SESSIONID + "#2")
+                .Userid(null)
+                .record_type("consolidate-session")
+                .record_id(SESSIONID + "#2")
+                .firstEventDateTime(1538756201154L)
+                .h2kTimestamp(1538756201154L)
+                .firstVisitedPage("https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137")
+                .eventsCounter(6)
+                .lastEventDateTime(1538756417237L)
+                .lastVisitedPage("https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584")
+                .sessionDuration(216L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(1800L);
+        new WebSessionChecker(sessions.get(2)).sessionId(SESSIONID + "#3")
+                .Userid(null)
+                .record_type("consolidate-session")
+                .record_id(SESSIONID + "#3")
+                .firstEventDateTime(1538767062429L)
+                .h2kTimestamp(1538767062429L)
+                .firstVisitedPage("https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584")
+                .eventsCounter(4)
+                .lastEventDateTime(1538767077273L)
+                .lastVisitedPage("https://www.zitec-shop.com/en/search/?text=nah")
+                .sessionDuration(14L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(1800L);
+        new WebSessionChecker(sessions.get(3)).sessionId(SESSIONID + "#4")
+                .Userid(null)
+                .record_type("consolidate-session")
+                .record_id(SESSIONID + "#4")
+                .firstEventDateTime(1538780539746L)
+                .h2kTimestamp(1538780539746L)
+                .firstVisitedPage("https://www.zitec-shop.com/en/search/?text=nah")
+                .eventsCounter(10)
+                .lastEventDateTime(1538780763016L)
+                .lastVisitedPage("https://www.zitec-shop.com/en/roller-bearing-spherical-radial-multi-row/p-G1321019550")
+                .sessionDuration(223L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(1800L);
+    }
+
+    @Test
+    public void testCreateOneSessionMultipleEventsData(DockerComposeContainer container)
+            throws Exception
+    {
+        Object[] data = new Object[]{
+                new Object[]{"sessionId", SESSION1,
+                        "partyId", PARTY_ID1,
+                        "location", "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10",
+                        "h2kTimestamp", 1529673800671L,
+                        "userId", null},
+                new Object[]{"sessionId", SESSION1,
+                        "partyId", PARTY_ID1,
+                        "location", "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10?utm_source=TEST&utm_medium=email&utm_campaign=HT",
+                        "h2kTimestamp", 1529673855863L,
+                        "userId", null},
+                new Object[]{"sessionId", SESSION1,
+                        "partyId", PARTY_ID1,
+                        "location", "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10",
+                        "h2kTimestamp", 1529673912936L,
+                        "userId", null}};
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        List<Record> events = new ArrayList<>(3);
+        for(final Object line: data)
+        {
+            final Iterator iterator = Arrays.asList((Object[])line).iterator();
+            final Map fields = new HashMap();
+            while (iterator.hasNext())
+            {
+                Object name = iterator.next();
+                Object value = iterator.next();
+                fields.put(name, value);
+            }
+            events.add(new WebEvent(String.valueOf(eventCount++),
+                                    (String)fields.get("sessionId"),
+                                    (String)fields.get("userId"),
+                                    (Long)fields.get("h2kTimestamp"),
+                                    (String)fields.get("location")));
+        }
+        testRunner.enqueue(events);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+
+        final Record firstEvent = events.get(0);
+        final Record lastEvent = events.get(2);
+        final String user = firstEvent.getField(USER_ID)==null?null:firstEvent.getField(USER_ID).asString();
+
+        final MockRecord doc = getFirstRecordWithId((String)firstEvent.getField(SESSION_ID).getRawValue(), testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(firstEvent.getField(SESSION_ID).getRawValue())
+                                  .Userid(user)
+                                  .record_type("consolidate-session")
+                                  .record_id(firstEvent.getField(SESSION_ID).getRawValue())
+                                  .firstEventDateTime(firstEvent.getField(TIMESTAMP).asLong())
+                                  .h2kTimestamp((Long)firstEvent.getField(TIMESTAMP).getRawValue())
+                                  .firstVisitedPage(firstEvent.getField(VISITED_PAGE).getRawValue())
+                                  .eventsCounter(3)
+                                  .lastEventDateTime(lastEvent.getField(TIMESTAMP).asLong())
+                                  .lastVisitedPage(lastEvent.getField(VISITED_PAGE).getRawValue())
+                                  .sessionDuration((lastEvent.getField(TIMESTAMP).asLong() // lastEvent.getField(TIMESTAMP)
+                                                            -firstEvent.getField(TIMESTAMP).asLong())/1000)
+                                  .is_sessionActive((Instant.now().toEpochMilli()
+                                                             -lastEvent.getField(TIMESTAMP).asLong())/1000< SESSION_TIMEOUT_SECONDS)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+    }
+
+    @Test
+    public void testCreateTwoSessionTwoEvents(DockerComposeContainer container)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION2, USER2, DAY2, URL2)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // Two webSession expected.
+        testRunner.assertOutputRecordsCount(2);
+
+        final MockRecord doc1 = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+        final MockRecord doc2 = getFirstRecordWithId(SESSION2, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc1).sessionId(SESSION1)
+                                   .Userid(USER1)
+                                   .record_type("consolidate-session")
+                                   .record_id(SESSION1)
+                                   .firstEventDateTime(DAY1)
+                                   .h2kTimestamp(DAY1)
+                                   .firstVisitedPage(URL1)
+                                   .eventsCounter(1)
+                                   .lastEventDateTime(DAY1)
+                                   .lastVisitedPage(URL1)
+                                   .sessionDuration(null)
+                                   .is_sessionActive(false)
+                                   .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+
+        new WebSessionChecker(doc2).sessionId(SESSION2)
+                                   .Userid(USER2)
+                                   .record_type("consolidate-session")
+                                   .record_id(SESSION2)
+                                   .firstEventDateTime(DAY2)
+                                   .h2kTimestamp(DAY2)
+                                   .firstVisitedPage(URL2)
+                                   .eventsCounter(1)
+                                   .lastEventDateTime(DAY2)
+                                   .lastVisitedPage(URL2)
+                                   .sessionDuration(null)
+                                   .is_sessionActive(false)
+                                   .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+    }
+
+    @Test
+    public void testCreateOneActiveSessionOneEvent(DockerComposeContainer container)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        final long now = Instant.now().toEpochMilli();
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, now, URL1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(now)
+                                  .h2kTimestamp(now)
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(now)
+                                  .lastVisitedPage(URL1)
+                                  .sessionDuration(null)
+                                  .is_sessionActive(true)
+                                  .sessionInactivityDuration(null);
+    }
+
+    @Test
+    public void testCreateIgnoreOneEventWithoutSessionId(DockerComposeContainer container)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1),
+                                         new WebEvent(String.valueOf(eventCount++), null, USER1, DAY1, URL1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(DAY1)
+                                  .h2kTimestamp(DAY1)
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(DAY1)
+                                  .lastVisitedPage(URL1)
+                                  .sessionDuration(null)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+
+    }
+
+    @Test
+    public void testCreateIgnoreOneEventWithoutTimestamp(DockerComposeContainer container)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, null, URL2)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected .
+        testRunner.assertOutputRecordsCount(1);
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(DAY1)
+                                  .h2kTimestamp(DAY1)
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(DAY1)
+                                  .lastVisitedPage(URL1)
+                                  .sessionDuration(null)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+
+    }
+
+    @Test
+    public void testBuggyResume(DockerComposeContainer container)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+        final long DAY1 = 1531492035025L;
+        final long TIME2 = 1531494495026L;
+        final String URL1 = "https://orexad.preprod.group-iph.com/fr/cart";
+        final String URL2 = "https://orexad.preprod.group-iph.com/fr/checkout/single/summary";
+        final long SESSION_TIMEOUT = 1800;
+
+        final Collection<Record> events = Arrays.asList(
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1,
+                         URL1),
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531492435034L,
+                         "https://orexad.preprod.group-iph.com/fr/cart"),
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493380029L,
+                         "https://orexad.preprod.group-iph.com/fr/search/?text=Vis"),
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493805028L,
+                         "https://orexad.preprod.group-iph.com/fr/search/?text=Vis"),
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493810026L,
+                         "https://orexad.preprod.group-iph.com/fr/vis-traction-complete-p-kit-k300/p-G1296007152?l=G1296007152"),
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494175027L,
+                         "https://orexad.preprod.group-iph.com/fr/cart"),
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494180026L,
+                         "https://orexad.preprod.group-iph.com/fr/cart"),
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494480026L,
+                         "https://orexad.preprod.group-iph.com/fr/cart"),
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, TIME2,
+                         URL2));
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT));
+        testRunner.assertValid();
+        testRunner.enqueue(events);
+
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected .
+        testRunner.assertOutputRecordsCount(1);
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(DAY1)
+                                  .h2kTimestamp(DAY1)
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(events.size())
+                                  .lastEventDateTime(TIME2)
+                                  .lastVisitedPage(URL2)
+                                  .sessionDuration((TIME2-DAY1)/1000)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT);
+    }
+
+    @Test
+    public void testCreateGrabOneFieldPresentEveryWhere(DockerComposeContainer container)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1).add(PARTY_ID, PARTY_ID1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(DAY1)
+                                  .h2kTimestamp(DAY1)
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(DAY1)
+                                  .lastVisitedPage(URL1)
+                                  .sessionDuration(null)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS)
+                                  .check(PARTY_ID, PARTY_ID1)
+                                  .check(B2BUNIT, null);
+    }
+
+    @Test
+    public void testCreateGrabTwoFieldsPresentEveryWhere(DockerComposeContainer container)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1).add(PARTY_ID, PARTY_ID1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(DAY1)
+                                  .h2kTimestamp(DAY1)
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(DAY1)
+                                  .lastVisitedPage(URL1)
+                                  .sessionDuration(null)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS)
+                                  .check(PARTY_ID, PARTY_ID1)
+                                  .check(B2BUNIT, null);
+    }
+
+    private void injectSessions(List<MockRecord> sessions) {
+        ElasticsearchServiceUtil.injectSessions(this.elasticsearchClientService, sessions);
+    }
+
+    @Test
+    public void testUpdateOneWebSessionNow(DockerComposeContainer container, RestHighLevelClient esclient)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        Instant firstEvent = Instant.now().minusSeconds(8);
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        injectSessions(testRunner.getOutputRecords());
+
+        Instant lastEvent = firstEvent.plusSeconds(2);
+        testRunner = newTestRunner(container);
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, lastEvent.toEpochMilli(), URL2)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        injectSessions(testRunner.getOutputRecords());
+
+        lastEvent = lastEvent.plusSeconds(4);
+        testRunner = newTestRunner(container);
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, lastEvent.toEpochMilli(), URL3)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        injectSessions(testRunner.getOutputRecords());
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+
+        List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(
+                this.elasticsearchClientService, esclient,
+                proc);
+        Set<String> ids = sessions.stream().map(WebSession::getSessionId).collect(Collectors.toSet());
+        Assert.assertTrue(ids.contains(SESSION1));
+
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(firstEvent.toEpochMilli())
+                                  .h2kTimestamp(firstEvent.toEpochMilli())
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(3)
+                                  .lastEventDateTime(lastEvent.toEpochMilli())
+                                  .lastVisitedPage(URL3)
+                                  .sessionDuration(Duration.between(firstEvent, lastEvent).getSeconds())
+                                  .is_sessionActive(true)
+                                  .sessionInactivityDuration(null);
+
+        testRunner.assertOutputErrorCount(0);
+    }
+
+    @Test
+    public void testUpdateOneWebSessionInactive(DockerComposeContainer container,
+                                                RestHighLevelClient esclient)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        // Create a web session with timestamp 2s before timeout.
+        Instant firstEvent = Instant.now().minusSeconds(SESSION_TIMEOUT_SECONDS -2);
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        injectSessions(testRunner.getOutputRecords());
+
+//        Record doc = this.elasticsearchClientService.getSessionFromEs(SESSION1);
+        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+        new WebSessionChecker(doc).lastVisitedPage(URL1);
+
+        // Update web session with timestamp 1s before timeout.
+        Instant event = firstEvent.plusSeconds(1);
+        testRunner = newTestRunner(container);
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, event.toEpochMilli(), URL2)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        injectSessions(testRunner.getOutputRecords());
+
+        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+        new WebSessionChecker(doc).lastVisitedPage(URL2);
+
+        Thread.sleep(5000); // Make sure the Instant.now performed in the processor will exceed timeout.
+
+        // Update web session with NOW+2s+SESSION_TIMEOUT.
+        Instant lastEvent = event.plusSeconds(1);
+        testRunner = newTestRunner(container);
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, lastEvent.toEpochMilli(), URL3)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        injectSessions(testRunner.getOutputRecords());
+
+        // One webSession + 2 webEvents + 1 mapping expected in elasticsearch.
+        //TODO ?
+        List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(
+                this.elasticsearchClientService, esclient,
+                proc);
+        Set<String> ids = sessions.stream().map(WebSession::getSessionId).collect(Collectors.toSet());
+        Assert.assertTrue(ids.contains(SESSION1));
+
+        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(firstEvent.toEpochMilli())
+                                  .h2kTimestamp(firstEvent.toEpochMilli())
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(3)
+                                  .lastEventDateTime(lastEvent.toEpochMilli())
+                                  .lastVisitedPage(URL3)
+                                  .sessionDuration(Duration.between(firstEvent, lastEvent).getSeconds())
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+
+        testRunner.assertOutputRecordsCount(1);
+        testRunner.assertOutputErrorCount(0);
+    }
+
+    @Test
+    public void testUpdateOneWebSessionTimedout(DockerComposeContainer container,
+                                                RestHighLevelClient esclient)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        // Create a web session with timestamp 2s before timeout.
+        Instant firstEvent = Instant.now().minusSeconds(SESSION_TIMEOUT_SECONDS +2);
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        injectSessions(testRunner.getOutputRecords());
+
+        // Update web session with a timestamp that is timeout.
+        Instant timedoutEvent = Instant.now();
+        testRunner = newTestRunner(container);
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, timedoutEvent.toEpochMilli(), URL2)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(2);
+        injectSessions(testRunner.getOutputRecords());
+
+        // 2 webSessions + 2 webEvents + 1 mapping expected in elasticsearch.
+        //TODO ?
+        List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(
+                this.elasticsearchClientService, esclient,
+                proc);
+        Set<String> ids = sessions.stream().map(WebSession::getSessionId).collect(Collectors.toSet());
+        Assert.assertTrue(ids.contains(SESSION1));
+
+        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(firstEvent.toEpochMilli())
+                                  .h2kTimestamp(firstEvent.toEpochMilli())
+                                  .firstVisitedPage(URL1)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(firstEvent.toEpochMilli())
+                                  .lastVisitedPage(URL1)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+
+        final String EXTRA_SESSION = SESSION1+"#2";
+        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, EXTRA_SESSION, proc);
+        new WebSessionChecker(doc).sessionId(EXTRA_SESSION)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(EXTRA_SESSION)
+                                  .firstEventDateTime(timedoutEvent.toEpochMilli())
+                                  .h2kTimestamp(timedoutEvent.toEpochMilli())
+                                  .firstVisitedPage(URL2)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(timedoutEvent.toEpochMilli())
+                                  .lastVisitedPage(URL2)
+                                  .is_sessionActive(true);
+
+        testRunner.assertOutputRecordsCount(2);
+        testRunner.assertOutputErrorCount(0);
+    }
+
+    @Test
+    public void testAdword(DockerComposeContainer container,
+                           RestHighLevelClient esclient)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        String URL = URL1+"?gclid=XXX";
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY2, URL2)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        // Two webSessions expected .
+        testRunner.assertOutputRecordsCount(2);
+        injectSessions(testRunner.getOutputRecords());
+        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION1)
+                                  .firstEventDateTime(DAY1)
+                                  .h2kTimestamp(DAY1)
+                                  .firstVisitedPage(URL)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(DAY1)
+                                  .lastVisitedPage(URL)
+                                  .sessionDuration(null)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+
+        String SESSION = SESSION1+"#2";
+        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION, proc);
+
+        new WebSessionChecker(doc).sessionId(SESSION)
+                                  .Userid(USER1)
+                                  .record_type("consolidate-session")
+                                  .record_id(SESSION)
+                                  .firstEventDateTime(DAY2)
+                                  .h2kTimestamp(DAY2)
+                                  .firstVisitedPage(URL2)
+                                  .eventsCounter(1)
+                                  .lastEventDateTime(DAY2)
+                                  .lastVisitedPage(URL2)
+                                  .sessionDuration(null)
+                                  .is_sessionActive(false)
+                                  .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+
     }
 
 
-    private final long SESSION_TIMEOUT = 1800L;
-    private ElasticsearchClientService elasticsearchClientService;
-    private CacheService lruCache;
+    @Test
+    public void testEventHandleCorrectlyNullArrays(DockerComposeContainer container,
+                                                   RestHighLevelClient esclient)
+            throws Exception
+    {
+        
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        WebEvent inputEvent = new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1);
+        testRunner.enqueue(Arrays.asList(inputEvent));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+        Map<String, Object> event = ElasticsearchServiceUtil.getEventFromEs(elasticsearchClientService, esclient, inputEvent);
+
+        Assert.assertNull(event.get(CURRENT_CART));
+
+        final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
+
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(DAY1)
+                .h2kTimestamp(DAY1)
+                .currentCart(null)
+                .firstVisitedPage(URL1)
+                .eventsCounter(1)
+                .lastEventDateTime(DAY1)
+                .lastVisitedPage(URL1)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
+    }
+//
     /**
      * Creates a new TestRunner set with the appropriate properties.
      *
@@ -136,7 +1051,8 @@ public class IncrementalWebSessionIT
     private TestRunner newTestRunner(DockerComposeContainer container)
             throws InitializationException
     {
-        final TestRunner runner = TestRunners.newTestRunner(new IncrementalWebSession());
+        proc = new IncrementalWebSession();
+        final TestRunner runner = TestRunners.newTestRunner(proc);
         final String FIELDS_TO_RETURN = Stream.of("partyId",  "B2BUnit").collect(Collectors.joining(","));
 //        fields.to.return: partyId,Company,remoteHost,tagOrigin,sourceOrigin,spamOrigin,referer,userAgentString,utm_source,utm_campaign,utm_medium,utm_content,utm_term,alert_match_name,alert_match_query,referer_hostname,DeviceClass,AgentName,ImportanceCode,B2BUnit,libelle_zone,Userid,customer_category,source_of_traffic_source,source_of_traffic_medium,source_of_traffic_keyword,source_of_traffic_campaign,source_of_traffic_organic_search,source_of_traffic_content,source_of_traffic_referral_path,websessionIndex
         configureElasticsearchClientService(runner, container);
@@ -153,7 +1069,7 @@ public class IncrementalWebSessionIT
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD_CONF, "h2kTimestamp");
         runner.setProperty(IncrementalWebSession.VISITED_PAGE_FIELD, "VISITED_PAGE");
         runner.setProperty(IncrementalWebSession.USER_ID_FIELD, "Userid");
-        runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT));
+        runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT_SECONDS));
         runner.setProperty(IncrementalWebSession.FIELDS_TO_RETURN, FIELDS_TO_RETURN);
         this.elasticsearchClientService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF).asControllerService());
@@ -167,7 +1083,6 @@ public class IncrementalWebSessionIT
                 LRUKeyValueCacheService.CACHE_SIZE, "1000");
         runner.assertValid(cacheService);
         runner.enableControllerService(cacheService);
-        this.lruCache = cacheService;
     }
 
     private void configureElasticsearchClientService(final TestRunner runner,
@@ -186,672 +1101,8 @@ public class IncrementalWebSessionIT
         runner.enableControllerService(elasticsearchClientService);
     }
 
-
-/*
-    A bug when deleting session mapping of es every day when divolt send events with same sessionId on several days !
-    A bug when mult !
-
-    Giver events input
-        eventID | @timestamp | h2kTimestamp  | sessionId
-     1 | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     2 | 1601629317974 (ven. 02 oct. 2020 09:01:57 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     3 | 1601629320331 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     4 | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     5 | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     6 | 1601639014885 (ven. 02 oct. 2020 11:43:34 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     7 | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     8 | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     9 | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     Expect output events
-     1 | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     2 | 1601629317974 (ven. 02 oct. 2020 09:01:57 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     3 | 1601629320331 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     4 | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     5 | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     6 | 1601639014885 (ven. 02 oct. 2020 11:43:34 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     7 | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     8 | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3"
-     9 | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3"
-     And expect output sessions
-     sessionId | firstEventDate | lastEventDate | counter
-     "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"   | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | 4
-     "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2" | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | 3
-     "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3" | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | 2
-*/
-    @Test
-    public void testBugWhenNotFlushingMappingAndHighFrequencyBatch(DockerComposeContainer container)
-            throws Exception
+    private MockRecord getFirstRecordWithId(final String id, final List<MockRecord> records)
     {
-        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
-        final TestRunner testRunner = newTestRunner(container);
-        testRunner.assertValid();
-//        this.elasticsearchClientService.createCollection(MAPPING_COLLECTION, 5, 0);
-        //first run
-        final long time1 = 1601629314416L;
-        final long time2 = 1601629317974L;
-        final long time3 = 1601629320331L;
-        final long time4 = 1601629320450L;
-        final long time5 = 1601639001984L;
-        final long time6 = 1601639014885L;
-        final long time7 = 1601639015025L;
-        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5, time6, time7);
-        List<Record> events = createEvents(url, session, user, times);
-
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        // One webSession expected.
-        testRunner.assertOutputRecordsCount(2);
-        final MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
-        final MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session1).sessionId(session)
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session)
-                .firstEventDateTime(time1)
-                .h2kTimestamp(time1)
-                .firstVisitedPage(url)
-                .eventsCounter(4)
-                .lastEventDateTime(time4)
-                .lastVisitedPage(url)
-                .sessionDuration(6L)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session2).sessionId(session + "#2")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#2")
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
-                .firstVisitedPage(url)
-                .eventsCounter(3)
-                .lastEventDateTime(time7)
-                .lastVisitedPage(url)
-                .sessionDuration(13L)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-        //saves sessions
-        injectSessions(Arrays.asList(session1, session2));
-        //second run
-        final long time8 = 1601882662402L;
-        final long time9 = 1601882676592L;
-        times = Arrays.asList(time8, time9);
-        events = createEvents(url, session, user, times);
-        testRunner.clearQueues();
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        // One webSession expected.
-        testRunner.assertOutputRecordsCount(2);
-
-        final MockRecord session2Updated = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-        final MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session2Updated).sessionId(session + "#2")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#2")
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
-                .firstVisitedPage(url)
-                .eventsCounter(3)
-                .lastEventDateTime(time7)
-                .lastVisitedPage(url)
-                .sessionDuration(13L)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session3).sessionId(session + "#3")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#3")
-                .firstEventDateTime(time8)
-                .h2kTimestamp(time8)
-                .firstVisitedPage(url)
-                .eventsCounter(2)
-                .lastEventDateTime(time9)
-                .lastVisitedPage(url)
-                .sessionDuration(14L)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-    }
-
-    private void injectSessions(List<MockRecord> sessions) {
-        final String sessionType = "sessions";
-        sessions.forEach(session -> {
-            String sessionIndex = toSessionIndexName(session.getField(WebEvent.TIMESTAMP).asLong());
-            this.elasticsearchClientService.bulkPut( sessionIndex + "," + sessionType, session);
-        });
-        this.elasticsearchClientService.bulkFlush();
-        try {
-            Thread.sleep(10L);
-            String[] indicesToWaitFor = sessions.stream()
-                    .map(session -> toSessionIndexName(session.getField(WebEvent.TIMESTAMP).asLong()))
-                    .toArray(String[]::new);
-            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
-//            this.elasticsearchClientService.refreshCollections(indicesToWaitFor);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
-    public void testBugWhenNotFlushingMappingAndHighFrequencyBatch2(DockerComposeContainer container)
-            throws Exception
-    {
-        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
-        final TestRunner testRunner = newTestRunner(container);
-        testRunner.assertValid();
-        //first run
-        final long time1 = 1601629314416L;
-        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
-        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
-        List<Record> events = createEvents(url, session, user, times);
-
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(5);
-        MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
-        MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-        MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-        MockRecord session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
-        MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session1).sessionId(session)
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session)
-                .firstEventDateTime(time1)
-                .h2kTimestamp(time1)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time1)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session5).sessionId(session + "#5")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#5")
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time5)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
-        //second run
-        final long time6 = time5 + 24L * 60L * 60L * 1000L;
-        final long time7 = time6 + 1000L;
-        final long time8 = time7 + 1000L;
-        times = Arrays.asList(time6, time7, time8);
-        events = createEvents(url, session, user, times);
-        testRunner.clearQueues();
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(2);
-        session5 = getFirstRecordWithId(session+ "#5", testRunner.getOutputRecords());
-        MockRecord session6 = getFirstRecordWithId(session + "#6", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session5).sessionId(session + "#5")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#5")
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time5)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session6).sessionId(session + "#6")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#6")
-                .firstEventDateTime(time6)
-                .h2kTimestamp(time6)
-                .firstVisitedPage(url)
-                .eventsCounter(3)
-                .lastEventDateTime(time8)
-                .lastVisitedPage(url)
-                .sessionDuration(2L)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        //saves sessions
-        injectSessions(Arrays.asList(session5, session6));
-        //third run
-        final long time9 = time8 + 1000L;
-        final long time10 = time9 + 1000L;
-        times = Arrays.asList(time9, time10);
-        events = createEvents(url, session, user, times);
-        testRunner.clearQueues();
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(1);
-
-        session6 = getFirstRecordWithId(session+ "#6", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session6).sessionId(session+ "#6")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session+ "#6")
-                .firstEventDateTime(time6)
-                .h2kTimestamp(time6)
-                .firstVisitedPage(url)
-                .eventsCounter(5)
-                .lastEventDateTime(time10)
-                .lastVisitedPage(url)
-                .sessionDuration(4L)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-    }
-
-
-    @Test
-    public void testRewind1(RestHighLevelClient esclient, DockerComposeContainer container)
-            throws Exception
-    {
-        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
-        final TestRunner testRunner = newTestRunner(container);
-        testRunner.assertValid();
-        //first run
-        final long time1 = 1601629314416L;
-        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
-        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
-        List<Record> events = createEvents(url, session, user, times);
-
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(5);
-        MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
-        MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-        MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-        MockRecord session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
-        MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session1).sessionId(session)
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session)
-                .firstEventDateTime(time1)
-                .h2kTimestamp(time1)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time1)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session5).sessionId(session + "#5")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#5")
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time5)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
-        SearchResponse rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits().value);
-        //rewind batch1
-        times = Arrays.asList(time1, time2);
-        events = createEvents(url, session, user, times);
-        resetCache(testRunner);
-        testRunner.clearQueues();
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(2);
-        session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
-        session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session1).sessionId(session)
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session)
-                .firstEventDateTime(time1)
-                .h2kTimestamp(time1)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time1)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session2).sessionId(session + "#2")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#2")
-                .firstEventDateTime(time2)
-                .h2kTimestamp(time2)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time2)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-        //rewind batch 2
-        injectSessions(Arrays.asList(session1, session2));
-        Thread.sleep(1000L);
-        rsp = getAllSessions(esclient);
-        assertEquals(2, rsp.getHits().getTotalHits().value);
-        //third run
-        //rewind
-        times = Arrays.asList(time3, time4, time5);
-        events = createEvents(url, session, user, times);
-        testRunner.clearQueues();
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(4);
-        session2 = getFirstRecordWithId(session+ "#2", testRunner.getOutputRecords());
-        session3 = getFirstRecordWithId(session+ "#3", testRunner.getOutputRecords());
-        session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
-        session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session2).sessionId(session + "#2")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#2")
-                .firstEventDateTime(time2)
-                .h2kTimestamp(time2)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time2)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session3).sessionId(session+ "#3")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session+ "#3")
-                .firstEventDateTime(time3)
-                .h2kTimestamp(time3)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time3)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session4).sessionId(session + "#4")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#4")
-                .firstEventDateTime(time4)
-                .h2kTimestamp(time4)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time4)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session5).sessionId(session + "#5")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#5")
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time5)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        injectSessions(Arrays.asList(session2, session3, session4, session5));
-//        Thread.sleep(1000L);
-        rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits().value);
-    }
-
-    public void resetCache(TestRunner testRunner) {
-        testRunner.disableControllerService(lruCache);
-        testRunner.enableControllerService(lruCache);
-    }
-
-    public SearchResponse getAllSessions(RestHighLevelClient esclient) throws IOException {
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX_PREFIX + "*", 100000L);
-        SearchRequest searchRequest = new SearchRequest(SESSION_INDEX_PREFIX + "*");
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        searchRequest.source(searchSourceBuilder);
-        return esclient.search(searchRequest, RequestOptions.DEFAULT);
-    }
-
-    @Test
-    public void testRewind2(RestHighLevelClient esclient, DockerComposeContainer container)
-            throws Exception
-    {
-        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
-        final TestRunner testRunner = newTestRunner(container);
-        testRunner.assertValid();
-        //first run
-        final long time1 = 1601629314416L;
-        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
-        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
-        List<Record> events = createEvents(url, session, user, times);
-
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(5);
-        MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
-        MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-        MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-        MockRecord session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
-        MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session1).sessionId(session)
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session)
-                .firstEventDateTime(time1)
-                .h2kTimestamp(time1)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time1)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session5).sessionId(session + "#5")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#5")
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time5)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
-        Thread.sleep(1000L);
-        SearchResponse rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits().value);
-        //rewind from time3
-        times = Arrays.asList(time3, time4, time5);
-        events = createEvents(url, session, user, times);
-        testRunner.clearQueues();
-        testRunner.enqueue(events);
-        testRunner.run();
-        List<MockRecord> outputSessions = testRunner.getOutputRecords();
-        injectSessions(outputSessions);
-        Thread.sleep(1000L);
-        rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits().value);
-    }
-
-    @Test
-    public void testRewindFailThenRestart(RestHighLevelClient esclient, DockerComposeContainer container)
-            throws Exception
-    {
-        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
-        final TestRunner testRunner = newTestRunner(container);
-        testRunner.assertValid();
-        //first run
-        final long time1 = 1601629314416L;
-        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
-        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
-        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
-        List<Record> events = createEvents(url, session, user, times);
-
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(5);
-        MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
-        MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-        MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-        MockRecord session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
-        MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session1).sessionId(session)
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session)
-                .firstEventDateTime(time1)
-                .h2kTimestamp(time1)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time1)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        new WebSessionChecker(session5).sessionId(session + "#5")
-                .Userid(user)
-                .record_type("consolidate-session")
-                .record_id(session + "#5")
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
-                .firstVisitedPage(url)
-                .eventsCounter(1)
-                .lastEventDateTime(time5)
-                .lastVisitedPage(url)
-                .sessionDuration(null)
-                .is_sessionActive(false)
-                .sessionInactivityDuration(SESSION_TIMEOUT);
-
-        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
-        Thread.sleep(1000L);
-        SearchResponse rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits().value);
-        //rewind from time3 but fail during regestering session so regestering only session 3
-        times = Arrays.asList(time3, time4, time5);
-        events = createEvents(url, session, user, times);
-        testRunner.clearQueues();
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertOutputRecordsCount(3);
-        session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-        injectSessions(Arrays.asList(session3));
-        Thread.sleep(1000L);
-        rsp = getAllSessions(esclient);
-        assertEquals(3, rsp.getHits().getTotalHits().value);
-        //restart from time3 because offset was not commited
-        times = Arrays.asList(time3, time4, time5);
-        events = createEvents(url, session, user, times);
-        testRunner.clearQueues();
-        testRunner.enqueue(events);
-        testRunner.run();
-        testRunner.assertOutputRecordsCount(3);
-        List<MockRecord> outputSessions = testRunner.getOutputRecords();
-        injectSessions(outputSessions);
-        Thread.sleep(1000L);
-        rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits().value);
-    }
-
-    @NotNull
-    public List<Record> createEvents(String url, String session, String user, List<Long> times) {
-        List<Record> events = new ArrayList<>();
-        for (Long time : times) {
-            String id = "event-" + time + "-" + session;
-            events.add(new WebEvent(id, session, user, time, url));
-        }
-        return events;
-    }
-
-    private static SimpleDateFormat SESSION_SUFFIX_FORMATTER = new SimpleDateFormat("yyyy.MM");
-    /**
-     * Returns the name of the event index corresponding to the specified date such as
-     * ${session-index-name}${session-suffix}.
-     * Eg. openanalytics-webevents.2018.01.31
-     *
-     * @param epochMilli the milli timestamp epoc of the event of the session.
-     * @return the name of the session index corresponding to the specified timestamp.
-     */
-    private String toSessionIndexName(long epochMilli) {
-        Date date = new java.util.Date(epochMilli);
-        return SESSION_INDEX_PREFIX + SESSION_SUFFIX_FORMATTER.format(date);
+        return records.stream().filter(record -> record.getId().equals(id)).findFirst().get();
     }
 }

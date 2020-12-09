@@ -39,6 +39,7 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.*;
@@ -524,7 +525,8 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     public void refreshCollections(String[] indices) throws DatastoreClientServiceException {
         try {
             RefreshRequest request = new RefreshRequest(indices);
-            esClient.indices().refresh(request, RequestOptions.DEFAULT);
+            RefreshResponse rsp = esClient.indices().refresh(request, RequestOptions.DEFAULT);
+            getLogger().info("refresh response for indices {} is {}", new Object[]{indices, rsp.getStatus()});
         } catch (Exception e){
             throw new DatastoreClientServiceException(e);
         }
