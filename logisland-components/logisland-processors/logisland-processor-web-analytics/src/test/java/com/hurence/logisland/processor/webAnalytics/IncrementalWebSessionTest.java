@@ -319,7 +319,7 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -353,9 +353,9 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, null, DAY1, URL1),
-                                         new WebEvent(eventCount++, SESSION1, USER1, DAY1+1000L, URL2),
-                                         new WebEvent(eventCount++, SESSION1, null, DAY1+2000L, URL3)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, null, DAY1, URL1),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1+1000L, URL2),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION1, null, DAY1+2000L, URL3)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -400,7 +400,7 @@ public class IncrementalWebSessionTest
                 Object value = iterator.next();
                 fields.put(name, value);
             }
-            events.add(new WebEvent(eventCount++,
+            events.add(new WebEvent(String.valueOf(eventCount++),
                                     (String)fields.get("sessionId"),
                                     (String)fields.get("userId"),
                                     (Long)fields.get("h2kTimestamp"),
@@ -496,7 +496,7 @@ public class IncrementalWebSessionTest
                 Object value = iterator.next();
                 fields.put(name, value);
             }
-            events.add(new WebEvent(eventCount++,
+            events.add(new WebEvent(String.valueOf(eventCount++),
                                     (String)fields.get("sessionId"),
                                     (String)fields.get("userId"),
                                     (Long)fields.get("h2kTimestamp"),
@@ -542,8 +542,8 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL1),
-                                         new WebEvent(eventCount++, SESSION2, USER2, DAY2, URL2)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION2, USER2, DAY2, URL2)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -594,7 +594,7 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, now, URL1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, now, URL1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -627,8 +627,8 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL1),
-                                         new WebEvent(eventCount++, null, USER1, DAY1, URL1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1),
+                                         new WebEvent(String.valueOf(eventCount++), null, USER1, DAY1, URL1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -662,8 +662,8 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL1),
-                                         new WebEvent(eventCount++, SESSION1, USER1, null, URL2)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, null, URL2)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -701,23 +701,23 @@ public class IncrementalWebSessionTest
         final long SESSION_TIMEOUT = 1800;
 
         final Collection<Record> events = Arrays.asList(
-            new WebEvent(eventCount++, SESSION1, USER1, DAY1,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1,
                          URL1),
-            new WebEvent(eventCount++, SESSION1, USER1, 1531492435034L,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531492435034L,
                          "https://orexad.preprod.group-iph.com/fr/cart"),
-            new WebEvent(eventCount++, SESSION1, USER1, 1531493380029L,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493380029L,
                          "https://orexad.preprod.group-iph.com/fr/search/?text=Vis"),
-            new WebEvent(eventCount++, SESSION1, USER1, 1531493805028L,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493805028L,
                          "https://orexad.preprod.group-iph.com/fr/search/?text=Vis"),
-            new WebEvent(eventCount++, SESSION1, USER1, 1531493810026L,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493810026L,
                          "https://orexad.preprod.group-iph.com/fr/vis-traction-complete-p-kit-k300/p-G1296007152?l=G1296007152"),
-            new WebEvent(eventCount++, SESSION1, USER1, 1531494175027L,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494175027L,
                          "https://orexad.preprod.group-iph.com/fr/cart"),
-            new WebEvent(eventCount++, SESSION1, USER1, 1531494180026L,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494180026L,
                          "https://orexad.preprod.group-iph.com/fr/cart"),
-            new WebEvent(eventCount++, SESSION1, USER1, 1531494480026L,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494480026L,
                          "https://orexad.preprod.group-iph.com/fr/cart"),
-            new WebEvent(eventCount++, SESSION1, USER1, TIME2,
+            new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, TIME2,
                          URL2));
 
         TestRunner testRunner = newTestRunner();
@@ -757,7 +757,7 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL1).add(PARTY_ID, PARTY_ID1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1).add(PARTY_ID, PARTY_ID1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -792,7 +792,7 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL1).add(PARTY_ID, PARTY_ID1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1).add(PARTY_ID, PARTY_ID1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -829,7 +829,7 @@ public class IncrementalWebSessionTest
         Instant firstEvent = Instant.now().minusSeconds(8);
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
@@ -837,7 +837,7 @@ public class IncrementalWebSessionTest
 
         Instant lastEvent = firstEvent.plusSeconds(2);
         testRunner = newTestRunner();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, lastEvent.toEpochMilli(), URL2)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, lastEvent.toEpochMilli(), URL2)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
@@ -845,7 +845,7 @@ public class IncrementalWebSessionTest
 
         lastEvent = lastEvent.plusSeconds(4);
         testRunner = newTestRunner();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, lastEvent.toEpochMilli(), URL3)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, lastEvent.toEpochMilli(), URL3)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
@@ -887,7 +887,7 @@ public class IncrementalWebSessionTest
         Instant firstEvent = Instant.now().minusSeconds(SESSION_TIMEOUT-2);
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
@@ -899,7 +899,7 @@ public class IncrementalWebSessionTest
         // Update web session with timestamp 1s before timeout.
         Instant event = firstEvent.plusSeconds(1);
         testRunner = newTestRunner();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, event.toEpochMilli(), URL2)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, event.toEpochMilli(), URL2)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
@@ -913,7 +913,7 @@ public class IncrementalWebSessionTest
         // Update web session with NOW+2s+SESSION_TIMEOUT.
         Instant lastEvent = event.plusSeconds(1);
         testRunner = newTestRunner();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, lastEvent.toEpochMilli(), URL3)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, lastEvent.toEpochMilli(), URL3)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.getOutputRecords().forEach(record -> this.elasticsearchClient.save(record));
@@ -954,7 +954,7 @@ public class IncrementalWebSessionTest
         Instant firstEvent = Instant.now().minusSeconds(SESSION_TIMEOUT+2);
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, firstEvent.toEpochMilli(), URL1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
@@ -963,7 +963,7 @@ public class IncrementalWebSessionTest
         // Update web session with a timestamp that is timeout.
         Instant timedoutEvent = Instant.now();
         testRunner = newTestRunner();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, timedoutEvent.toEpochMilli(), URL2)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, timedoutEvent.toEpochMilli(), URL2)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(2);
@@ -1017,8 +1017,8 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL),
-                                         new WebEvent(eventCount++, SESSION1, USER1, DAY2, URL2)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL),
+                                         new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY2, URL2)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -1071,7 +1071,7 @@ public class IncrementalWebSessionTest
 
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
-        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL1)));
+        testRunner.enqueue(Arrays.asList(new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1, URL1)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);

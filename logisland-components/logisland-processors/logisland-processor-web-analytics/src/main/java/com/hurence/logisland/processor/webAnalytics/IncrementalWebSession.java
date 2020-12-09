@@ -586,8 +586,29 @@ public class IncrementalWebSession
     }
 
     public Collection<Record> processRecords(final Collection<Record> records) {
-        Collection<Events> allEvents = handleRewindAndGetAllNeededEvents(records);
-        final Collection<SessionsCalculator> calculatedSessions = this.processEvents(allEvents);
+        final Collection<Events> groupOfEvents = toWebEvents(records);
+        final Collection<String> inputDivolteSessions = groupOfEvents.stream()
+                .map(Events::getSessionId)
+                .collect(Collectors.toList());
+        final Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping = getMapping(inputDivolteSessions);
+
+        //TODO this method should update mapping to current session for rewind
+        SplittedEvents splittedEvents = handleRewindAndGetAllNeededEvents(groupOfEvents, lastSessionMapping);
+        Collection<Events> allEvents = Stream.concat(
+                splittedEvents.getEventsfromPast().stream(),
+                splittedEvents.getEventsInNominalMode().stream()
+        ).collect(Collectors.toList());
+
+        final boolean isRewind = !splittedEvents.getEventsfromPast().isEmpty();
+        final Collection<SessionsCalculator> calculatedSessions;
+        if (isRewind) {
+            Set<String> sessionsInRewind = splittedEvents.getEventsfromPast().stream()
+                    .map(Events::getSessionId)
+                    .collect(Collectors.toSet());
+            calculatedSessions = this.processEvents(allEvents, lastSessionMapping, sessionsInRewind);
+        } else {
+            calculatedSessions = this.processEvents(allEvents, lastSessionMapping);
+        }
         saveEventsToEs(allEvents);
         //update cache
         calculatedSessions
@@ -625,37 +646,24 @@ public class IncrementalWebSession
         elasticsearchClientService.bulkFlush();
     }
 
-    private Collection<Events> handleRewindAndGetAllNeededEvents(final Collection<Record> records) {
-        final SplittedEvents splittedEvents = SplitEvents(records);
+    private SplittedEvents handleRewindAndGetAllNeededEvents(final Collection<Events> groupOfEvents,
+                                                             final Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping) {
+
+        final SplittedEvents splittedEvents = getSplittedEvents(groupOfEvents, lastSessionMapping);
         final Collection<Events> eventsFromPast = splittedEvents.getEventsfromPast();
-        final Collection<Events> eventsInNominalMode = splittedEvents.getEventsInNominalMode();
         if (eventsFromPast.isEmpty()) {
-            return eventsInNominalMode;
+            return splittedEvents;
         }
         deleteFuturSessions(eventsFromPast);
-        Collection<Event> eventsFromEs = getNeededEventsFromEs(eventsFromPast);
+        Collection<Event> eventsFromEs = getNeededEventsFromEs(eventsFromPast, lastSessionMapping);
         Map<String/*sessionId*/, List<Event>> eventsFromEsBySessionId = eventsFromEs
                 .stream()
                 .collect(Collectors.groupingBy(Event::getSessionId));
         //merge those events into the lists
         for (Events events : eventsFromPast) {
-            List<Event> eventsFromEsForSession = eventsFromEsBySessionId.get(events.getSessionId());
+            List<Event> eventsFromEsForSession = eventsFromEsBySessionId.getOrDefault(events.getSessionId(), Collections.emptyList());
             events.addAll(eventsFromEsForSession);//TODO P2 faire un test qui verifie que les events deja dans events sont prioritaire
         }
-
-        return Stream.concat(
-                eventsFromPast.stream(),
-                eventsInNominalMode.stream()
-        ).collect(Collectors.toList());
-    }
-
-    private SplittedEvents SplitEvents(Collection<Record> records) {
-        final Collection<Events> groupOfEvents = toWebEvents(records);
-        final Collection<String> inputDivolteSessions = groupOfEvents.stream()
-                .map(Events::getSessionId)
-                .collect(Collectors.toList());
-        Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping = getMapping(inputDivolteSessions);
-        final SplittedEvents splittedEvents = getSplittedEvents(groupOfEvents, lastSessionMapping);
         return splittedEvents;
     }
 
@@ -666,7 +674,8 @@ public class IncrementalWebSession
      * @param eventsFromPast
      * @return
      */
-    private Collection<Event> getNeededEventsFromEs(Collection<Events> eventsFromPast) {
+    private Collection<Event> getNeededEventsFromEs(final Collection<Events> eventsFromPast,
+                                                    final Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping) {
 
         /*
             Pour chaque events trouver les evènements de la session en cour nécessaire.
@@ -682,17 +691,28 @@ public class IncrementalWebSession
                         events -> events.first().getTimestamp()
                 ));
         Map<String/*divolteSession*/, WebSession> currentSessionsOfEvents = requestCurrentSessionsToEs(eventsFromPast);
-        Collection<Event> neededEventsFromEs = requestEventsFromSessiosnToEs(
+        uptadateLastSessionsMapping(lastSessionMapping, currentSessionsOfEvents);
+        resetCacheWithSessions(currentSessionsOfEvents);
+        Collection<Event> neededEventsFromEs = requestEventsFromSessionsToEs(
                 currentSessionsOfEvents.values(),
                 divoltSessionToFirstEvent
         );
         return neededEventsFromEs;
     }
 
+    private void uptadateLastSessionsMapping(Map<String, Optional<WebSession>> lastSessionMapping,
+                                             Map<String, WebSession> currentSessionsOfEvents) {
+        currentSessionsOfEvents.forEach((divolteSessions, session) -> lastSessionMapping.put(divolteSessions, Optional.of(session)));
+    }
 
-    private Collection<Event> requestEventsFromSessiosnToEs(Collection<WebSession> currentSessionsOfEvents,
+    private void resetCacheWithSessions(Map<String, WebSession> currentSessionsOfEvents) {
+        currentSessionsOfEvents.forEach((divolteSessions, session) -> this.cacheService.set(divolteSessions, session));
+    }
+
+
+    private Collection<Event> requestEventsFromSessionsToEs(Collection<WebSession> currentSessionsOfEvents,
                                                             Map<String, ZonedDateTime> divoltSessionToFirstEvent) {
-        MultiQueryResponseRecord eventsRsp = getNeededEventsFromEs(currentSessionsOfEvents, divoltSessionToFirstEvent);
+        MultiQueryResponseRecord eventsRsp = getMissingEventsForSessionsFromEs(currentSessionsOfEvents, divoltSessionToFirstEvent);
         return convertEsRToEvents(eventsRsp);
     }
 
@@ -748,8 +768,8 @@ public class IncrementalWebSession
         "size": 10000
     }
 */
-    private MultiQueryResponseRecord getNeededEventsFromEs(Collection<WebSession> currentSessionsOfEvents,
-                                                           Map<String, ZonedDateTime> divoltSessionToFirstEvent) {
+    private MultiQueryResponseRecord getMissingEventsForSessionsFromEs(Collection<WebSession> currentSessionsOfEvents,
+                                                                       Map<String, ZonedDateTime> divoltSessionToFirstEvent) {
         final List<QueryRecord> queries = new ArrayList<>();
         currentSessionsOfEvents.forEach(currentSession -> {
             ZonedDateTime firstEventTimeStamp = divoltSessionToFirstEvent.get(currentSession.getOriginalSessionId());
@@ -768,6 +788,13 @@ public class IncrementalWebSession
             queries.add(query);
         });
         MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
+        String[] indicesToWaitFor = currentSessionsOfEvents.stream()
+                .map(currentSession -> {
+                    ZonedDateTime firstEventTimeStamp = divoltSessionToFirstEvent.get(currentSession.getOriginalSessionId());
+                    return toEventIndexName(firstEventTimeStamp);
+                })
+                .toArray(String[]::new);
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
         return elasticsearchClientService.multiQueryGet(multiQuery);
     }
 
@@ -817,7 +844,8 @@ public class IncrementalWebSession
             queries.add(query);
         });
         MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
-        return elasticsearchClientService.multiQueryGet(multiQuery);
+        MultiQueryResponseRecord rsp = elasticsearchClientService.multiQueryGet(multiQuery);
+        return rsp;
     }
 
 //    GET new_openanalytics_websessions-*/_search
@@ -872,12 +900,16 @@ public class IncrementalWebSession
         elasticsearchClientService.deleteByQuery(queryRecord);
     }
 
-    private SplittedEvents getSplittedEvents(Collection<Events> groupOfEvents, Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping) {
+    private SplittedEvents getSplittedEvents(Collection<Events> groupOfEvents,
+                                             Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping) {
         final Collection<Events> eventsFromPast = new ArrayList<>();
         final Collection<Events> eventsOk = new ArrayList<>();
         for (Events events : groupOfEvents) {
             Optional<WebSession> lastSession = lastSessionMapping.get(events.getSessionId());
-            if (lastSession.isPresent() && lastSession.get().getLastEvent().toInstant().toEpochMilli() > events.first().getEpochTimeStampMilli()) {//> ou >= ?
+            if (lastSession.isPresent() &&
+                    lastSession.get().timestampFromPast(events.first().getTimestamp())) {
+//                    !lastSession.get().containsTimestamp(events.first().getTimestamp()) &&
+//                    lastSession.get().getLastEvent().toInstant().toEpochMilli() > events.first().getEpochTimeStampMilli()) {//> ou >= ?
                 eventsFromPast.add(events);
             } else {
                 eventsOk.add(events);
@@ -950,28 +982,52 @@ public class IncrementalWebSession
      * @param webEvents the web events from a same session to process.
      * @return web sessions resulting of the processing of the web events.
      */
-    private Collection<SessionsCalculator> processEvents(final Collection<Events> webEvents) {
-        Collection<String> divoltSessionsIds = webEvents.stream()
-                .map(Events::getSessionId)
-                .collect(Collectors.toList());
-        Map<String, Optional<WebSession>> lastSessionMapping = getMapping(divoltSessionsIds);
+    private Collection<SessionsCalculator> processEvents(final Collection<Events> webEvents,
+                                                         final Map<String, Optional<WebSession>> lastSessionMapping,
+                                                         final Set<String> sessionsInRewind) {
         // Applies all events to session documents and collect results.
-        final Collection<SessionsCalculator> result =
-                webEvents.stream()
-                        .map(events -> {
-                            if (lastSessionMapping.get(events.getSessionId()).isPresent()) {
-                                return new SessionsCalculator(this,
-                                        events.getSessionId(),
-                                        lastSessionMapping.get(events.getSessionId()).get()).processEvents(events);
-                            } else {
-                                return new SessionsCalculator(this,
-                                        events.getSessionId(),
-                                        null).processEvents(events);
-                            }
-                        })
-                        .collect(Collectors.toList());
+        return webEvents.stream()
+                .map(events -> {
+                    String divolteSession = events.getSessionId();
+                    if (lastSessionMapping.get(divolteSession).isPresent()) {
+                        boolean isRewind = sessionsInRewind.contains(divolteSession);
+                        return new SessionsCalculator(this,
+                                divolteSession,
+                                lastSessionMapping.get(events.getSessionId()).get()).processEvents(events, isRewind);
+                    } else {
+                        return new SessionsCalculator(this,
+                                divolteSession,
+                                null).processEvents(events, false);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
 
-        return result;
+    /**
+     * Processes the provided events and returns their resulting sessions.
+     * All sessions are retrieved from the cache or elasticsearch and then updated with the specified web events.
+     * One serie of events may result into multiple sessions.
+     *
+     * @param webEvents the web events from a same session to process.
+     * @return web sessions resulting of the processing of the web events.
+     */
+    private Collection<SessionsCalculator> processEvents(final Collection<Events> webEvents,
+                                                         final Map<String, Optional<WebSession>> lastSessionMapping) {
+        // Applies all events to session documents and collect results.
+        return webEvents.stream()
+                .map(events -> {
+                    String divolteSession = events.getSessionId();
+                    if (lastSessionMapping.get(divolteSession).isPresent()) {
+                        return new SessionsCalculator(this,
+                                divolteSession,
+                                lastSessionMapping.get(events.getSessionId()).get()).processEvents(events, false);
+                    } else {
+                        return new SessionsCalculator(this,
+                                divolteSession,
+                                null).processEvents(events, false);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
 //    GET new_openanalytics_websessions-*/_search
@@ -1006,7 +1062,6 @@ public class IncrementalWebSession
         divolteSessions.forEach(divoltSession -> {
             WebSession cachedSession = cacheService.get(divoltSession);
             if (cachedSession != null) {
-                //TODO reset cache when rewind detected ? AFter delete by query not same mapping
                 mappingToReturn.put(divoltSession, Optional.of(cachedSession));
             } else {
                 QueryRecord request = new QueryRecord()

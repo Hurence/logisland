@@ -57,7 +57,7 @@ public class Event
         return this.getStringValue(processor._SESSION_ID_FIELD);
     }
 
-    public void rename(final String sessionId) {
+    public void setSessionId(final String sessionId) {
         processor.debug("Rename session of event " + this.record.getId() + " from " + getSessionId() + " to " + sessionId);
         this.record.setField("originalSessionId", FieldType.STRING, getSessionId());
         this.record.setField(processor._SESSION_ID_FIELD, FieldType.STRING, sessionId);

@@ -330,11 +330,12 @@ public class IncrementalWebSessionIT
         });
         this.elasticsearchClientService.bulkFlush();
         try {
-            Thread.sleep(2000L);
+            Thread.sleep(10L);
             String[] indicesToWaitFor = sessions.stream()
                     .map(session -> toSessionIndexName(session.getField(WebEvent.TIMESTAMP).asLong()))
                     .toArray(String[]::new);
             this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
+//            this.elasticsearchClientService.refreshCollections(indicesToWaitFor);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -587,10 +588,25 @@ public class IncrementalWebSessionIT
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(3);
+        testRunner.assertOutputRecordsCount(4);
+        session2 = getFirstRecordWithId(session+ "#2", testRunner.getOutputRecords());
         session3 = getFirstRecordWithId(session+ "#3", testRunner.getOutputRecords());
         session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
         session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
+
+        new WebSessionChecker(session2).sessionId(session + "#2")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(session + "#2")
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time2)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
 
         new WebSessionChecker(session3).sessionId(session+ "#3")
                 .Userid(user)
@@ -633,7 +649,9 @@ public class IncrementalWebSessionIT
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
-        Thread.sleep(1000L);
+
+        injectSessions(Arrays.asList(session2, session3, session4, session5));
+//        Thread.sleep(1000L);
         rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
     }
@@ -818,7 +836,7 @@ public class IncrementalWebSessionIT
         List<Record> events = new ArrayList<>();
         for (Long time : times) {
             String id = "event-" + time + "-" + session;
-            events.add(new WebEvent(eventCount++, session, user, time, url));
+            events.add(new WebEvent(id, session, user, time, url));
         }
         return events;
     }

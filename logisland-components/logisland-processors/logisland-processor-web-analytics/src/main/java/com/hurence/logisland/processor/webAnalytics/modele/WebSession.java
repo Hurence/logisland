@@ -200,6 +200,10 @@ public class WebSession
         return this.getFirstEvent().compareTo(timestamp) <= 0 && timestamp.compareTo(this.getLastEvent()) <= 0;
     }
 
+    public boolean timestampFromPast(final ZonedDateTime timestamp) {
+        return timestamp.compareTo(this.getLastEvent()) < 0;
+    }
+
     @Override
     public int compareTo(final WebSession session) {
         if (this.getLastEvent().compareTo(session.getFirstEvent()) < 0) {

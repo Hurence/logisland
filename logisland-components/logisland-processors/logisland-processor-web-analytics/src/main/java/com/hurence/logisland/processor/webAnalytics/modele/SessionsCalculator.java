@@ -2,10 +2,8 @@ package com.hurence.logisland.processor.webAnalytics.modele;
 
 import com.hurence.logisland.processor.webAnalytics.IncrementalWebSession;
 import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class represents one or more sessions resulting of the processing of web events.
@@ -19,7 +17,7 @@ public class SessionsCalculator {
 
     // The resulting sessions from the processed web events.
     // MAKE SURE LAST SESSION IS AT LAST POSITION!!!
-    private final List<WebSession> processedSessions = new ArrayList<>();
+    private final List<WebSession> calculatedSessions = new ArrayList<>();
     private long eventCount;
 
 
@@ -52,36 +50,17 @@ public class SessionsCalculator {
      * @param events the events to process.
      * @return this object for convenience.
      */
-    public SessionsCalculator processEvents(final Events events) {
+    public SessionsCalculator processEvents(final Events events, final boolean isRewind) {
         processor.debug("Applying %d events to session '%s'", events.size(), events.getSessionId());
 
         if (this.lastSessionBeforeProcessing != null) {
             // One or more sessions were already stored in datastore.
-            final Iterator<Event> eventIterator = events.iterator();
-
-            Event event = null;
-            boolean outsideTimeWindow = false;
-            // Skip all events that have their timestamp in the range of the [first, last] timestamps of the
-            // web session. This happens in case the kafka topic was re-read from earliest than the last
-            // processed messages.
-            while (eventIterator.hasNext()) {
-                event = eventIterator.next();
-                outsideTimeWindow = !lastSessionBeforeProcessing.containsTimestamp(event.getTimestamp());
-                if (outsideTimeWindow) {
-                    break;
-                }
-            }
-
-            if (outsideTimeWindow) {
-                // Event iterator points to first event outside of session's time window.
-                // Recreates a list from the first event outside of the time window included.
-                final Events nextEvents = new Events(events.tailSet(event));
-
-                final String sessionIdOfCurrentSession = this.lastSessionBeforeProcessing.getSessionId();
-                nextEvents.forEach(toRename -> toRename.rename(sessionIdOfCurrentSession));
-
-                // Resume from first session.
-                this.processEvents(lastSessionBeforeProcessing, nextEvents);
+            final String sessionIdOfCurrentSession = this.lastSessionBeforeProcessing.getSessionId();
+            events.forEach(event -> event.setSessionId(sessionIdOfCurrentSession));
+            if (isRewind) {
+                this.processEvents(null, events);//force a new session (but will have good name with renaming
+            } else {
+                this.processEvents(lastSessionBeforeProcessing, events);
             }
         } else {
             // No web session yet exists for this session identifier. Create a new one.
@@ -116,7 +95,7 @@ public class SessionsCalculator {
             session.add(event);
         }
 
-        this.processedSessions.add(session);
+        this.calculatedSessions.add(session);
 
         while (iterator.hasNext()) {
             final Event event = iterator.next();
@@ -135,13 +114,13 @@ public class SessionsCalculator {
                 final int index = (oldSessionId.length == 1) ? 2 // only one web session so far => create 2nd one
                         : Integer.valueOf(oldSessionId[1]) + 1; // +1 on web session
                 final String newSessionId = oldSessionId[0] + IncrementalWebSession.EXTRA_SESSION_DELIMITER + index;
-                final Collection<Event> renamedEvents = events.tailSet(event);
+                final Collection<Event> eventsForNextSession = events.tailSet(event);
                 // Rewrite all remaining web-events with new session identifier.
-                renamedEvents.forEach(toRename -> toRename.rename(newSessionId));
+                eventsForNextSession.forEach(eventToChangeSession -> eventToChangeSession.setSessionId(newSessionId));
                 // Mark event that triggered the new sessions with the reason.
                 event.record.setField(processor._NEW_SESSION_REASON_FIELD, FieldType.STRING, isSessionValid.reason());
 
-                final Events nextEvents = new Events(renamedEvents);
+                final Events nextEvents = new Events(eventsForNextSession);
 
                 this.processEvents(null/*force new web-session*/, nextEvents);
                 break;
@@ -185,7 +164,7 @@ public class SessionsCalculator {
      * @return the processed web sessions.
      */
     public Collection<WebSession> getSessions() {
-        return processedSessions;
+        return calculatedSessions;
     }
 
     /**
@@ -196,8 +175,8 @@ public class SessionsCalculator {
     public String getLastSessionId() {
         String result = this.originalSessionId;
 
-        if (!this.processedSessions.isEmpty()) {
-            result = this.processedSessions.get(this.processedSessions.size() - 1).getSessionId();
+        if (!this.calculatedSessions.isEmpty()) {
+            result = this.calculatedSessions.get(this.calculatedSessions.size() - 1).getSessionId();
         } else {
             processor.error("Invalid state: session container for '" + this.originalSessionId + "' is empty. " +
                     "At least one session is expected");
