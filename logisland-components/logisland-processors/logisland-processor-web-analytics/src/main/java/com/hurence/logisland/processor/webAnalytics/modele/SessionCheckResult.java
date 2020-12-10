@@ -1,11 +1,13 @@
 package com.hurence.logisland.processor.webAnalytics.modele;
 
+import java.io.Serializable;
+
 /**
  * This interface defines the result of a check a of session against an event.
  * If the result is valid then the reason is empty; otherwise the reason contains a description of why the check
  * is not valid.oduire des trucs
  */
-public interface SessionCheckResult {
+public interface SessionCheckResult extends Serializable {
     /**
      * Returns {@code true} is the event is applicable to the session incrementally, {@code false} otherwise.
      * If {@code false} is returned then a new session must be created from the provided event and the provided

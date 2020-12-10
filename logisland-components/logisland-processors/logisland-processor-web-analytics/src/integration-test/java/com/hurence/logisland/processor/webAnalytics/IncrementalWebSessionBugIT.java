@@ -186,7 +186,7 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
         //saves sessions
-        injectSessions(Arrays.asList(session_1, session_2));
+        injectSessionsWithoutRefreshing(Arrays.asList(session_1, session_2));
         //second run
         final long time8 = 1601882662402L;
         final long time9 = 1601882676592L;
@@ -232,6 +232,10 @@ public class IncrementalWebSessionBugIT {
 
     private void injectSessions(List<MockRecord> sessions) {
         ElasticsearchServiceUtil.injectSessions(this.elasticsearchClientService, sessions);
+    }
+
+    private void injectSessionsWithoutRefreshing(List<MockRecord> sessions) {
+        ElasticsearchServiceUtil.injectSessionsWithoutRefreshing(this.elasticsearchClientService, sessions);
     }
 
     @Test
@@ -290,7 +294,7 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
+        injectSessionsWithoutRefreshing(Arrays.asList(session1, session2, session3, session4, session5));
         //second run
         final long time6 = time5 + 24L * 60L * 60L * 1000L;
         final long time7 = time6 + 1000L;
@@ -335,7 +339,7 @@ public class IncrementalWebSessionBugIT {
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
         //saves sessions
-        injectSessions(Arrays.asList(session5, session6));
+        injectSessionsWithoutRefreshing(Arrays.asList(session5, session6));
         //third run
         final long time9 = time8 + 1000L;
         final long time10 = time9 + 1000L;
@@ -466,9 +470,7 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
         //rewind batch 2
-        injectSessions(Arrays.asList(session1, session2));
-        rsp = getAllSessions(esclient);
-        assertEquals(2, rsp.getHits().getTotalHits().value);
+        injectSessionsWithoutRefreshing(Arrays.asList(session1, session2));
         //third run
         //rewind
         times = Arrays.asList(time3, time4, time5);
@@ -541,7 +543,6 @@ public class IncrementalWebSessionBugIT {
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
         injectSessions(Arrays.asList(session2, session3, session4, session5));
-
         rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
     }
@@ -616,7 +617,7 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
+        injectSessionsWithoutRefreshing(Arrays.asList(session1, session2, session3, session4, session5));
 
         SearchResponse rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
@@ -689,10 +690,8 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
+        injectSessionsWithoutRefreshing(Arrays.asList(session1, session2, session3, session4, session5));
 
-        SearchResponse rsp = getAllSessions(esclient);
-        assertEquals(5, rsp.getHits().getTotalHits().value);
         //rewind from time3 but fail during regestering session so regestering only session 3
         times = Arrays.asList(time3, time4, time5);
         events = createEvents(url, session, user, times);
@@ -701,10 +700,8 @@ public class IncrementalWebSessionBugIT {
         testRunner.run();
         testRunner.assertOutputRecordsCount(3);
         session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-        injectSessions(Arrays.asList(session3));
+        injectSessionsWithoutRefreshing(Arrays.asList(session3));
 
-        rsp = getAllSessions(esclient);
-        assertEquals(3, rsp.getHits().getTotalHits().value);
         //restart from time3 because offset was not commited
         times = Arrays.asList(time3, time4, time5);
         events = createEvents(url, session, user, times);
@@ -715,7 +712,7 @@ public class IncrementalWebSessionBugIT {
         List<MockRecord> outputSessions = testRunner.getOutputRecords();
         injectSessions(outputSessions);
 
-        rsp = getAllSessions(esclient);
+        SearchResponse rsp = getAllSessions(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
     }
 
@@ -789,6 +786,243 @@ public class IncrementalWebSessionBugIT {
         injectSessions(outputSessions);
         rsp = getAllSessions(esclient);
         assertEquals(4, rsp.getHits().getTotalHits().value);
+
+        //end of rewind should be as start
+        times = Arrays.asList(time3, time4, time5);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.enqueue(createEvents(url, divoltSession2, user, times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(8);
+        outputSessions = testRunner.getOutputRecords();
+        rsp = getAllSessions(esclient);
+        assertEquals(4, rsp.getHits().getTotalHits().value);
+        injectSessions(outputSessions);
+        rsp = getAllSessions(esclient);
+        assertEquals(10, rsp.getHits().getTotalHits().value);
+        List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(elasticsearchClientService, esclient);
+        String finalSession = divoltSession;
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)//TODO system de checking Long != Int
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession + "#2";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession + "#3";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession + "#4";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession + "#5";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        finalSession = divoltSession2;
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession2 + "#2";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession2 + "#3";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession2 + "#4";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession2 + "#5";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+    }
+
+    @Test
+    public void testRewind2DivoltId2(RestHighLevelClient esclient, DockerComposeContainer container)
+            throws Exception {
+        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
+        final String divoltSession = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String divoltSession2 = "0:kfdxb7hf:alpha";
+        final String user = "user";
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
+        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.enqueue(createEvents(url, divoltSession2, user, times));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(10);
+        MockRecord session_1 = getFirstRecordWithId(divoltSession, testRunner.getOutputRecords());
+        MockRecord session_5 = getFirstRecordWithId(divoltSession + "#5", testRunner.getOutputRecords());
+
+        new WebSessionChecker(session_1).sessionId(divoltSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(divoltSession)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        new WebSessionChecker(session_5).sessionId(divoltSession + "#5")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(divoltSession + "#5")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        injectSessions(testRunner.getOutputRecords());
+        SearchResponse rsp = getAllSessions(esclient);
+        assertEquals(10, rsp.getHits().getTotalHits().value);
+        //rewind from time1
+        times = Arrays.asList(time1, time2);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.enqueue(createEvents(url, divoltSession2, user, times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(4);
+        List<MockRecord> outputSessions = testRunner.getOutputRecords();
+        rsp = getAllSessions(esclient);
+        assertEquals(2, rsp.getHits().getTotalHits().value);
+        injectSessionsWithoutRefreshing(outputSessions);
 
         //end of rewind should be as start
         times = Arrays.asList(time3, time4, time5);

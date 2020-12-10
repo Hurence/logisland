@@ -16,20 +16,18 @@
 package com.hurence.logisland.service.datastore.model;
 
 
-import com.hurence.logisland.service.datastore.model.QueryRecord;
-
 import java.util.List;
 
 public class MultiQueryRecord {
 
-    private final List<QueryRecord> querys;
+    private final List<QueryRecord> queries;
 
 
-    public MultiQueryRecord(List<QueryRecord> querys) {
-        this.querys = querys;
+    public MultiQueryRecord(List<QueryRecord> queries) {
+        this.queries = queries;
     }
 
-    public List<QueryRecord> getQuerys() {
-        return querys;
+    public List<QueryRecord> getQueries() {
+        return queries;
     }
 }

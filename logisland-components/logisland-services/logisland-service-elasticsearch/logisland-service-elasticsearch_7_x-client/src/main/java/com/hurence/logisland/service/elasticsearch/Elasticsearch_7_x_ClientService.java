@@ -654,7 +654,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     }
 
     private List<SearchRequest> buildSearchRequests(MultiQueryRecord queryRecords) {
-        return queryRecords.getQuerys().stream()
+        return queryRecords.getQueries().stream()
                 .map(this::buildSearchRequest)
                 .collect(Collectors.toList());
     }

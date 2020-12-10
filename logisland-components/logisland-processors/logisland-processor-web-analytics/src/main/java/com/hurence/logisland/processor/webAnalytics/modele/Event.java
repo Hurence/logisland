@@ -104,18 +104,7 @@ public class Event
      * @return a copy of the inner record.
      */
     public Record cloneRecord() {
-        final Record result = new StandardRecord();
-        this.record.getFieldsEntrySet()
-                .forEach(entry ->
-                {
-                    if (entry.getValue() != null) {
-                        result.setField(entry.getValue());
-                    }
-                });
-
-        result.setField(fieldsNames.sessionIdField, FieldType.STRING, this.getSessionId());
-
-        return result;
+        return new StandardRecord(this.record);
     }
 
     @Override

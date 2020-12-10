@@ -23,6 +23,7 @@ import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.webAnalytics.modele.*;
+import com.hurence.logisland.processor.webAnalytics.util.Utils;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -89,6 +90,7 @@ value = "This processor creates and updates web-sessions based on incoming web-e
 public class IncrementalWebSession
        extends AbstractProcessor
 {
+
     /**
      * The extra character added in case a missed new session is detected. In that case the original session identifier
      * is suffixes with that special character and the next session number.
@@ -141,12 +143,13 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF =//TODO P3 date validator SimpleDateFormat
+    public static final PropertyDescriptor ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF =
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_SESSION_INDEX_SUFFIX_FORMATTER)
                     .description("suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .addValidator(StandardValidators.SIMPLE_DATE_FORMAT_VALIDATOR)
                     .build();
 
     public static final PropertyDescriptor ES_SESSION_TYPE_NAME_CONF =
@@ -183,12 +186,13 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF =//TODO P3 date validator DateTimeFormatter
+    public static final PropertyDescriptor ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF =
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_EVENT_INDEX_SUFFIX_FORMATTER)
                     .description("suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .addValidator(StandardValidators.DATE_TIME_FORMATTER_VALIDATOR)
                     .build();
 
     public static final PropertyDescriptor ES_EVENT_TYPE_NAME_CONF =
@@ -371,50 +375,14 @@ public class IncrementalWebSession
                  .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                  .build();
 
+
     /**
-     * The properties of this processor.
+     * A singleton for valid check.
      */
-    private final static List<PropertyDescriptor> SUPPORTED_PROPERTY_DESCRIPTORS =
-            Collections.unmodifiableList(Arrays.asList(
-                    DEBUG_CONF,
-                    ES_SESSION_INDEX_PREFIX_CONF,
-                    ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF,
-                    ES_SESSION_TYPE_NAME_CONF,
-                    ES_EVENT_INDEX_PREFIX_CONF,
-                    ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF,
-                    ES_EVENT_TYPE_NAME_CONF,
-                    SESSION_ID_FIELD_CONF,
-                    TIMESTAMP_FIELD_CONF,
-                    VISITED_PAGE_FIELD,
-                    USER_ID_FIELD,
-                    FIELDS_TO_RETURN,
-                    FIRST_VISITED_PAGE_FIELD,
-                    LAST_VISITED_PAGE_FIELD,
-                    IS_SESSION_ACTIVE_FIELD,
-                    SESSION_DURATION_FIELD,
-                    SESSION_INACTIVITY_DURATION_FIELD,
-                    SESSION_INACTIVITY_TIMEOUT_CONF,
-                    EVENTS_COUNTER_FIELD,
-                    FIRST_EVENT_DATETIME_FIELD,
-                    LAST_EVENT_DATETIME_FIELD,
-                    NEW_SESSION_REASON_FIELD,
-                    TRANSACTION_IDS,
-                    SOURCE_OF_TRAFFIC_PREFIX_FIELD,
-                    // Service
-                    ELASTICSEARCH_CLIENT_SERVICE_CONF,
-                    CONFIG_CACHE_SERVICE
-            ));
+    private final static SessionCheckResult DAY_OVERLAP = new InvalidSessionCheckResult("Day overlap");
+    private final static SessionCheckResult SESSION_TIMEDOUT = new InvalidSessionCheckResult("Session timed-out");
+    private final static SessionCheckResult SOURCE_OF_TRAFFIC = new InvalidSessionCheckResult("Source of traffic differed");
 
-    @Override
-    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return SUPPORTED_PROPERTY_DESCRIPTORS;
-    }
-
-    @Override
-    public boolean hasControllerService()
-    {
-        return true;
-    }
 
     //services
     private ElasticsearchClientService elasticsearchClientService;
@@ -435,6 +403,49 @@ public class IncrementalWebSession
     //events and session model
     private Event.InternalFields eventsInternalFields;
     private WebSession.InternalFields sessionInternalFields;
+    /**
+     * If {@code true} prints additional logs.
+     */
+    public boolean _DEBUG = false;
+
+    @Override
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+        return Collections.unmodifiableList(Arrays.asList(
+                DEBUG_CONF,
+                ES_SESSION_INDEX_PREFIX_CONF,
+                ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF,
+                ES_SESSION_TYPE_NAME_CONF,
+                ES_EVENT_INDEX_PREFIX_CONF,
+                ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF,
+                ES_EVENT_TYPE_NAME_CONF,
+                SESSION_ID_FIELD_CONF,
+                TIMESTAMP_FIELD_CONF,
+                VISITED_PAGE_FIELD,
+                USER_ID_FIELD,
+                FIELDS_TO_RETURN,
+                FIRST_VISITED_PAGE_FIELD,
+                LAST_VISITED_PAGE_FIELD,
+                IS_SESSION_ACTIVE_FIELD,
+                SESSION_DURATION_FIELD,
+                SESSION_INACTIVITY_DURATION_FIELD,
+                SESSION_INACTIVITY_TIMEOUT_CONF,
+                EVENTS_COUNTER_FIELD,
+                FIRST_EVENT_DATETIME_FIELD,
+                LAST_EVENT_DATETIME_FIELD,
+                NEW_SESSION_REASON_FIELD,
+                TRANSACTION_IDS,
+                SOURCE_OF_TRAFFIC_PREFIX_FIELD,
+                // Service
+                ELASTICSEARCH_CLIENT_SERVICE_CONF,
+                CONFIG_CACHE_SERVICE
+        ));
+    }
+
+    @Override
+    public boolean hasControllerService()
+    {
+        return true;
+    }
 
     @Override
     public void init(final ProcessContext context) throws InitializationException
@@ -486,7 +497,7 @@ public class IncrementalWebSession
         //Sessions indices
         this._ES_SESSION_INDEX_PREFIX = context.getPropertyValue(ES_SESSION_INDEX_PREFIX_CONF).asString();
         Objects.requireNonNull(this._ES_SESSION_INDEX_PREFIX, "Property required: " + ES_SESSION_INDEX_PREFIX_CONF);
-        //TODO P3 try to use same way to convert dates... But it is the deployed way in a prod environment so
+        //TODO P5 try to use same way to convert dates... But it is the deployed way in a prod environment so
         // think this a lot before changing it
         this._ES_SESSION_INDEX_SUFFIX_FORMATTER = new java.text.SimpleDateFormat(
                 context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF).asString()
@@ -497,7 +508,7 @@ public class IncrementalWebSession
         //Events indices
         this._ES_EVENT_INDEX_PREFIX = context.getPropertyValue(ES_EVENT_INDEX_PREFIX_CONF).asString();
         Objects.requireNonNull(this._ES_EVENT_INDEX_PREFIX, "Property required: " + ES_EVENT_INDEX_PREFIX_CONF);
-        //TODO P3 try to use same way to convert dates... But it is the deployed way in a prod environment so
+        //TODO P5 try to use same way to convert dates... But it is the deployed way in a prod environment so
         // think this a lot before changing it
         this._ES_EVENT_INDEX_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
                 context.getPropertyValue(ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF).asString(),
@@ -558,7 +569,7 @@ public class IncrementalWebSession
                         debug("'Day overlap' isValid=" + isValid + " session-id=" + session.getSessionId());
                     }
 
-                    return isValid ? VALID : DAY_OVERLAP;
+                    return isValid ? ValidSessionCheckResult.getInstance() : DAY_OVERLAP;
                 },
 
                 // Timeout exceeded
@@ -573,7 +584,7 @@ public class IncrementalWebSession
                                 " timeout=" + this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS + " session-id=" + session.getSessionId());
                     }
 
-                    return isValid ? VALID : SESSION_TIMEDOUT;
+                    return isValid ? ValidSessionCheckResult.getInstance() : SESSION_TIMEDOUT;
                 },
 
                 // One Campaign Per Session—Each visit to your site from a different campaign—organic or paid—triggers a
@@ -587,7 +598,7 @@ public class IncrementalWebSession
                         debug("'Fields of traffic' isValid=" + isValid + " session-id=" + session.getSessionId());
                     }
 
-                    return isValid ? VALID : SOURCE_OF_TRAFFIC;
+                    return isValid ? ValidSessionCheckResult.getInstance() : SOURCE_OF_TRAFFIC;
                 });
     }
 
@@ -657,8 +668,7 @@ public class IncrementalWebSession
                 .flatMap(Collection::stream)
                 .forEach(event ->
                 {
-                    final Map<String, Object> map = toMap(event.cloneRecord());
-
+                    final Map<String, Object> map = Utils.toMap(event.cloneRecord());
                     elasticsearchClientService.bulkPut(toEventIndexName(event.getTimestamp()),
                             _ES_EVENT_TYPE_NAME,
                             map,
@@ -702,10 +712,6 @@ public class IncrementalWebSession
             Pour chaque events trouver les evènements de la session en cour nécessaire.
             C'est de requêter tous les events de la sessionId et timestamp <= firstEventTs(input events)
         */
-        //TODO P2 look when do we need to refresh some indices
-//        String[] indicesToRefresh = null;
-//        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToRefresh, 60000L);
-        //TODO P2 END
         Map<String, ZonedDateTime> divoltSessionToFirstEvent = eventsFromPast.stream()
                 .collect(Collectors.toMap(
                         Events::getSessionId,
@@ -1098,7 +1104,6 @@ public class IncrementalWebSession
      * @param divolteSessions
      * @return
      */
-    //TODO P3 (can we avoid two query of this method ?)
     private Map<String/*divolteSession*/, Optional<WebSession>/*lastHurenceSession*/> getMapping(final Collection<String> divolteSessions) {
         final Map<String, Optional<WebSession>> mappingToReturn = new HashMap<>();
         final List<QueryRecord> sessionsRequests = new ArrayList<>();
@@ -1108,7 +1113,7 @@ public class IncrementalWebSession
                 mappingToReturn.put(divoltSession, Optional.of(cachedSession));
             } else {
                 QueryRecord request = new QueryRecord()
-                        .addCollection(_ES_SESSION_INDEX_PREFIX + "*")//TODO P2 put this on root, I think we should create a MultiQueryRecord instead...
+                        .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
                         .addType(_ES_SESSION_TYPE_NAME)
                         .addBoolQuery(
                                 new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divoltSession + "*"),
@@ -1215,26 +1220,9 @@ public class IncrementalWebSession
         {
             record.setField(key, FieldType.STRING, value);
         });
-        //TODO P2 verify id is okay in tests, and verify if okay generally to just store as string.
+        //TODO P4 verify id is okay in tests, and verify if okay generally to just store as string.
         return new Event(record, this.eventsInternalFields);
     }
-
-    /**
-     * The pattern to detect parameter 'gclid' in URL.
-     */
-    private static final Pattern GCLID = Pattern.compile(".*[\\&\\?]gclid=\\s*([^\\&\\?]+)\\&?.*");
-
-    /**
-     * The pattern to detect parameter 'gclsrc' in URL.
-     */
-    private static final Pattern GCLSRC = Pattern.compile(".*[\\&\\?]gclsrc=\\s*([^\\&\\?]+)\\&?.*");
-
-
-
-    /**
-     * If {@code true} prints additional logs.
-     */
-    public boolean _DEBUG = false;
 
     /**
      * Facility to log debug.
@@ -1242,7 +1230,7 @@ public class IncrementalWebSession
      * @param format the format of the String.
      * @param args the arguments.
      */
-    public void debug(final String format, final Object... args)
+    private void debug(final String format, final Object... args)
     {
         if ( _DEBUG )
         {
@@ -1256,136 +1244,6 @@ public class IncrementalWebSession
             }
         }
     }
-
-    /**
-     * Facility to log debug.
-     *
-     * @param format the format of the String.
-     * @param args the arguments.
-     */
-    public void error(final String format, final Object... args)
-    {
-        if ( _DEBUG )
-        {
-            if ( args.length == 0 )
-            {
-                getLogger().error(format);
-            }
-            else
-            {
-                getLogger().error(String.format(format + "\n", args));
-            }
-        }
-    }
-
-    /**
-     * Returns the conversion of a record to a map where all {@code null} values were removed.
-     *
-     * @param record the record to convert.
-     *
-     * @return the conversion of a record to a map where all {@code null} values were removed.
-     */
-    private static Map<String, Object> toMap(final Record record)
-    {
-        return toMap(record, false);
-    }
-
-    /**
-     * Returns the conversion of a record to a map where all {@code null} values were removed.
-     *
-     * @param record the record to convert.
-     * @param innerRecord if {@code true} special dictionnary fields are ignored; included otherwise.
-     *
-     * @return the conversion of a record to a map where all {@code null} values were removed.
-     */
-    private static Map<String, Object> toMap(final Record record,
-                                             final boolean innerRecord)
-    {
-        try
-        {
-            final Map<String, Object> result = new HashMap<>();
-
-            record.getFieldsEntrySet()
-                  .stream()
-                  .forEach(entry ->
-                  {
-                      if ( !innerRecord || (innerRecord && ! FieldDictionary.contains(entry.getKey())) )
-                      {
-                          Object value = entry.getValue().getRawValue();
-                          if (value != null) {
-                              switch(entry.getValue().getType())
-                              {
-                                  case RECORD:
-                                      value = toMap((Record)value, true);
-                                      break;
-                                  case ARRAY:
-                                      Collection collection;
-                                      if ( value instanceof Collection )
-                                      {
-                                          collection = (Collection)value;
-                                      }
-                                      else
-                                      {
-                                          collection = Arrays.asList(value);
-                                      }
-                                      final List list = new ArrayList(collection.size());
-                                      for(final Object item: collection)
-                                      {
-                                          if ( item instanceof Record )
-                                          {
-                                              list.add(toMap((Record)item, true));
-                                          }
-                                          else
-                                          {
-                                              list.add(item);
-                                          }
-                                      }
-                                      value = list;
-                                      break;
-                                  default:
-                              }
-                              result.put(entry.getKey(), value);
-                          }
-                      }
-                  });
-            return result;
-        }
-        catch(Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * A singleton for valid check.
-     */
-    public final static SessionCheckResult VALID = new SessionCheckResult()
-    {
-        @Override
-        public boolean isValid() { return true; }
-
-        @Override
-        public String reason() { return null; }
-    };
-
-
-    private static class InvalidSessionCheckResult
-                   implements SessionCheckResult
-    {
-        private final String reason;
-
-        public InvalidSessionCheckResult(final String reason) { this.reason = reason; }
-
-        @Override
-        public boolean isValid() { return false; }
-
-        @Override
-        public String reason() { return this.reason; }
-    }
-
-    private final static SessionCheckResult DAY_OVERLAP = new InvalidSessionCheckResult("Day overlap");
-    private final static SessionCheckResult SESSION_TIMEDOUT = new InvalidSessionCheckResult("Session timed-out");
-    private final static SessionCheckResult SOURCE_OF_TRAFFIC = new InvalidSessionCheckResult("Source of traffic differed");
 
 }
 

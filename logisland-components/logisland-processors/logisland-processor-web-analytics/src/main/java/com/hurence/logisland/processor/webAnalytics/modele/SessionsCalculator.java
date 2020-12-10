@@ -154,7 +154,7 @@ public class SessionsCalculator {
      */
     private SessionCheckResult isEventApplicable(final WebSession webSession,
                                                  final Event webEvent) {
-        SessionCheckResult result = IncrementalWebSession.VALID;
+        SessionCheckResult result = ValidSessionCheckResult.getInstance();
         for (final SessionCheck check : checkers) {
             result = check.isValid(webSession, webEvent);
             if (!result.isValid()) {
