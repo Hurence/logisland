@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor.webAnalytics.util;
 
 import com.hurence.logisland.processor.webAnalytics.IncrementalWebSession;
+import com.hurence.logisland.processor.webAnalytics.modele.TestMappings;
 import com.hurence.logisland.processor.webAnalytics.modele.WebSession;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -34,12 +35,12 @@ public class ElasticsearchServiceUtil {
                                       List<MockRecord> sessions) {
         final String sessionType = "sessions";
         sessions.forEach(session -> {
-            String sessionIndex = toSessionIndexName(session.getField(WebEvent.TIMESTAMP).asLong());
+            String sessionIndex = toSessionIndexName(session.getField(TestMappings.sessionInternalFields.getTimestampField()).asLong());
             esClientService.bulkPut( sessionIndex + "," + sessionType, session);
         });
         esClientService.bulkFlush();
         String[] indicesToWaitFor = sessions.stream()
-                .map(session -> toSessionIndexName(session.getField(WebEvent.TIMESTAMP).asLong()))
+                .map(session -> toSessionIndexName(session.getField(TestMappings.sessionInternalFields.getTimestampField()).asLong()))
                 .toArray(String[]::new);
         esClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
         //TODO for test should we remove this ?
@@ -65,7 +66,7 @@ public class ElasticsearchServiceUtil {
                     hit.getSourceAsMap().forEach((name, value) -> {
                         record.setField(name, FieldType.STRING, value);
                     });
-                    return new WebSession(record, proc);
+                    return new WebSession(record, TestMappings.sessionInternalFields);
                 })
                 .collect(Collectors.toList());
     }

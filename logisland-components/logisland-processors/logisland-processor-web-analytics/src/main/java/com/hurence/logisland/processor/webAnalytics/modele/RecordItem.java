@@ -48,8 +48,18 @@ public class RecordItem {
      * @param epoch the time to convert.
      * @return a ZonedDateTime corresponding to the provided epoch parameter with the system default timezone.
      */
-    ZonedDateTime fromEpoch(final long epoch) {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.valueOf(epoch)), ZoneId.systemDefault());
+    ZonedDateTime fromEpochMilli(final long epoch) {
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.systemDefault());//TODO system default ?
+    }
+
+    /**
+     * Returns a ZonedDateTime corresponding to the provided epoch parameter with the system default timezone.
+     *
+     * @param epoch the time to convert.
+     * @return a ZonedDateTime corresponding to the provided epoch parameter with the system default timezone.
+     */
+    ZonedDateTime fromEpochSecond(final long epoch) {
+        return ZonedDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.systemDefault());//TODO system default ?
     }
 
     /**

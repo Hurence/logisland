@@ -775,6 +775,7 @@ public class IncrementalWebSessionBugIT
         runner.setProperty(IncrementalWebSession.USER_ID_FIELD, "Userid");
         runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT));
         runner.setProperty(IncrementalWebSession.FIELDS_TO_RETURN, FIELDS_TO_RETURN);
+        runner.setProperty(IncrementalWebSession.DEBUG_CONF, "true");
         this.elasticsearchClientService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF).asControllerService());
         return runner;

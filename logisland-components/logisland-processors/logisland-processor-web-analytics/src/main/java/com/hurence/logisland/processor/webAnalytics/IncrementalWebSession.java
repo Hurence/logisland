@@ -140,7 +140,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF =//TODO P2 date validator SimpleDateFormat
+    public static final PropertyDescriptor ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF =//TODO P3 date validator SimpleDateFormat
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_SESSION_INDEX_SUFFIX_FORMATTER)
                     .description("suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].")
@@ -182,7 +182,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    public static final PropertyDescriptor ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF =//TODO P2 date validator DateTimeFormatter
+    public static final PropertyDescriptor ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF =//TODO P3 date validator DateTimeFormatter
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_EVENT_INDEX_SUFFIX_FORMATTER)
                     .description("suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].")
@@ -356,17 +356,17 @@ public class IncrementalWebSession
      */
     public static final String SOURCE_OF_TRAFFIC_FIELD_KEYWORD = "keyword";
 
-    protected static final String PROP_SOURCE_OF_TRAFFIC_SUFFIX = "source_of_traffic.suffix";
-    protected static final String SOURCE_OF_TRAFFIC_SUFFIX_NAME = "source_of_traffic";
+    protected static final String PROP_SOURCE_OF_TRAFFIC_PREFIX = "source_of_traffic.prefix";//TODO tell in doc that changed
+    protected static final String SOURCE_OF_TRAFFIC_PREFIX_NAME = "source_of_traffic";
     public static final String DIRECT_TRAFFIC = "direct";
 
     public final String FLAT_SEPARATOR = "_";
     public static final PropertyDescriptor SOURCE_OF_TRAFFIC_PREFIX_FIELD =
             new PropertyDescriptor.Builder()
-                 .name(PROP_SOURCE_OF_TRAFFIC_SUFFIX)
+                 .name(PROP_SOURCE_OF_TRAFFIC_PREFIX)
                  .description("Prefix for the source of the traffic related fields")
                  .required(false)
-                 .defaultValue(SOURCE_OF_TRAFFIC_SUFFIX_NAME)
+                 .defaultValue(SOURCE_OF_TRAFFIC_PREFIX_NAME)
                  .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                  .build();
 
@@ -415,38 +415,26 @@ public class IncrementalWebSession
         return true;
     }
 
-    public ElasticsearchClientService elasticsearchClientService;
-    public CacheService<String/*sessionId*/, WebSession> cacheService;
-    public long _SESSION_INACTIVITY_TIMEOUT;
-    public String _ORIGINAL_SESSION_ID_FIELD = "originalSessionId";
-    public String _SESSION_ID_FIELD;
-    public String _TIMESTAMP_FIELD;
-    public String _VISITED_PAGE_FIELD;
-    public Collection<String> _FIELDS_TO_RETURN;
-    public String _USERID_FIELD;
-    public String _FIRST_VISITED_PAGE_FIELD;
-    public String _LAST_VISITED_PAGE_FIELD;
-    public String _IS_SESSION_ACTIVE_FIELD;
-    public String _SESSION_DURATION_FIELD;
-    public String _EVENTS_COUNTER_FIELD;
-    public String _FIRST_EVENT_DATETIME_FIELD;
-    public String _LAST_EVENT_DATETIME_FIELD;
-    public String _SESSION_INACTIVITY_DURATION_FIELD;
-    public String _NEW_SESSION_REASON_FIELD;
-    public String _TRANSACTION_IDS;
-    public String _SOT_SOURCE_FIELD;
-    public String _SOT_CAMPAIGN_FIELD;
-    public String _SOT_MEDIUM_FIELD;
-    public String _SOT_CONTENT_FIELD;
-    public String _SOT_KEYWORD_FIELD;
-    public String _ES_SESSION_INDEX_PREFIX;
-    public SimpleDateFormat _ES_SESSION_INDEX_SUFFIX_FORMATTER;
-    public String _ES_SESSION_TYPE_NAME;
-    public String _ES_EVENT_INDEX_PREFIX;
-    public DateTimeFormatter _ES_EVENT_INDEX_SUFFIX_FORMATTER;
-    public String _ES_EVENT_TYPE_NAME;
+    private ElasticsearchClientService elasticsearchClientService;
+    private CacheService<String/*sessionId*/, WebSession> cacheService;
+    private long _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS;
+    private String _SESSION_ID_FIELD;
+    private String _TIMESTAMP_FIELD;
+    private Collection<String> _FIELDS_TO_RETURN;
+    private String _IS_SESSION_ACTIVE_FIELD;
+    private String _SESSION_DURATION_FIELD;
+    private String _EVENTS_COUNTER_FIELD;
+    private String _SOT_SOURCE_FIELD;
+    private String _ES_SESSION_INDEX_PREFIX;
+    private SimpleDateFormat _ES_SESSION_INDEX_SUFFIX_FORMATTER;
+    private String _ES_SESSION_TYPE_NAME;
+    private String _ES_EVENT_INDEX_PREFIX;
+    private DateTimeFormatter _ES_EVENT_INDEX_SUFFIX_FORMATTER;
+    private String _ES_EVENT_TYPE_NAME;
     private final long maxNumberOfEventForCurrentSessionRequested = 10000L;
-    public Collection<SessionCheck> checker;
+    private Collection<SessionCheck> checkers;
+    private Event.InternalFields eventsInternalFields;
+    private WebSession.InternalFields sessionInternalFields;
 
     @Override
     public void init(final ProcessContext context) throws InitializationException
@@ -462,43 +450,43 @@ public class IncrementalWebSession
         if (cacheService == null) {
             getLogger().error("Cache service is not initialized!");
         }
-        this._SESSION_INACTIVITY_TIMEOUT = context.getPropertyValue(SESSION_INACTIVITY_TIMEOUT_CONF).asLong();
+        this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS = context.getPropertyValue(SESSION_INACTIVITY_TIMEOUT_CONF).asLong();
         this._SESSION_ID_FIELD = context.getPropertyValue(SESSION_ID_FIELD_CONF).asString();
         this._TIMESTAMP_FIELD = context.getPropertyValue(TIMESTAMP_FIELD_CONF).asString();
-        this._VISITED_PAGE_FIELD = context.getPropertyValue(VISITED_PAGE_FIELD).asString();
+        final String _VISITED_PAGE_FIELD = context.getPropertyValue(VISITED_PAGE_FIELD).asString();
 
-        String fieldsToReturn = context.getPropertyValue(FIELDS_TO_RETURN).asString();
+        final String fieldsToReturn = context.getPropertyValue(FIELDS_TO_RETURN).asString();
         if (fieldsToReturn != null && !fieldsToReturn.isEmpty()) {
             this._FIELDS_TO_RETURN = Arrays.asList(fieldsToReturn.split(","));
         } else {
             this._FIELDS_TO_RETURN = Collections.emptyList();
         }
 
-        this._USERID_FIELD = context.getPropertyValue(USER_ID_FIELD).asString();
-        this._FIRST_VISITED_PAGE_FIELD = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
-        this._LAST_VISITED_PAGE_FIELD = context.getPropertyValue(LAST_VISITED_PAGE_FIELD).asString();
+        final String _USERID_FIELD = context.getPropertyValue(USER_ID_FIELD).asString();
+        final String _FIRST_VISITED_PAGE_FIELD = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
+        final String _LAST_VISITED_PAGE_FIELD = context.getPropertyValue(LAST_VISITED_PAGE_FIELD).asString();
         this._IS_SESSION_ACTIVE_FIELD = context.getPropertyValue(IS_SESSION_ACTIVE_FIELD).asString();
         this._SESSION_DURATION_FIELD = context.getPropertyValue(SESSION_DURATION_FIELD).asString();
         this._EVENTS_COUNTER_FIELD = context.getPropertyValue(EVENTS_COUNTER_FIELD).asString();
-        this._FIRST_EVENT_DATETIME_FIELD = context.getPropertyValue(FIRST_EVENT_DATETIME_FIELD).asString();
-        this._LAST_EVENT_DATETIME_FIELD = context.getPropertyValue(LAST_EVENT_DATETIME_FIELD).asString();
-        this._SESSION_INACTIVITY_DURATION_FIELD = context.getPropertyValue(SESSION_INACTIVITY_DURATION_FIELD)
+        final String _FIRST_EVENT_DATETIME_FIELD = context.getPropertyValue(FIRST_EVENT_DATETIME_FIELD).asString();
+        final String _LAST_EVENT_DATETIME_FIELD = context.getPropertyValue(LAST_EVENT_DATETIME_FIELD).asString();
+        String _SESSION_INACTIVITY_DURATION_FIELD = context.getPropertyValue(SESSION_INACTIVITY_DURATION_FIELD)
                 .asString();
-        this._NEW_SESSION_REASON_FIELD = context.getPropertyValue(NEW_SESSION_REASON_FIELD).asString();
-        this._TRANSACTION_IDS = context.getPropertyValue(TRANSACTION_IDS).asString();
+        final String _NEW_SESSION_REASON_FIELD = context.getPropertyValue(NEW_SESSION_REASON_FIELD).asString();
+        final String _TRANSACTION_IDS = context.getPropertyValue(TRANSACTION_IDS).asString();
 
         final String sotPrefix = context.getPropertyValue(SOURCE_OF_TRAFFIC_PREFIX_FIELD).asString() + FLAT_SEPARATOR;
 
-        this._SOT_SOURCE_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_SOURCE;
-        this._SOT_CAMPAIGN_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_CAMPAIGN;
-        this._SOT_MEDIUM_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_MEDIUM;
-        this._SOT_CONTENT_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_CONTENT;
-        this._SOT_KEYWORD_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_KEYWORD;
+        final String _SOT_SOURCE_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_SOURCE;
+        final String _SOT_CAMPAIGN_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_CAMPAIGN;
+        final String _SOT_MEDIUM_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_MEDIUM;
+        final String _SOT_CONTENT_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_CONTENT;
+        final String _SOT_KEYWORD_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_KEYWORD;
 
         //Sessions indices
         this._ES_SESSION_INDEX_PREFIX = context.getPropertyValue(ES_SESSION_INDEX_PREFIX_CONF).asString();
         Objects.requireNonNull(this._ES_SESSION_INDEX_PREFIX, "Property required: " + ES_SESSION_INDEX_PREFIX_CONF);
-        //TODO try to use same way to convert dates... But it is the deployed way in a prod environment so
+        //TODO P3 try to use same way to convert dates... But it is the deployed way in a prod environment so
         // think this a lot before changing it
         this._ES_SESSION_INDEX_SUFFIX_FORMATTER = new java.text.SimpleDateFormat(
                 context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF).asString()
@@ -509,7 +497,7 @@ public class IncrementalWebSession
         //Events indices
         this._ES_EVENT_INDEX_PREFIX = context.getPropertyValue(ES_EVENT_INDEX_PREFIX_CONF).asString();
         Objects.requireNonNull(this._ES_EVENT_INDEX_PREFIX, "Property required: " + ES_EVENT_INDEX_PREFIX_CONF);
-        //TODO try to use same way to convert dates... But it is the deployed way in a prod environment so
+        //TODO P3 try to use same way to convert dates... But it is the deployed way in a prod environment so
         // think this a lot before changing it
         this._ES_EVENT_INDEX_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
                 context.getPropertyValue(ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF).asString(),
@@ -519,7 +507,40 @@ public class IncrementalWebSession
         this._ES_EVENT_TYPE_NAME = context.getPropertyValue(ES_EVENT_TYPE_NAME_CONF).asString();
         Objects.requireNonNull(this._ES_EVENT_TYPE_NAME, "Property required: " + ES_EVENT_TYPE_NAME_CONF);
 
-        this.checker = Arrays.asList(
+        this.eventsInternalFields = new Event.InternalFields()
+                .setSessionIdField(_SESSION_ID_FIELD)
+                .setTimestampField(_TIMESTAMP_FIELD)
+                .setVisitedPageField(_VISITED_PAGE_FIELD)
+                .setSourceOffTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
+                .setSourceOffTrafficContentField(_SOT_CONTENT_FIELD)
+                .setSourceOffTrafficKeyWordField(_SOT_KEYWORD_FIELD)
+                .setSourceOffTrafficMediumField(_SOT_MEDIUM_FIELD)
+                .setSourceOffTrafficSourceField(_SOT_SOURCE_FIELD)
+                .setNewSessionReasonField(_NEW_SESSION_REASON_FIELD)
+                .setUserIdField(_USERID_FIELD);
+
+        this.sessionInternalFields = new WebSession.InternalFields()
+                .setSessionIdField(_SESSION_ID_FIELD)
+                .setTimestampField(_TIMESTAMP_FIELD)
+                .setSourceOffTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
+                .setSourceOffTrafficContentField(_SOT_CONTENT_FIELD)
+                .setSourceOffTrafficKeyWordField(_SOT_KEYWORD_FIELD)
+                .setSourceOffTrafficMediumField(_SOT_MEDIUM_FIELD)
+                .setSourceOffTrafficSourceField(_SOT_SOURCE_FIELD)
+                .setIsSessionActiveField(_IS_SESSION_ACTIVE_FIELD)
+                .setSessionDurationField(_SESSION_DURATION_FIELD)
+                .setSessionInactivityDurationField(_SESSION_INACTIVITY_DURATION_FIELD)
+                .setEventsCounterField(_EVENTS_COUNTER_FIELD)
+                .setFirstEventDateTimeField(_FIRST_EVENT_DATETIME_FIELD)
+                .setFirstEventEpochSecondsField(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
+                .setFirstVisitedPageField(_FIRST_VISITED_PAGE_FIELD)
+                .setLastEventDateTimeField(_LAST_EVENT_DATETIME_FIELD)
+                .setLastEventEpochSecondsField(_LAST_EVENT_EPOCH_SECONDS_FIELD)
+                .setLastVisitedPageField(_LAST_VISITED_PAGE_FIELD)
+                .setTransactionIdsField(_TRANSACTION_IDS)
+                .setUserIdField(_USERID_FIELD);
+
+        this.checkers = Arrays.asList(
                 // Day overlap
                 (session, event) ->
                 {
@@ -545,11 +566,11 @@ public class IncrementalWebSession
                 {
                     final long durationInSeconds = Duration.between(session.getLastEvent(), event.getTimestamp())
                             .getSeconds();
-                    boolean isValid = durationInSeconds <= this._SESSION_INACTIVITY_TIMEOUT;
+                    boolean isValid = durationInSeconds <= this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS;
 
                     if (_DEBUG && !isValid) {
                         debug("'Timeout exceeded' isValid=" + isValid + " seconds=" + durationInSeconds +
-                                " timeout=" + this._SESSION_INACTIVITY_TIMEOUT + " session-id=" + session.getSessionId());
+                                " timeout=" + this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS + " session-id=" + session.getSessionId());
                     }
 
                     return isValid ? VALID : SESSION_TIMEDOUT;
@@ -592,7 +613,7 @@ public class IncrementalWebSession
                 .collect(Collectors.toList());
         final Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping = getMapping(inputDivolteSessions);
 
-        //TODO this method should update mapping to current session for rewind
+        //This method may update lastSessionMapping to current session (only the name will be used) when rewind is detected !
         SplittedEvents splittedEvents = handleRewindAndGetAllNeededEvents(groupOfEvents, lastSessionMapping);
         Collection<Events> allEvents = Stream.concat(
                 splittedEvents.getEventsfromPast().stream(),
@@ -613,15 +634,15 @@ public class IncrementalWebSession
         //update cache
         calculatedSessions
                 .forEach(sessionsCalculator -> {
-                    String divolteSession = sessionsCalculator.getOriginalSessionId();
-                    WebSession lastSession = sessionsCalculator.getSessions().stream()
+                    String divolteSession = sessionsCalculator.getDivolteSessionId();
+                    WebSession lastSession = sessionsCalculator.getCalculatedSessions().stream()
                             .filter(session -> session.getSessionId().equals(sessionsCalculator.getLastSessionId()))
                             .findFirst().get();
                     cacheService.set(divolteSession, lastSession);
                 });
 
         final Collection<WebSession> flattenedSessions = calculatedSessions.stream()
-                .flatMap(sessionsCalculator -> sessionsCalculator.getSessions().stream())
+                .flatMap(sessionsCalculator -> sessionsCalculator.getCalculatedSessions().stream())
                 .collect(Collectors.toList());
         debug("Processing done. Outcoming records size=%d ", flattenedSessions.size());
 
@@ -936,7 +957,7 @@ public class IncrementalWebSession
                         .filter(record -> isFieldAssigned(record.getField(_SESSION_ID_FIELD))
                                 && isFieldAssigned(record.getField(_TIMESTAMP_FIELD)))
                         // Create web-event from record.
-                        .map(record -> new Event(record, this))
+                        .map(record -> new Event(record, this.eventsInternalFields))
                         // Group records per session Id.
                         .collect(Collectors.groupingBy(Event::getSessionId))
                         // Ignore keys (sessionId) and stream over list of associated events.
@@ -991,13 +1012,19 @@ public class IncrementalWebSession
                     String divolteSession = events.getSessionId();
                     if (lastSessionMapping.get(divolteSession).isPresent()) {
                         boolean isRewind = sessionsInRewind.contains(divolteSession);
-                        return new SessionsCalculator(this,
-                                divolteSession,
+                        return new SessionsCalculator(checkers,
+                                _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
+                                sessionInternalFields,
+                                eventsInternalFields,
+                                _FIELDS_TO_RETURN,
                                 lastSessionMapping.get(events.getSessionId()).get()).processEvents(events, isRewind);
                     } else {
-                        return new SessionsCalculator(this,
-                                divolteSession,
-                                null).processEvents(events, false);
+                        return new SessionsCalculator(checkers,
+                                _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
+                                sessionInternalFields,
+                                eventsInternalFields,
+                                _FIELDS_TO_RETURN,
+                                divolteSession).processEvents(events, false);
                     }
                 })
                 .collect(Collectors.toList());
@@ -1018,13 +1045,19 @@ public class IncrementalWebSession
                 .map(events -> {
                     String divolteSession = events.getSessionId();
                     if (lastSessionMapping.get(divolteSession).isPresent()) {
-                        return new SessionsCalculator(this,
-                                divolteSession,
+                        return new SessionsCalculator(checkers,
+                                _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
+                                sessionInternalFields,
+                                eventsInternalFields,
+                                _FIELDS_TO_RETURN,
                                 lastSessionMapping.get(events.getSessionId()).get()).processEvents(events, false);
                     } else {
-                        return new SessionsCalculator(this,
-                                divolteSession,
-                                null).processEvents(events, false);
+                        return new SessionsCalculator(checkers,
+                                _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
+                                sessionInternalFields,
+                                eventsInternalFields,
+                                _FIELDS_TO_RETURN,
+                                divolteSession).processEvents(events, false);
                     }
                 })
                 .collect(Collectors.toList());
@@ -1127,23 +1160,22 @@ public class IncrementalWebSession
         final Record record = new StandardRecord(recordType);
         sourceAsMap.forEach((key, value) ->
         {
-            if (_IS_SESSION_ACTIVE_FIELD.equals(key)) {
+            if (sessionInternalFields.getIsSessionActiveField().equals(key)) {
                 record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
-            } else if (_SESSION_DURATION_FIELD.equals(key)
-                    || _EVENTS_COUNTER_FIELD.equals(key)
-                    || _TIMESTAMP_FIELD.equals(key)
-                    || _SESSION_INACTIVITY_DURATION_FIELD.equals(key)
-                    || _FIRST_EVENT_EPOCH_SECONDS_FIELD.equals(key)
-                    || _LAST_EVENT_EPOCH_SECONDS_FIELD.equals(key)
-                    || _SESSION_INACTIVITY_DURATION_FIELD.equals(key)
+            } else if (sessionInternalFields.getSessionDurationField().equals(key)
+                    || sessionInternalFields.getEventsCounterField().equals(key)
+                    || sessionInternalFields.getTimestampField().equals(key)
+                    || sessionInternalFields.getSessionInactivityDurationField().equals(key)
+                    || sessionInternalFields.getFirstEventEpochSecondsField().equals(key)
+                    || sessionInternalFields.getLastEventEpochSecondsField().equals(key)
                     || FieldDictionary.RECORD_TIME.equals(key)) {
                 record.setField(key, FieldType.LONG, Long.valueOf(value));
             } else {
                 record.setField(key, FieldType.STRING, value);
             }
         });
-        record.setId(record.getField(_SESSION_ID_FIELD).asString());
-        return new WebSession(record, this);
+        record.setId(record.getField(sessionInternalFields.getSessionIdField()).asString());
+        return new WebSession(record, this.sessionInternalFields);
     }
 
 
@@ -1168,25 +1200,10 @@ public class IncrementalWebSession
         final Record record = new StandardRecord(recordType);
         sourceAsMap.forEach((key, value) ->
         {
-//            if (_IS_SESSION_ACTIVE_FIELD.equals(key)) {
-//                record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
-//            } else if (_SESSION_DURATION_FIELD.equals(key)
-//                    || _EVENTS_COUNTER_FIELD.equals(key)
-//                    || _TIMESTAMP_FIELD.equals(key)
-//                    || _SESSION_INACTIVITY_DURATION_FIELD.equals(key)
-//                    || _FIRST_EVENT_EPOCH_SECONDS_FIELD.equals(key)
-//                    || _LAST_EVENT_EPOCH_SECONDS_FIELD.equals(key)
-//                    || _SESSION_INACTIVITY_DURATION_FIELD.equals(key)
-//                    || FieldDictionary.RECORD_TIME.equals(key)) {
-//                record.setField(key, FieldType.LONG, Long.valueOf(value));
-//            } else {
-//                record.setField(key, FieldType.STRING, value);
-//            }
             record.setField(key, FieldType.STRING, value);
         });
-//        record.setId(record.getField(_SESSION_ID_FIELD).asString());
         //TODO P2 verify id is okay in tests, and verify if okay generally to just store as string.
-        return new Event(record, this);
+        return new Event(record, this.eventsInternalFields);
     }
 
     /**
