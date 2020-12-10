@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,8 +66,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test incremental web-session processor.
  */
 @ExtendWith({Es7DockerExtension.class})
-public class IncrementalWebSessionBugIT
-{
+public class IncrementalWebSessionBugIT {
     private static Logger logger = LoggerFactory.getLogger(IncrementalWebSessionBugIT.class);
 
     private final long SESSION_TIMEOUT = 1800L;
@@ -103,44 +102,43 @@ public class IncrementalWebSessionBugIT
 
     }
 
-/*
-    A bug when deleting session mapping of es every day when divolt send events with same sessionId on several days !
-    A bug when mult !
+    /*
+        A bug when deleting session mapping of es every day when divolt send events with same sessionId on several days !
+        A bug when mult !
 
-    Giver events input
-        eventID | @timestamp | h2kTimestamp  | sessionId
-     1 | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     2 | 1601629317974 (ven. 02 oct. 2020 09:01:57 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     3 | 1601629320331 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     4 | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     5 | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     6 | 1601639014885 (ven. 02 oct. 2020 11:43:34 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     7 | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     8 | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     9 | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     Expect output events
-     1 | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     2 | 1601629317974 (ven. 02 oct. 2020 09:01:57 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     3 | 1601629320331 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     4 | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
-     5 | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     6 | 1601639014885 (ven. 02 oct. 2020 11:43:34 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     7 | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
-     8 | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3"
-     9 | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3"
-     And expect output sessions
-     sessionId | firstEventDate | lastEventDate | counter
-     "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"   | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | 4
-     "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2" | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | 3
-     "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3" | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | 2
-*/
+        Giver events input
+            eventID | @timestamp | h2kTimestamp  | sessionId
+         1 | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
+         2 | 1601629317974 (ven. 02 oct. 2020 09:01:57 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
+         3 | 1601629320331 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
+         4 | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
+         5 | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
+         6 | 1601639014885 (ven. 02 oct. 2020 11:43:34 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
+         7 | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
+         8 | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
+         9 | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
+         Expect output events
+         1 | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
+         2 | 1601629317974 (ven. 02 oct. 2020 09:01:57 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
+         3 | 1601629320331 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
+         4 | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"
+         5 | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
+         6 | 1601639014885 (ven. 02 oct. 2020 11:43:34 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
+         7 | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2"
+         8 | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3"
+         9 | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3"
+         And expect output sessions
+         sessionId | firstEventDate | lastEventDate | counter
+         "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al"   | 1601629314416 (ven. 02 oct. 2020 09:01:54 GMT) | 1601629320450 (ven. 02 oct. 2020 09:02:00 GMT) | 4
+         "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#2" | 1601639001984 (ven. 02 oct. 2020 11:43:21 GMT) | 1601639015025 (ven. 02 oct. 2020 11:43:35 GMT) | 3
+         "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3" | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | 2
+    */
     @Test
     public void testBugWhenNotFlushingMappingAndHighFrequencyBatch(DockerComposeContainer container)
-            throws Exception
-    {
+            throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
+        final String divoltSession = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user = "user";
         final TestRunner testRunner = newTestRunner(container);
         testRunner.assertValid();
         //first run
@@ -152,21 +150,18 @@ public class IncrementalWebSessionBugIT
         final long time6 = 1601639014885L;
         final long time7 = 1601639015025L;
         List<Long> times = Arrays.asList(time1, time2, time3, time4, time5, time6, time7);
-        List<Record> events = createEvents(url, session, user, times);
-
-        testRunner.enqueue(events);
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
         // One webSession expected.
         testRunner.assertOutputRecordsCount(2);
-        final MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
-        final MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session1).sessionId(session)
+        final MockRecord session_1 = getFirstRecordWithId(divoltSession, testRunner.getOutputRecords());
+        final MockRecord session_2 = getFirstRecordWithId(divoltSession + "#2", testRunner.getOutputRecords());
+        new WebSessionChecker(session_1).sessionId(divoltSession)
                 .Userid(user)
                 .record_type("consolidate-session")
-                .record_id(session)
+                .record_id(divoltSession)
                 .firstEventDateTime(time1)
                 .h2kTimestamp(time1)
                 .firstVisitedPage(url)
@@ -177,10 +172,10 @@ public class IncrementalWebSessionBugIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        new WebSessionChecker(session2).sessionId(session + "#2")
+        new WebSessionChecker(session_2).sessionId(divoltSession + "#2")
                 .Userid(user)
                 .record_type("consolidate-session")
-                .record_id(session + "#2")
+                .record_id(divoltSession + "#2")
                 .firstEventDateTime(time5)
                 .h2kTimestamp(time5)
                 .firstVisitedPage(url)
@@ -191,27 +186,25 @@ public class IncrementalWebSessionBugIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
         //saves sessions
-        injectSessions(Arrays.asList(session1, session2));
+        injectSessions(Arrays.asList(session_1, session_2));
         //second run
         final long time8 = 1601882662402L;
         final long time9 = 1601882676592L;
         times = Arrays.asList(time8, time9);
-        events = createEvents(url, session, user, times);
         testRunner.clearQueues();
-        testRunner.enqueue(events);
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
         // One webSession expected.
         testRunner.assertOutputRecordsCount(2);
 
-        final MockRecord session2Updated = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-        final MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
-
-        new WebSessionChecker(session2Updated).sessionId(session + "#2")
+        final MockRecord session_2Updated = getFirstRecordWithId(divoltSession + "#2", testRunner.getOutputRecords());
+        final MockRecord session_3 = getFirstRecordWithId(divoltSession + "#3", testRunner.getOutputRecords());
+        new WebSessionChecker(session_2Updated).sessionId(divoltSession + "#2")
                 .Userid(user)
                 .record_type("consolidate-session")
-                .record_id(session + "#2")
+                .record_id(divoltSession + "#2")
                 .firstEventDateTime(time5)
                 .h2kTimestamp(time5)
                 .firstVisitedPage(url)
@@ -222,10 +215,10 @@ public class IncrementalWebSessionBugIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        new WebSessionChecker(session3).sessionId(session + "#3")
+        new WebSessionChecker(session_3).sessionId(divoltSession + "#3")
                 .Userid(user)
                 .record_type("consolidate-session")
-                .record_id(session + "#3")
+                .record_id(divoltSession + "#3")
                 .firstEventDateTime(time8)
                 .h2kTimestamp(time8)
                 .firstVisitedPage(url)
@@ -243,11 +236,10 @@ public class IncrementalWebSessionBugIT
 
     @Test
     public void testBugWhenNotFlushingMappingAndHighFrequencyBatch2(DockerComposeContainer container)
-            throws Exception
-    {
+            throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
+        final String session = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user = "user";
         final TestRunner testRunner = newTestRunner(container);
         testRunner.assertValid();
         //first run
@@ -311,7 +303,7 @@ public class IncrementalWebSessionBugIT
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(2);
-        session5 = getFirstRecordWithId(session+ "#5", testRunner.getOutputRecords());
+        session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
         MockRecord session6 = getFirstRecordWithId(session + "#6", testRunner.getOutputRecords());
 
         new WebSessionChecker(session5).sessionId(session + "#5")
@@ -356,12 +348,12 @@ public class IncrementalWebSessionBugIT
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(1);
 
-        session6 = getFirstRecordWithId(session+ "#6", testRunner.getOutputRecords());
+        session6 = getFirstRecordWithId(session + "#6", testRunner.getOutputRecords());
 
-        new WebSessionChecker(session6).sessionId(session+ "#6")
+        new WebSessionChecker(session6).sessionId(session + "#6")
                 .Userid(user)
                 .record_type("consolidate-session")
-                .record_id(session+ "#6")
+                .record_id(session + "#6")
                 .firstEventDateTime(time6)
                 .h2kTimestamp(time6)
                 .firstVisitedPage(url)
@@ -376,11 +368,10 @@ public class IncrementalWebSessionBugIT
 
     @Test
     public void testRewind1(RestHighLevelClient esclient, DockerComposeContainer container)
-            throws Exception
-    {
+            throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
+        final String session = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user = "user";
         final TestRunner testRunner = newTestRunner(container);
         testRunner.assertValid();
         //first run
@@ -488,8 +479,8 @@ public class IncrementalWebSessionBugIT
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(4);
-        session2 = getFirstRecordWithId(session+ "#2", testRunner.getOutputRecords());
-        session3 = getFirstRecordWithId(session+ "#3", testRunner.getOutputRecords());
+        session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
+        session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
         session4 = getFirstRecordWithId(session + "#4", testRunner.getOutputRecords());
         session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
 
@@ -507,10 +498,10 @@ public class IncrementalWebSessionBugIT
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        new WebSessionChecker(session3).sessionId(session+ "#3")
+        new WebSessionChecker(session3).sessionId(session + "#3")
                 .Userid(user)
                 .record_type("consolidate-session")
-                .record_id(session+ "#3")
+                .record_id(session + "#3")
                 .firstEventDateTime(time3)
                 .h2kTimestamp(time3)
                 .firstVisitedPage(url)
@@ -571,11 +562,10 @@ public class IncrementalWebSessionBugIT
 
     @Test
     public void testRewind2(RestHighLevelClient esclient, DockerComposeContainer container)
-            throws Exception
-    {
+            throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
+        final String session = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user = "user";
         final TestRunner testRunner = newTestRunner(container);
         testRunner.assertValid();
         //first run
@@ -645,11 +635,10 @@ public class IncrementalWebSessionBugIT
 
     @Test
     public void testRewindFailThenRestart(RestHighLevelClient esclient, DockerComposeContainer container)
-            throws Exception
-    {
+            throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
-        final String session =  "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
-        final String user =  "user";
+        final String session = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user = "user";
         final TestRunner testRunner = newTestRunner(container);
         testRunner.assertValid();
         //first run
@@ -730,20 +719,263 @@ public class IncrementalWebSessionBugIT
         assertEquals(5, rsp.getHits().getTotalHits().value);
     }
 
-    private List<Record> createEvents(String url, String session, String user, List<Long> times) {
+    @Test
+    public void testRewind2DivoltId(RestHighLevelClient esclient, DockerComposeContainer container)
+            throws Exception {
+        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
+        final String divoltSession = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String divoltSession2 = "0:kfdxb7hf:alpha";
+        final String user = "user";
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time3 = time2 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time4 = time3 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
+        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5);
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.enqueue(createEvents(url, divoltSession2, user, times));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(10);
+        MockRecord session_1 = getFirstRecordWithId(divoltSession, testRunner.getOutputRecords());
+        MockRecord session_5 = getFirstRecordWithId(divoltSession + "#5", testRunner.getOutputRecords());
+
+        new WebSessionChecker(session_1).sessionId(divoltSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(divoltSession)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        new WebSessionChecker(session_5).sessionId(divoltSession + "#5")
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(divoltSession + "#5")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        injectSessions(testRunner.getOutputRecords());
+        SearchResponse rsp = getAllSessions(esclient);
+        assertEquals(10, rsp.getHits().getTotalHits().value);
+        //rewind from time1
+        times = Arrays.asList(time1, time2);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.enqueue(createEvents(url, divoltSession2, user, times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(4);
+        List<MockRecord> outputSessions = testRunner.getOutputRecords();
+        rsp = getAllSessions(esclient);
+        assertEquals(2, rsp.getHits().getTotalHits().value);
+        injectSessions(outputSessions);
+        rsp = getAllSessions(esclient);
+        assertEquals(4, rsp.getHits().getTotalHits().value);
+
+        //end of rewind should be as start
+        times = Arrays.asList(time3, time4, time5);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.enqueue(createEvents(url, divoltSession2, user, times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(8);
+        outputSessions = testRunner.getOutputRecords();
+        rsp = getAllSessions(esclient);
+        assertEquals(4, rsp.getHits().getTotalHits().value);
+        injectSessions(outputSessions);
+        rsp = getAllSessions(esclient);
+        assertEquals(10, rsp.getHits().getTotalHits().value);
+        List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(elasticsearchClientService, esclient);
+        String finalSession = divoltSession;
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)//TODO system de checking Long != Int
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession + "#2";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession + "#3";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession + "#4";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession + "#5";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        finalSession = divoltSession2;
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession2 + "#2";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession2 + "#3";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession2 + "#4";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        finalSession = divoltSession2 + "#5";
+        getWebSessionCheckerForSession(finalSession, sessions)
+                .sessionId(finalSession)
+                .Userid(user)
+                .record_type("consolidate-session")
+                .record_id(finalSession)
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(url)
+                .eventsCounter(1)
+                .lastEventDateTime(time5)
+                .lastVisitedPage(url)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+    }
+
+    private WebSessionChecker getWebSessionCheckerForSession(final String divoltSession,
+                                                             final List<WebSession> sessions) {
+        WebSession session = sessions.stream().filter(s -> s.getSessionId().equals(divoltSession)).findFirst().get();
+        return new WebSessionChecker(session);
+    }
+
+    private List<Record> createEvents(String url, String divoltSession, String user, List<Long> times) {
         List<Record> events = new ArrayList<>();
         for (Long time : times) {
-            String id = "event-" + time + "-" + session;
-            events.add(new WebEvent(id, session, user, time, url));
+            String id = "event-" + time + "-" + divoltSession;
+            events.add(new WebEvent(id, divoltSession, user, time, url));
         }
         return events;
     }
 
-    private MockRecord getFirstRecordWithId(final String id, final List<MockRecord> records)
-    {
+    private MockRecord getFirstRecordWithId(final String id, final List<MockRecord> records) {
         return records.stream().filter(record -> record.getId().equals(id)).findFirst().get();
     }
-
 
 
     /**
@@ -754,10 +986,9 @@ public class IncrementalWebSessionBugIT
      * @throws InitializationException in case the runner could not be instantiated.
      */
     private TestRunner newTestRunner(DockerComposeContainer container)
-            throws InitializationException
-    {
+            throws InitializationException {
         final TestRunner runner = TestRunners.newTestRunner(new IncrementalWebSession());
-        final String FIELDS_TO_RETURN = Stream.of("partyId",  "B2BUnit").collect(Collectors.joining(","));
+        final String FIELDS_TO_RETURN = Stream.of("partyId", "B2BUnit").collect(Collectors.joining(","));
 //        fields.to.return: partyId,Company,remoteHost,tagOrigin,sourceOrigin,spamOrigin,referer,userAgentString,utm_source,utm_campaign,utm_medium,utm_content,utm_term,alert_match_name,alert_match_query,referer_hostname,DeviceClass,AgentName,ImportanceCode,B2BUnit,libelle_zone,Userid,customer_category,source_of_traffic_source,source_of_traffic_medium,source_of_traffic_keyword,source_of_traffic_campaign,source_of_traffic_organic_search,source_of_traffic_content,source_of_traffic_referral_path,websessionIndex
         configureElasticsearchClientService(runner, container);
         configureCacheService(runner);

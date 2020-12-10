@@ -13,21 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.service.datastore;
+package com.hurence.logisland.service.datastore.model;
 
 
 import java.util.List;
 
-public class MultiQueryRecord {
+public class QueryResponseRecord {
 
-    private final List<QueryRecord> querys;
+    private final long totalMatched;
+    private final List<ResponseRecord> docs;
 
 
-    public MultiQueryRecord(List<QueryRecord> querys) {
-        this.querys = querys;
+    public QueryResponseRecord(long totalMatched, List<ResponseRecord> docs) {
+        this.totalMatched = totalMatched;
+        this.docs = docs;
     }
 
-    public List<QueryRecord> getQuerys() {
-        return querys;
+    public long getTotalMatched() {
+        return totalMatched;
+    }
+
+    public List<ResponseRecord> getDocs() {
+        return docs;
+    }
+
+    @Override
+    public String toString() {
+        return "QueryResponseRecord{" +
+                "totalMatched=" + totalMatched +
+                ", docs=" + docs +
+                '}';
     }
 }

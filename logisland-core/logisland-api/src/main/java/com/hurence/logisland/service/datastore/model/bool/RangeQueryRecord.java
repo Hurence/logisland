@@ -1,6 +1,6 @@
-package com.hurence.logisland.service.datastore;
+package com.hurence.logisland.service.datastore.model.bool;
 
-public class RangeQueryRecord {
+public class RangeQueryRecord implements BoolQueryRecord {
     public static final boolean DEFAULT_INCLUDE_UPPER = true;
     public static final boolean DEFAULT_INCLUDE_LOWER = true;
 

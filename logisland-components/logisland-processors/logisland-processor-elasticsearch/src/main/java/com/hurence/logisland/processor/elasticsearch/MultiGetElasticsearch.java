@@ -20,9 +20,9 @@ import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
-import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.exception.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
 

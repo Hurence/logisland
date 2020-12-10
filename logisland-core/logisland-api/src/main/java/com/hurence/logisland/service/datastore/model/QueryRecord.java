@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.service.datastore;
+package com.hurence.logisland.service.datastore.model;
 
+
+import com.hurence.logisland.service.datastore.model.bool.BoolCondition;
+import com.hurence.logisland.service.datastore.model.bool.BoolQueryRecord;
+import com.hurence.logisland.service.datastore.model.bool.BoolQueryRecordRoot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,32 +29,18 @@ public class QueryRecord {
     private boolean refresh = false;
     private final List<String> collections;
     private final List<String> types;
-    private final List<TermQueryRecord> termQueries;
-    private final List<WildCardQueryRecord> wildCardQueries;
-    private final List<RangeQueryRecord> rangeQueries;
+    private final BoolQueryRecordRoot boolQuery;
     private final List<SortQueryRecord> sortQueries;
 
     public QueryRecord() {
         this.collections = new ArrayList<>();
-        this.termQueries = new ArrayList<>();
-        this.rangeQueries = new ArrayList<>();
-        this.wildCardQueries = new ArrayList<>();
+        this.boolQuery = new BoolQueryRecordRoot();
         this.sortQueries = new ArrayList<>();
         this.types = new ArrayList<>();
     }
 
-    public QueryRecord addTermQuery(TermQueryRecord termQuery) {
-        this.termQueries.add(termQuery);
-        return this;
-    }
-
-    public QueryRecord addRangeQuery(RangeQueryRecord termQuery) {
-        this.rangeQueries.add(termQuery);
-        return this;
-    }
-
-    public QueryRecord addWildCardQuery(WildCardQueryRecord wildCardQuery) {
-        this.wildCardQueries.add(wildCardQuery);
+    public QueryRecord addBoolQuery(BoolQueryRecord boolQuery, BoolCondition condition) {
+        this.boolQuery.addBoolQuery(boolQuery, condition);
         return this;
     }
 
@@ -69,21 +59,8 @@ public class QueryRecord {
         return this;
     }
 
-    @Override
-    public String toString() {
-        return termQueries.toString();
-    }
-
     public List<String> getCollections() {
         return collections;
-    }
-
-    public List<TermQueryRecord> getTermQueries() {
-        return termQueries;
-    }
-
-    public List<RangeQueryRecord> getRangeQueries() {
-        return rangeQueries;
     }
 
     public boolean getRefresh() {
@@ -108,11 +85,11 @@ public class QueryRecord {
         return types;
     }
 
-    public List<WildCardQueryRecord> getWildCardQueries() {
-        return wildCardQueries;
-    }
-
     public List<SortQueryRecord> getSortQueries() {
         return sortQueries;
+    }
+
+    public BoolQueryRecordRoot getBoolQuery() {
+        return boolQuery;
     }
 }

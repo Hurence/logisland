@@ -29,6 +29,7 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.*;
+import com.hurence.logisland.service.datastore.model.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -49,7 +50,6 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -314,22 +314,23 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
 
     @Override
     public void deleteByQuery(QueryRecord queryRecord) throws DatastoreClientServiceException {
-        String[] indices = new String[queryRecord.getCollections().size()];
-        DeleteByQueryRequest request = new DeleteByQueryRequest(queryRecord.getCollections().toArray(indices));
-        QueryBuilder builder = toQueryBuilder(queryRecord);
-        request.setQuery(builder);
-        request.setRefresh(queryRecord.getRefresh());
-        try {
-            BulkByScrollResponse bulkResponse =
-                    esClient.deleteByQuery(request, RequestOptions.DEFAULT);
-            getLogger().info("deleted {} documents, got {} failure(s).", new Object[]{bulkResponse.getDeleted(), bulkResponse.getBulkFailures().size()});
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("response was {}", new Object[]{bulkResponse});
-            }
-        } catch (IOException e) {
-            getLogger().error("error while deleteByQuery", e);
-            throw new DatastoreClientServiceException(e);
-        }
+        throw new NotImplementedException("Not yet supported for ElasticSearch 6.6.2");
+//TODO     String[] indices = new String[queryRecord.getCollections().size()];
+//        DeleteByQueryRequest request = new DeleteByQueryRequest(queryRecord.getCollections().toArray(indices));
+//        QueryBuilder builder = toQueryBuilder(queryRecord);
+//        request.setQuery(builder);
+//        request.setRefresh(queryRecord.getRefresh());
+//        try {
+//            BulkByScrollResponse bulkResponse =
+//                    esClient.deleteByQuery(request, RequestOptions.DEFAULT);
+//            getLogger().info("deleted {} documents, got {} failure(s).", new Object[]{bulkResponse.getDeleted(), bulkResponse.getBulkFailures().size()});
+//            if (getLogger().isDebugEnabled()) {
+//                getLogger().debug("response was {}", new Object[]{bulkResponse});
+//            }
+//        } catch (IOException e) {
+//            getLogger().error("error while deleteByQuery", e);
+//            throw new DatastoreClientServiceException(e);
+//        }
     }
 
     @Override
@@ -340,24 +341,6 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
     @Override
     public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException {
         throw new NotImplementedException("Not yet supported for ElasticSearch 2.4.0");
-    }
-
-    private QueryBuilder toQueryBuilder(QueryRecord queryRecord) {
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        for (TermQueryRecord termQuery : queryRecord.getTermQueries()) {
-            boolQuery = boolQuery
-                    .must(QueryBuilders.termQuery(termQuery.getFieldName(), termQuery.getFieldValue()));
-        }
-        for (RangeQueryRecord rangeQuery : queryRecord.getRangeQueries()) {
-            boolQuery = boolQuery
-                    .must(
-                            QueryBuilders
-                                    .rangeQuery(rangeQuery.getFieldName())
-                                    .from(rangeQuery.getFrom(), rangeQuery.isIncludeLower())
-                                    .to(rangeQuery.getTo(), rangeQuery.isIncludeUpper())
-                    );
-        }
-        return boolQuery;
     }
 
 

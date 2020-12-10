@@ -26,6 +26,8 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.*;
+import com.hurence.logisland.service.datastore.model.*;
+import com.hurence.logisland.service.datastore.model.bool.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -42,14 +44,20 @@ import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.get.*;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.get.MultiGetItemResponse;
+import org.elasticsearch.action.get.MultiGetRequest;
+import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.*;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.client.indices.CreateIndexRequest;
@@ -79,7 +87,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-//import javax.security.cert.X509Certificate;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -384,7 +391,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         if (queryRecord.getSize() >= 0) {
             request.setSize(queryRecord.getSize());
         }
-        //TODO sort
+        //TODO supporting sort, usefull only when using size. Well not needed at the moment
         request.setRefresh(queryRecord.getRefresh());
         try {
             BulkByScrollResponse bulkResponse =
@@ -470,30 +477,48 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         return sortBuilders;
     }
 
+    private QueryBuilder toQueryBuilder(BoolQueryRecord boolQueryRecord) {
+        if (boolQueryRecord instanceof BoolQueryRecordRoot) {
+            return toQueryBuilder((BoolQueryRecordRoot) boolQueryRecord);
+        } else if (boolQueryRecord instanceof RangeQueryRecord) {
+            RangeQueryRecord rangeQuery = (RangeQueryRecord) boolQueryRecord;
+            return QueryBuilders
+                    .rangeQuery(rangeQuery.getFieldName())
+                    .from(rangeQuery.getFrom(), rangeQuery.isIncludeLower())
+                    .to(rangeQuery.getTo(), rangeQuery.isIncludeUpper());
+        } else if (boolQueryRecord instanceof TermQueryRecord) {
+            TermQueryRecord termQuery = (TermQueryRecord) boolQueryRecord;
+            return QueryBuilders.termQuery(termQuery.getFieldName(), termQuery.getFieldValue());
+        } else if (boolQueryRecord instanceof WildCardQueryRecord) {
+            WildCardQueryRecord wildCardQuery = (WildCardQueryRecord) boolQueryRecord;
+            return QueryBuilders.wildcardQuery(wildCardQuery.getFieldName(), wildCardQuery.getFieldValue());
+        } else {
+            getLogger().error("BoolQueryRecord of class " + boolQueryRecord.getClass() + " is not yet supported");
+            throw new IllegalArgumentException("BoolQueryRecord of class " + boolQueryRecord.getClass() + " is not yet supported");
+        }
+    }
+
+    private QueryBuilder toQueryBuilder(BoolQueryRecordRoot boolQueryRoot) {
+        final BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        boolQueryRoot.getChildren().forEach(node -> {
+            QueryBuilder query = toQueryBuilder(node.getData());
+            switch (node.getBoolCondition()) {
+                case MUSTNOT:
+                    boolQuery.mustNot(query);
+                    break;
+                case MUST:
+                    boolQuery.must(query);
+                    break;
+                case SHOULD:
+                    boolQuery.should(query);
+                    break;
+            }
+        });
+        return boolQuery;
+    }
 
     private QueryBuilder toQueryBuilder(QueryRecord queryRecord) {
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        for (TermQueryRecord termQuery : queryRecord.getTermQueries()) {
-            boolQuery = boolQuery
-                    .must(QueryBuilders.termQuery(termQuery.getFieldName(), termQuery.getFieldValue()));
-        }
-        for (RangeQueryRecord rangeQuery : queryRecord.getRangeQueries()) {
-            boolQuery = boolQuery
-                    .must(
-                            QueryBuilders
-                                    .rangeQuery(rangeQuery.getFieldName())
-                                    .from(rangeQuery.getFrom(), rangeQuery.isIncludeLower())
-                                    .to(rangeQuery.getTo(), rangeQuery.isIncludeUpper())
-                    );
-        }
-        for (WildCardQueryRecord wildCardQuery : queryRecord.getWildCardQueries()) {
-            boolQuery = boolQuery
-                    .must(
-                            QueryBuilders
-                                    .wildcardQuery(wildCardQuery.getFieldName(), wildCardQuery.getFieldValue())
-                    );
-        }
-        return boolQuery;
+        return toQueryBuilder(queryRecord.getBoolQuery());
     }
 
 

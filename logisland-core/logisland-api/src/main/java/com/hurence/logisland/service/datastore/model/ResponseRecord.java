@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.service.datastore;
+package com.hurence.logisland.service.datastore.model;
 
 
 import java.util.Map;
 
-public class MultiGetResponseRecord {
+public class ResponseRecord {
 
     private final String collectionName;
     private final String typeName;
-    private final String documentId;
+    private final String id;
     private final Map<String, String> retrievedfields;
 
-
-    public MultiGetResponseRecord(final String collectionName, final String typeName, final String documentId, final Map<String, String> retrievedfields) {
+    public ResponseRecord(final String collectionName, final String typeName, final String documentId, final Map<String, String> retrievedfields) {
         this.collectionName = collectionName;
         this.typeName = typeName;
-        this.documentId = documentId;
+        this.id = documentId;
         this.retrievedfields = retrievedfields;
     }
 
@@ -41,8 +40,8 @@ public class MultiGetResponseRecord {
         return typeName;
     }
 
-    public String getDocumentId() {
-        return documentId;
+    public String getId() {
+        return id;
     }
 
     public Map<String, String> getRetrievedFields() {

@@ -1,6 +1,8 @@
-package com.hurence.logisland.service.datastore;
+package com.hurence.logisland.service.datastore.model.bool;
 
-public class TermQueryRecord {
+import com.hurence.logisland.service.datastore.model.bool.BoolQueryRecord;
+
+public class TermQueryRecord implements BoolQueryRecord {
     private final String fieldName;
     private final String fieldValue;
 

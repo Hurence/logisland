@@ -1,4 +1,4 @@
-package com.hurence.logisland.service.datastore;
+package com.hurence.logisland.service.datastore.model;
 
 public class SortQueryRecord {
 

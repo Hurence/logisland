@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.service.datastore;
+package com.hurence.logisland.service.datastore.model;
 
+
+import com.hurence.logisland.service.datastore.model.QueryResponseRecord;
+import com.hurence.logisland.service.datastore.model.ResponseRecord;
 
 import java.util.List;
 import java.util.stream.Collectors;

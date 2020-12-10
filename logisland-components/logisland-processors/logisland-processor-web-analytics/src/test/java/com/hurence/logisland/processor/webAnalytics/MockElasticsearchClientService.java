@@ -19,9 +19,9 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.*;
+import com.hurence.logisland.service.datastore.model.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 
-import java.io.IOException;
 import java.util.*;
 
 public class MockElasticsearchClientService extends AbstractControllerService implements ElasticsearchClientService {

@@ -57,8 +57,7 @@ public class ElasticsearchServiceUtil {
     }
 
     public static List<WebSession> getAllSessions(ElasticsearchClientService esClientService,
-                                                  RestHighLevelClient esclient,
-                                                  IncrementalWebSession proc) throws IOException {
+                                                  RestHighLevelClient esclient) throws IOException {
         SearchResponse esRsp = getAllSessionsRaw(esClientService, esclient);
         return Arrays.stream(esRsp.getHits().getHits())
                 .map(hit -> {

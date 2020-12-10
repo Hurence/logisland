@@ -28,7 +28,8 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.datastore.*;
+import com.hurence.logisland.service.datastore.model.*;
+import com.hurence.logisland.service.datastore.model.bool.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 
@@ -797,12 +798,14 @@ public class IncrementalWebSession
             QueryRecord query = new QueryRecord()
                     .addCollection(indexName)
                     .addType(_ES_EVENT_TYPE_NAME)
-                    .addTermQuery(
-                            new TermQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", currentSession.getSessionId())
-                    ).addRangeQuery(
+                    .addBoolQuery(
+                            new TermQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", currentSession.getSessionId()),
+                            BoolCondition.MUST
+                    ).addBoolQuery(
                             new RangeQueryRecord(eventsInternalFields.getTimestampField())
                                     .setTo(firstEventTimeStamp.toInstant().toEpochMilli())
-                                    .setIncludeUpper(true)
+                                    .setIncludeUpper(true),
+                            BoolCondition.MUST
                     ).size(10000);
             queries.add(query);
         });
@@ -849,16 +852,19 @@ public class IncrementalWebSession
             QueryRecord query = new QueryRecord()
                     .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
                     .addType(_ES_SESSION_TYPE_NAME)
-                    .addWildCardQuery(
-                            new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*")
-                    ).addRangeQuery(
+                    .addBoolQuery(
+                            new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
+                            BoolCondition.MUST
+                    ).addBoolQuery(
                             new RangeQueryRecord(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
                                     .setTo(epochSecondFirstEvent)
-                                    .setIncludeUpper(true)
-                    ).addRangeQuery(
+                                    .setIncludeUpper(true),
+                            BoolCondition.MUST
+                    ).addBoolQuery(
                             new RangeQueryRecord(_LAST_EVENT_EPOCH_SECONDS_FIELD)
                                     .setFrom(epochSecondFirstEvent)
-                                    .setIncludeLower(true)
+                                    .setIncludeLower(true),
+                            BoolCondition.MUST
                     ).size(1);
             queries.add(query);
         });
@@ -899,22 +905,28 @@ public class IncrementalWebSession
         //We could use a deleteByQuery here, but in 2.4 this is a plugin and may not be available.
         // Another solution is to use the Bulk api with delete query using id of documents.
         // We could add a method in ElasticSearchCLient interface isSupportingDeleteByQuery() to use it when available.
-        //TODO P1 bugged ! should use a  (session1 & t1 >) || (session2 & t2 >) || ... || (session & tn >)
-        QueryRecord queryRecord = new QueryRecord();
+        final QueryRecord queryRecord = new QueryRecord();
         queryRecord.setRefresh(false);
         for (Events events : eventsFromPast) {
             Event firstEvent = events.first();
             final String sessionIndexName = toSessionIndexName(firstEvent.getEpochTimeStampMilli());
             final String divolteSession = events.getSessionId();//divolt session
+            BoolQueryRecordRoot root = new BoolQueryRecordRoot();
+            root
+                    .addBoolQuery(
+                            new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
+                            BoolCondition.MUST
+                    )
+                    .addBoolQuery(
+                            new RangeQueryRecord(sessionInternalFields.getTimestampField())
+                                    .setFrom(firstEvent.getEpochTimeStampMilli())
+                                    .setIncludeLower(false),
+                            BoolCondition.MUST
+                    );
             queryRecord
                     .addCollection(sessionIndexName)
                     .addType(_ES_SESSION_TYPE_NAME)
-                    .addWildCardQuery(new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"))
-                    .addRangeQuery(
-                            new RangeQueryRecord(sessionInternalFields.getTimestampField())
-                                    .setFrom(firstEvent.getEpochTimeStampMilli())
-                                    .setIncludeLower(false)
-                    );
+                    .addBoolQuery(root, BoolCondition.SHOULD);
         }
         elasticsearchClientService.deleteByQuery(queryRecord);
     }
@@ -1098,7 +1110,10 @@ public class IncrementalWebSession
                 QueryRecord request = new QueryRecord()
                         .addCollection(_ES_SESSION_INDEX_PREFIX + "*")//TODO P2 put this on root, I think we should create a MultiQueryRecord instead...
                         .addType(_ES_SESSION_TYPE_NAME)
-                        .addWildCardQuery(new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divoltSession + "*"))
+                        .addBoolQuery(
+                                new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divoltSession + "*"),
+                                BoolCondition.MUST
+                        )
                         .addSortQuery(new SortQueryRecord(sessionInternalFields.getTimestampField(), SortOrder.DESC))
                         .size(1);//only need the last mapping
                 sessionsRequests.add(request);
