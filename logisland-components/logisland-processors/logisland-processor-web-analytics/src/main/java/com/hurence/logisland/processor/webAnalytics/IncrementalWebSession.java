@@ -356,7 +356,7 @@ public class IncrementalWebSession
      */
     public static final String SOURCE_OF_TRAFFIC_FIELD_KEYWORD = "keyword";
 
-    protected static final String PROP_SOURCE_OF_TRAFFIC_PREFIX = "source_of_traffic.prefix";//TODO tell in doc that changed
+    protected static final String PROP_SOURCE_OF_TRAFFIC_PREFIX = "source_of_traffic.prefix";
     protected static final String SOURCE_OF_TRAFFIC_PREFIX_NAME = "source_of_traffic";
     public static final String DIRECT_TRAFFIC = "direct";
 
@@ -415,24 +415,23 @@ public class IncrementalWebSession
         return true;
     }
 
+    //services
     private ElasticsearchClientService elasticsearchClientService;
     private CacheService<String/*sessionId*/, WebSession> cacheService;
+    //sessions calcul
     private long _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS;
-    private String _SESSION_ID_FIELD;
-    private String _TIMESTAMP_FIELD;
     private Collection<String> _FIELDS_TO_RETURN;
-    private String _IS_SESSION_ACTIVE_FIELD;
-    private String _SESSION_DURATION_FIELD;
-    private String _EVENTS_COUNTER_FIELD;
-    private String _SOT_SOURCE_FIELD;
+    private Collection<SessionCheck> checkers;
+    //elasticsearch indices
     private String _ES_SESSION_INDEX_PREFIX;
     private SimpleDateFormat _ES_SESSION_INDEX_SUFFIX_FORMATTER;
     private String _ES_SESSION_TYPE_NAME;
     private String _ES_EVENT_INDEX_PREFIX;
     private DateTimeFormatter _ES_EVENT_INDEX_SUFFIX_FORMATTER;
     private String _ES_EVENT_TYPE_NAME;
+    //Tuning
     private final long maxNumberOfEventForCurrentSessionRequested = 10000L;
-    private Collection<SessionCheck> checkers;
+    //events and session model
     private Event.InternalFields eventsInternalFields;
     private WebSession.InternalFields sessionInternalFields;
 
@@ -451,8 +450,8 @@ public class IncrementalWebSession
             getLogger().error("Cache service is not initialized!");
         }
         this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS = context.getPropertyValue(SESSION_INACTIVITY_TIMEOUT_CONF).asLong();
-        this._SESSION_ID_FIELD = context.getPropertyValue(SESSION_ID_FIELD_CONF).asString();
-        this._TIMESTAMP_FIELD = context.getPropertyValue(TIMESTAMP_FIELD_CONF).asString();
+        String _SESSION_ID_FIELD = context.getPropertyValue(SESSION_ID_FIELD_CONF).asString();
+        String _TIMESTAMP_FIELD = context.getPropertyValue(TIMESTAMP_FIELD_CONF).asString();
         final String _VISITED_PAGE_FIELD = context.getPropertyValue(VISITED_PAGE_FIELD).asString();
 
         final String fieldsToReturn = context.getPropertyValue(FIELDS_TO_RETURN).asString();
@@ -465,9 +464,9 @@ public class IncrementalWebSession
         final String _USERID_FIELD = context.getPropertyValue(USER_ID_FIELD).asString();
         final String _FIRST_VISITED_PAGE_FIELD = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
         final String _LAST_VISITED_PAGE_FIELD = context.getPropertyValue(LAST_VISITED_PAGE_FIELD).asString();
-        this._IS_SESSION_ACTIVE_FIELD = context.getPropertyValue(IS_SESSION_ACTIVE_FIELD).asString();
-        this._SESSION_DURATION_FIELD = context.getPropertyValue(SESSION_DURATION_FIELD).asString();
-        this._EVENTS_COUNTER_FIELD = context.getPropertyValue(EVENTS_COUNTER_FIELD).asString();
+        String _IS_SESSION_ACTIVE_FIELD = context.getPropertyValue(IS_SESSION_ACTIVE_FIELD).asString();
+        String _SESSION_DURATION_FIELD = context.getPropertyValue(SESSION_DURATION_FIELD).asString();
+        String _EVENTS_COUNTER_FIELD = context.getPropertyValue(EVENTS_COUNTER_FIELD).asString();
         final String _FIRST_EVENT_DATETIME_FIELD = context.getPropertyValue(FIRST_EVENT_DATETIME_FIELD).asString();
         final String _LAST_EVENT_DATETIME_FIELD = context.getPropertyValue(LAST_EVENT_DATETIME_FIELD).asString();
         String _SESSION_INACTIVITY_DURATION_FIELD = context.getPropertyValue(SESSION_INACTIVITY_DURATION_FIELD)
@@ -683,7 +682,7 @@ public class IncrementalWebSession
         //merge those events into the lists
         for (Events events : eventsFromPast) {
             List<Event> eventsFromEsForSession = eventsFromEsBySessionId.getOrDefault(events.getSessionId(), Collections.emptyList());
-            events.addAll(eventsFromEsForSession);//TODO P2 faire un test qui verifie que les events deja dans events sont prioritaire
+            events.addAll(eventsFromEsForSession);//les events deja presents sont prioritaire. Si meme id.
         }
         return splittedEvents;
     }
@@ -799,11 +798,10 @@ public class IncrementalWebSession
                     .addCollection(indexName)
                     .addType(_ES_EVENT_TYPE_NAME)
                     .addTermQuery(
-                            new TermQueryRecord(_SESSION_ID_FIELD + ".raw", currentSession.getSessionId())
+                            new TermQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", currentSession.getSessionId())
                     ).addRangeQuery(
-                            new RangeQueryRecord(_TIMESTAMP_FIELD)
+                            new RangeQueryRecord(eventsInternalFields.getTimestampField())
                                     .setTo(firstEventTimeStamp.toInstant().toEpochMilli())
-    //TODO P2 +1000 car dans session / 1000...? Mais je crois que c'est un timestamp qui vient dun event donc non c okay ?
                                     .setIncludeUpper(true)
                     ).size(10000);
             queries.add(query);
@@ -852,7 +850,7 @@ public class IncrementalWebSession
                     .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
                     .addType(_ES_SESSION_TYPE_NAME)
                     .addWildCardQuery(
-                            new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divolteSession + "*")
+                            new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*")
                     ).addRangeQuery(
                             new RangeQueryRecord(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
                                     .setTo(epochSecondFirstEvent)
@@ -901,7 +899,7 @@ public class IncrementalWebSession
         //We could use a deleteByQuery here, but in 2.4 this is a plugin and may not be available.
         // Another solution is to use the Bulk api with delete query using id of documents.
         // We could add a method in ElasticSearchCLient interface isSupportingDeleteByQuery() to use it when available.
-        //TODO bugged ! should use a  (session1 & t1 >) || (session2 & t2 >) || ... || (session & tn >)
+        //TODO P1 bugged ! should use a  (session1 & t1 >) || (session2 & t2 >) || ... || (session & tn >)
         QueryRecord queryRecord = new QueryRecord();
         queryRecord.setRefresh(false);
         for (Events events : eventsFromPast) {
@@ -911,9 +909,9 @@ public class IncrementalWebSession
             queryRecord
                     .addCollection(sessionIndexName)
                     .addType(_ES_SESSION_TYPE_NAME)
-                    .addWildCardQuery(new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divolteSession + "*"))
+                    .addWildCardQuery(new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"))
                     .addRangeQuery(
-                            new RangeQueryRecord(_TIMESTAMP_FIELD)
+                            new RangeQueryRecord(sessionInternalFields.getTimestampField())
                                     .setFrom(firstEvent.getEpochTimeStampMilli())
                                     .setIncludeLower(false)
                     );
@@ -954,8 +952,8 @@ public class IncrementalWebSession
         final Collection<Events> result =
                 records.stream()
                         // Remove record without session Id or timestamp.
-                        .filter(record -> isFieldAssigned(record.getField(_SESSION_ID_FIELD))
-                                && isFieldAssigned(record.getField(_TIMESTAMP_FIELD)))
+                        .filter(record -> isFieldAssigned(record.getField(eventsInternalFields.getSessionIdField()))
+                                && isFieldAssigned(record.getField(eventsInternalFields.getTimestampField())))
                         // Create web-event from record.
                         .map(record -> new Event(record, this.eventsInternalFields))
                         // Group records per session Id.
@@ -1100,8 +1098,8 @@ public class IncrementalWebSession
                 QueryRecord request = new QueryRecord()
                         .addCollection(_ES_SESSION_INDEX_PREFIX + "*")//TODO P2 put this on root, I think we should create a MultiQueryRecord instead...
                         .addType(_ES_SESSION_TYPE_NAME)
-                        .addWildCardQuery(new WildCardQueryRecord(_SESSION_ID_FIELD + ".raw", divoltSession + "*"))
-                        .addSortQuery(new SortQueryRecord(_TIMESTAMP_FIELD, SortOrder.DESC))
+                        .addWildCardQuery(new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divoltSession + "*"))
+                        .addSortQuery(new SortQueryRecord(sessionInternalFields.getTimestampField(), SortOrder.DESC))
                         .size(1);//only need the last mapping
                 sessionsRequests.add(request);
             }
@@ -1117,7 +1115,7 @@ public class IncrementalWebSession
         divolteSessions.forEach(divoltSession -> {
             if (!mappingToReturn.containsKey(divoltSession)) {
                 if (!sessionsFromEs.containsKey(divoltSession)) {
-                    mappingToReturn.put(divoltSession, Optional.empty());//TODO P2 how to tell the cache there is no value in es !
+                    mappingToReturn.put(divoltSession, Optional.empty());
                 } else {
                     WebSession lastSessionInEs = sessionsFromEs.get(divoltSession);
                     cacheService.set(divoltSession, lastSessionInEs);

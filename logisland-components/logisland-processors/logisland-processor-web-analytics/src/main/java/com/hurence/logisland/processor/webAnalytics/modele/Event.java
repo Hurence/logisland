@@ -40,8 +40,32 @@ public class Event
 
     @Override
     public int compareTo(final Event webEvent) {
-        return this.timestamp.compareTo(webEvent.getTimestamp());
+        if (this.getId() != null && webEvent.getId() != null) {
+            int idDiff = this.getId().compareTo(webEvent.getId());
+            if (idDiff == 0) {
+                return 0;
+            } else {
+                int timestampDiff = this.timestamp.compareTo(webEvent.getTimestamp());
+                if (timestampDiff != 0) return timestampDiff;
+                return idDiff;
+            }
+        }
+        int timestampDiff = this.timestamp.compareTo(webEvent.getTimestamp());
+        if (timestampDiff != 0) return timestampDiff;
+        if (this.getId() == null && webEvent.getId() == null) {
+            return 0;
+        }
+        if (this.getId() == null) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
+
+    public String getId() {
+        return this.getRecord().getId();
+    }
+
 
     /**
      * Returns the timestamp of this event.
