@@ -25,9 +25,7 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.webAnalytics.modele.*;
 import com.hurence.logisland.processor.webAnalytics.util.Utils;
 import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.model.*;
 import com.hurence.logisland.service.datastore.model.bool.*;
@@ -40,7 +38,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -528,7 +525,10 @@ public class IncrementalWebSession
                 .setSourceOffTrafficMediumField(_SOT_MEDIUM_FIELD)
                 .setSourceOffTrafficSourceField(_SOT_SOURCE_FIELD)
                 .setNewSessionReasonField(_NEW_SESSION_REASON_FIELD)
-                .setUserIdField(_USERID_FIELD);
+                .setUserIdField(_USERID_FIELD)
+                .setOriginalSessionIdField("originalSessionId")
+                .setTransactionIdField("transactionId")
+                .setTransactionIdsField("transactionIds");
 
         this.sessionInternalFields = new WebSession.InternalFields()
                 .setSessionIdField(_SESSION_ID_FIELD)
@@ -748,7 +748,7 @@ public class IncrementalWebSession
         final List<Event> events = new ArrayList<>();
         eventsRsp.getResponses().forEach(rsp -> {
             if (rsp.getTotalMatched() > maxNumberOfEventForCurrentSessionRequested) {
-                Event firstEvent = esDoc2Event(rsp.getDocs().get(0).getRetrievedFields());
+                Event firstEvent = mapToEvent(rsp.getDocs().get(0).getRetrievedFields());
                 String errorMsg = "A query to search events for current session exceeds " + maxNumberOfEventForCurrentSessionRequested +
                         " events ! either increases maximum expected either verify if this sessions '" +
                         firstEvent.getSessionId() +"' has really this much of events !";
@@ -756,7 +756,7 @@ public class IncrementalWebSession
                 throw new IllegalStateException(errorMsg);
             }
             rsp.getDocs().stream().forEach(rspRecord -> {
-                events.add(esDoc2Event(rspRecord.getRetrievedFields()));
+                events.add(mapToEvent(rspRecord.getRetrievedFields()));
             });
         });
         return events;
@@ -844,7 +844,7 @@ public class IncrementalWebSession
                 getLogger().error(errorMsg);
                 throw new IllegalStateException(errorMsg);
             }
-            WebSession currentSession = esDoc2WebSession(rsp.getDocs().get(0).getRetrievedFields());
+            WebSession currentSession = mapToSession(rsp.getDocs().get(0).getRetrievedFields());
             divoltSessionToCurrentSessions.put(currentSession.getOriginalSessionId(), currentSession);
         });
         return divoltSessionToCurrentSessions;
@@ -913,9 +913,11 @@ public class IncrementalWebSession
         // We could add a method in ElasticSearchCLient interface isSupportingDeleteByQuery() to use it when available.
         final QueryRecord queryRecord = new QueryRecord();
         queryRecord.setRefresh(false);
+        Set<String> indicesToRequest = new HashSet<>();
         for (Events events : eventsFromPast) {
             Event firstEvent = events.first();
             final String sessionIndexName = toSessionIndexName(firstEvent.getEpochTimeStampMilli());
+            indicesToRequest.add(sessionIndexName);
             final String divolteSession = events.getSessionId();//divolt session
             BoolQueryRecordRoot root = new BoolQueryRecordRoot();
             root
@@ -934,6 +936,7 @@ public class IncrementalWebSession
                     .addType(_ES_SESSION_TYPE_NAME)
                     .addBoolQuery(root, BoolCondition.SHOULD);
         }
+        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToRequest.toArray(new String[0]), 100000L);
         elasticsearchClientService.deleteByQuery(queryRecord);
     }
 
@@ -1149,7 +1152,7 @@ public class IncrementalWebSession
     private Map<String/*divolteId*/, WebSession> transformIntoWebSessions(MultiQueryResponseRecord multiQueryResponses) {
         return multiQueryResponses.getDocs().stream()
                 .map(doc -> {
-                    return esDoc2WebSession(doc.getRetrievedFields());
+                    return mapToSession(doc.getRetrievedFields());
                 })
                 .collect(Collectors.toMap(
                         WebSession::getOriginalSessionId,
@@ -1163,39 +1166,9 @@ public class IncrementalWebSession
      * @param sourceAsMap the web session stored in elasticsearch.
      * @return a new record based on the specified map that represents a web session in elasticsearch.
      */
-    public WebSession esDoc2WebSession(final Map<String, String> sourceAsMap) {
-        return esDoc2WebSession(sourceAsMap, OUTPUT_RECORD_TYPE);
+    private WebSession mapToSession(final Map<String, Object> sourceAsMap) {
+        return WebSession.fromMap(sourceAsMap, this.sessionInternalFields, OUTPUT_RECORD_TYPE);
     }
-
-    /**
-     * Returns a new WebSession based on the specified map that represents a web session in elasticsearch.
-     *
-     * @param sourceAsMap the web session stored in elasticsearch.
-     * @param recordType the recordType value for record.
-     * @return a new WebSession based on the specified map that represents a web session in elasticsearch.
-     */
-    public WebSession esDoc2WebSession(final Map<String, String> sourceAsMap, String recordType) {
-        final Record record = new StandardRecord(recordType);
-        sourceAsMap.forEach((key, value) ->
-        {
-            if (sessionInternalFields.getIsSessionActiveField().equals(key)) {
-                record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
-            } else if (sessionInternalFields.getSessionDurationField().equals(key)
-                    || sessionInternalFields.getEventsCounterField().equals(key)
-                    || sessionInternalFields.getTimestampField().equals(key)
-                    || sessionInternalFields.getSessionInactivityDurationField().equals(key)
-                    || sessionInternalFields.getFirstEventEpochSecondsField().equals(key)
-                    || sessionInternalFields.getLastEventEpochSecondsField().equals(key)
-                    || FieldDictionary.RECORD_TIME.equals(key)) {
-                record.setField(key, FieldType.LONG, Long.valueOf(value));
-            } else {
-                record.setField(key, FieldType.STRING, value);
-            }
-        });
-        record.setId(record.getField(sessionInternalFields.getSessionIdField()).asString());
-        return new WebSession(record, this.sessionInternalFields);
-    }
-
 
     /**
      * return a new Event based on the specified map that represents a web event in elasticsearch.
@@ -1203,25 +1176,8 @@ public class IncrementalWebSession
      * @param sourceAsMap the event stored in elasticsearch.
      * @return a new Event based on the specified map that represents a web event in elasticsearch.
      */
-    public Event esDoc2Event(final Map<String, String> sourceAsMap) {
-        return esDoc2Event(sourceAsMap, OUTPUT_RECORD_TYPE);
-    }
-
-    /**
-     * return a new Event based on the specified map that represents a web event in elasticsearch.
-     *
-     * @param sourceAsMap the event stored in elasticsearch.
-     * @param recordType the recordType value for record.
-     * @return a new Event based on the specified map that represents a web event in elasticsearch.
-     */
-    public Event esDoc2Event(final Map<String, String> sourceAsMap, String recordType) {
-        final Record record = new StandardRecord(recordType);
-        sourceAsMap.forEach((key, value) ->
-        {
-            record.setField(key, FieldType.STRING, value);
-        });
-        //TODO P4 verify id is okay in tests, and verify if okay generally to just store as string.
-        return new Event(record, this.eventsInternalFields);
+    private Event mapToEvent(final Map<String, Object> sourceAsMap) {
+        return Event.fromMap(sourceAsMap, this.eventsInternalFields, OUTPUT_RECORD_TYPE);
     }
 
     /**

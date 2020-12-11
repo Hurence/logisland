@@ -37,12 +37,12 @@ public class Utils {
      * Returns the conversion of a record to a map where all {@code null} values were removed.
      *
      * @param record the record to convert.
-     * @param includeDictionnaryFields if {@code true} special dictionnary fields are ignored; included otherwise.
+     * @param excludeDictionnaryFields if {@code true} special dictionnary fields are ignored; included otherwise.
      *
      * @return the conversion of a record to a map where all {@code null} values were removed.
      */
     public static Map<String, Object> toMap(final Record record,
-                                            final boolean includeDictionnaryFields)
+                                            final boolean excludeDictionnaryFields)
     {
         try
         {
@@ -50,46 +50,46 @@ public class Utils {
 
             record.getFieldsEntrySet()
                     .stream()
-                    .forEach(entry ->
-                    {
-                        if ( !includeDictionnaryFields || (includeDictionnaryFields && ! FieldDictionary.contains(entry.getKey())) )
-//                        if (!includeDictionnaryFields || !FieldDictionary.contains(entry.getKey()))
-                        {
-                            Object value = entry.getValue().getRawValue();
-                            if (value != null) {
-                                switch(entry.getValue().getType())
-                                {
-                                    case RECORD:
-                                        value = toMap((Record)value, true);
-                                        break;
-                                    case ARRAY:
-                                        Collection collection;
-                                        if ( value instanceof Collection )
+                    .filter(entry -> {
+                        if (!excludeDictionnaryFields) return true;
+                        if (FieldDictionary.contains(entry.getKey())) return false;
+                        return true;
+                    })
+                    .forEach(entry -> {
+                        Object value = entry.getValue().getRawValue();
+                        if (value != null) {
+                            switch(entry.getValue().getType())
+                            {
+                                case RECORD:
+                                    value = toMap((Record)value, true);
+                                    break;
+                                case ARRAY:
+                                    Collection collection;
+                                    if ( value instanceof Collection )
+                                    {
+                                        collection = (Collection) value;
+                                    }
+                                    else
+                                    {
+                                        collection = Arrays.asList(value);
+                                    }
+                                    final List list = new ArrayList(collection.size());
+                                    for(final Object item: collection)
+                                    {
+                                        if ( item instanceof Record )
                                         {
-                                            collection = (Collection) value;
+                                            list.add(toMap((Record)item, true));
                                         }
                                         else
                                         {
-                                            collection = Arrays.asList(value);
+                                            list.add(item);
                                         }
-                                        final List list = new ArrayList(collection.size());
-                                        for(final Object item: collection)
-                                        {
-                                            if ( item instanceof Record )
-                                            {
-                                                list.add(toMap((Record)item, true));
-                                            }
-                                            else
-                                            {
-                                                list.add(item);
-                                            }
-                                        }
-                                        value = list;
-                                        break;
-                                    default:
-                                }
-                                result.put(entry.getKey(), value);
+                                    }
+                                    value = list;
+                                    break;
+                                default:
                             }
+                            result.put(entry.getKey(), value);
                         }
                     });
             return result;
@@ -99,4 +99,6 @@ public class Utils {
             throw new RuntimeException(e);
         }
     }
+
+
 }

@@ -323,11 +323,11 @@ public class SessionsCalculator {
         }
 
         // Extra
-        final Field transactionIdField = event.record.getField("transactionId");
+        final Field transactionIdField = event.record.getField(eventInternalFields.getTransactionIdField());
         if (isFieldAssigned(transactionIdField)
                 && (!"undefined".equalsIgnoreCase(transactionIdField.asString()))
                 && (!transactionIdField.asString().isEmpty())) {
-            final Field transactionIdsField = sessionInternalRecord.getField("transactionIds");
+            final Field transactionIdsField = sessionInternalRecord.getField(eventInternalFields.getTransactionIdsField());
             Collection<String> transactionIds;
             if (!isFieldAssigned(transactionIdField)) {
                 transactionIds = (Collection<String>) transactionIdsField.getRawValue();

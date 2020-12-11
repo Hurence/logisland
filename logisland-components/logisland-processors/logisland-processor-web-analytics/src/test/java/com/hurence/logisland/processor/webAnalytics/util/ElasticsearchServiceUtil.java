@@ -31,8 +31,8 @@ public class ElasticsearchServiceUtil {
     );
     public static final String EVENT_INDEX_PREFIX = "openanalytics_webevents.";
 
-    public static void injectSessions(ElasticsearchClientService esClientService,
-                                      List<MockRecord> sessions) {
+    public static void injectSessionsThenRefresh(ElasticsearchClientService esClientService,
+                                                 List<MockRecord> sessions) {
         injectSessionsWithoutRefreshing(esClientService, sessions);
         String[] indicesToWaitFor = sessions.stream()
                 .map(session -> toSessionIndexName(session.getField(TestMappings.sessionInternalFields.getTimestampField()).asLong()))
@@ -76,7 +76,7 @@ public class ElasticsearchServiceUtil {
 
     public static Record getSessionFromEs(ElasticsearchClientService esClientService,
                                           RestHighLevelClient esclient, String sessionId,
-                                          IncrementalWebSession proc) throws IOException {
+                                          WebSession.InternalFields fields) throws IOException {
         esClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX_PREFIX + "*", 100000L);
         SearchRequest searchRequest = new SearchRequest(SESSION_INDEX_PREFIX + "*");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -90,13 +90,9 @@ public class ElasticsearchServiceUtil {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            return getSessionFromEs(esClientService, esclient, sessionId, proc);
+            return getSessionFromEs(esClientService, esclient, sessionId, fields);
         }
-        Map<String, String> map = new HashMap<>();
-        rsp.getHits().getHits()[0].getSourceAsMap().forEach((name, value) -> {
-            map.put(name, value.toString());
-        });
-        return proc.esDoc2WebSession(map).getRecord();
+        return WebSession.fromMap(rsp.getHits().getHits()[0].getSourceAsMap(), fields, "test").getRecord();
     }
 
 

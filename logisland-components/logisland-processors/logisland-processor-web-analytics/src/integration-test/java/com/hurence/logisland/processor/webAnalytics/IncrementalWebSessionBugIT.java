@@ -18,10 +18,12 @@ package com.hurence.logisland.processor.webAnalytics;
 import com.hurence.junit5.extension.Es7DockerExtension;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.processor.webAnalytics.modele.TestMappings;
 import com.hurence.logisland.processor.webAnalytics.modele.WebSession;
 import com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil;
 import com.hurence.logisland.processor.webAnalytics.util.WebEvent;
 import com.hurence.logisland.processor.webAnalytics.util.WebSessionChecker;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
@@ -41,6 +43,7 @@ import org.elasticsearch.client.indices.PutIndexTemplateRequest;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,15 +54,13 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.EVENT_INDEX_PREFIX;
 import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.SESSION_INDEX_PREFIX;
+import static com.hurence.logisland.processor.webAnalytics.util.UtilsTest.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -230,8 +231,8 @@ public class IncrementalWebSessionBugIT {
                 .sessionInactivityDuration(SESSION_TIMEOUT);
     }
 
-    private void injectSessions(List<MockRecord> sessions) {
-        ElasticsearchServiceUtil.injectSessions(this.elasticsearchClientService, sessions);
+    private void injectSessionsThenRefresh(List<MockRecord> sessions) {
+        ElasticsearchServiceUtil.injectSessionsThenRefresh(this.elasticsearchClientService, sessions);
     }
 
     private void injectSessionsWithoutRefreshing(List<MockRecord> sessions) {
@@ -426,8 +427,8 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        injectSessions(Arrays.asList(session1, session2, session3, session4, session5));
-        SearchResponse rsp = getAllSessions(esclient);
+        injectSessionsWithoutRefreshing(Arrays.asList(session1, session2, session3, session4, session5));
+        SearchResponse rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
         //rewind batch1
         times = Arrays.asList(time1, time2);
@@ -542,8 +543,8 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        injectSessions(Arrays.asList(session2, session3, session4, session5));
-        rsp = getAllSessions(esclient);
+        injectSessionsThenRefresh(Arrays.asList(session2, session3, session4, session5));
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
     }
 
@@ -552,9 +553,28 @@ public class IncrementalWebSessionBugIT {
         testRunner.enableControllerService(lruCache);
     }
 
-    public SearchResponse getAllSessions(RestHighLevelClient esclient) throws IOException {
+    public SearchResponse getAllSessionsAfterRefreshing(RestHighLevelClient esclient) throws IOException {
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(SESSION_INDEX_PREFIX + "*", 100000L);
         SearchRequest searchRequest = new SearchRequest(SESSION_INDEX_PREFIX + "*");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchRequest.source(searchSourceBuilder);
+        return esclient.search(searchRequest, RequestOptions.DEFAULT);
+    }
+
+    public SearchResponse getAllEventsAfterRefreshing(RestHighLevelClient esclient) throws IOException {
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(EVENT_INDEX_PREFIX + "*", 100000L);
+        SearchRequest searchRequest = new SearchRequest(EVENT_INDEX_PREFIX + "*");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         searchRequest.source(searchSourceBuilder);
@@ -619,7 +639,7 @@ public class IncrementalWebSessionBugIT {
 
         injectSessionsWithoutRefreshing(Arrays.asList(session1, session2, session3, session4, session5));
 
-        SearchResponse rsp = getAllSessions(esclient);
+        SearchResponse rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
         //rewind from time3
         times = Arrays.asList(time3, time4, time5);
@@ -628,9 +648,9 @@ public class IncrementalWebSessionBugIT {
         testRunner.enqueue(events);
         testRunner.run();
         List<MockRecord> outputSessions = testRunner.getOutputRecords();
-        injectSessions(outputSessions);
+        injectSessionsThenRefresh(outputSessions);
 
-        rsp = getAllSessions(esclient);
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
     }
 
@@ -710,9 +730,9 @@ public class IncrementalWebSessionBugIT {
         testRunner.run();
         testRunner.assertOutputRecordsCount(3);
         List<MockRecord> outputSessions = testRunner.getOutputRecords();
-        injectSessions(outputSessions);
+        injectSessionsThenRefresh(outputSessions);
 
-        SearchResponse rsp = getAllSessions(esclient);
+        SearchResponse rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
     }
 
@@ -769,8 +789,8 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        injectSessions(testRunner.getOutputRecords());
-        SearchResponse rsp = getAllSessions(esclient);
+        injectSessionsThenRefresh(testRunner.getOutputRecords());
+        SearchResponse rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(10, rsp.getHits().getTotalHits().value);
         //rewind from time1
         times = Arrays.asList(time1, time2);
@@ -781,10 +801,10 @@ public class IncrementalWebSessionBugIT {
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(4);
         List<MockRecord> outputSessions = testRunner.getOutputRecords();
-        rsp = getAllSessions(esclient);
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(2, rsp.getHits().getTotalHits().value);
-        injectSessions(outputSessions);
-        rsp = getAllSessions(esclient);
+        injectSessionsThenRefresh(outputSessions);
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(4, rsp.getHits().getTotalHits().value);
 
         //end of rewind should be as start
@@ -796,10 +816,10 @@ public class IncrementalWebSessionBugIT {
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(8);
         outputSessions = testRunner.getOutputRecords();
-        rsp = getAllSessions(esclient);
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(4, rsp.getHits().getTotalHits().value);
-        injectSessions(outputSessions);
-        rsp = getAllSessions(esclient);
+        injectSessionsThenRefresh(outputSessions);
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(10, rsp.getHits().getTotalHits().value);
         List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(elasticsearchClientService, esclient);
         String finalSession = divoltSession;
@@ -823,11 +843,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time2)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -838,11 +858,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time3)
+                .h2kTimestamp(time3)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time3)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -853,11 +873,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time4)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -899,11 +919,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time2)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -914,11 +934,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time3)
+                .h2kTimestamp(time3)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time3)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -929,11 +949,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time4)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -1008,8 +1028,8 @@ public class IncrementalWebSessionBugIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
-        injectSessions(testRunner.getOutputRecords());
-        SearchResponse rsp = getAllSessions(esclient);
+        injectSessionsThenRefresh(testRunner.getOutputRecords());
+        SearchResponse rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(10, rsp.getHits().getTotalHits().value);
         //rewind from time1
         times = Arrays.asList(time1, time2);
@@ -1020,7 +1040,7 @@ public class IncrementalWebSessionBugIT {
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(4);
         List<MockRecord> outputSessions = testRunner.getOutputRecords();
-        rsp = getAllSessions(esclient);
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(2, rsp.getHits().getTotalHits().value);
         injectSessionsWithoutRefreshing(outputSessions);
 
@@ -1033,10 +1053,10 @@ public class IncrementalWebSessionBugIT {
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(8);
         outputSessions = testRunner.getOutputRecords();
-        rsp = getAllSessions(esclient);
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(4, rsp.getHits().getTotalHits().value);
-        injectSessions(outputSessions);
-        rsp = getAllSessions(esclient);
+        injectSessionsThenRefresh(outputSessions);
+        rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(10, rsp.getHits().getTotalHits().value);
         List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(elasticsearchClientService, esclient);
         String finalSession = divoltSession;
@@ -1060,11 +1080,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time2)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -1075,11 +1095,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time3)
+                .h2kTimestamp(time3)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time3)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -1090,11 +1110,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time4)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -1114,7 +1134,6 @@ public class IncrementalWebSessionBugIT {
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
-
         finalSession = divoltSession2;
         getWebSessionCheckerForSession(finalSession, sessions)
                 .sessionId(finalSession)
@@ -1136,11 +1155,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time2)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -1151,11 +1170,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time3)
+                .h2kTimestamp(time3)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time3)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -1166,11 +1185,11 @@ public class IncrementalWebSessionBugIT {
                 .Userid(user)
                 .record_type("consolidate-session")
                 .record_id(finalSession)
-                .firstEventDateTime(time5)
-                .h2kTimestamp(time5)
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
                 .firstVisitedPage(url)
                 .eventsCounter(1)
-                .lastEventDateTime(time5)
+                .lastEventDateTime(time4)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
                 .is_sessionActive(false)
@@ -1192,6 +1211,207 @@ public class IncrementalWebSessionBugIT {
                 .sessionInactivityDuration(SESSION_TIMEOUT);
     }
 
+    /**
+     * The purpose of this test is to ensure that events and session stored es are the same.
+     * That they are injected to ES directly as input of the processor
+     * Or that they have been fetched from remote in ES.
+     *
+     * @param esclient
+     * @param container
+     * @throws Exception
+     */
+    @Test
+    public void testConsistenceInEs(RestHighLevelClient esclient, DockerComposeContainer container)
+            throws Exception {
+        final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
+        final String divoltSession = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
+        final String user = "user";
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + 1L;
+        final long time3 = time2 + 1L;
+        final long time4 = time3 + 1L;
+        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time6 = time5 + 1L;
+        final long time7 = time6 + 1L;
+        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5, time6, time7);
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(2);
+        injectSessionsThenRefresh(testRunner.getOutputRecords());
+
+        SearchResponse webSessionRsp = getAllSessionsAfterRefreshing(esclient);
+        assertEquals(2, webSessionRsp.getHits().getTotalHits().value);
+        SearchHit[] webSessionsDocs = webSessionRsp.getHits().getHits();
+        SearchHit session = Arrays.stream(webSessionsDocs)
+                .filter(hit -> {
+                    return hit.getId().equals(divoltSession);
+                })
+                .findFirst()
+                .get();
+        SearchHit session2 = Arrays.stream(webSessionsDocs)
+                .filter(hit -> {
+                    return hit.getId().equals(divoltSession + "#2");
+                })
+                .findFirst()
+                .get();
+
+        SearchResponse webEventRsp = getAllEventsAfterRefreshing(esclient);
+        assertEquals(7, webEventRsp.getHits().getTotalHits().value);
+        SearchHit[] eventsDoc = webEventRsp.getHits().getHits();
+        SearchHit event1 = Arrays.stream(eventsDoc)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time1, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event2 = Arrays.stream(eventsDoc)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time2, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event3 = Arrays.stream(eventsDoc)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time3, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event4 = Arrays.stream(eventsDoc)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time4, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event5 = Arrays.stream(eventsDoc)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time5, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event6 = Arrays.stream(eventsDoc)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time6, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event7 = Arrays.stream(eventsDoc)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time7, divoltSession));
+                })
+                .findFirst()
+                .get();
+
+
+        //TODO test the values of documents
+
+        //rewind from time3 to time4
+        times = Arrays.asList(time3, time4);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(1);
+        injectSessionsWithoutRefreshing(testRunner.getOutputRecords());
+        assertEquals(1, getAllSessionsAfterRefreshing(esclient).getHits().getTotalHits().value);
+        assertEquals(7, getAllEventsAfterRefreshing(esclient).getHits().getTotalHits().value);
+
+        //rewind from time5 to time7
+        times = Arrays.asList(time5, time6, time7);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEvents(url, divoltSession, user, times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(2);
+        injectSessionsWithoutRefreshing(testRunner.getOutputRecords());
+
+        SearchResponse webSessionRsp2 = getAllSessionsAfterRefreshing(esclient);
+        assertEquals(2, webSessionRsp2.getHits().getTotalHits().value);
+        SearchHit[] webSessionsDocs2 = webSessionRsp2.getHits().getHits();
+        SearchHit session2_1 = Arrays.stream(webSessionsDocs2)
+                .filter(hit -> {
+                    return hit.getId().equals(divoltSession);
+                })
+                .findFirst()
+                .get();
+        SearchHit session2_2 = Arrays.stream(webSessionsDocs2)
+                .filter(hit -> {
+                    return hit.getId().equals(divoltSession + "#2");
+                })
+                .findFirst()
+                .get();
+
+        SearchResponse webEventRsp2 = getAllEventsAfterRefreshing(esclient);
+        assertEquals(7, webEventRsp2.getHits().getTotalHits().value);
+        SearchHit[] eventsDoc2 = webEventRsp2.getHits().getHits();
+        SearchHit event2_1 = Arrays.stream(eventsDoc2)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time1, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event2_2 = Arrays.stream(eventsDoc2)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time2, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event2_3 = Arrays.stream(eventsDoc2)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time3, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event2_4 = Arrays.stream(eventsDoc2)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time4, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event2_5 = Arrays.stream(eventsDoc2)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time5, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event2_6 = Arrays.stream(eventsDoc2)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time6, divoltSession));
+                })
+                .findFirst()
+                .get();
+        SearchHit event2_7 = Arrays.stream(eventsDoc2)
+                .filter(hit -> {
+                    return hit.getId().equals(buildId(time7, divoltSession));
+                })
+                .findFirst()
+                .get();
+        assertEquals(-1, event1.getVersion());
+        assertEquals(-1, event2_1.getVersion());
+        assertEquals(-1, event4.getVersion());
+        assertEquals(-1, event2_4.getVersion());
+        assertEquals(-1, event7.getVersion());
+        assertEquals(-1, event2_7.getVersion());
+        assertMapsAreEquals(event1.getSourceAsMap(), event2_1.getSourceAsMap());
+        assertMapsAreEquals(event2.getSourceAsMap(), event2_2.getSourceAsMap());
+        assertMapsAreEqualsIgnoringSomeKeys(event3.getSourceAsMap(), event2_3.getSourceAsMap(), FieldDictionary.RECORD_TIME);
+        assertMapsAreEqualsIgnoringSomeKeys(event4.getSourceAsMap(), event2_4.getSourceAsMap(), FieldDictionary.RECORD_TIME);
+        assertMapsAreEqualsIgnoringSomeKeys(event5.getSourceAsMap(), event2_5.getSourceAsMap(), FieldDictionary.RECORD_TIME);
+        assertMapsAreEqualsIgnoringSomeKeys(event6.getSourceAsMap(), event2_6.getSourceAsMap(), FieldDictionary.RECORD_TIME);
+        assertMapsAreEqualsIgnoringSomeKeys(event7.getSourceAsMap(), event2_7.getSourceAsMap(), FieldDictionary.RECORD_TIME);
+
+        assertEquals(-1, session.getVersion());
+        assertEquals(-1, session2.getVersion());
+        assertEquals(-1, session2_1.getVersion());
+        assertEquals(-1, session2_2.getVersion());
+        assertMapsAreEqualsIgnoringSomeKeys(session.getSourceAsMap(), session2_1.getSourceAsMap() , FieldDictionary.RECORD_TIME, "@timestamp");
+        assertMapsAreEqualsIgnoringSomeKeys(session2.getSourceAsMap(), session2_2.getSourceAsMap(), FieldDictionary.RECORD_TIME, "@timestamp");
+    }
+
     private WebSessionChecker getWebSessionCheckerForSession(final String divoltSession,
                                                              final List<WebSession> sessions) {
         WebSession session = sessions.stream().filter(s -> s.getSessionId().equals(divoltSession)).findFirst().get();
@@ -1201,10 +1421,13 @@ public class IncrementalWebSessionBugIT {
     private List<Record> createEvents(String url, String divoltSession, String user, List<Long> times) {
         List<Record> events = new ArrayList<>();
         for (Long time : times) {
-            String id = "event-" + time + "-" + divoltSession;
+            String id = buildId(time, divoltSession);
             events.add(new WebEvent(id, divoltSession, user, time, url));
         }
         return events;
+    }
+    private String buildId(long time, String divoltSession) {
+        return "event-" + time + "-" + divoltSession;
     }
 
     private MockRecord getFirstRecordWithId(final String id, final List<MockRecord> records) {

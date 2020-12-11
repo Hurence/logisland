@@ -358,17 +358,15 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId) {
-
         // Note: we do not support type anymore but keep it in API (method signature) for backward compatibility
         // purpose. So the type is ignored, even if filled.
-
 
         // add it to the bulk
         IndexRequest request = new IndexRequest(docIndex)
                 .source(document)
                 .opType(IndexRequest.OpType.INDEX);
 
-        if(OptionalId.isPresent()){
+        if (OptionalId.isPresent()) {
             request.id(OptionalId.get());
         }
 
@@ -436,9 +434,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             List<ResponseRecord> docs = new ArrayList<>();
             for (SearchHit hit : searchRsp.getHits().getHits()) {
                 Map<String,Object> responseMap = hit.getSourceAsMap();
-                Map<String,String> retrievedFields = new HashMap<>();
-                responseMap.forEach((k,v) -> {if (v!=null) retrievedFields.put(k, v.toString());});//TODO why putting this as string ?
-                docs.add(new ResponseRecord(hit.getIndex(), hit.getType(), hit.getId(), retrievedFields));
+                docs.add(new ResponseRecord(hit.getIndex(), hit.getType(), hit.getId(), responseMap));
             }
             return new QueryResponseRecord(totalMatched, docs);
         }

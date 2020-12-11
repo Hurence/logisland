@@ -18,6 +18,7 @@ package com.hurence.logisland.processor.webAnalytics;
 import com.hurence.junit5.extension.Es7DockerExtension;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.processor.webAnalytics.modele.TestMappings;
 import com.hurence.logisland.processor.webAnalytics.modele.WebSession;
 import com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil;
 import com.hurence.logisland.processor.webAnalytics.util.WebEvent;
@@ -742,7 +743,7 @@ public class IncrementalWebSessionIT
     }
 
     private void injectSessions(List<MockRecord> sessions) {
-        ElasticsearchServiceUtil.injectSessions(this.elasticsearchClientService, sessions);
+        ElasticsearchServiceUtil.injectSessionsThenRefresh(this.elasticsearchClientService, sessions);
     }
 
     @Test
@@ -823,7 +824,9 @@ public class IncrementalWebSessionIT
         injectSessions(testRunner.getOutputRecords());
 
 //        Record doc = this.elasticsearchClientService.getSessionFromEs(SESSION1);
-        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient,
+                SESSION1,
+                TestMappings.sessionInternalFields);
         new WebSessionChecker(doc).lastVisitedPage(URL1);
 
         // Update web session with timestamp 1s before timeout.
@@ -835,7 +838,9 @@ public class IncrementalWebSessionIT
         testRunner.assertOutputRecordsCount(1);
         injectSessions(testRunner.getOutputRecords());
 
-        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient,
+                SESSION1,
+                TestMappings.sessionInternalFields);
         new WebSessionChecker(doc).lastVisitedPage(URL2);
 
         Thread.sleep(5000); // Make sure the Instant.now performed in the processor will exceed timeout.
@@ -855,7 +860,9 @@ public class IncrementalWebSessionIT
         Set<String> ids = sessions.stream().map(WebSession::getSessionId).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
 
-        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient,
+                SESSION1,
+                TestMappings.sessionInternalFields);
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -909,7 +916,9 @@ public class IncrementalWebSessionIT
         Set<String> ids = sessions.stream().map(WebSession::getSessionId).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
 
-        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient,
+                SESSION1,
+                TestMappings.sessionInternalFields);
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
                                   .record_type("consolidate-session")
@@ -924,7 +933,9 @@ public class IncrementalWebSessionIT
                                   .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
 
         final String EXTRA_SESSION = SESSION1+"#2";
-        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, EXTRA_SESSION, proc);
+        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient,
+                EXTRA_SESSION,
+                TestMappings.sessionInternalFields);
         new WebSessionChecker(doc).sessionId(EXTRA_SESSION)
                                   .Userid(USER1)
                                   .record_type("consolidate-session")
@@ -961,7 +972,9 @@ public class IncrementalWebSessionIT
         // Two webSessions expected .
         testRunner.assertOutputRecordsCount(2);
         injectSessions(testRunner.getOutputRecords());
-        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION1, proc);
+        Record doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient,
+                SESSION1,
+                TestMappings.sessionInternalFields);
 
         new WebSessionChecker(doc).sessionId(SESSION1)
                                   .Userid(USER1)
@@ -978,7 +991,9 @@ public class IncrementalWebSessionIT
                                   .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
 
         String SESSION = SESSION1+"#2";
-        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient, SESSION, proc);
+        doc = ElasticsearchServiceUtil.getSessionFromEs(elasticsearchClientService, esclient,
+                SESSION,
+                TestMappings.sessionInternalFields);
 
         new WebSessionChecker(doc).sessionId(SESSION)
                                   .Userid(USER1)

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
+import java.util.Map;
 
 /**
  * This class represents a web event that can be optionally renamed if a new session should have
@@ -17,6 +18,22 @@ public class Event
         implements Comparable<Event> {
 
     private static Logger logger = LoggerFactory.getLogger(Event.class);
+
+    /**
+     * return a new Event based on the specified map that represents a web event in elasticsearch.
+     *
+     * @param sourceAsMap the event stored in elasticsearch.
+     * @param recordType the recordType value for record.
+     * @return a new Event based on the specified map that represents a web event in elasticsearch.
+     */
+    public static Event fromMap(final Map<String, Object> sourceAsMap, InternalFields eventsInternalFields, String recordType) {
+        final Record record = new StandardRecord(recordType);
+        sourceAsMap.forEach((key, value) -> {
+            record.setField(key, FieldType.STRING, value);
+        });
+        return new Event(record, eventsInternalFields);
+    }
+
 
     /**
      * The timestamp to sort web event from.
@@ -85,8 +102,9 @@ public class Event
     }
 
     public void setSessionId(final String sessionId) {
+        if (getSessionId().equals(sessionId)) return;//do not save origanlSessionId if not changing
         logger.debug("change sessionId of event " + this.record.getId() + " from " + getSessionId() + " to " + sessionId);
-        this.record.setField("originalSessionId", FieldType.STRING, getSessionId());
+        this.record.setField(fieldsNames.originalSessionIdField, FieldType.STRING, getSessionId());
         this.record.setField(fieldsNames.sessionIdField, FieldType.STRING, sessionId);
     }
 
@@ -116,6 +134,7 @@ public class Event
         private String timestampField;
         private String visitedPageField;
         private String sessionIdField;
+        private String originalSessionIdField;
         private String sourceOffTrafficSourceField;
         private String sourceOffTrafficMediumField;
         private String sourceOffTrafficCampaignField;
@@ -123,6 +142,8 @@ public class Event
         private String sourceOffTrafficContentField;
         private String newSessionReasonField;
         private String userIdField;
+        private String transactionIdField;
+        private String transactionIdsField;
 
 
         public InternalFields() { }
@@ -214,6 +235,33 @@ public class Event
 
         public InternalFields setUserIdField(String userIdField) {
             this.userIdField = userIdField;
+            return this;
+        }
+
+        public String getOriginalSessionIdField() {
+            return originalSessionIdField;
+        }
+
+        public InternalFields setOriginalSessionIdField(String originalSessionIdField) {
+            this.originalSessionIdField = originalSessionIdField;
+            return this;
+        }
+
+        public String getTransactionIdField() {
+            return transactionIdField;
+        }
+
+        public InternalFields setTransactionIdField(String transactionId) {
+            this.transactionIdField = transactionId;
+            return this;
+        }
+
+        public String getTransactionIdsField() {
+            return transactionIdsField;
+        }
+
+        public InternalFields setTransactionIdsField(String transactionIdsField) {
+            this.transactionIdsField = transactionIdsField;
             return this;
         }
     }

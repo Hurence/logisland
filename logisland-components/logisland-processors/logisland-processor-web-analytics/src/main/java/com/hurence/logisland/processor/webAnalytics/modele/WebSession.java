@@ -2,13 +2,11 @@ package com.hurence.logisland.processor.webAnalytics.modele;
 
 import com.hurence.logisland.processor.webAnalytics.IncrementalWebSession;
 import com.hurence.logisland.processor.webAnalytics.util.DateUtils;
-import com.hurence.logisland.record.Field;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 
 import java.time.*;
 import java.util.Collection;
+import java.util.Map;
 
 import static com.hurence.logisland.processor.webAnalytics.util.Utils.isFieldAssigned;
 
@@ -19,6 +17,7 @@ import static com.hurence.logisland.processor.webAnalytics.util.Utils.isFieldAss
 public class WebSession
         extends RecordItem
         implements Comparable<WebSession> {
+
 
     private final InternalFields fieldsNames;
     /**
@@ -64,6 +63,27 @@ public class WebSession
     }
 
 
+
+    /**
+     * Returns a new WebSession based on the specified map that represents a web session in elasticsearch.
+     *
+     * @param sourceAsMap the web session stored in elasticsearch.
+     * @param recordType the recordType value for record.
+     * @return a new WebSession based on the specified map that represents a web session in elasticsearch.
+     */
+    public static WebSession fromMap(final Map<String, Object> sourceAsMap,
+                                     InternalFields sessionInternalFields,
+                                     String recordType) {
+        final Record record = new StandardRecord(recordType);
+        sourceAsMap.forEach((key, value) ->
+        {
+                record.setField(key, FieldType.STRING, value);
+        });
+        record.setId(record.getField(sessionInternalFields.getSessionIdField()).asString());
+        return new WebSession(record, sessionInternalFields);
+    }
+
+
     /**
      * Creates a new instance of this class that wraps the provided record.
      *
@@ -73,6 +93,25 @@ public class WebSession
                       InternalFields fieldsNames) {
         super(recordRepresentingSession);
         this.fieldsNames = fieldsNames;
+        record.getAllFields().forEach(field -> {
+            String key = field.getName();
+            String value = field.asString();
+            if (value != null) {
+                if (fieldsNames.getIsSessionActiveField().equals(key)) {
+                    record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
+                } else if (fieldsNames.getSessionDurationField().equals(key)
+                        || fieldsNames.getEventsCounterField().equals(key)
+                        || fieldsNames.getTimestampField().equals(key)
+                        || fieldsNames.getSessionInactivityDurationField().equals(key)
+                        || fieldsNames.getFirstEventEpochSecondsField().equals(key)
+                        || fieldsNames.getLastEventEpochSecondsField().equals(key)
+                        || FieldDictionary.RECORD_TIME.equals(key)) {
+                    record.setField(key, FieldType.LONG, Long.valueOf(value));
+                } else {
+                    record.setField(key, FieldType.STRING, value);
+                }
+            }
+        });
     }
 
     public String getSessionId() {
