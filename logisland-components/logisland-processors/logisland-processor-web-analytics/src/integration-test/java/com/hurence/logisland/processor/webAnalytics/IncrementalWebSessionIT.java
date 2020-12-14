@@ -53,8 +53,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.EVENT_INDEX_PREFIX;
-import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.SESSION_INDEX_PREFIX;
+import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.*;
 
 /**
  * Test incremental web-session processor.
@@ -1072,10 +1071,10 @@ public class IncrementalWebSessionIT
         runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
         runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_PREFIX_CONF, SESSION_INDEX_PREFIX);
-        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF, "yyyy.MM");
+        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF, SESSION_SUFFIX_FORMATTER_STRING);
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME_CONF, "sessions");
         runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX_CONF, EVENT_INDEX_PREFIX);
-        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF, "yyyy.MM.dd");
+        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF, EVENT_SUFFIX_FORMATTER_STRING);
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, "event");
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD_CONF, "sessionId");
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD_CONF, "h2kTimestamp");

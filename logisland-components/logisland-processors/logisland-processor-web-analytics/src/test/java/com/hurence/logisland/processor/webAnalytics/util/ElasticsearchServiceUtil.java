@@ -23,10 +23,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ElasticsearchServiceUtil {
-    public static final SimpleDateFormat SESSION_SUFFIX_FORMATTER = new SimpleDateFormat("yyyy.MM");
+
+    public static final String SESSION_SUFFIX_FORMATTER_STRING = "yyyy.MM.dd";
+    public static final String EVENT_SUFFIX_FORMATTER_STRING = "yyyy.MM.dd";
+    public static final SimpleDateFormat SESSION_SUFFIX_FORMATTER = new SimpleDateFormat(SESSION_SUFFIX_FORMATTER_STRING);
     public static final String SESSION_INDEX_PREFIX = "openanalytics_websessions-";
     public static final DateTimeFormatter EVENT_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
-            "yyyy.MM.dd",
+            EVENT_SUFFIX_FORMATTER_STRING,
             Locale.ENGLISH
     );
     public static final String EVENT_INDEX_PREFIX = "openanalytics_webevents.";
@@ -94,7 +97,6 @@ public class ElasticsearchServiceUtil {
         }
         return WebSession.fromMap(rsp.getHits().getHits()[0].getSourceAsMap(), fields, "test").getRecord();
     }
-
 
     /**
      * Returns the name of the event index corresponding to the specified date such as

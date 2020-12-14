@@ -25,7 +25,10 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRulesException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
@@ -424,6 +427,27 @@ public class StandardValidators {
         public ValidationResult validate(final String subject, final String value) {
             String reason = null;
             if (!Arrays.asList(TimeZone.getAvailableIDs()).contains(value)) reason = "not a valid timezone";
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+    /**
+     * ZoneId Validators
+     */
+    public static final Validator ZONE_ID_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                ZoneId.of(value);
+            } catch (Exception ex) {
+                if (ex.getMessage() != null) {
+                    reason = ex.getMessage();
+                } else {
+                    reason = "Not a valid ZoneId for your system.";
+                }
+                reason += "\n Current supported ZoneId for system are : " + ZoneId.getAvailableZoneIds();
+            }
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
         }
     };

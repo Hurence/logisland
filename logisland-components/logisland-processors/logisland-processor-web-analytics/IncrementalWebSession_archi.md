@@ -160,3 +160,29 @@ Faire au moins 2 tests
 
 
 
+
+```
+GET new_openanalytics_websessions-*/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+             "orignalSessionId.raw": {
+               "value": "<divolte_session>"
+             }
+          }
+        },
+        {
+          "range": {
+            "firstEventEpochSeconds": {
+              "lte": <Tmin>
+            }
+          }
+        },
+      ]
+    }
+  }
+}
+```

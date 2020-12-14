@@ -54,12 +54,16 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.EVENT_INDEX_PREFIX;
-import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.SESSION_INDEX_PREFIX;
+import static com.hurence.logisland.processor.webAnalytics.util.ElasticsearchServiceUtil.*;
 import static com.hurence.logisland.processor.webAnalytics.util.UtilsTest.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -73,6 +77,18 @@ public class IncrementalWebSessionBugIT {
     private final long SESSION_TIMEOUT = 1800L;
     private ElasticsearchClientService elasticsearchClientService;
     private CacheService<String, WebSession> lruCache;
+    private IncrementalWebSession proc;
+
+
+    private final String USER1 = "user1";
+    private final String USER2 = "user2";
+    private final String USER3 = "user3";
+
+    private final String SESSION1 = "session1";
+    private final String SESSION2 = "session2";
+    private final String SESSION3 = "session3";
+
+    private final String URL = "url";
 
     @BeforeEach
     public void clean(RestHighLevelClient esClient) throws IOException {
@@ -1068,7 +1084,7 @@ public class IncrementalWebSessionBugIT {
                 .firstEventDateTime(time1)
                 .h2kTimestamp(time1)
                 .firstVisitedPage(url)
-                .eventsCounter(1)//TODO system de checking Long != Int
+                .eventsCounter(1)
                 .lastEventDateTime(time1)
                 .lastVisitedPage(url)
                 .sessionDuration(null)
@@ -1306,9 +1322,6 @@ public class IncrementalWebSessionBugIT {
                 .findFirst()
                 .get();
 
-
-        //TODO test the values of documents
-
         //rewind from time3 to time4
         times = Arrays.asList(time3, time4);
         testRunner.clearQueues();
@@ -1344,6 +1357,7 @@ public class IncrementalWebSessionBugIT {
                 })
                 .findFirst()
                 .get();
+
 
         SearchResponse webEventRsp2 = getAllEventsAfterRefreshing(esclient);
         assertEquals(7, webEventRsp2.getHits().getTotalHits().value);
@@ -1412,9 +1426,262 @@ public class IncrementalWebSessionBugIT {
         assertMapsAreEqualsIgnoringSomeKeys(session2.getSourceAsMap(), session2_2.getSourceAsMap(), FieldDictionary.RECORD_TIME, "@timestamp");
     }
 
+    /**
+     * The purpose of this test is to ensure that events and session stored es are the same.
+     * That they are injected to ES directly as input of the processor
+     * Or that they have been fetched from remote in ES.
+     *
+     * @param esclient
+     * @param container
+     * @throws Exception
+     */
+    @Test
+    public void testRewindMultipleUsers(RestHighLevelClient esclient, DockerComposeContainer container) throws Exception {
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + 1L;
+        final long time3 = time2 + 1L;
+        final long time4 = time3 + 1L;
+        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
+        final long time6 = time5 + 1L;
+        final long time7 = time6 + 1L;
+        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5, time6, time7);
+        testRunner.enqueue(createEventsUser1(times));
+        testRunner.enqueue(createEventsUser2(times));
+        testRunner.enqueue(createEventsUser3(times));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(6);
+        injectSessionsThenRefresh(testRunner.getOutputRecords());
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
+                .sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(URL)
+                .eventsCounter(4)
+                .lastEventDateTime(time4)
+                .lastVisitedPage(URL)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#2")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#2")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(URL)
+                .eventsCounter(3)
+                .lastEventDateTime(time7)
+                .lastVisitedPage(URL)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        getWebSessionCheckerForSessionFromRecords(SESSION3, testRunner.getOutputRecords())
+                .sessionId(SESSION3)
+                .Userid(USER3)
+                .record_type("consolidate-session")
+                .record_id(SESSION3)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(URL)
+                .eventsCounter(4)
+                .lastEventDateTime(time4)
+                .lastVisitedPage(URL)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        getWebSessionCheckerForSessionFromRecords(SESSION3+ "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION3+ "#2")
+                .Userid(USER3)
+                .record_type("consolidate-session")
+                .record_id(SESSION3+ "#2")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(URL)
+                .eventsCounter(3)
+                .lastEventDateTime(time7)
+                .lastVisitedPage(URL)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+
+        SearchResponse webSessionRsp = getAllSessionsAfterRefreshing(esclient);
+        assertEquals(6, webSessionRsp.getHits().getTotalHits().value);
+        SearchHit[] webSessionsDocs = webSessionRsp.getHits().getHits();
+        SearchHit sessionUser1 = Arrays.stream(webSessionsDocs)
+                .filter(hit -> {
+                    return hit.getId().equals(SESSION1);
+                })
+                .findFirst()
+                .get();
+        SearchHit session2User1 = Arrays.stream(webSessionsDocs)
+                .filter(hit -> {
+                    return hit.getId().equals(SESSION1 + "#2");
+                })
+                .findFirst()
+                .get();
+        SearchHit sessionUser2 = Arrays.stream(webSessionsDocs)
+                .filter(hit -> {
+                    return hit.getId().equals(SESSION2);
+                })
+                .findFirst()
+                .get();
+        SearchHit session2User2 = Arrays.stream(webSessionsDocs)
+                .filter(hit -> {
+                    return hit.getId().equals(SESSION2 + "#2");
+                })
+                .findFirst()
+                .get();
+
+        SearchResponse webEventRsp = getAllEventsAfterRefreshing(esclient);
+        assertEquals(21, webEventRsp.getHits().getTotalHits().value);
+
+        //rewind only sessions from user 1
+        times = Arrays.asList(time3, time4);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEventsUser1(times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(1);
+        injectSessionsWithoutRefreshing(testRunner.getOutputRecords());
+        assertEquals(5, getAllSessionsAfterRefreshing(esclient).getHits().getTotalHits().value);
+        assertEquals(21, getAllEventsAfterRefreshing(esclient).getHits().getTotalHits().value);
+
+        //rewind only sessions from user 2
+        times = Arrays.asList(time3, time4);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEventsUser2(times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(1);
+        injectSessionsWithoutRefreshing(testRunner.getOutputRecords());
+        assertEquals(4, getAllSessionsAfterRefreshing(esclient).getHits().getTotalHits().value);
+        assertEquals(21, getAllEventsAfterRefreshing(esclient).getHits().getTotalHits().value);
+
+        //rewind from time5 to time7
+        times = Arrays.asList(time5, time6, time7);
+        testRunner.clearQueues();
+        testRunner.enqueue(createEventsUser1(times));
+        testRunner.enqueue(createEventsUser2(times));
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(4);
+        injectSessionsWithoutRefreshing(testRunner.getOutputRecords());
+        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
+                .sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(URL)
+                .eventsCounter(4)
+                .lastEventDateTime(time4)
+                .lastVisitedPage(URL)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#2")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#2")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(URL)
+                .eventsCounter(3)
+                .lastEventDateTime(time7)
+                .lastVisitedPage(URL)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        getWebSessionCheckerForSessionFromRecords(SESSION2, testRunner.getOutputRecords())
+                .sessionId(SESSION2)
+                .Userid(USER2)
+                .record_type("consolidate-session")
+                .record_id(SESSION2)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage(URL)
+                .eventsCounter(4)
+                .lastEventDateTime(time4)
+                .lastVisitedPage(URL)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        getWebSessionCheckerForSessionFromRecords(SESSION2+ "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION2+ "#2")
+                .Userid(USER2)
+                .record_type("consolidate-session")
+                .record_id(SESSION2+ "#2")
+                .firstEventDateTime(time5)
+                .h2kTimestamp(time5)
+                .firstVisitedPage(URL)
+                .eventsCounter(3)
+                .lastEventDateTime(time7)
+                .lastVisitedPage(URL)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        SearchResponse webSessionRsp2 = getAllSessionsAfterRefreshing(esclient);
+        assertEquals(6, webSessionRsp2.getHits().getTotalHits().value);
+        SearchHit[] webSessionsDocs2 = webSessionRsp2.getHits().getHits();
+        SearchHit session2User1_1 = Arrays.stream(webSessionsDocs2)
+                .filter(hit -> {
+                    return hit.getId().equals(SESSION1);
+                })
+                .findFirst()
+                .get();
+        SearchHit session2User1_2 = Arrays.stream(webSessionsDocs2)
+                .filter(hit -> {
+                    return hit.getId().equals(SESSION1 + "#2");
+                })
+                .findFirst()
+                .get();
+        SearchHit session2User2_1 = Arrays.stream(webSessionsDocs2)
+                .filter(hit -> {
+                    return hit.getId().equals(SESSION2);
+                })
+                .findFirst()
+                .get();
+        SearchHit session2User2_2 = Arrays.stream(webSessionsDocs2)
+                .filter(hit -> {
+                    return hit.getId().equals(SESSION2 + "#2");
+                })
+                .findFirst()
+                .get();
+
+        SearchResponse webEventRsp2 = getAllEventsAfterRefreshing(esclient);
+        assertEquals(21, webEventRsp2.getHits().getTotalHits().value);
+
+        assertMapsAreEqualsIgnoringSomeKeys(sessionUser1.getSourceAsMap(), session2User1_1.getSourceAsMap() , FieldDictionary.RECORD_TIME, "@timestamp");
+        assertMapsAreEqualsIgnoringSomeKeys(session2User1.getSourceAsMap(), session2User1_2.getSourceAsMap(), FieldDictionary.RECORD_TIME, "@timestamp");
+        assertMapsAreEqualsIgnoringSomeKeys(sessionUser2.getSourceAsMap(), session2User2_1.getSourceAsMap() , FieldDictionary.RECORD_TIME, "@timestamp");
+        assertMapsAreEqualsIgnoringSomeKeys(session2User2.getSourceAsMap(), session2User2_2.getSourceAsMap(), FieldDictionary.RECORD_TIME, "@timestamp");
+    }
+
     private WebSessionChecker getWebSessionCheckerForSession(final String divoltSession,
                                                              final List<WebSession> sessions) {
         WebSession session = sessions.stream().filter(s -> s.getSessionId().equals(divoltSession)).findFirst().get();
+        return new WebSessionChecker(session);
+    }
+
+    private WebSessionChecker getWebSessionCheckerForSessionFromRecords(final String divoltSession,
+                                                             final List<MockRecord> sessions) {
+        Record session = sessions.stream().filter(s -> divoltSession.equals(s.getField(TestMappings.sessionInternalFields.getSessionIdField()).asString())).findFirst().get();
         return new WebSessionChecker(session);
     }
 
@@ -1426,6 +1693,19 @@ public class IncrementalWebSessionBugIT {
         }
         return events;
     }
+
+    private List<Record> createEventsUser1(List<Long> times) {
+        return createEvents(URL, SESSION1, USER1, times);
+    }
+
+    private List<Record> createEventsUser2(List<Long> times) {
+        return createEvents(URL, SESSION2, USER2, times);
+    }
+
+    private List<Record> createEventsUser3(List<Long> times) {
+        return createEvents(URL, SESSION3, USER3, times);
+    }
+
     private String buildId(long time, String divoltSession) {
         return "event-" + time + "-" + divoltSession;
     }
@@ -1442,9 +1722,14 @@ public class IncrementalWebSessionBugIT {
      *
      * @throws InitializationException in case the runner could not be instantiated.
      */
-    private TestRunner newTestRunner(DockerComposeContainer container)
-            throws InitializationException {
-        final TestRunner runner = TestRunners.newTestRunner(new IncrementalWebSession());
+    private TestRunner newTestRunner(DockerComposeContainer container) throws InitializationException {
+        return newTestRunner(container, Collections.emptyMap());
+    }
+
+
+    private TestRunner newTestRunner(DockerComposeContainer container, Map<String, String> customConf) throws InitializationException {
+        this.proc = new IncrementalWebSession();
+        final TestRunner runner = TestRunners.newTestRunner(this.proc);
         final String FIELDS_TO_RETURN = Stream.of("partyId", "B2BUnit").collect(Collectors.joining(","));
 //        fields.to.return: partyId,Company,remoteHost,tagOrigin,sourceOrigin,spamOrigin,referer,userAgentString,utm_source,utm_campaign,utm_medium,utm_content,utm_term,alert_match_name,alert_match_query,referer_hostname,DeviceClass,AgentName,ImportanceCode,B2BUnit,libelle_zone,Userid,customer_category,source_of_traffic_source,source_of_traffic_medium,source_of_traffic_keyword,source_of_traffic_campaign,source_of_traffic_organic_search,source_of_traffic_content,source_of_traffic_referral_path,websessionIndex
         configureElasticsearchClientService(runner, container);
@@ -1452,10 +1737,10 @@ public class IncrementalWebSessionBugIT {
         runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
         runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_PREFIX_CONF, SESSION_INDEX_PREFIX);
-        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF, "yyyy.MM");
+        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF, SESSION_SUFFIX_FORMATTER_STRING);
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME_CONF, "sessions");
         runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX_CONF, EVENT_INDEX_PREFIX);
-        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF, "yyyy.MM.dd");
+        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF, EVENT_SUFFIX_FORMATTER_STRING);
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, "event");
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD_CONF, "sessionId");
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD_CONF, "h2kTimestamp");
@@ -1466,6 +1751,8 @@ public class IncrementalWebSessionBugIT {
         runner.setProperty(IncrementalWebSession.DEBUG_CONF, "true");
         this.elasticsearchClientService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF).asControllerService());
+        customConf.forEach(runner::setProperty);
+
         return runner;
     }
 

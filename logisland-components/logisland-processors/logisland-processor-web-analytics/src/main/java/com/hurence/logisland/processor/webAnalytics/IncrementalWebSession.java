@@ -32,8 +32,8 @@ import com.hurence.logisland.service.datastore.model.bool.*;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 
-import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -109,6 +109,7 @@ public class IncrementalWebSession
     public static final String PROP_ES_EVENT_INDEX_SUFFIX_FORMATTER = "es.event.index.suffix.date";
     public static final String PROP_ES_EVENT_TYPE_NAME = "es.event.type.name";
 
+    public static final String PROP_ES_INDEX_SUFFIX_TIMEZONE = "es.index.suffix.timezone";
     /**
      * Extra fields - for convenience - avoiding to parse the human readable first and last timestamps.
      */
@@ -146,7 +147,7 @@ public class IncrementalWebSession
                     .description("suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                    .addValidator(StandardValidators.SIMPLE_DATE_FORMAT_VALIDATOR)
+                    .addValidator(StandardValidators.DATE_TIME_FORMATTER_VALIDATOR)
                     .build();
 
     public static final PropertyDescriptor ES_SESSION_TYPE_NAME_CONF =
@@ -372,6 +373,16 @@ public class IncrementalWebSession
                  .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                  .build();
 
+    public static final PropertyDescriptor ZONEID_CONF =
+            new PropertyDescriptor.Builder()
+                    .name(PROP_ES_INDEX_SUFFIX_TIMEZONE)
+                    .description("The timezone to use to aprse timestamp into string date (for index names). See " +
+                            PROP_ES_EVENT_INDEX_SUFFIX_FORMATTER + " and " + PROP_ES_SESSION_INDEX_SUFFIX_FORMATTER +
+                            ". By default the system timezone is used. Supported by current system is : " + ZoneId.getAvailableZoneIds())
+                    .required(false)
+                    .addValidator(StandardValidators.ZONE_ID_VALIDATOR)
+                    .build();
+
 
     /**
      * A singleton for valid check.
@@ -390,7 +401,8 @@ public class IncrementalWebSession
     private Collection<SessionCheck> checkers;
     //elasticsearch indices
     private String _ES_SESSION_INDEX_PREFIX;
-    private SimpleDateFormat _ES_SESSION_INDEX_SUFFIX_FORMATTER;
+//    private SimpleDateFormat _ES_SESSION_INDEX_SUFFIX_FORMATTER;
+    private DateTimeFormatter _ES_SESSION_INDEX_SUFFIX_FORMATTER;
     private String _ES_SESSION_TYPE_NAME;
     private String _ES_EVENT_INDEX_PREFIX;
     private DateTimeFormatter _ES_EVENT_INDEX_SUFFIX_FORMATTER;
@@ -400,6 +412,7 @@ public class IncrementalWebSession
     //events and session model
     private Event.InternalFields eventsInternalFields;
     private WebSession.InternalFields sessionInternalFields;
+    private ZoneId zoneIdToUse;
     /**
      * If {@code true} prints additional logs.
      */
@@ -434,7 +447,8 @@ public class IncrementalWebSession
                 SOURCE_OF_TRAFFIC_PREFIX_FIELD,
                 // Service
                 ELASTICSEARCH_CLIENT_SERVICE_CONF,
-                CONFIG_CACHE_SERVICE
+                CONFIG_CACHE_SERVICE,
+                ZONEID_CONF
         ));
     }
 
@@ -494,10 +508,10 @@ public class IncrementalWebSession
         //Sessions indices
         this._ES_SESSION_INDEX_PREFIX = context.getPropertyValue(ES_SESSION_INDEX_PREFIX_CONF).asString();
         Objects.requireNonNull(this._ES_SESSION_INDEX_PREFIX, "Property required: " + ES_SESSION_INDEX_PREFIX_CONF);
-        //TODO P5 try to use same way to convert dates... But it is the deployed way in a prod environment so
-        // think this a lot before changing it
-        this._ES_SESSION_INDEX_SUFFIX_FORMATTER = new java.text.SimpleDateFormat(
-                context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF).asString()
+        //TODO P5 remove LOCAL ?
+        this._ES_SESSION_INDEX_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
+                context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF).asString(),
+                Locale.ENGLISH
         );
         Objects.requireNonNull(this._ES_SESSION_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF);
         this._ES_SESSION_TYPE_NAME = context.getPropertyValue(ES_SESSION_TYPE_NAME_CONF).asString();
@@ -505,8 +519,6 @@ public class IncrementalWebSession
         //Events indices
         this._ES_EVENT_INDEX_PREFIX = context.getPropertyValue(ES_EVENT_INDEX_PREFIX_CONF).asString();
         Objects.requireNonNull(this._ES_EVENT_INDEX_PREFIX, "Property required: " + ES_EVENT_INDEX_PREFIX_CONF);
-        //TODO P5 try to use same way to convert dates... But it is the deployed way in a prod environment so
-        // think this a lot before changing it
         this._ES_EVENT_INDEX_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
                 context.getPropertyValue(ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF).asString(),
                 Locale.ENGLISH
@@ -551,6 +563,10 @@ public class IncrementalWebSession
                 .setTransactionIdsField(_TRANSACTION_IDS)
                 .setUserIdField(_USERID_FIELD);
 
+        this.zoneIdToUse = ZoneId.systemDefault();
+        if (context.getPropertyValue(ZONEID_CONF).isSet()) {
+            this.zoneIdToUse = ZoneId.of(context.getPropertyValue(ZONEID_CONF).asString());
+        }
         this.checkers = Arrays.asList(
                 // Day overlap
                 (session, event) ->
@@ -618,6 +634,7 @@ public class IncrementalWebSession
     }
 
     public Collection<Record> processRecords(final Collection<Record> records) {
+        if (records == null || records.isEmpty()) return new ArrayList<>();
         final Collection<Events> groupOfEvents = toWebEvents(records);
         final Collection<String> inputDivolteSessions = groupOfEvents.stream()
                 .map(Events::getSessionId)
@@ -916,7 +933,7 @@ public class IncrementalWebSession
         Set<String> indicesToRequest = new HashSet<>();
         for (Events events : eventsFromPast) {
             Event firstEvent = events.first();
-            final String sessionIndexName = toSessionIndexName(firstEvent.getEpochTimeStampMilli());
+            final String sessionIndexName = toSessionIndexName(firstEvent.getTimestamp());
             indicesToRequest.add(sessionIndexName);
             final String divolteSession = events.getSessionId();//divolt session
             BoolQueryRecordRoot root = new BoolQueryRecordRoot();
@@ -948,8 +965,6 @@ public class IncrementalWebSession
             Optional<WebSession> lastSession = lastSessionMapping.get(events.getSessionId());
             if (lastSession.isPresent() &&
                     lastSession.get().timestampFromPast(events.first().getTimestamp())) {
-//                    !lastSession.get().containsTimestamp(events.first().getTimestamp()) &&
-//                    lastSession.get().getLastEvent().toInstant().toEpochMilli() > events.first().getEpochTimeStampMilli()) {//> ou >= ?
                 eventsFromPast.add(events);
             } else {
                 eventsOk.add(events);
@@ -994,11 +1009,11 @@ public class IncrementalWebSession
      * ${event-index-name}.${event-suffix}.
      * Eg. openanalytics-webevents.2018.01.31
      *
-     * @param date the timestamp of the event to store in the index.
+     * @param date the ZonedDateTime of the event to store in the index.
      * @return the name of the event index corresponding to the specified date.
      */
-    private String toEventIndexName(final ZonedDateTime date) {
-        return _ES_EVENT_INDEX_PREFIX + _ES_EVENT_INDEX_SUFFIX_FORMATTER.format(date);
+    public String toEventIndexName(final ZonedDateTime date) {
+        return _ES_EVENT_INDEX_PREFIX + _ES_EVENT_INDEX_SUFFIX_FORMATTER.format(date.withZoneSameInstant(zoneIdToUse));
     }
 
     /**
@@ -1006,12 +1021,11 @@ public class IncrementalWebSession
      * ${session-index-name}${session-suffix}.
      * Eg. openanalytics-webevents.2018.01.31
      *
-     * @param epochMilli the milli timestamp epoc of the event of the session.
+     * @param date the ZonedDateTime timestamp of the first event of the session.
      * @return the name of the session index corresponding to the specified timestamp.
      */
-    private String toSessionIndexName(long epochMilli) {
-        Date date = new java.util.Date(epochMilli);
-        return _ES_SESSION_INDEX_PREFIX + _ES_SESSION_INDEX_SUFFIX_FORMATTER.format(date);
+    public String toSessionIndexName(final ZonedDateTime date) {
+        return _ES_SESSION_INDEX_PREFIX + _ES_SESSION_INDEX_SUFFIX_FORMATTER.format(date.withZoneSameInstant(zoneIdToUse));
     }
 
     /**
@@ -1100,7 +1114,6 @@ public class IncrementalWebSession
 //  ],
 //    "size": 1
 //}
-
     /**
      * query all last hurence session for each divolte session in ES if it is not already present in cache.
      * THen fill up cache with new data, finally return the <code>mapping[divolte_session,last_hurence_session]</code>
