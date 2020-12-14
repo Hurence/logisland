@@ -18,10 +18,8 @@ package com.hurence.logisland.record;
 import com.hurence.logisland.logging.ComponentLog;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public interface Record extends Serializable {
 
@@ -148,4 +146,10 @@ public interface Record extends Serializable {
 
 
     Collection<String> getErrors();
+
+    default String toString(int deepness) {
+        return toString();
+    }
+
+    default String toString(int deepness, String indentationString) { return toString(); }
 }

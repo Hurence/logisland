@@ -109,17 +109,10 @@ public class DebugStream extends AbstractProcessor {
         getLogger().info("processing {} records", new Object[]{collection.size()});
 
         if (collection.size() != 0) {
-            collection.forEach(event -> {
-                //TODO seems tp not work when record contains other records !
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                try {
-                    serializer.serialize(baos, event);
-                    baos.close();
-                } catch (IOException e) {
-                    getLogger().error("error while trying to deserialize record !", e);
-                }
-
-                getLogger().info(new String(baos.toByteArray()));
+            //Do not use serialization ! It is pointless as at this point the object is already deserialized into a Record !
+            //Moreover trying to serialize the record may fail for a lot of reason (if record contains some objects without appropriate bean pattern.
+            collection.forEach(record -> {
+                getLogger().info(record.toString(1));
             });
         }
 
