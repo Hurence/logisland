@@ -847,7 +847,7 @@ public class IncrementalWebSessionBugIT {
                 .firstEventDateTime(time1)
                 .h2kTimestamp(time1)
                 .firstVisitedPage(url)
-                .eventsCounter(1)//TODO system de checking Long != Int
+                .eventsCounter(1)
                 .lastEventDateTime(time1)
                 .lastVisitedPage(url)
                 .sessionDuration(null)

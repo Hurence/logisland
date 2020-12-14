@@ -31,7 +31,7 @@ public class WebSession
                       InternalFields fieldsNames,
                       Collection<String> fieldsToCopyToWebSession) {
         WebSession webSession = fromWebEvent(webEvent, fieldsNames);
-        if ((fieldsToCopyToWebSession != null) && (!fieldsToCopyToWebSession.isEmpty())) {//TODO what is the purpose of this part !
+        if ((fieldsToCopyToWebSession != null) && (!fieldsToCopyToWebSession.isEmpty())) {
             for (final String fieldnameToAdd : fieldsToCopyToWebSession) {
                 final Field field = webEvent.record.getField(fieldnameToAdd);
                 if (isFieldAssigned(field)) {

@@ -508,10 +508,8 @@ public class IncrementalWebSession
         //Sessions indices
         this._ES_SESSION_INDEX_PREFIX = context.getPropertyValue(ES_SESSION_INDEX_PREFIX_CONF).asString();
         Objects.requireNonNull(this._ES_SESSION_INDEX_PREFIX, "Property required: " + ES_SESSION_INDEX_PREFIX_CONF);
-        //TODO P5 remove LOCAL ?
         this._ES_SESSION_INDEX_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
-                context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF).asString(),
-                Locale.ENGLISH
+                context.getPropertyValue(ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF).asString()
         );
         Objects.requireNonNull(this._ES_SESSION_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF);
         this._ES_SESSION_TYPE_NAME = context.getPropertyValue(ES_SESSION_TYPE_NAME_CONF).asString();
@@ -520,8 +518,7 @@ public class IncrementalWebSession
         this._ES_EVENT_INDEX_PREFIX = context.getPropertyValue(ES_EVENT_INDEX_PREFIX_CONF).asString();
         Objects.requireNonNull(this._ES_EVENT_INDEX_PREFIX, "Property required: " + ES_EVENT_INDEX_PREFIX_CONF);
         this._ES_EVENT_INDEX_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
-                context.getPropertyValue(ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF).asString(),
-                Locale.ENGLISH
+                context.getPropertyValue(ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF).asString()
         );
         Objects.requireNonNull(this._ES_EVENT_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF);
         this._ES_EVENT_TYPE_NAME = context.getPropertyValue(ES_EVENT_TYPE_NAME_CONF).asString();

@@ -49,7 +49,10 @@ public class RecordItem {
      * @return a ZonedDateTime corresponding to the provided epoch parameter with the system default timezone.
      */
     ZonedDateTime fromEpochMilli(final long epoch) {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.systemDefault());//TODO system default ?
+        /* we use system default here but if we decide to print with a different zone it is overriden latter.
+        * As this is a date from an epoch, the only thing that timezone is changing is the string representation of the date.
+        * */
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.systemDefault());
     }
 
     /**
@@ -59,7 +62,10 @@ public class RecordItem {
      * @return a ZonedDateTime corresponding to the provided epoch parameter with the system default timezone.
      */
     ZonedDateTime fromEpochSecond(final long epoch) {
-        return ZonedDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.systemDefault());//TODO system default ?
+        /* we use system default here but if we decide to print with a different zone it is overriden latter.
+         * As this is a date from an epoch, the only thing that timezone is changing is the string representation of the date.
+         * */
+        return ZonedDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.systemDefault());
     }
 
     /**

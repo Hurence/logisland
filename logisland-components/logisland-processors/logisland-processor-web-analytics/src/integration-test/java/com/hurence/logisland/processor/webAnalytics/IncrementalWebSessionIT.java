@@ -852,8 +852,6 @@ public class IncrementalWebSessionIT
         testRunner.assertAllInputRecordsProcessed();
         injectSessions(testRunner.getOutputRecords());
 
-        // One webSession + 2 webEvents + 1 mapping expected in elasticsearch.
-        //TODO ?
         List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(
                 this.elasticsearchClientService, esclient);
         Set<String> ids = sessions.stream().map(WebSession::getSessionId).collect(Collectors.toSet());
@@ -908,8 +906,6 @@ public class IncrementalWebSessionIT
         testRunner.assertOutputRecordsCount(2);
         injectSessions(testRunner.getOutputRecords());
 
-        // 2 webSessions + 2 webEvents + 1 mapping expected in elasticsearch.
-        //TODO ?
         List<WebSession> sessions = ElasticsearchServiceUtil.getAllSessions(
                 this.elasticsearchClientService, esclient);
         Set<String> ids = sessions.stream().map(WebSession::getSessionId).collect(Collectors.toSet());
