@@ -85,7 +85,7 @@ public class ComputeAggsProcessor extends AbstractProcessor {
         final Set<PropertyDescriptor> dynamicFieldPropertiesTmp = new HashSet<>();
         final Map<String, PropertyDescriptor> dynamicAggTypePropertiesTmp = new HashMap<>();
         final Map<String, PropertyDescriptor> dynamicTypeResultPropertiesTmp = new HashMap<>();
-        for (final Map.Entry<PropertyDescriptor, String> entry : props) {//TODO
+        for (final Map.Entry<PropertyDescriptor, String> entry : props) {
             if (!entry.getKey().isDynamic()) {
                 continue;
             }

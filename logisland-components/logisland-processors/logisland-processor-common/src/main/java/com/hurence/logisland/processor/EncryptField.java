@@ -245,7 +245,7 @@ public class EncryptField extends AbstractProcessor {
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
-                .expressionLanguageSupported(false)  // TODO understand what expressionLanguage is !!!
+                .expressionLanguageSupported(false)
                 .required(false)
                 .dynamic(true)
                 .build();

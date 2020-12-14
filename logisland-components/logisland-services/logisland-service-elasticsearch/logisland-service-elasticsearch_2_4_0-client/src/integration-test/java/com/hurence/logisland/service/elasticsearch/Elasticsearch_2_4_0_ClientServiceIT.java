@@ -144,7 +144,6 @@ public class Elasticsearch_2_4_0_ClientServiceIT {
         runner.setProperty(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
         runner.assertValid(elasticsearchClientService);
 
-        // TODO : is this necessary ?
         final ElasticsearchClientService service = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
         return service;
     }
