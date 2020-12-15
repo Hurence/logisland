@@ -166,7 +166,7 @@ public interface TestRunner {
      *
      * @param records to enqueue
      */
-    void enqueue(Collection<Record> records);
+    void enqueue(Collection<? extends Record> records);
 
 
     /**

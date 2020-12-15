@@ -24,7 +24,6 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.webAnalytics.modele.*;
 import com.hurence.logisland.processor.webAnalytics.util.Utils;
-import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.model.*;
@@ -383,13 +382,32 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.ZONE_ID_VALIDATOR)
                     .build();
 
+    public static final String defaultOutputFieldNameForEsIndex = "es_index";
+    public static final PropertyDescriptor OUTPUT_FIELD_NAME_FOR_ES_INDEX =
+            new PropertyDescriptor.Builder()
+                    .name("record.es.index.output.field.name")
+                    .description("The field name where index name to store record will be stored")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue(defaultOutputFieldNameForEsIndex)
+                    .build();
+
+    public static final String defaultOutputFieldNameForEsType = "es_type";
+    public static final PropertyDescriptor OUTPUT_FIELD_NAME_FOR_ES_TYPE =
+            new PropertyDescriptor.Builder()
+                    .name("record.es.type.output.field.name")
+                    .description("The field name where type name to store record will be stored")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue(defaultOutputFieldNameForEsType)
+                    .build();
 
     /**
      * A singleton for valid check.
      */
-    private final static SessionCheckResult DAY_OVERLAP = new InvalidSessionCheckResult("Day overlap");
-    private final static SessionCheckResult SESSION_TIMEDOUT = new InvalidSessionCheckResult("Session timed-out");
-    private final static SessionCheckResult SOURCE_OF_TRAFFIC = new InvalidSessionCheckResult("Source of traffic differed");
+    public final static SessionCheckResult DAY_OVERLAP = new InvalidSessionCheckResult("Day overlap");
+    public final static SessionCheckResult SESSION_TIMEDOUT = new InvalidSessionCheckResult("Session timed-out");
+    public final static SessionCheckResult SOURCE_OF_TRAFFIC = new InvalidSessionCheckResult("Source of traffic differed");
 
 
     //services
@@ -401,7 +419,6 @@ public class IncrementalWebSession
     private Collection<SessionCheck> checkers;
     //elasticsearch indices
     private String _ES_SESSION_INDEX_PREFIX;
-//    private SimpleDateFormat _ES_SESSION_INDEX_SUFFIX_FORMATTER;
     private DateTimeFormatter _ES_SESSION_INDEX_SUFFIX_FORMATTER;
     private String _ES_SESSION_TYPE_NAME;
     private String _ES_EVENT_INDEX_PREFIX;
@@ -413,6 +430,8 @@ public class IncrementalWebSession
     private Event.InternalFields eventsInternalFields;
     private WebSession.InternalFields sessionInternalFields;
     private ZoneId zoneIdToUse;
+    private String outputFieldNameForEsIndex;
+    private String outputFieldNameForEsType;
     /**
      * If {@code true} prints additional logs.
      */
@@ -448,7 +467,9 @@ public class IncrementalWebSession
                 // Service
                 ELASTICSEARCH_CLIENT_SERVICE_CONF,
                 CONFIG_CACHE_SERVICE,
-                ZONEID_CONF
+                ZONEID_CONF,
+                OUTPUT_FIELD_NAME_FOR_ES_INDEX,
+                OUTPUT_FIELD_NAME_FOR_ES_TYPE
         ));
     }
 
@@ -523,6 +544,9 @@ public class IncrementalWebSession
         Objects.requireNonNull(this._ES_EVENT_INDEX_SUFFIX_FORMATTER, "Property required: " + ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF);
         this._ES_EVENT_TYPE_NAME = context.getPropertyValue(ES_EVENT_TYPE_NAME_CONF).asString();
         Objects.requireNonNull(this._ES_EVENT_TYPE_NAME, "Property required: " + ES_EVENT_TYPE_NAME_CONF);
+
+        this.outputFieldNameForEsIndex = context.getPropertyValue(OUTPUT_FIELD_NAME_FOR_ES_INDEX).asString();
+        this.outputFieldNameForEsType = context.getPropertyValue(OUTPUT_FIELD_NAME_FOR_ES_TYPE).asString();
 
         this.eventsInternalFields = new Event.InternalFields()
                 .setSessionIdField(_SESSION_ID_FIELD)
@@ -655,7 +679,7 @@ public class IncrementalWebSession
         } else {
             calculatedSessions = this.processEvents(allEvents, lastSessionMapping);
         }
-        saveEventsToEs(allEvents);
+
         //update cache
         calculatedSessions
                 .forEach(sessionsCalculator -> {
@@ -666,29 +690,34 @@ public class IncrementalWebSession
                     cacheService.set(divolteSession, lastSession);
                 });
 
+        List<Record> outputEvents = allEvents
+                .stream()
+                .flatMap(events -> events.getAll().stream())
+                .map(event -> {
+                    Record record = event.getRecord();
+                    record.setStringField(outputFieldNameForEsIndex, toEventIndexName(event.getTimestamp()));
+                    record.setStringField(outputFieldNameForEsType, _ES_EVENT_TYPE_NAME);
+                    return record;
+                })
+                .collect(Collectors.toList());
+
         final Collection<WebSession> flattenedSessions = calculatedSessions.stream()
                 .flatMap(sessionsCalculator -> sessionsCalculator.getCalculatedSessions().stream())
                 .collect(Collectors.toList());
         debug("Processing done. Outcoming records size=%d ", flattenedSessions.size());
-
-        return flattenedSessions
-                .stream().map(WebSession::getRecord)
+        List<Record> outputSessions = flattenedSessions.stream()
+                .map(session -> {
+                    Record record = session.getRecord();
+                    record.setStringField(outputFieldNameForEsIndex, toSessionIndexName(session.getFirstEvent()));
+                    record.setStringField(outputFieldNameForEsType, _ES_SESSION_TYPE_NAME);
+                    return record;
+                })
                 .collect(Collectors.toList());
-    }
 
-
-    private void saveEventsToEs(Collection<Events> allEvents) {
-        allEvents.stream()
-                .flatMap(Collection::stream)
-                .forEach(event ->
-                {
-                    final Map<String, Object> map = Utils.toMap(event.cloneRecord());
-                    elasticsearchClientService.bulkPut(toEventIndexName(event.getTimestamp()),
-                            _ES_EVENT_TYPE_NAME,
-                            map,
-                            Optional.of((String) map.get(FieldDictionary.RECORD_ID)));
-                });
-        elasticsearchClientService.bulkFlush();
+        return Stream.concat(
+                outputEvents.stream(),
+                outputSessions.stream()
+        ).collect(Collectors.toList());
     }
 
     private SplittedEvents handleRewindAndGetAllNeededEvents(final Collection<Events> groupOfEvents,
@@ -1010,7 +1039,7 @@ public class IncrementalWebSession
      * @return the name of the event index corresponding to the specified date.
      */
     public String toEventIndexName(final ZonedDateTime date) {
-        return _ES_EVENT_INDEX_PREFIX + _ES_EVENT_INDEX_SUFFIX_FORMATTER.format(date.withZoneSameInstant(zoneIdToUse));
+        return Utils.buildIndexName(_ES_EVENT_INDEX_PREFIX, _ES_EVENT_INDEX_SUFFIX_FORMATTER, date, zoneIdToUse);
     }
 
     /**
@@ -1022,7 +1051,7 @@ public class IncrementalWebSession
      * @return the name of the session index corresponding to the specified timestamp.
      */
     public String toSessionIndexName(final ZonedDateTime date) {
-        return _ES_SESSION_INDEX_PREFIX + _ES_SESSION_INDEX_SUFFIX_FORMATTER.format(date.withZoneSameInstant(zoneIdToUse));
+        return Utils.buildIndexName(_ES_SESSION_INDEX_PREFIX, _ES_SESSION_INDEX_SUFFIX_FORMATTER, date, zoneIdToUse);
     }
 
     /**

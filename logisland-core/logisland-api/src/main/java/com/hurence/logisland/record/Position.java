@@ -40,7 +40,7 @@ import java.util.Date;
  * Everyware Cloud. Refer to the description of each of the fields for more
  * information on the model of EdcPosition.
  */
-public class Position  extends StandardRecord{
+public class Position extends StandardRecord {
     /**
      * Longitude of this position in degrees. This is a mandatory field.
      */

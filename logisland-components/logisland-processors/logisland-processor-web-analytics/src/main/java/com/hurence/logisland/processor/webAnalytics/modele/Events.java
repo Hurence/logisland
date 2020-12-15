@@ -67,6 +67,10 @@ public class Events
         return this.set.iterator();
     }
 
+    public Collection<Event> getAll() {
+        return this.set;
+    }
+
     @Override
     public Object[] toArray() {
         return this.set.toArray();

@@ -22,11 +22,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.hurence.logisland.processor.webAnalytics.IncrementalWebSession.defaultOutputFieldNameForEsIndex;
+import static com.hurence.logisland.processor.webAnalytics.IncrementalWebSession.defaultOutputFieldNameForEsType;
+
 public class ElasticsearchServiceUtil {
 
     public static final String SESSION_SUFFIX_FORMATTER_STRING = "yyyy.MM.dd";
     public static final String EVENT_SUFFIX_FORMATTER_STRING = "yyyy.MM.dd";
-    public static final SimpleDateFormat SESSION_SUFFIX_FORMATTER = new SimpleDateFormat(SESSION_SUFFIX_FORMATTER_STRING);
+    public static final DateTimeFormatter SESSION_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
+            SESSION_SUFFIX_FORMATTER_STRING,
+            Locale.ENGLISH
+    );
     public static final String SESSION_INDEX_PREFIX = "openanalytics_websessions-";
     public static final DateTimeFormatter EVENT_SUFFIX_FORMATTER = DateTimeFormatter.ofPattern(
             EVENT_SUFFIX_FORMATTER_STRING,
@@ -34,24 +40,25 @@ public class ElasticsearchServiceUtil {
     );
     public static final String EVENT_INDEX_PREFIX = "openanalytics_webevents.";
 
-    public static void injectSessionsThenRefresh(ElasticsearchClientService esClientService,
-                                                 List<MockRecord> sessions) {
-        injectSessionsWithoutRefreshing(esClientService, sessions);
-        String[] indicesToWaitFor = sessions.stream()
-                .map(session -> toSessionIndexName(session.getField(TestMappings.sessionInternalFields.getTimestampField()).asLong()))
-                .toArray(String[]::new);
-        esClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
-    }
-
-    public static void injectSessionsWithoutRefreshing(ElasticsearchClientService esClientService,
-                                      List<MockRecord> sessions) {
-        final String sessionType = "sessions";
-        sessions.forEach(session -> {
-            String sessionIndex = toSessionIndexName(session.getField(TestMappings.sessionInternalFields.getTimestampField()).asLong());
-            esClientService.bulkPut( sessionIndex + "," + sessionType, session);
-        });
-        esClientService.bulkFlush();
-    }
+//    public static void injectSessionsThenRefresh(ElasticsearchClientService esClientService,
+//                                                 List<MockRecord> sessions) {
+//        injectSessionsWithoutRefreshing(esClientService, sessions);
+//        String[] indicesToWaitFor = sessions.stream()
+//                .map(session -> session.getField(defaultOutputFieldNameForEsIndex).asString())
+//                .toArray(String[]::new);
+//        esClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
+//    }
+//
+//    public static void injectSessionsWithoutRefreshing(ElasticsearchClientService esClientService,
+//                                      List<MockRecord> sessions) {
+//        final String sessionType = "sessions";
+//        sessions.forEach(session -> {
+//
+//            String sessionIndex = toSessionIndexName(session.getField(TestMappings.sessionInternalFields.getTimestampField()).asLong());
+//            esClientService.bulkPut( sessionIndex + "," + sessionType, session);
+//        });
+//        esClientService.bulkFlush();
+//    }
 
     public static SearchResponse getAllSessionsRaw(ElasticsearchClientService esClientService,
                                                    RestHighLevelClient esclient) throws IOException {
@@ -100,19 +107,26 @@ public class ElasticsearchServiceUtil {
 
     /**
      * Returns the name of the event index corresponding to the specified date such as
+     * ${event-index-name}.${event-suffix}.
+     * Eg. openanalytics-webevents.2018.01.31
+     *
+     * @param date the ZonedDateTime of the event to store in the index.
+     * @return the name of the event index corresponding to the specified date.
+     */
+    public static String toEventIndexName(final ZonedDateTime date) {
+        return Utils.buildIndexName(EVENT_INDEX_PREFIX, EVENT_SUFFIX_FORMATTER, date, date.getZone());
+    }
+
+    /**
+     * Returns the name of the event index corresponding to the specified date such as
      * ${session-index-name}${session-suffix}.
      * Eg. openanalytics-webevents.2018.01.31
      *
-     * @param epochMilli the milli timestamp epoc of the event of the session.
+     * @param date the ZonedDateTime timestamp of the first event of the session.
      * @return the name of the session index corresponding to the specified timestamp.
      */
-    private static String toSessionIndexName(long epochMilli) {
-        Date date = new java.util.Date(epochMilli);
-        return SESSION_INDEX_PREFIX + SESSION_SUFFIX_FORMATTER.format(date);
-    }
-
-    private static String toEventIndexName(final ZonedDateTime date) {
-        return EVENT_INDEX_PREFIX + EVENT_SUFFIX_FORMATTER.format(date);
+    public static String toSessionIndexName(final ZonedDateTime date) {
+        return Utils.buildIndexName(SESSION_INDEX_PREFIX, SESSION_SUFFIX_FORMATTER, date, date.getZone());
     }
 
     public static Map<String, Object> getEventFromEs(ElasticsearchClientService esClientService,

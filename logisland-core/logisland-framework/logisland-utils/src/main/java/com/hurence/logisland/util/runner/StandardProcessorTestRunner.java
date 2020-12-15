@@ -113,7 +113,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
-    public void enqueue(Collection<Record> records) {
+    public void enqueue(Collection<? extends Record> records) {
         inputRecordsQueue.addAll(records);
     }
 
