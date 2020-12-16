@@ -90,15 +90,27 @@ public class IncrementalWebSessionIT {
     private final String URL = "url";
 
     private final DockerComposeContainer container;
+    private final RestHighLevelClient esclient;
 
-    IncrementalWebSessionIT(DockerComposeContainer container) {
+    private final TestRunner bulkRunner;
+
+    IncrementalWebSessionIT(DockerComposeContainer container,
+                            RestHighLevelClient esclient) throws InitializationException {
         this.container = container;
+        this.esclient = esclient;
+        this.bulkRunner = newBulkAddTestRunner(container);
+        this.elasticsearchClientService = PluginProxy.unwrap(bulkRunner.getProcessContext()
+                .getPropertyValue(BulkAddElasticsearch.ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
     }
 
     @BeforeEach
-    public void clean(RestHighLevelClient esClient) throws IOException {
+    public void clean() throws IOException {
+        if (proc != null) {
+            this.proc.resetNumberOfRewindForProcInstance();
+        }
         try {
-            Set<String> indices = Arrays.stream(esClient.indices().get(
+            Thread.sleep(1000L);
+            Set<String> indices = Arrays.stream(esclient.indices().get(
                     new GetIndexRequest("*"),
                     RequestOptions.DEFAULT).getIndices()
             ).collect(Collectors.toSet());
@@ -106,9 +118,10 @@ public class IncrementalWebSessionIT {
             if (!indices.isEmpty()) {
                 logger.info("Will delete following indices :{}", indices);
                 DeleteIndexRequest deleteRequest = new DeleteIndexRequest(indices.toArray(new String[0]));
-                Assert.assertTrue(esClient.indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
+                Assert.assertTrue(esclient.indices().delete(deleteRequest, RequestOptions.DEFAULT).isAcknowledged());
             }
         } catch (Exception ex) {
+//            ex.printStackTrace();
             //when there is no index
         }
         PutIndexTemplateRequest templateRequest = new PutIndexTemplateRequest("all-indices")
@@ -119,7 +132,7 @@ public class IncrementalWebSessionIT {
                 );
         String mappingJson = TestFileHelper.loadFromFile("/rawStringMappingFile.json");
         templateRequest.mapping(mappingJson, XContentType.JSON);
-        AcknowledgedResponse putTemplateResponse = esClient.indices().putTemplate(templateRequest, RequestOptions.DEFAULT);
+        AcknowledgedResponse putTemplateResponse = esclient.indices().putTemplate(templateRequest, RequestOptions.DEFAULT);
         logger.info("putTemplateResponse is " + putTemplateResponse);
 
     }
@@ -127,7 +140,7 @@ public class IncrementalWebSessionIT {
 
 
     @Test
-    public void testUpdateOneWebSessionNow(DockerComposeContainer container, RestHighLevelClient esclient)
+    public void testUpdateOneWebSessionNow()
             throws Exception
     {
         String URL1 = "URL1";
@@ -178,13 +191,12 @@ public class IncrementalWebSessionIT {
                 .sessionDuration(Duration.between(firstEvent, lastEvent).getSeconds())
                 .is_sessionActive(true)
                 .sessionInactivityDuration(null);
-
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
 
     }
 
     @Test
-    public void testUpdateOneWebSessionInactive(DockerComposeContainer container,
-                                                RestHighLevelClient esclient)
+    public void testUpdateOneWebSessionInactive()
             throws Exception
     {
 
@@ -222,7 +234,7 @@ public class IncrementalWebSessionIT {
                 TestMappings.sessionInternalFields);
         new WebSessionChecker(doc).lastVisitedPage(URL2);
 
-        Thread.sleep(5000); // Make sure the Instant.now performed in the processor will exceed timeout.
+//        Thread.sleep(5000); // Make sure the Instant.now performed in the processor will exceed timeout.
 
         // Update web session with NOW+2s+SESSION_TIMEOUT.
         Instant lastEvent = event.plusSeconds(1);
@@ -257,12 +269,11 @@ public class IncrementalWebSessionIT {
                 .sessionDuration(Duration.between(firstEvent, lastEvent).getSeconds())
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
-
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
     }
 
     @Test
-    public void testUpdateOneWebSessionTimedout(DockerComposeContainer container,
-                                                RestHighLevelClient esclient)
+    public void testUpdateOneWebSessionTimedout()
             throws Exception
     {
 
@@ -325,6 +336,7 @@ public class IncrementalWebSessionIT {
                 .lastEventDateTime(timedoutEvent.toEpochMilli())
                 .lastVisitedPage(URL2)
                 .is_sessionActive(true);
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
     }
     /*
         A bug when deleting session mapping of es every day when divolt send events with same sessionId on several days !
@@ -358,7 +370,7 @@ public class IncrementalWebSessionIT {
          "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#3" | 1601882662402 (lun. 05 oct. 2020 07:24:22 GMT) | 1601882676592 (lun. 05 oct. 2020 07:24:36 GMT) | 2
     */
     @Test
-    public void testBugWhenNotFlushingMappingAndHighFrequencyBatch(DockerComposeContainer container)
+    public void testBugWhenNotFlushingMappingAndHighFrequencyBatch()
             throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
         final String divoltSession = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
@@ -451,10 +463,11 @@ public class IncrementalWebSessionIT {
                 .sessionDuration(14L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
     }
 
     @Test
-    public void testBugWhenNotFlushingMappingAndHighFrequencyBatch2(DockerComposeContainer container)
+    public void testBugWhenNotFlushingMappingAndHighFrequencyBatch2()
             throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
         final String session = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
@@ -582,11 +595,12 @@ public class IncrementalWebSessionIT {
                 .sessionDuration(4L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
     }
 
 
     @Test
-    public void testRewind1(RestHighLevelClient esclient, DockerComposeContainer container)
+    public void testRewind1()
             throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
         final String session = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
@@ -609,7 +623,7 @@ public class IncrementalWebSessionIT {
         testRunner.assertOutputRecordsCount(5 + 5);
         MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
         MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
-
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
         new WebSessionChecker(session1).sessionId(session)
                 .Userid(user)
                 .record_type("consolidate-session")
@@ -653,7 +667,7 @@ public class IncrementalWebSessionIT {
         testRunner.assertOutputRecordsCount(2 + 2);
         session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
         MockRecord session2 = getFirstRecordWithId(session + "#2", testRunner.getOutputRecords());
-
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
         new WebSessionChecker(session1).sessionId(session)
                 .Userid(user)
                 .record_type("consolidate-session")
@@ -757,11 +771,12 @@ public class IncrementalWebSessionIT {
         injectOutputIntoEsThenRefresh(Arrays.asList(session2, session3, session4, session5));
         rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
     }
 
 
     @Test
-    public void testRewind2(RestHighLevelClient esclient, DockerComposeContainer container)
+    public void testRewind2()
             throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
         final String session = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
@@ -784,7 +799,7 @@ public class IncrementalWebSessionIT {
         testRunner.assertOutputRecordsCount(5 + 5);
         MockRecord session1 = getFirstRecordWithId(session, testRunner.getOutputRecords());
         MockRecord session5 = getFirstRecordWithId(session + "#5", testRunner.getOutputRecords());
-
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
         new WebSessionChecker(session1).sessionId(session)
                 .Userid(user)
                 .record_type("consolidate-session")
@@ -829,11 +844,31 @@ public class IncrementalWebSessionIT {
 
         rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
     }
 
-    //TODP
+    /**
+
+     * T1------T2------T3---T4-------------T5
+     * --------X-------X----X--------------X
+     * First batch: events T1,T2,T3,T4,T5
+     *      expected in ES: 5 session S1 -> T1, S2 -> T2, S3 -> T3, S4 -> T4, S5 -> T5
+     * Rewind (reset cache)
+     * Second batch: events T3,T4,T5
+     *  - expected in ES if not interrupted : 5 sessions S1 -> T1, S2 -> T2, S3 -> T3, S4 -> T4, S5 -> T5
+     * Job is interrupted and does not commit offset, only S3 is registered
+     *  - expected in ES: 2 sessions S1 -> T1, S2 -> T2, S3 -> T3
+     *  rewindCounter shouldBe 1
+     *
+     * Rewind (reset cache)
+     * Third batch: events T3,T4,T5
+     *    - expected in ES if not interrupted : 5 sessions S1 -> T1, S2 -> T2, S3 -> T3, S4 -> T4, S5 -> T5
+     * rewindCounter should still be 1 because S3max <= T3
+     *
+     * @throws Exception
+     */
     @Test
-    public void testRewindFailThenRestart(RestHighLevelClient esclient, DockerComposeContainer container)
+    public void testRewindFailThenRestart()
             throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
         final String session = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
@@ -885,7 +920,7 @@ public class IncrementalWebSessionIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
         injectOutputIntoEsWithoutRefreshing(testRunner.getOutputRecords());
-
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
         //rewind from time3 but fail during registering session so registering only session 3
         times = Arrays.asList(time3, time4, time5);
         events = createEvents(url, session, user, times);
@@ -896,11 +931,13 @@ public class IncrementalWebSessionIT {
         testRunner.assertOutputRecordsCount(3 + 3);
         MockRecord session3 = getFirstRecordWithId(session + "#3", testRunner.getOutputRecords());
         injectOutputIntoEsWithoutRefreshing(Arrays.asList(session3));
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
 
         //restart from time3 because offset was not commited
         times = Arrays.asList(time3, time4, time5);
         events = createEvents(url, session, user, times);
         testRunner.clearQueues();
+        resetCache(testRunner);
         testRunner.enqueue(events);
         testRunner.run();
         testRunner.assertOutputRecordsCount(3 + 3);
@@ -909,10 +946,11 @@ public class IncrementalWebSessionIT {
 
         SearchResponse rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(5, rsp.getHits().getTotalHits().value);
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
     }
 
     @Test
-    public void testRewind2DivoltId(RestHighLevelClient esclient, DockerComposeContainer container)
+    public void testRewind2DivoltId()
             throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
         final String divoltSession = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
@@ -966,6 +1004,7 @@ public class IncrementalWebSessionIT {
 
         SearchResponse rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(10, rsp.getHits().getTotalHits().value);
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
         //rewind from time1
         times = Arrays.asList(time1, time2);
         testRunner.clearQueues();
@@ -975,6 +1014,7 @@ public class IncrementalWebSessionIT {
         testRunner.run();
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(4 + 4);
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
         rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(2, rsp.getHits().getTotalHits().value);
 
@@ -1148,10 +1188,11 @@ public class IncrementalWebSessionIT {
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
     }
 
     @Test
-    public void testRewind2DivoltId2(RestHighLevelClient esclient, DockerComposeContainer container)
+    public void testRewind2DivoltId2()
             throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
         final String divoltSession = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
@@ -1206,6 +1247,7 @@ public class IncrementalWebSessionIT {
         injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
         SearchResponse rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(10, rsp.getHits().getTotalHits().value);
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
         //rewind from time1
         times = Arrays.asList(time1, time2);
         testRunner.clearQueues();
@@ -1218,7 +1260,7 @@ public class IncrementalWebSessionIT {
         rsp = getAllSessionsAfterRefreshing(esclient);
         assertEquals(2, rsp.getHits().getTotalHits().value);
         injectOutputIntoEsWithoutRefreshing(testRunner.getOutputRecords());
-
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
         //end of rewind should be as start
         times = Arrays.asList(time3, time4, time5);
         testRunner.clearQueues();
@@ -1383,6 +1425,7 @@ public class IncrementalWebSessionIT {
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
     }
 
     /**
@@ -1390,12 +1433,10 @@ public class IncrementalWebSessionIT {
      * That they are injected to ES directly as input of the processor
      * Or that they have been fetched from remote in ES.
      *
-     * @param esclient
-     * @param container
      * @throws Exception
      */
     @Test
-    public void testConsistenceInEs(RestHighLevelClient esclient, DockerComposeContainer container)
+    public void testConsistenceInEs()
             throws Exception {
         final String url = "https://orexad.preprod.group-iph.com/fr/entretien-de-fluides/c-20-50-10";
         final String divoltSession = "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al";
@@ -1583,6 +1624,7 @@ public class IncrementalWebSessionIT {
         assertEquals(-1, session2_2.getVersion());
         assertMapsAreEqualsIgnoringSomeKeys(session.getSourceAsMap(), session2_1.getSourceAsMap() , FieldDictionary.RECORD_TIME, "@timestamp");
         assertMapsAreEqualsIgnoringSomeKeys(session2.getSourceAsMap(), session2_2.getSourceAsMap(), FieldDictionary.RECORD_TIME, "@timestamp");
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
     }
 
     /**
@@ -1590,12 +1632,10 @@ public class IncrementalWebSessionIT {
      * That they are injected to ES directly as input of the processor
      * Or that they have been fetched from remote in ES.
      *
-     * @param esclient
-     * @param container
      * @throws Exception
      */
     @Test
-    public void testRewindMultipleUsers(RestHighLevelClient esclient, DockerComposeContainer container) throws Exception {
+    public void testRewindMultipleUsers() throws Exception {
         final TestRunner testRunner = newTestRunner(container);
         testRunner.assertValid();
         //first run
@@ -1705,6 +1745,7 @@ public class IncrementalWebSessionIT {
 
         SearchResponse webEventRsp = getAllEventsAfterRefreshing(esclient);
         assertEquals(3 * 7, webEventRsp.getHits().getTotalHits().value);
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
 
         //rewind only sessions from user 1
         times = Arrays.asList(time3, time4);
@@ -1718,6 +1759,7 @@ public class IncrementalWebSessionIT {
         assertEquals(5, getAllSessionsAfterRefreshing(esclient).getHits().getTotalHits().value);
         assertEquals(3 * 7, getAllEventsAfterRefreshing(esclient).getHits().getTotalHits().value);
 
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
         //rewind only sessions from user 2
         times = Arrays.asList(time3, time4);
         testRunner.clearQueues();
@@ -1728,6 +1770,7 @@ public class IncrementalWebSessionIT {
         injectOutputIntoEsWithoutRefreshing(testRunner.getOutputRecords());
         assertEquals(4, getAllSessionsAfterRefreshing(esclient).getHits().getTotalHits().value);
         assertEquals(3 * 7, getAllEventsAfterRefreshing(esclient).getHits().getTotalHits().value);
+        Assert.assertEquals(2, this.proc.getNumberOfRewindForProcInstance());
 
         //rewind from time5 to time7
         times = Arrays.asList(time5, time6, time7);
@@ -1831,87 +1874,412 @@ public class IncrementalWebSessionIT {
         assertMapsAreEqualsIgnoringSomeKeys(session2User1.getSourceAsMap(), session2User1_2.getSourceAsMap(), FieldDictionary.RECORD_TIME, "@timestamp");
         assertMapsAreEqualsIgnoringSomeKeys(sessionUser2.getSourceAsMap(), session2User2_1.getSourceAsMap() , FieldDictionary.RECORD_TIME, "@timestamp");
         assertMapsAreEqualsIgnoringSomeKeys(session2User2.getSourceAsMap(), session2User2_2.getSourceAsMap(), FieldDictionary.RECORD_TIME, "@timestamp");
+        Assert.assertEquals(2, this.proc.getNumberOfRewindForProcInstance());
     }
 
-    /*
-    * This test was us to verify that events injected with old IncrementalWebSession in ES as same result
-    * than when using BulkAddElasticsearch. Delete this latter when we are sure there is no problem
-    * (type in elasticsearch should be determined by a mapping anyway)
-    * */
-//    @Test
-//    public void myTestIndexIntoEs(DockerComposeContainer container) throws InitializationException {
-//        final TestRunner testRunner = newTestRunner(container);
-//        testRunner.assertValid();
-//        testRunner.run();
-//        //first run
-//        final long time1 = 1601629314416L;
-//        final long time2 = time1 + 1L;
-//        final long time3 = time2 + 1L;
-//        final long time4 = time3 + 1L;
-//        final long time5 = time4 + (SESSION_TIMEOUT + 1L) * 1000L;
-//        final long time6 = time5 + 1L;
-//        final long time7 = time6 + 1L;
-//        List<Long> times = Arrays.asList(time1, time2, time3, time4, time5, time6, time7);
-//        Events eventsuser1 = new Events(createEventsUser1(times).stream()
-//                .map(r -> new Event(r, TestMappings.eventsInternalFields))
-//                .collect(Collectors.toList())
-//        );
-//        Events eventsuser2 = new Events(createEventsUser2(times).stream()
-//                .map(r -> new Event(r, TestMappings.eventsInternalFields))
-//                .collect(Collectors.toList())
-//        );
-//        Events eventsuser3 = new Events(createEventsUser3(times).stream()
-//                .map(r -> new Event(r, TestMappings.eventsInternalFields))
-//                .collect(Collectors.toList())
-//        );
-//        Collection<Events> events = Arrays.asList(eventsuser1, eventsuser2, eventsuser3);
-//        this.proc.saveEventsToEs(events);
-//        //TODO verify same effect than bith bulkadd
-//        final String DEFAULT_INDEX = "test_index";
-//        final String DEFAULT_TYPE = "cisco_record";
-//        final String ES_INDEX_FIELD = "index_field";
-//        final String ES_TYPE_FIELD = "type_field";
-//
-//        final TestRunner bulkAddRunner = TestRunners.newTestRunner(new BulkAddElasticsearch());
-//        bulkAddRunner.setProperty(BulkAddElasticsearch.DEFAULT_INDEX, DEFAULT_INDEX);
-//        bulkAddRunner.setProperty(BulkAddElasticsearch.DEFAULT_TYPE, DEFAULT_TYPE);
-//        bulkAddRunner.setProperty(BulkAddElasticsearch.ES_INDEX_FIELD, ES_INDEX_FIELD);
-//        bulkAddRunner.setProperty(BulkAddElasticsearch.ES_TYPE_FIELD, ES_TYPE_FIELD);
-//        bulkAddRunner.setProperty(BulkAddElasticsearch.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
-//
-//        bulkAddRunner.assertValid();
-//
-//        configureElasticsearchClientService(bulkAddRunner, container);
-//
-//        Collection<Record> inputEvents = events.stream()
-//                        .flatMap(Collection::stream)
-//                        .map(event ->
-//                        {
-//                            Record record = event.getRecord();
-//                            record.setLongField(TestMappings.eventsInternalFields.getTimestampField(),
-//                                    record.getField(TestMappings.eventsInternalFields.getTimestampField()).asLong());
-//                            record.setStringField(ES_INDEX_FIELD, "my_index_to_compare");
-//                            record.setStringField(ES_TYPE_FIELD, "event");
-//                            return record;
-//                        })
-//                .collect(Collectors.toList());
-//
-//        bulkAddRunner.enqueue(inputEvents);
-//        bulkAddRunner.clearQueues();
-//        bulkAddRunner.run();
-//        bulkAddRunner.assertAllInputRecordsProcessed();
-//        bulkAddRunner.assertOutputRecordsCount(21);
-//        bulkAddRunner.assertOutputErrorCount(0);
-//        elasticsearchClientService.bulkFlush();
-//
-//        try {
-//            Thread.sleep(100000L);
-//            elasticsearchClientService.refreshCollection("my_index_to_compare");
-//            Assert.assertEquals(21, elasticsearchClientService.countCollection(DEFAULT_INDEX));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    /**
+     * The purpose of this test is to ensure that it handles correctly sessions even if it receive events in the wrong order
+     * and with some event causing a change of session (traffic source for exemple) So that first runs output wrong session
+     * but at the end session should be okay.
+     *
+     * events:                  T1------T2------T3---T4-------------T5
+     * changement de traffic:   --------X-----------------------------
+     * First batch: events T1,T3,T4 expected 1 session S1 -> T1,T3,T4
+     * Second batch: events T2,T5 expected 2 sessions and fixed session so that S1 => T1, S2 => T2,T3,T4,T5
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testNotOrderedIncomingEvents() throws Exception {
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + 1L;
+        final long time3 = time2 + 1L;
+        final long time4 = time3 + 1L;
+        final long time5 = time4 + 1L;
+        Record event1 = createEvent("url1", SESSION1, USER1, time1);
+        Record event2 = createEvent("url2", SESSION1, USER1, time2);
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 1");
+        Record event3 = createEvent("url3", SESSION1, USER1, time3);
+        Record event4 = createEvent("url4", SESSION1, USER1, time4);
+        Record event5 = createEvent("url5", SESSION1, USER1, time5);
+        testRunner.enqueue(event4, event3, event1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(1 + 3);
+
+        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
+        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
+                .sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage("url1")
+                .eventsCounter(3)
+                .lastEventDateTime(time4)
+                .lastVisitedPage("url4")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        //events from past arriving (distributed environment does not guaranty order)
+        testRunner.clearQueues();
+        testRunner.enqueue(event5, event2);
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(2 + 2 + 3);//2 session + 2 events + 3 events from past
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
+                .sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage("url1")
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage("url1")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#2")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#2")
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
+                .firstVisitedPage("url2")
+                .eventsCounter(4)
+                .lastEventDateTime(time5)
+                .lastVisitedPage("url5")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+    }
+
+    /**
+     * The purpose of this test is to ensure that it handles correctly sessions even if it receive events in the wrong order
+     * and with some event causing a change of session (traffic source for exemple) So that first runs output wrong session
+     * but at the end session should be okay.
+     *
+     * Tous les évènements si dessous sont des évènements qui ont a peu près le même timestamp.
+     * events (chronological order):      T1------T2------T3---T4-------------T5---T6-------T7
+     * changement de traffic:             --------X------------X-------------------X----------
+     * First batch: events T1,T3,T4
+     *      expected in ES: 2 session S1 -> T1,T3 S2 -> T4
+     * Second batch: events T5,T7
+     *    - expected in ES: 2 sessions and fixed session so that S1 => T1,T3  S2 => T4, T5, T7
+     * Third batch: events T2,T6
+     *    - expected in ES: expected 4 sessions and fixed session so that S1 => T1
+     *								     S2 => T2, T3
+     *              							     S3 => T4, T5
+     *              							     S4 => T6, T7
+     * @throws Exception
+     */
+    @Test
+    public void testNotOrderedIncomingEvents2() throws Exception {
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + 1L;
+        final long time3 = time2 + 1L;
+        final long time4 = time3 + 1L;
+        final long time5 = time4 + 1L;
+        final long time6 = time5 + 1L;
+        final long time7 = time6 + 1L;
+        Record event1 = createEvent("url1", SESSION1, USER1, time1);
+        Record event2 = createEvent("url2", SESSION1, USER1, time2);
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 1");
+        Record event3 = createEvent("url3", SESSION1, USER1, time3);
+        Record event4 = createEvent("url4", SESSION1, USER1, time4);
+        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 2");
+        Record event5 = createEvent("url5", SESSION1, USER1, time5);
+        Record event6 = createEvent("url6", SESSION1, USER1, time6);
+        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 3");
+        Record event7 = createEvent("url7", SESSION1, USER1, time7);
+        testRunner.enqueue(event4, event3, event1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(2 + 3);//1session + 3 event
+
+        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
+        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
+                .sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage("url1")
+                .eventsCounter(3)
+                .lastEventDateTime(time4)
+                .lastVisitedPage("url4")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        //events from past arriving (distributed environment does not guaranty order)
+        testRunner.clearQueues();
+        testRunner.enqueue(event5, event7);
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(1 + 2);//1 session + 2 events
+        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
+        //TODO test value of sessions
+
+//        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
+//                .sessionId(SESSION1)
+//                .Userid(USER1)
+//                .record_type("consolidate-session")
+//                .record_id(SESSION1)
+//                .firstEventDateTime(time1)
+//                .h2kTimestamp(time1)
+//                .firstVisitedPage("url1")
+//                .eventsCounter(1)
+//                .lastEventDateTime(time1)
+//                .lastVisitedPage("url1")
+//                .sessionDuration(null)
+//                .is_sessionActive(false)
+//                .sessionInactivityDuration(SESSION_TIMEOUT);
+//        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#2", testRunner.getOutputRecords())
+//                .sessionId(SESSION1+ "#2")
+//                .Userid(USER1)
+//                .record_type("consolidate-session")
+//                .record_id(SESSION1+ "#2")
+//                .firstEventDateTime(time2)
+//                .h2kTimestamp(time2)
+//                .firstVisitedPage("url2")
+//                .eventsCounter(4)
+//                .lastEventDateTime(time5)
+//                .lastVisitedPage("url5")
+//                .sessionDuration(null)
+//                .is_sessionActive(false)
+//                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        //events from past arriving (distributed environment does not guaranty order)
+        testRunner.clearQueues();
+        testRunner.enqueue(event2, event6);
+        testRunner.run();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(2 + 2 + 2);//2 session + 2 events + 2event from past
+
+        //TODO test value of sessions
+    }
+
+    /**
+     * This test should have the same output as the final result is es at tend of test testNotOrderedIncomingEvents2
+     * @throws Exception
+     */
+    @Test
+    public void testNotOrderedIncomingEvents2InOneBatch() throws Exception {
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + 1L;
+        final long time3 = time2 + 1L;
+        final long time4 = time3 + 1L;
+        final long time5 = time4 + 1L;
+        final long time6 = time5 + 1L;
+        final long time7 = time6 + 1L;
+        Record event1 = createEvent("url1", SESSION1, USER1, time1);
+        Record event2 = createEvent("url2", SESSION1, USER1, time2);
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 1");
+        Record event3 = createEvent("url3", SESSION1, USER1, time3);
+        Record event4 = createEvent("url4", SESSION1, USER1, time4);
+        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 2");
+        Record event5 = createEvent("url5", SESSION1, USER1, time5);
+        Record event6 = createEvent("url6", SESSION1, USER1, time6);
+        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 3");
+        Record event7 = createEvent("url7", SESSION1, USER1, time7);
+        testRunner.enqueue(event4, event3, event1, event2, event5, event6, event7);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputRecordsCount(7 + 4);//4 session + 7 event
+
+        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
+        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
+                .sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage("url1")
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage("url1")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1 + "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION1 + "#2")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1 + "#2")
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
+                .firstVisitedPage("url2")
+                .eventsCounter(2)
+                .lastEventDateTime(time3)
+                .lastVisitedPage("url3")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1 + "#3", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#3")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#3")
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
+                .firstVisitedPage("url4")
+                .eventsCounter(2)
+                .lastEventDateTime(time5)
+                .lastVisitedPage("url5")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#4", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#4")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#4")
+                .firstEventDateTime(time6)
+                .h2kTimestamp(time6)
+                .firstVisitedPage("url6")
+                .eventsCounter(2)
+                .lastEventDateTime(time7)
+                .lastVisitedPage("url7")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+    }
+
+
+    /**
+     * The purpose of this test is to ensure that intempestive rewind are not triggered in nominal mode.
+     * Some events are delayed into next batch but that should not trigger a rewind !
+     *
+     * Tous les évènements si dessous sont des évènements qui ont a peu près le même timestamp.
+     * events (chronological order):      T1------T2------T3---T4-------------T5---T6-------T7
+     * changement de traffic:             --------X------------X-------------------X----------
+     * First batch: events T1,T3,T4
+     *      expected in ES: 2 session S1 -> T1,T3 S2 -> T4
+     * Second batch: events T5,T7
+     *    - expected in ES: 2 sessions and fixed session so that S1 => T1,T3  S2 => T4, T5, T7
+     * Third batch: events T2,T6
+     *    - expected in ES: expected 4 sessions and fixed session so that S1 => T1
+     *								     S2 => T2, T3
+     *              							     S3 => T4, T5
+     *              							     S4 => T6, T7
+     * @throws Exception
+     */
+    @Test
+    public void testNotTooManyRewindItShouldBeDoneOnlyAtStartIdeally() throws Exception {
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + 1L;
+        final long time3 = time2 + 1L;
+        final long time4 = time3 + 1L;
+        final long time5 = time4 + 1L;
+        final long time6 = time5 + 1L;
+        final long time7 = time6 + 1L;
+        Record event1 = createEvent("url1", SESSION1, USER1, time1);
+        Record event2 = createEvent("url2", SESSION1, USER1, time2);
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 1");
+        Record event3 = createEvent("url3", SESSION1, USER1, time3);
+        Record event4 = createEvent("url4", SESSION1, USER1, time4);
+        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 2");
+        Record event5 = createEvent("url5", SESSION1, USER1, time5);
+        Record event6 = createEvent("url6", SESSION1, USER1, time6);
+        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 3");
+        Record event7 = createEvent("url7", SESSION1, USER1, time7);
+        testRunner.enqueue(event4, event3, event1);
+        testRunner.run();
+        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
+
+        //events from past arriving (distributed environment does not guaranty order)
+        testRunner.clearQueues();
+        testRunner.enqueue(event5, event7);
+        testRunner.run();
+        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
+
+        //events from past arriving (distributed environment does not guaranty order)
+        testRunner.clearQueues();
+        testRunner.enqueue(event2, event6);
+        testRunner.run();
+
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
+    }
+
+    @Test
+    public void testNotTooManyRewindItShouldBeDoneOnlyAtStartIdeally2() throws Exception {
+        final TestRunner testRunner = newTestRunner(container);
+        testRunner.assertValid();
+        //first run
+        final long time1 = 1601629314416L;
+        final long time2 = time1 + 1000L;
+        final long time3 = time2 + 1000L;
+        final long time4 = time3 + 1000L;
+        final long time5 = time4 + 1000L;
+        final long time6 = time5 + 1000L;
+        final long time7 = time6 + 1000L;
+        Record event1 = createEvent("url1", SESSION1, USER1, time1);
+        Record event2 = createEvent("url2", SESSION1, USER1, time2);
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 1");
+        Record event3 = createEvent("url3", SESSION1, USER1, time3);
+        Record event4 = createEvent("url4", SESSION1, USER1, time4);
+        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 2");
+        Record event5 = createEvent("url5", SESSION1, USER1, time5);
+        Record event6 = createEvent("url6", SESSION1, USER1, time6);
+        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
+        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 3");
+        Record event7 = createEvent("url7", SESSION1, USER1, time7);
+        testRunner.enqueue(event4, event3, event1);
+        testRunner.run();
+        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
+
+        //events from past arriving (distributed environment does not guaranty order)
+        testRunner.clearQueues();
+        testRunner.enqueue(event5, event7);
+        testRunner.run();
+        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
+
+        //events from past arriving (distributed environment does not guaranty order)
+        testRunner.clearQueues();
+        testRunner.enqueue(event2, event6);
+        testRunner.run();
+
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
+    }
 
     private WebSessionChecker getWebSessionCheckerForSession(final String divoltSession,
                                                              final List<WebSession> sessions) {
@@ -1928,10 +2296,14 @@ public class IncrementalWebSessionIT {
     private List<Record> createEvents(String url, String divoltSession, String user, List<Long> times) {
         List<Record> events = new ArrayList<>();
         for (Long time : times) {
-            String id = buildId(time, divoltSession);
-            events.add(new WebEvent(id, divoltSession, user, time, url));
+            events.add(createEvent(url, divoltSession, user, time));
         }
         return events;
+    }
+
+    private Record createEvent(String url, String divoltSession, String user, Long time) {
+        String id = buildId(time, divoltSession);
+        return new WebEvent(id, divoltSession, user, time, url);
     }
 
     private List<Record> createEventsUser1(List<Long> times) {
@@ -1968,8 +2340,7 @@ public class IncrementalWebSessionIT {
         this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
     }
 
-    private void injectOutputIntoEsWithoutRefreshing(List<MockRecord> output) throws InitializationException {
-        TestRunner bulkRunner = newBulkAddTestRunner(container);
+    private void injectOutputIntoEsWithoutRefreshing(List<MockRecord> output) {
         bulkRunner.assertValid();
         bulkRunner.enqueue(output);
         bulkRunner.run();
@@ -2062,8 +2433,6 @@ public class IncrementalWebSessionIT {
         runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT));
         runner.setProperty(IncrementalWebSession.FIELDS_TO_RETURN, FIELDS_TO_RETURN);
         runner.setProperty(IncrementalWebSession.DEBUG_CONF, "true");
-        this.elasticsearchClientService = PluginProxy.unwrap(runner.getProcessContext()
-                .getPropertyValue(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF).asControllerService());
         customConf.forEach(runner::setProperty);
 
         return runner;

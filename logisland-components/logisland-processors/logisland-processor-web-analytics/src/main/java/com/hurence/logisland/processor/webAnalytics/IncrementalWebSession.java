@@ -359,16 +359,15 @@ public class IncrementalWebSession
     public static final String SOURCE_OF_TRAFFIC_FIELD_KEYWORD = "keyword";
 
     protected static final String PROP_SOURCE_OF_TRAFFIC_PREFIX = "source_of_traffic.prefix";
-    protected static final String SOURCE_OF_TRAFFIC_PREFIX_NAME = "source_of_traffic";
+    public static final String DEFAULT_SOURCE_OF_TRAFFIC_PREFIX = "source_of_traffic_";
     public static final String DIRECT_TRAFFIC = "direct";
 
-    public final String FLAT_SEPARATOR = "_";
     public static final PropertyDescriptor SOURCE_OF_TRAFFIC_PREFIX_FIELD =
             new PropertyDescriptor.Builder()
                  .name(PROP_SOURCE_OF_TRAFFIC_PREFIX)
                  .description("Prefix for the source of the traffic related fields")
                  .required(false)
-                 .defaultValue(SOURCE_OF_TRAFFIC_PREFIX_NAME)
+                 .defaultValue(DEFAULT_SOURCE_OF_TRAFFIC_PREFIX)
                  .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                  .build();
 
@@ -436,6 +435,15 @@ public class IncrementalWebSession
      * If {@code true} prints additional logs.
      */
     public boolean _DEBUG = false;
+    private long rewindCounter = 0L;
+
+    public long getNumberOfRewindForProcInstance() {
+        return rewindCounter;
+    }
+
+    public void resetNumberOfRewindForProcInstance() {
+        rewindCounter = 0L;
+    }
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -518,7 +526,7 @@ public class IncrementalWebSession
         final String _NEW_SESSION_REASON_FIELD = context.getPropertyValue(NEW_SESSION_REASON_FIELD).asString();
         final String _TRANSACTION_IDS = context.getPropertyValue(TRANSACTION_IDS).asString();
 
-        final String sotPrefix = context.getPropertyValue(SOURCE_OF_TRAFFIC_PREFIX_FIELD).asString() + FLAT_SEPARATOR;
+        final String sotPrefix = context.getPropertyValue(SOURCE_OF_TRAFFIC_PREFIX_FIELD).asString();
 
         final String _SOT_SOURCE_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_SOURCE;
         final String _SOT_CAMPAIGN_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_CAMPAIGN;
@@ -728,6 +736,7 @@ public class IncrementalWebSession
         if (eventsFromPast.isEmpty()) {
             return splittedEvents;
         }
+        rewindCounter++;//may wish to only do this on a MockProcessor extending this processor
         deleteFuturSessions(eventsFromPast);
         Collection<Event> eventsFromEs = getNeededEventsFromEs(eventsFromPast, lastSessionMapping);
         Map<String/*sessionId*/, List<Event>> eventsFromEsBySessionId = eventsFromEs
@@ -893,6 +902,36 @@ public class IncrementalWebSession
         return divoltSessionToCurrentSessions;
     }
 
+    //    GET new_openanalytics_websessions-*/_search
+//{
+//    "query": {
+//      "bool": {
+//          "must": [
+//              {
+//                  "wildcard": {
+//                      "sessionId.raw": {
+//                          "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al*"
+//                      }
+//                  }
+//              },
+//              {
+//                  "range": {
+//                       "firstEventEpoch": {
+//                          "lte": Tmin
+//                       }
+//                  }
+//              },
+//              {
+//                  "range": {
+//                       "lastEventEpoch": {
+//                          "gte": Tmin
+//                       }
+//                  }
+//              }
+//        ]
+//      }
+//    }
+//}
     private MultiQueryResponseRecord requestSessions(Collection<Events> eventsFromPast) {
         final List<QueryRecord> queries = new ArrayList<>();
         eventsFromPast.stream().forEach(events -> {
@@ -1167,7 +1206,12 @@ public class IncrementalWebSession
             }
         });
         if (sessionsRequests.isEmpty()) return mappingToReturn;
-
+        try {
+            //Wait 5 seconds to be be sure index are created (sessionsRequest should only happen when session not in cache...)
+            Thread.sleep(5000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
         MultiQueryResponseRecord multiQueryResponses = this.elasticsearchClientService.multiQueryGet(
                 new MultiQueryRecord(sessionsRequests)
