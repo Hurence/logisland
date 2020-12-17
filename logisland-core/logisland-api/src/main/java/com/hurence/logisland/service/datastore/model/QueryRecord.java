@@ -54,6 +54,11 @@ public class QueryRecord {
         return this;
     }
 
+    public QueryRecord addCollections(List<String> collection) {
+        this.collections.addAll(collection);
+        return this;
+    }
+
     public QueryRecord size(int size) {
         this.size = size;
         return this;

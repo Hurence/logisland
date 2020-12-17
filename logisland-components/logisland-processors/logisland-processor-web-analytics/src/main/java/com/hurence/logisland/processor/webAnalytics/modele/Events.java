@@ -13,10 +13,6 @@ public class Events
         this.set = new TreeSet<>(events);
     }
 
-    public String getSessionId() {
-        return this.first().getSessionId();
-    }
-
     @Override
     public Comparator<? super Event> comparator() {
         return this.set.comparator();
@@ -115,4 +111,10 @@ public class Events
     public void clear() {
         this.set.clear();
     }
+
+
+    public String getSessionId() {
+        return this.first().getSessionId();
+    }
+
 }

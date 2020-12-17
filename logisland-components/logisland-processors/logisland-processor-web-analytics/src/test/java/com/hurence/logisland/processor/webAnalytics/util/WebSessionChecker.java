@@ -42,7 +42,7 @@ public class WebSessionChecker
     public WebSessionChecker eventsCounter(final long value) { return check(sessionInternalFields.getEventsCounterField(), value); }
     public WebSessionChecker lastEventDateTime(final long value) { return check(sessionInternalFields.getLastEventDateTimeField(), new Date(value).toString()); }
     public WebSessionChecker lastVisitedPage(final Object value) { return check(sessionInternalFields.getLastVisitedPageField(), value); }
-    public WebSessionChecker sessionDuration(final Object value) { return check(sessionInternalFields.getSessionDurationField(), value); }
+    public WebSessionChecker sessionDuration(final Long value) { return check(sessionInternalFields.getSessionDurationField(), value); }
     public WebSessionChecker is_sessionActive(final Object value) { return check(sessionInternalFields.getIsSessionActiveField(), value); }
     public WebSessionChecker sessionInactivityDuration(final Object value) { return check(sessionInternalFields.getSessionInactivityDurationField(), value); }
     public WebSessionChecker record_time(final Object value) { return check("record_time", value); }

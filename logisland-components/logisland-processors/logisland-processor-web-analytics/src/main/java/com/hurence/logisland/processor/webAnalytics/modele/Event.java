@@ -97,16 +97,31 @@ public class Event
         return this.getStringValue(fieldsNames.visitedPageField);
     }
 
-    public String getSessionId() {
-        return this.getStringValue(fieldsNames.sessionIdField);
-    }
-
     public void setSessionId(final String sessionId) {
         if (getSessionId().equals(sessionId)) return;//do not save origanlSessionId if not changing
         logger.debug("change sessionId of event " + this.record.getId() + " from " + getSessionId() + " to " + sessionId);
         this.record.setField(fieldsNames.originalSessionIdField, FieldType.STRING, getSessionId());
         this.record.setField(fieldsNames.sessionIdField, FieldType.STRING, sessionId);
     }
+
+    public String getSessionId() {
+        return this.getStringValue(fieldsNames.sessionIdField);
+    }
+
+    /**
+     * May be null
+     * @return
+     */
+    public String getOriginalSessionId() {
+        return this.getStringValue(fieldsNames.originalSessionIdField);
+    }
+
+    public String getOriginalSessionIdOrSessionId() {
+        String orignalSessionId = getOriginalSessionId();
+        if (orignalSessionId==null) return getSessionId();
+        return orignalSessionId;
+    }
+
 
     public String getSourceOfTraffic() {
         return concatFieldsOfTraffic(this.getStringValue(fieldsNames.sourceOffTrafficSourceField),

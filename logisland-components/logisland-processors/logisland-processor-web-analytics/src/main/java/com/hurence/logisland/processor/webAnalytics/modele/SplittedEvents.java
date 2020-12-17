@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor.webAnalytics.modele;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 public class SplittedEvents {
     final private Collection<Events> eventsInNominalMode;
@@ -17,5 +18,12 @@ public class SplittedEvents {
 
     public Collection<Events> getEventsfromPast() {
         return eventsfromPast;
+    }
+
+    public Stream<Events> getAllEvents() {
+        return Stream.concat(
+                getEventsfromPast().stream(),
+                getEventsInNominalMode().stream()
+        );
     }
 }

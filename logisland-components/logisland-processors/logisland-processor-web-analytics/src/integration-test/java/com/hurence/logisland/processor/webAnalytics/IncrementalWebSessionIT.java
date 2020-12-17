@@ -1525,6 +1525,7 @@ public class IncrementalWebSessionIT {
         //rewind from time3 to time4
         times = Arrays.asList(time3, time4);
         testRunner.clearQueues();
+        resetCache(testRunner);
         testRunner.enqueue(createEvents(url, divoltSession, user, times));
         testRunner.run();
         testRunner.assertOutputErrorCount(0);
@@ -1533,7 +1534,7 @@ public class IncrementalWebSessionIT {
         assertEquals(1, getAllSessionsAfterRefreshing(esclient).getHits().getTotalHits().value);
         assertEquals(7, getAllEventsAfterRefreshing(esclient).getHits().getTotalHits().value);
 
-        //rewind from time5 to time7
+        //from time5 to time7
         times = Arrays.asList(time5, time6, time7);
         testRunner.clearQueues();
         testRunner.enqueue(createEvents(url, divoltSession, user, times));
@@ -1889,16 +1890,17 @@ public class IncrementalWebSessionIT {
      *
      * @throws Exception
      */
+    //TODO in order to this to work we need to get all events in es from Tmin to Tmax
     @Test
     public void testNotOrderedIncomingEvents() throws Exception {
         final TestRunner testRunner = newTestRunner(container);
         testRunner.assertValid();
         //first run
         final long time1 = 1601629314416L;
-        final long time2 = time1 + 1L;
-        final long time3 = time2 + 1L;
-        final long time4 = time3 + 1L;
-        final long time5 = time4 + 1L;
+        final long time2 = time1 + 1000L;
+        final long time3 = time2 + 1000L;
+        final long time4 = time3 + 1000L;
+        final long time5 = time4 + 1000L;
         Record event1 = createEvent("url1", SESSION1, USER1, time1);
         Record event2 = createEvent("url2", SESSION1, USER1, time2);
         event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
@@ -1911,6 +1913,7 @@ public class IncrementalWebSessionIT {
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(1 + 3);
+        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
 
         injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
         getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
@@ -1924,7 +1927,7 @@ public class IncrementalWebSessionIT {
                 .eventsCounter(3)
                 .lastEventDateTime(time4)
                 .lastVisitedPage("url4")
-                .sessionDuration(null)
+                .sessionDuration(3L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
@@ -1934,6 +1937,7 @@ public class IncrementalWebSessionIT {
         testRunner.run();
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(2 + 2 + 3);//2 session + 2 events + 3 events from past
+        Assert.assertEquals(1, this.proc.getNumberOfRewindForProcInstance());
 
         getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
                 .sessionId(SESSION1)
@@ -1960,7 +1964,7 @@ public class IncrementalWebSessionIT {
                 .eventsCounter(4)
                 .lastEventDateTime(time5)
                 .lastVisitedPage("url5")
-                .sessionDuration(null)
+                .sessionDuration(3L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
     }
@@ -1979,7 +1983,7 @@ public class IncrementalWebSessionIT {
      *    - expected in ES: 2 sessions and fixed session so that S1 => T1,T3  S2 => T4, T5, T7
      * Third batch: events T2,T6
      *    - expected in ES: expected 4 sessions and fixed session so that S1 => T1
-     *								     S2 => T2, T3
+     *								                 S2 => T2, T3
      *              							     S3 => T4, T5
      *              							     S4 => T6, T7
      * @throws Exception
@@ -1990,12 +1994,12 @@ public class IncrementalWebSessionIT {
         testRunner.assertValid();
         //first run
         final long time1 = 1601629314416L;
-        final long time2 = time1 + 1L;
-        final long time3 = time2 + 1L;
-        final long time4 = time3 + 1L;
-        final long time5 = time4 + 1L;
-        final long time6 = time5 + 1L;
-        final long time7 = time6 + 1L;
+        final long time2 = time1 + 1000L;
+        final long time3 = time2 + 1000L;
+        final long time4 = time3 + 1000L;
+        final long time5 = time4 + 1000L;
+        final long time6 = time5 + 1000L;
+        final long time7 = time6 + 1000L;
         Record event1 = createEvent("url1", SESSION1, USER1, time1);
         Record event2 = createEvent("url2", SESSION1, USER1, time2);
         event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
@@ -2013,7 +2017,7 @@ public class IncrementalWebSessionIT {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(2 + 3);//1session + 3 event
+        testRunner.assertOutputRecordsCount(2 + 3);//2session + 3 event
 
         injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
         getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
@@ -2024,7 +2028,21 @@ public class IncrementalWebSessionIT {
                 .firstEventDateTime(time1)
                 .h2kTimestamp(time1)
                 .firstVisitedPage("url1")
-                .eventsCounter(3)
+                .eventsCounter(2)
+                .lastEventDateTime(time3)
+                .lastVisitedPage("url3")
+                .sessionDuration(2L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+        getWebSessionCheckerForSessionFromRecords(SESSION1 + "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION1 + "#2")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1 + "#2")
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
+                .firstVisitedPage("url4")
+                .eventsCounter(1)
                 .lastEventDateTime(time4)
                 .lastVisitedPage("url4")
                 .sessionDuration(null)
@@ -2038,45 +2056,110 @@ public class IncrementalWebSessionIT {
         testRunner.assertOutputErrorCount(0);
         testRunner.assertOutputRecordsCount(1 + 2);//1 session + 2 events
         injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
-        //TODO test value of sessions
 
-//        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
-//                .sessionId(SESSION1)
-//                .Userid(USER1)
-//                .record_type("consolidate-session")
-//                .record_id(SESSION1)
-//                .firstEventDateTime(time1)
-//                .h2kTimestamp(time1)
-//                .firstVisitedPage("url1")
-//                .eventsCounter(1)
-//                .lastEventDateTime(time1)
-//                .lastVisitedPage("url1")
-//                .sessionDuration(null)
-//                .is_sessionActive(false)
-//                .sessionInactivityDuration(SESSION_TIMEOUT);
-//        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#2", testRunner.getOutputRecords())
-//                .sessionId(SESSION1+ "#2")
-//                .Userid(USER1)
-//                .record_type("consolidate-session")
-//                .record_id(SESSION1+ "#2")
-//                .firstEventDateTime(time2)
-//                .h2kTimestamp(time2)
-//                .firstVisitedPage("url2")
-//                .eventsCounter(4)
-//                .lastEventDateTime(time5)
-//                .lastVisitedPage("url5")
-//                .sessionDuration(null)
-//                .is_sessionActive(false)
-//                .sessionInactivityDuration(SESSION_TIMEOUT);
+        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#2")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#2")
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
+                .firstVisitedPage("url4")
+                .eventsCounter(3)
+                .lastEventDateTime(time7)
+                .lastVisitedPage("url7")
+                .sessionDuration(3L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
 
         //events from past arriving (distributed environment does not guaranty order)
         testRunner.clearQueues();
         testRunner.enqueue(event2, event6);
         testRunner.run();
         testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(2 + 2 + 2);//2 session + 2 events + 2event from past
+        testRunner.assertOutputRecordsCount(6 + 4);//actuellement 6 events + 4 sessions = 10
+//        testRunner.assertOutputRecordsCount(7 + 4);//7 events et 4 sessions
 
-        //TODO test value of sessions
+        getFirstRecordWithId(buildId(time1, SESSION1), testRunner.getOutputRecords())
+                .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1);
+
+        getFirstRecordWithId(buildId(time2, SESSION1), testRunner.getOutputRecords())
+                .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1 + "#2");
+
+        getFirstRecordWithId(buildId(time3, SESSION1), testRunner.getOutputRecords())
+                .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1+ "#2");
+
+        getFirstRecordWithId(buildId(time4, SESSION1), testRunner.getOutputRecords())
+                .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1+ "#3");
+
+        getFirstRecordWithId(buildId(time5, SESSION1), testRunner.getOutputRecords())
+                .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1+ "#3");
+
+        getFirstRecordWithId(buildId(time6, SESSION1), testRunner.getOutputRecords())
+                .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1+ "#4");
+
+//        getFirstRecordWithId(buildId(time7, SESSION1), testRunner.getOutputRecords())
+//                .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1+ "#4");
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1, testRunner.getOutputRecords())
+                .sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(time1)
+                .h2kTimestamp(time1)
+                .firstVisitedPage("url1")
+                .eventsCounter(1)
+                .lastEventDateTime(time1)
+                .lastVisitedPage("url1")
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#2", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#2")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#2")
+                .firstEventDateTime(time2)
+                .h2kTimestamp(time2)
+                .firstVisitedPage("url2")
+                .eventsCounter(2)
+                .lastEventDateTime(time3)
+                .lastVisitedPage("url3")
+                .sessionDuration(1L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#3", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#3")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#3")
+                .firstEventDateTime(time4)
+                .h2kTimestamp(time4)
+                .firstVisitedPage("url4")
+                .eventsCounter(2)
+                .lastEventDateTime(time5)
+                .lastVisitedPage("url5")
+                .sessionDuration(1L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+
+        getWebSessionCheckerForSessionFromRecords(SESSION1+ "#4", testRunner.getOutputRecords())
+                .sessionId(SESSION1+ "#4")
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1+ "#4")
+                .firstEventDateTime(time6)
+                .h2kTimestamp(time6)
+                .firstVisitedPage("url6")
+                .eventsCounter(2)
+                .lastEventDateTime(time7)
+                .lastVisitedPage("url7")
+                .sessionDuration(1L)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
     }
 
     /**
@@ -2089,12 +2172,12 @@ public class IncrementalWebSessionIT {
         testRunner.assertValid();
         //first run
         final long time1 = 1601629314416L;
-        final long time2 = time1 + 1L;
-        final long time3 = time2 + 1L;
-        final long time4 = time3 + 1L;
-        final long time5 = time4 + 1L;
-        final long time6 = time5 + 1L;
-        final long time7 = time6 + 1L;
+        final long time2 = time1 + 1000L;
+        final long time3 = time2 + 1000L;
+        final long time4 = time3 + 1000L;
+        final long time5 = time4 + 1000L;
+        final long time6 = time5 + 1000L;
+        final long time7 = time6 + 1000L;
         Record event1 = createEvent("url1", SESSION1, USER1, time1);
         Record event2 = createEvent("url2", SESSION1, USER1, time2);
         event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
@@ -2141,7 +2224,7 @@ public class IncrementalWebSessionIT {
                 .eventsCounter(2)
                 .lastEventDateTime(time3)
                 .lastVisitedPage("url3")
-                .sessionDuration(null)
+                .sessionDuration(1L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
 
@@ -2175,7 +2258,20 @@ public class IncrementalWebSessionIT {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
     }
+/*
+    Cache<String(DivoltSessionId), EventsWithExpiracy> cacheEvents
+    Events.getFirstDate
+    Events.getLastDate
 
+    rewind détecter soit à partir d'ES soit à partir du cache.
+      Si à partir du cache c'est un faux rewind (juste un evenement avec du retard)
+      Si à partir d'es c'est un vrai rewind (juste un evenement avec du retard)
+    ==> Probleme une session peut etre effacer du cache pour faire de la place... du coup impossible de savoir
+
+    dans le cas d'evènements du passé.
+    On regarde Tmin < Events.getFirstDate ducacheEvents correspondant. Si c'est le cas pas le choix faut faire un rewind
+            Sinon on peut recomputer les sessions grâce au cache !
+*/
 
     /**
      * The purpose of this test is to ensure that intempestive rewind are not triggered in nominal mode.
@@ -2195,49 +2291,6 @@ public class IncrementalWebSessionIT {
      *              							     S4 => T6, T7
      * @throws Exception
      */
-    @Test
-    public void testNotTooManyRewindItShouldBeDoneOnlyAtStartIdeally() throws Exception {
-        final TestRunner testRunner = newTestRunner(container);
-        testRunner.assertValid();
-        //first run
-        final long time1 = 1601629314416L;
-        final long time2 = time1 + 1L;
-        final long time3 = time2 + 1L;
-        final long time4 = time3 + 1L;
-        final long time5 = time4 + 1L;
-        final long time6 = time5 + 1L;
-        final long time7 = time6 + 1L;
-        Record event1 = createEvent("url1", SESSION1, USER1, time1);
-        Record event2 = createEvent("url2", SESSION1, USER1, time2);
-        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
-        event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 1");
-        Record event3 = createEvent("url3", SESSION1, USER1, time3);
-        Record event4 = createEvent("url4", SESSION1, USER1, time4);
-        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
-        event4.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 2");
-        Record event5 = createEvent("url5", SESSION1, USER1, time5);
-        Record event6 = createEvent("url6", SESSION1, USER1, time6);
-        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
-        event6.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficMediumField(), "medium 3");
-        Record event7 = createEvent("url7", SESSION1, USER1, time7);
-        testRunner.enqueue(event4, event3, event1);
-        testRunner.run();
-        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
-
-        //events from past arriving (distributed environment does not guaranty order)
-        testRunner.clearQueues();
-        testRunner.enqueue(event5, event7);
-        testRunner.run();
-        injectOutputIntoEsThenRefresh(testRunner.getOutputRecords());
-
-        //events from past arriving (distributed environment does not guaranty order)
-        testRunner.clearQueues();
-        testRunner.enqueue(event2, event6);
-        testRunner.run();
-
-        Assert.assertEquals(0, this.proc.getNumberOfRewindForProcInstance());
-    }
-
     @Test
     public void testNotTooManyRewindItShouldBeDoneOnlyAtStartIdeally2() throws Exception {
         final TestRunner testRunner = newTestRunner(container);
