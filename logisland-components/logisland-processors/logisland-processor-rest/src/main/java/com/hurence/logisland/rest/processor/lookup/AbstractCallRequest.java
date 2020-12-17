@@ -32,6 +32,7 @@ import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public abstract class AbstractCallRequest extends AbstractHttpProcessor
@@ -312,7 +313,7 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
             if the record contains one of the tag of the property with one of the value for this tag it will return true
      */
     Boolean triggerRestCall(Record record, ProcessContext context) {
-        List<Boolean> resultContainer = new ArrayList<>();
+         AtomicBoolean result = new AtomicBoolean(false);
         if (context.getPropertyValue(TAG_KEY_VALUE).isSet()) {
            String tag_list = context.getPropertyValue(TAG_KEY_VALUE).asString();
             String [] keyValuePairs = tag_list.split(";");
@@ -327,10 +328,12 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
                     String[] single_values = v.split(",");
                     List<String> stringList = new ArrayList<>(Arrays.asList(single_values)); // List(valuea,valueb) for tag1 List(valuea,valuec) for tag2
                     String recordValue = record.getField(k).asString();
-                    resultContainer.add(stringList.contains(recordValue));
+                    if (stringList.contains(recordValue)){
+                        result.set(true);
+                    }
                 }
             });
         }
-        return (!resultContainer.isEmpty() && resultContainer.contains(true));
+        return result.get();
     }
 }

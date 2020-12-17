@@ -430,6 +430,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     <args>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
+                        <!--Without bumping the max file name size I was having issues at compilation time for some classes with a long name -->
                         <arg>-Xmax-classfile-name</arg>
                         <arg>140</arg>
                     </args>
