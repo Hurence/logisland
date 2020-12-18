@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
-import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -23,11 +22,10 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -35,14 +33,9 @@ import java.util.*;
 @Tags({"record", "fields", "Decode"})
 @CapabilityDescription("Decode one or more field containing an URL with possibly special chars encoded\n" +
         "...")
-@DynamicProperty(name = "fields to decode",
-        supportsExpressionLanguage = false,
-        value = "a default value",
-        description = "Decode one or more fields from the record ")
 @ExtraDetailFile("./details/URLDecoder-Detail.rst")
 public class URLDecoder extends AbstractProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(URLDecoder.class);
     private static final String UTF8_CHARSET = "UTF-8";
     private final HashSet<String> fieldsToDecode = new HashSet();
     private final static String UTF8_PERCENT_ENCODED_CHAR = "%25";
@@ -71,18 +64,6 @@ public class URLDecoder extends AbstractProcessor {
         return Collections.unmodifiableList(descriptors);
     }
 
-
-    @Override
-    protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
-        return new PropertyDescriptor.Builder()
-                .name(propertyDescriptorName)
-                .expressionLanguageSupported(true)
-                .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-                .required(false)
-                .dynamic(true)
-                .build();
-    }
-
     public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         String commaSeparatedFields = context.getPropertyValue(FIELDS_TO_DECODE_PROP).asString();
@@ -97,7 +78,7 @@ public class URLDecoder extends AbstractProcessor {
             percentEncodedChar = java.net.URLEncoder.encode("%", charset);
         } catch (UnsupportedEncodingException e1) {
             percentEncodedChar=UTF8_PERCENT_ENCODED_CHAR; // Default to UTF-8 encoded char
-            logger.warn(e1.toString());
+            getLogger().warn("Error while initializing percentEncodedChar", e1);
         }
     }
 
@@ -111,7 +92,6 @@ public class URLDecoder extends AbstractProcessor {
 
 
     private void updateRecord(ProcessContext context, Record record, HashSet<String> fields) {
-
         String charset = context.getPropertyValue(CHARSET_PROP).asString();
         if ((fields == null) || fields.isEmpty()) {
             return;
@@ -139,12 +119,15 @@ public class URLDecoder extends AbstractProcessor {
             if (tryTrick) {
                 value = value.replaceAll("%(?![0-9a-fA-F]{2})", percentEncodedChar);
                 decode(value, charset, record, fieldName, false);
+            } else {
+                getLogger().error("Error while trying to decode url {}, for record {}.", new Object[]{value, record.getId()}, e);
+                String msg = "Could not process url : '" + value + "'.\n Cause: " + e.getMessage();
+                record.addError(ProcessError.STRING_FORMAT_ERROR.toString(), getLogger(), msg);
             }
-            else {
-                logger.warn(e.toString());
-            }
-        } catch (Exception e){
-            logger.warn(e.toString());
+        } catch (Exception e) {
+            getLogger().error("Error while trying to decode url {}, for record {}.", new Object[]{value, record.getId()}, e);
+            String msg = "Could not process url : '" + value + "'.\n Cause: " + e.getMessage();
+            record.addError(ProcessError.STRING_FORMAT_ERROR.toString(), getLogger(), msg);
         }
     }
 

@@ -172,6 +172,21 @@ public abstract class AbstractPropertyValue implements PropertyValue {
         }
     }
 
+    @Override
+    public char asChar() {
+        if (getRawValue() == null) {
+            throw new IllegalArgumentException("null is not a char");
+        } else if (getRawValue() instanceof Character) {
+            return ((char) getRawValue());
+        } else {
+            try {
+                return asString().charAt(0);
+            } catch (Exception ex) {
+                logger.error(" : unable to convert " + rawValue.toString() + " as a char", ex);
+                throw ex;
+            }
+        }
+    }
 
     @Override
     public boolean isSet() {

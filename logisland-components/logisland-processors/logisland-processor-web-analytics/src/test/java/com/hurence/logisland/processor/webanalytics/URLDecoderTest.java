@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
+import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -22,12 +23,12 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class URLDecoderTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(URLDecoderTest.class);
+    public Processor getDecoder() {
+        return new URLDecoder();
+    }
 
     private static final String urlVal1 = "https://www.test.com/de/search/?text=toto";
     private static final String expectedDecodedUrlVal1 = urlVal1;
@@ -79,7 +80,7 @@ public class URLDecoderTest {
 
         Record record1 = getRecord1();
 
-        TestRunner testRunner = TestRunners.newTestRunner(new URLDecoder());
+        TestRunner testRunner = TestRunners.newTestRunner(getDecoder());
         testRunner.setProperty("decode.fields", "string1");
         testRunner.assertValid();
         testRunner.enqueue(record1);
@@ -98,7 +99,7 @@ public class URLDecoderTest {
 
         Record record1 = getRecord1();
 
-        TestRunner testRunner = TestRunners.newTestRunner(new URLDecoder());
+        TestRunner testRunner = TestRunners.newTestRunner(getDecoder());
         testRunner.setProperty("decode.fields", "string1, url1");
         testRunner.assertValid();
         testRunner.enqueue(record1);
@@ -117,7 +118,7 @@ public class URLDecoderTest {
 
         Record record1 = getRecord1();
 
-        TestRunner testRunner = TestRunners.newTestRunner(new URLDecoder());
+        TestRunner testRunner = TestRunners.newTestRunner(getDecoder());
         testRunner.setProperty("decode.fields", "url2,string1, url1");
         testRunner.assertValid();
         testRunner.enqueue(record1);
@@ -137,7 +138,7 @@ public class URLDecoderTest {
 
         Record record1 = getRecord1();
 
-        TestRunner testRunner = TestRunners.newTestRunner(new URLDecoder());
+        TestRunner testRunner = TestRunners.newTestRunner(getDecoder());
         testRunner.setProperty("decode.fields", "url2,string1, url1,   url3");
         testRunner.assertValid();
         testRunner.enqueue(record1);
@@ -158,7 +159,7 @@ public class URLDecoderTest {
 
         Record record1 = getRecord1();
 
-        TestRunner testRunner = TestRunners.newTestRunner(new URLDecoder());
+        TestRunner testRunner = TestRunners.newTestRunner(getDecoder());
         testRunner.setProperty("decode.fields", "url2,string1, url1,  val4");
         testRunner.assertValid();
         testRunner.enqueue(record1);
@@ -179,7 +180,7 @@ public class URLDecoderTest {
 
         Record record1 = getRecord1();
 
-        TestRunner testRunner = TestRunners.newTestRunner(new URLDecoder());
+        TestRunner testRunner = TestRunners.newTestRunner(getDecoder());
         testRunner.setProperty("decode.fields", "nonExistingField");
         testRunner.assertValid();
         testRunner.enqueue(record1);
@@ -200,7 +201,7 @@ public class URLDecoderTest {
 
         Record record2 = getRecord2();
 
-        TestRunner testRunner = TestRunners.newTestRunner(new URLDecoder());
+        TestRunner testRunner = TestRunners.newTestRunner(getDecoder());
         testRunner.setProperty("decode.fields", "val5,val6");
         testRunner.assertValid();
         testRunner.enqueue(record2);
@@ -213,5 +214,4 @@ public class URLDecoderTest {
         out.assertFieldEquals("val5", expectedDecodedVal5);
         out.assertFieldEquals("val6", expectedDecodedVal6);
     }
-
 }

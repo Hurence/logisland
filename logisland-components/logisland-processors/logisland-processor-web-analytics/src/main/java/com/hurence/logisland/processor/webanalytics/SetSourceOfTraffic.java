@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.webAnalytics;
+package com.hurence.logisland.processor.webanalytics;
 
 import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginProxy;
@@ -25,21 +25,21 @@ import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.collections.map.HashedMap;
 
 import java.io.UnsupportedEncodingException;
-import java.net.*;
 import java.net.URLDecoder;
+import java.net.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static com.hurence.logisland.processor.webAnalytics.SetSourceOfTraffic.*;
+import static com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic.*;
 
 @Category(ComponentCategory.ANALYTICS)
 @Tags({"session", "traffic", "source", "web", "analytics"})
