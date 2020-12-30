@@ -4,9 +4,8 @@ LABEL maintainer="support@hurence.com"
 
 COPY ./opencv4/* /usr/local/share/java/opencv4/
 
-ADD ./logisland-*.tar.gz /tmp/
-RUN cd /tmp; \
-        mv logisland-* /opt
+ADD ./logisland-*.tar.gz /opt/
+
 RUN cd /opt && ln -s $(eval ls | grep logisland) logisland
 ENV LOGISLAND_HOME /opt/logisland
 ENV PATH $PATH:$LOGISLAND_HOME/bin

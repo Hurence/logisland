@@ -7,10 +7,7 @@ COPY ./opencv4/* /usr/local/share/java/opencv4/
 COPY classpath_update.sh /tmp/
 RUN chmod a+x /tmp/classpath_update.sh
 
-ADD ./logisland-*.tar.gz /tmp/
-
-RUN cd /tmp; \
-        mv logisland-* /opt
+ADD ./logisland-*.tar.gz /opt/
 
 RUN cd /opt && ln -s $(eval ls | grep logisland) logisland
 ENV LOGISLAND_HOME /opt/logisland
