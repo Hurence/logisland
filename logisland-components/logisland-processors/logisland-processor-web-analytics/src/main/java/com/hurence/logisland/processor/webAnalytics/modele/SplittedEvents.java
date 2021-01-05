@@ -26,4 +26,19 @@ public class SplittedEvents {
                 getEventsInNominalMode().stream()
         );
     }
+
+    public Stream<Events> getAllEventsThatContainsEventsFromPast() {
+        return Stream.concat(
+                getEventsfromPast().stream(),
+                getEventsInNominalMode().stream()
+        ).filter(events -> {
+            String dilvotSession = events.getSessionId();
+            return  dilvotSession != null && containEventsFromPast(dilvotSession);
+        });
+    }
+
+    private boolean containEventsFromPast(String dilvotSession) {
+        return this.eventsfromPast.stream()
+                .anyMatch(events ->  { return dilvotSession.equals(events.getSessionId()) && !events.isEmpty(); });
+    }
 }

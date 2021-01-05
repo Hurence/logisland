@@ -737,8 +737,9 @@ public class IncrementalWebSession
             return splittedEvents;
         }
         rewindCounter++;//may wish to only do this on a MockProcessor extending this processor
-        deleteFuturSessions(eventsFromPast);
-        //TODO in order to this to work we need to get all events in es from Tmin to Tmax
+        deleteFuturSessions(eventsFromPast);//TODO remove deletion of future sessions ?
+        //TODO in order to this to work we need to get all events in es from Tmin to Tmax plus eventSessionTimin eventSessionTmax
+        //la on merge seulement dans events from past
         Collection<Event> eventsFromEs = getNeededEventsFromEs(splittedEvents, lastSessionMapping);
         Map<String/*sessionId*/, List<Event>> eventsFromEsByDivolteSessionId = eventsFromEs
                 .stream()
@@ -763,43 +764,43 @@ public class IncrementalWebSession
 
         /*
             Pour chaque events trouver les evènements de la session en cour nécessaire.
-            C'est de requêter tous les events de la sessionId et timestamp <= firstEventTs(input events)
+            C'est à dire requêter tous les events de la sessionId et timestamp <= firstEventTs(input events)
+            Il faut aussi récupérer tous les events de la sessionId et timestamp >= lastEventTs(input events) Attention tout les events pas que du passé
         */
-        final Collection<Events> eventsFromPast = splittedEvents.getEventsfromPast();
-//        Map<String, ZonedDateTime> divoltSessionToFirstEvent = eventsFromPast.stream()
-//                .collect(Collectors.toMap(
-//                        Events::getSessionId,
-//                        events -> events.first().getTimestamp()
-//                ));
-
-        Map<String/*divolteSession*/, WebSession> currentSessionsOfEvents = requestCurrentSessionsToEs(eventsFromPast);
-        uptadateLastSessionsMapping(lastSessionMapping, currentSessionsOfEvents);
-        resetCacheWithSessions(currentSessionsOfEvents);
-        //TODO in order to this to work we need to get all events in es from Tmin to Tmax
-        Collection<EventsToQueryInfo> eventsToQueryInfo = buildEventsRange(splittedEvents.getEventsfromPast(), currentSessionsOfEvents);
+        //get all events but only for events containing elements from the past
+        final Collection<Events> allEvents = splittedEvents.getAllEventsThatContainsEventsFromPast().collect(Collectors.toList());
+        Map<String/*divolteSession*/, WebSession> sessionsOfFirstEvents = requestCurrentSessionsToEs(allEvents);
+        Map<String/*divolteSession*/, WebSession> sessionsOfLastEvents = requestSessionsOfLastEventToEs(allEvents);
+        uptadateLastSessionsMapping(lastSessionMapping, sessionsOfFirstEvents);
+        resetCacheWithSessions(sessionsOfFirstEvents);
+        Collection<EventsToQueryInfo> eventsToQueryInfo = buildEventsRange(allEvents, sessionsOfFirstEvents, sessionsOfLastEvents);
         Collection<Event> neededEventsFromEs = requestEventsFromSessionsToEs(eventsToQueryInfo);
         return neededEventsFromEs;
     }
 
-    private Collection<EventsToQueryInfo> buildEventsRange(Collection<Events> eventsFromPast,
-                                                           final Map<String/*divolteSession*/, WebSession> currentSessionsOfEvents) {
-        return eventsFromPast.stream()
-                .map(events ->  buildEventsRangefromEvents(events, currentSessionsOfEvents))
+    private Collection<EventsToQueryInfo> buildEventsRange(Collection<Events> events,
+                                                           final Map<String/*divolteSession*/, WebSession> sessionsOfFirstEvents,
+                                                           final Map<String/*divolteSession*/, WebSession> sessionsOfLastEvents) {
+        return events.stream()
+                .map(eventsForDivoltSession ->  buildEventsRangefromEvents(eventsForDivoltSession, sessionsOfFirstEvents, sessionsOfLastEvents))
                 .collect(Collectors.toList());
     }
 
-    public EventsToQueryInfo buildEventsRangefromEvents(Events events, Map<String/*divolteSession*/, WebSession> currentSessionsOfEvents) {
+    public EventsToQueryInfo buildEventsRangefromEvents(Events events,
+                                                        Map<String/*divolteSession*/, WebSession> sessionsOfFirstEvents,
+                                                        Map<String/*divolteSession*/, WebSession> sessionsOfLastEvents) {
         final long min = events.first().getEpochTimeStampMilli();
         final long max = events.last().getEpochTimeStampMilli();
         final String divoltSession = events.getSessionId();//This is divolteSessionId car viens de l'input et pas d'ES
-        final String currentSession = currentSessionsOfEvents.get(divoltSession).getSessionId();
+        final String firstSession = sessionsOfFirstEvents.get(divoltSession).getSessionId();
+        final String lastSession = sessionsOfLastEvents.get(divoltSession).getSessionId();
         List<String> indicesToQuery = events.getAll().stream()
                 .map(event -> {
                     return toEventIndexName(event.getTimestamp());
                 })
                 .distinct()
                 .collect(Collectors.toList());
-        return new EventsToQueryInfo(divoltSession, currentSession, min, max, indicesToQuery);
+        return new EventsToQueryInfo(divoltSession, firstSession, lastSession, min, max, indicesToQuery);
     }
 
     private static class EventsToQueryInfo {
@@ -807,18 +808,21 @@ public class IncrementalWebSession
         public final List<String> indicesToQuery;
         public final String divoltSession;
         public final String currentSession;
-        public final long from;
-        public final long to;
+        public final String lastSession;
+        public final long min;
+        public final long max;
 
         public EventsToQueryInfo(String divoltSession,
                                  String currentSession,
-                                 long from,
-                                 long to,
+                                 String lastSession,
+                                 long min,
+                                 long max,
                                  List<String> indicesToQuery) {
             this.divoltSession = divoltSession;
             this.currentSession = currentSession;
-            this.from = from;
-            this.to = to;
+            this.lastSession = lastSession;
+            this.min = min;
+            this.max = max;
             this.indicesToQuery = indicesToQuery;
         }
 
@@ -961,14 +965,24 @@ public class IncrementalWebSession
     private MultiQueryResponseRecord getMissingEventsForSessionsFromEs(Collection<EventsToQueryInfo> eventsToQuery) {
         final List<QueryRecord> queries = new ArrayList<>();
         eventsToQuery.forEach(info -> {
-            BoolQueryRecordRoot boolQueryForEventsOfCurrentSession = new BoolQueryRecordRoot()
+            BoolQueryRecordRoot boolQueryForEventsOfFirstSession = new BoolQueryRecordRoot()
                     .addBoolQuery(
                             new TermQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", info.currentSession),
                             BoolCondition.MUST
                     ).addBoolQuery(
                             new RangeQueryRecord(eventsInternalFields.getTimestampField())
-                                    .setTo(info.from)
+                                    .setTo(info.min)
                                     .setIncludeUpper(true),
+                            BoolCondition.MUST
+                    );
+            BoolQueryRecordRoot boolQueryForEventsOfLastSession = new BoolQueryRecordRoot()
+                    .addBoolQuery(
+                            new TermQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", info.lastSession),
+                            BoolCondition.MUST
+                    ).addBoolQuery(
+                            new RangeQueryRecord(eventsInternalFields.getTimestampField())
+                                    .setFrom(info.max)
+                                    .setIncludeLower(true),
                             BoolCondition.MUST
                     );
             BoolQueryRecordRoot boolQueryForAllEventsFromMinToMax = new BoolQueryRecordRoot()
@@ -977,8 +991,8 @@ public class IncrementalWebSession
                             BoolCondition.MUST
                     ).addBoolQuery(
                             new RangeQueryRecord(eventsInternalFields.getTimestampField())
-                                    .setFrom(info.from)
-                                    .setTo(info.to)
+                                    .setFrom(info.min)
+                                    .setTo(info.max)
                                     .setIncludeUpper(true)
                                     .setIncludeLower(true),
                             BoolCondition.MUST
@@ -986,7 +1000,8 @@ public class IncrementalWebSession
             QueryRecord query = new QueryRecord()
                     .addCollections(info.indicesToQuery)
                     .addType(_ES_EVENT_TYPE_NAME)
-                    .addBoolQuery(boolQueryForEventsOfCurrentSession, BoolCondition.SHOULD)//should match this
+                    .addBoolQuery(boolQueryForEventsOfFirstSession, BoolCondition.SHOULD)//should match this
+                    .addBoolQuery(boolQueryForEventsOfLastSession, BoolCondition.SHOULD)//or this
                     .addBoolQuery(boolQueryForAllEventsFromMinToMax, BoolCondition.SHOULD)//or this
                     .size(10000);
             queries.add(query);
@@ -1001,11 +1016,15 @@ public class IncrementalWebSession
         return elasticsearchClientService.multiQueryGet(multiQuery);
     }
 
-    private Map<String, WebSession> requestCurrentSessionsToEs(Collection<Events> eventsFromPast) {
-        MultiQueryResponseRecord sessionEsRsp = requestSessions(eventsFromPast);
+    private Map<String, WebSession> requestCurrentSessionsToEs(Collection<Events> events) {
+        MultiQueryResponseRecord sessionEsRsp = requestSessionsOfFirstEvent(events);
         return checkAndTransformToMap(sessionEsRsp);
     }
 
+    private Map<String, WebSession> requestSessionsOfLastEventToEs(Collection<Events> events) {
+        MultiQueryResponseRecord sessionEsRsp = requestSessionsOfLastEvent(events);
+        return checkAndTransformToMap(sessionEsRsp);
+    }
     /**
      * ensure there is only one response by query and return as map with divolte session as key.
      * @param sessionEsRsp
@@ -1056,11 +1075,11 @@ public class IncrementalWebSession
 //    },
 //    "size": 1
 //}
-    private MultiQueryResponseRecord requestSessions(Collection<Events> eventsFromPast) {
+    private MultiQueryResponseRecord requestSessionsOfFirstEvent(Collection<Events> events) {
         final List<QueryRecord> queries = new ArrayList<>();
-        eventsFromPast.stream().forEach(events -> {
-            String divolteSession = events.getSessionId();
-            long epochSecondFirstEvent = events.first().getEpochTimeStampSeconds();
+        events.stream().forEach(eventsForDivoltSession -> {
+            String divolteSession = eventsForDivoltSession.getSessionId();
+            long epochSecondFirstEvent = eventsForDivoltSession.first().getEpochTimeStampSeconds();
             QueryRecord query = new QueryRecord()
                     .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
                     .addType(_ES_SESSION_TYPE_NAME)
@@ -1075,6 +1094,66 @@ public class IncrementalWebSession
                     ).addBoolQuery(
                             new RangeQueryRecord(_LAST_EVENT_EPOCH_SECONDS_FIELD)
                                     .setFrom(epochSecondFirstEvent)
+                                    .setIncludeLower(true),
+                            BoolCondition.MUST
+                    ).size(1);
+            queries.add(query);
+        });
+        MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
+        MultiQueryResponseRecord rsp = elasticsearchClientService.multiQueryGet(multiQuery);
+        return rsp;
+    }
+
+    //    GET new_openanalytics_websessions-*/_search
+//{
+//    "query": {
+//      "bool": {
+//          "must": [
+//              {
+//                  "wildcard": {
+//                      "sessionId.raw": {
+//                          "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al*"
+//                      }
+//                  }
+//              },
+//              {
+//                  "range": {
+//                       "firstEventEpoch": {
+//                          "lte": Tmax
+//                       }
+//                  }
+//              },
+//              {
+//                  "range": {
+//                       "lastEventEpoch": {
+//                          "gte": Tmax
+//                       }
+//                  }
+//              }
+//        ]
+//      }
+//    },
+//    "size": 1
+//}
+    private MultiQueryResponseRecord requestSessionsOfLastEvent(Collection<Events> events) {
+        final List<QueryRecord> queries = new ArrayList<>();
+        events.stream().forEach(eventsForDivoltSession -> {
+            String divolteSession = eventsForDivoltSession.getSessionId();
+            long epochSecondLastEvent = eventsForDivoltSession.last().getEpochTimeStampSeconds();
+            QueryRecord query = new QueryRecord()
+                    .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
+                    .addType(_ES_SESSION_TYPE_NAME)
+                    .addBoolQuery(
+                            new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
+                            BoolCondition.MUST
+                    ).addBoolQuery(
+                            new RangeQueryRecord(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
+                                    .setTo(epochSecondLastEvent)
+                                    .setIncludeUpper(true),
+                            BoolCondition.MUST
+                    ).addBoolQuery(
+                            new RangeQueryRecord(_LAST_EVENT_EPOCH_SECONDS_FIELD)
+                                    .setFrom(epochSecondLastEvent)
                                     .setIncludeLower(true),
                             BoolCondition.MUST
                     ).size(1);
@@ -1332,7 +1411,7 @@ public class IncrementalWebSession
         if (sessionsRequests.isEmpty()) return mappingToReturn;
         try {
             //Wait 5 seconds to be be sure index are created (sessionsRequest should only happen when session not in cache...)
-            Thread.sleep(2000L);
+            Thread.sleep(5000L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
