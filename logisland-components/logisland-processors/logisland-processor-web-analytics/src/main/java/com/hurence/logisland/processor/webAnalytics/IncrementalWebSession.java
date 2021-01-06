@@ -794,7 +794,9 @@ public class IncrementalWebSession
         final long max = events.last().getEpochTimeStampMilli();
         final String divoltSession = events.getOriginalSessionId();//This is divolteSessionId car viens de l'input et pas d'ES
         final String firstSession = sessionsOfFirstEvents.get(divoltSession).getSessionId();
-        final String lastSession = sessionsOfLastEvents.get(divoltSession).getSessionId();
+        final Optional<String> lastSession = sessionsOfLastEvents.containsKey(divoltSession) ?
+                Optional.of(sessionsOfLastEvents.get(divoltSession).getSessionId()):
+                Optional.empty();
         List<String> indicesToQuery = events.getAll().stream()
                 .map(event -> {
                     return toEventIndexName(event.getTimestamp());
@@ -809,13 +811,13 @@ public class IncrementalWebSession
         public final List<String> indicesToQuery;
         public final String divoltSession;
         public final String currentSession;
-        public final String lastSession;
+        public final Optional<String> lastSession;
         public final long min;
         public final long max;
 
         public EventsToQueryInfo(String divoltSession,
                                  String currentSession,
-                                 String lastSession,
+                                 Optional<String> lastSession,
                                  long min,
                                  long max,
                                  List<String> indicesToQuery) {
@@ -976,16 +978,6 @@ public class IncrementalWebSession
                                     .setIncludeUpper(true),
                             BoolCondition.MUST
                     );
-            BoolQueryRecordRoot boolQueryForEventsOfLastSession = new BoolQueryRecordRoot()
-                    .addBoolQuery(
-                            new TermQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", info.lastSession),
-                            BoolCondition.MUST
-                    ).addBoolQuery(
-                            new RangeQueryRecord(eventsInternalFields.getTimestampField())
-                                    .setFrom(info.max)
-                                    .setIncludeLower(true),
-                            BoolCondition.MUST
-                    );
             BoolQueryRecordRoot boolQueryForAllEventsFromMinToMax = new BoolQueryRecordRoot()
                     .addBoolQuery(
                             new WildCardQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", info.divoltSession + "*"),
@@ -1002,9 +994,21 @@ public class IncrementalWebSession
                     .addCollections(info.indicesToQuery)
                     .addType(_ES_EVENT_TYPE_NAME)
                     .addBoolQuery(boolQueryForEventsOfFirstSession, BoolCondition.SHOULD)//should match this
-                    .addBoolQuery(boolQueryForEventsOfLastSession, BoolCondition.SHOULD)//or this
                     .addBoolQuery(boolQueryForAllEventsFromMinToMax, BoolCondition.SHOULD)//or this
                     .size(10000);
+            info.lastSession.ifPresent(session -> {
+                BoolQueryRecordRoot boolQueryForEventsOfLastSession = new BoolQueryRecordRoot()
+                        .addBoolQuery(
+                                new TermQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", session),
+                                BoolCondition.MUST
+                        ).addBoolQuery(
+                                new RangeQueryRecord(eventsInternalFields.getTimestampField())
+                                        .setFrom(info.max)
+                                        .setIncludeLower(true),
+                                BoolCondition.MUST
+                        );
+                query.addBoolQuery(boolQueryForEventsOfLastSession, BoolCondition.SHOULD);
+            });
             queries.add(query);
         });
         MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
@@ -1019,29 +1023,34 @@ public class IncrementalWebSession
 
     private Map<String, WebSession> requestCurrentSessionsToEs(Collection<Events> events) {
         MultiQueryResponseRecord sessionEsRsp = requestSessionsOfFirstEvent(events);
-        return checkAndTransformToMap(sessionEsRsp);
+        return checkAndTransformToMap(sessionEsRsp, false);
     }
 
     private Map<String, WebSession> requestSessionsOfLastEventToEs(Collection<Events> events) {
         MultiQueryResponseRecord sessionEsRsp = requestSessionsOfLastEvent(events);
-        return checkAndTransformToMap(sessionEsRsp);
+        return checkAndTransformToMap(sessionEsRsp, true);
     }
     /**
      * ensure there is only one response by query and return as map with divolte session as key.
      * @param sessionEsRsp
      * @return
      */
-    private Map<String, WebSession> checkAndTransformToMap(MultiQueryResponseRecord sessionEsRsp) {
+    private Map<String, WebSession> checkAndTransformToMap(MultiQueryResponseRecord sessionEsRsp, boolean canHaveNoMatch) {
         final Map<String, WebSession> divoltSessionToCurrentSessions = new HashMap<>();
-        sessionEsRsp.getResponses().forEach(rsp -> {
+        for (QueryResponseRecord rsp : sessionEsRsp.getResponses()) {
             if (rsp.getTotalMatched() != 1) {
-                String errorMsg = "A query to search for current session does not matched exactly one document but matched " + rsp.getTotalMatched() + " documents. That should never happen ! Exiting";
-                getLogger().error(errorMsg);
-                throw new IllegalStateException(errorMsg);
+                if (rsp.getTotalMatched() == 0 && canHaveNoMatch ) {
+                    return divoltSessionToCurrentSessions;
+                } else {
+                    String errorMsg = "A query to search for current session does not matched exactly one document but matched " + rsp.getTotalMatched() + " documents. That should never happen ! Exiting";
+                    getLogger().error(errorMsg);
+                    throw new IllegalStateException(errorMsg);
+                }
+            } else {
+                WebSession currentSession = mapToSession(rsp.getDocs().get(0).getRetrievedFields());
+                divoltSessionToCurrentSessions.put(currentSession.getOriginalSessionId(), currentSession);
             }
-            WebSession currentSession = mapToSession(rsp.getDocs().get(0).getRetrievedFields());
-            divoltSessionToCurrentSessions.put(currentSession.getOriginalSessionId(), currentSession);
-        });
+        }
         return divoltSessionToCurrentSessions;
     }
 
@@ -1081,23 +1090,7 @@ public class IncrementalWebSession
         events.stream().forEach(eventsForDivoltSession -> {
             String divolteSession = eventsForDivoltSession.getOriginalSessionId();
             long epochSecondFirstEvent = eventsForDivoltSession.first().getEpochTimeStampSeconds();
-            QueryRecord query = new QueryRecord()
-                    .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
-                    .addType(_ES_SESSION_TYPE_NAME)
-                    .addBoolQuery(
-                            new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
-                            BoolCondition.MUST
-                    ).addBoolQuery(
-                            new RangeQueryRecord(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
-                                    .setTo(epochSecondFirstEvent)
-                                    .setIncludeUpper(true),
-                            BoolCondition.MUST
-                    ).addBoolQuery(
-                            new RangeQueryRecord(_LAST_EVENT_EPOCH_SECONDS_FIELD)
-                                    .setFrom(epochSecondFirstEvent)
-                                    .setIncludeLower(true),
-                            BoolCondition.MUST
-                    ).size(1);
+            QueryRecord query = buildQueryForQueryingCurrentFromDivoltSessionAndEpochSeconds(divolteSession, epochSecondFirstEvent);
             queries.add(query);
         });
         MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
@@ -1141,28 +1134,32 @@ public class IncrementalWebSession
         events.stream().forEach(eventsForDivoltSession -> {
             String divolteSession = eventsForDivoltSession.getOriginalSessionId();
             long epochSecondLastEvent = eventsForDivoltSession.last().getEpochTimeStampSeconds();
-            QueryRecord query = new QueryRecord()
-                    .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
-                    .addType(_ES_SESSION_TYPE_NAME)
-                    .addBoolQuery(
-                            new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
-                            BoolCondition.MUST
-                    ).addBoolQuery(
-                            new RangeQueryRecord(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
-                                    .setTo(epochSecondLastEvent)
-                                    .setIncludeUpper(true),
-                            BoolCondition.MUST
-                    ).addBoolQuery(
-                            new RangeQueryRecord(_LAST_EVENT_EPOCH_SECONDS_FIELD)
-                                    .setFrom(epochSecondLastEvent)
-                                    .setIncludeLower(true),
-                            BoolCondition.MUST
-                    ).size(1);
+            QueryRecord query = buildQueryForQueryingCurrentFromDivoltSessionAndEpochSeconds(divolteSession, epochSecondLastEvent);
             queries.add(query);
         });
         MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
         MultiQueryResponseRecord rsp = elasticsearchClientService.multiQueryGet(multiQuery);
         return rsp;
+    }
+
+    private QueryRecord buildQueryForQueryingCurrentFromDivoltSessionAndEpochSeconds(String divolteSession, long epochSeconds) {
+        return new QueryRecord()
+                .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
+                .addType(_ES_SESSION_TYPE_NAME)
+                .addBoolQuery(
+                        new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
+                        BoolCondition.MUST
+                ).addBoolQuery(
+                        new RangeQueryRecord(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
+                                .setTo(epochSeconds)
+                                .setIncludeUpper(true),
+                        BoolCondition.MUST
+                ).addBoolQuery(
+                        new RangeQueryRecord(_LAST_EVENT_EPOCH_SECONDS_FIELD)
+                                .setFrom(epochSeconds)
+                                .setIncludeLower(true),
+                        BoolCondition.MUST
+                ).size(1);
     }
 
 //    GET new_openanalytics_websessions-*/_search

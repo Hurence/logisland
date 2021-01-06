@@ -1898,10 +1898,10 @@ public class IncrementalWebSessionIT {
         testRunner.assertValid();
         //first run
         final long time1 = 1601629314416L;
-        final long time2 = time1 + 1000L;
-        final long time3 = time2 + 1000L;
-        final long time4 = time3 + 1000L;
-        final long time5 = time4 + 1000L;
+        final long time2 = time1 + 1000L;//1601629315416L
+        final long time3 = time2 + 1000L;//1601629316416L
+        final long time4 = time3 + 1000L;//1601629317416L
+        final long time5 = time4 + 1000L;//1601629318416L
         Record event1 = createEvent("url1", SESSION1, USER1, time1);
         Record event2 = createEvent("url2", SESSION1, USER1, time2);
         event2.setStringField(TestMappings.eventsInternalFields.getSourceOffTrafficSourceField(), "not direct");
@@ -1923,10 +1923,12 @@ public class IncrementalWebSessionIT {
                 .record_type("consolidate-session")
                 .record_id(SESSION1)
                 .firstEventDateTime(time1)
+                .firstEventEpochSeconds(time1 / 1000)
                 .h2kTimestamp(time1)
                 .firstVisitedPage("url1")
                 .eventsCounter(3)
                 .lastEventDateTime(time4)
+                .lastEventEpochSeconds(time4 / 1000)
                 .lastVisitedPage("url4")
                 .sessionDuration(3L)
                 .is_sessionActive(false)

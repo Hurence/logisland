@@ -37,10 +37,12 @@ public class WebSessionChecker
     public WebSessionChecker record_id(final Object value) { return check("record_id", value); }
     public WebSessionChecker currentCart(final Object value) { return check(CURRENT_CART, value); }
     public WebSessionChecker firstEventDateTime(final long value) { return check(sessionInternalFields.getFirstEventDateTimeField(), new Date(value).toString()); }
+    public WebSessionChecker firstEventEpochSeconds(final long value) { return check(sessionInternalFields.getFirstEventEpochSecondsField(), value); }
     public WebSessionChecker h2kTimestamp(final long value) { return check(sessionInternalFields.getTimestampField(), value); }
     public WebSessionChecker firstVisitedPage(final Object value) { return check(sessionInternalFields.getFirstVisitedPageField(), value); }
     public WebSessionChecker eventsCounter(final long value) { return check(sessionInternalFields.getEventsCounterField(), value); }
     public WebSessionChecker lastEventDateTime(final long value) { return check(sessionInternalFields.getLastEventDateTimeField(), new Date(value).toString()); }
+    public WebSessionChecker lastEventEpochSeconds(final long value) { return check(sessionInternalFields.getLastEventEpochSecondsField(), value); }
     public WebSessionChecker lastVisitedPage(final Object value) { return check(sessionInternalFields.getLastVisitedPageField(), value); }
     public WebSessionChecker sessionDuration(final Long value) { return check(sessionInternalFields.getSessionDurationField(), value); }
     public WebSessionChecker is_sessionActive(final Object value) { return check(sessionInternalFields.getIsSessionActiveField(), value); }
