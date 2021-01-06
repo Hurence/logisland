@@ -109,12 +109,15 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void enqueue(final Record... records) {
-        Collections.addAll(inputRecordsQueue, records);
+        Record[] clonedRecords = Arrays.stream(records)
+                .map(MockRecord::new)
+                .toArray(Record[]::new);
+        Collections.addAll(inputRecordsQueue, clonedRecords);
     }
 
     @Override
     public void enqueue(Collection<? extends Record> records) {
-        inputRecordsQueue.addAll(records);
+        enqueue(records.stream().toArray(Record[]::new));
     }
 
     @Override

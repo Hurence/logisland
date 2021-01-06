@@ -32,13 +32,13 @@ public class SplittedEvents {
                 getEventsfromPast().stream(),
                 getEventsInNominalMode().stream()
         ).filter(events -> {
-            String dilvotSession = events.getSessionId();
+            String dilvotSession = events.getOriginalSessionId();
             return  dilvotSession != null && containEventsFromPast(dilvotSession);
         });
     }
 
     private boolean containEventsFromPast(String dilvotSession) {
         return this.eventsfromPast.stream()
-                .anyMatch(events ->  { return dilvotSession.equals(events.getSessionId()) && !events.isEmpty(); });
+                .anyMatch(events ->  { return dilvotSession.equals(events.getOriginalSessionId()) && !events.isEmpty(); });
     }
 }

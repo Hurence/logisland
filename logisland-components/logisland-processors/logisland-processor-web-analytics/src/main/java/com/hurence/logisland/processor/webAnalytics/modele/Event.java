@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor.webAnalytics.modele;
 
+import com.hurence.logisland.processor.webAnalytics.IncrementalWebSession;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -98,10 +99,15 @@ public class Event
     }
 
     public void setSessionId(final String sessionId) {
-        if (getSessionId().equals(sessionId)) return;//do not save origanlSessionId if not changing
+        if (getSessionId().equals(sessionId)) return;//do nothing if not changing
         logger.debug("change sessionId of event " + this.record.getId() + " from " + getSessionId() + " to " + sessionId);
-        this.record.setField(fieldsNames.originalSessionIdField, FieldType.STRING, getSessionId());
+        this.record.setField(fieldsNames.originalSessionIdField, FieldType.STRING, calculOriginalSessionId(sessionId));
         this.record.setField(fieldsNames.sessionIdField, FieldType.STRING, sessionId);
+    }
+
+    private String calculOriginalSessionId(String sessionId) {
+        final String[] sessionIdSplitted = sessionId.split(IncrementalWebSession.EXTRA_SESSION_DELIMITER);
+        return sessionIdSplitted[0];
     }
 
     public String getSessionId() {

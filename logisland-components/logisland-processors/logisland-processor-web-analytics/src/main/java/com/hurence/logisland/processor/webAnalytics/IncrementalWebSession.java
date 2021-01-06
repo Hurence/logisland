@@ -23,6 +23,7 @@ import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.webAnalytics.modele.*;
+import com.hurence.logisland.processor.webAnalytics.util.SessionsCalculator;
 import com.hurence.logisland.processor.webAnalytics.util.Utils;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
@@ -666,7 +667,7 @@ public class IncrementalWebSession
         if (records == null || records.isEmpty()) return new ArrayList<>();
         final Collection<Events> groupOfEvents = toWebEvents(records);
         final Collection<String> inputDivolteSessions = groupOfEvents.stream()
-                .map(Events::getSessionId)
+                .map(Events::getOriginalSessionId)
                 .collect(Collectors.toList());
         final Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping = getMapping(inputDivolteSessions);
 
@@ -681,7 +682,7 @@ public class IncrementalWebSession
         final Collection<SessionsCalculator> calculatedSessions;
         if (isRewind) {
             Set<String> sessionsInRewind = splittedEvents.getEventsfromPast().stream()
-                    .map(Events::getSessionId)
+                    .map(Events::getOriginalSessionId)
                     .collect(Collectors.toSet());
             calculatedSessions = this.processEvents(allEvents, lastSessionMapping, sessionsInRewind);
         } else {
@@ -746,7 +747,7 @@ public class IncrementalWebSession
                 .collect(Collectors.groupingBy(Event::getOriginalSessionIdOrSessionId));
         //merge those events into the lists
         for (Events events : eventsFromPast) {
-            List<Event> eventsFromEsForSession = eventsFromEsByDivolteSessionId.getOrDefault(events.getSessionId(), Collections.emptyList());
+            List<Event> eventsFromEsForSession = eventsFromEsByDivolteSessionId.getOrDefault(events.getOriginalSessionId(), Collections.emptyList());
             events.addAll(eventsFromEsForSession);//les events deja presents sont prioritaire. Si meme id.
         }
         return splittedEvents;
@@ -791,7 +792,7 @@ public class IncrementalWebSession
                                                         Map<String/*divolteSession*/, WebSession> sessionsOfLastEvents) {
         final long min = events.first().getEpochTimeStampMilli();
         final long max = events.last().getEpochTimeStampMilli();
-        final String divoltSession = events.getSessionId();//This is divolteSessionId car viens de l'input et pas d'ES
+        final String divoltSession = events.getOriginalSessionId();//This is divolteSessionId car viens de l'input et pas d'ES
         final String firstSession = sessionsOfFirstEvents.get(divoltSession).getSessionId();
         final String lastSession = sessionsOfLastEvents.get(divoltSession).getSessionId();
         List<String> indicesToQuery = events.getAll().stream()
@@ -1078,7 +1079,7 @@ public class IncrementalWebSession
     private MultiQueryResponseRecord requestSessionsOfFirstEvent(Collection<Events> events) {
         final List<QueryRecord> queries = new ArrayList<>();
         events.stream().forEach(eventsForDivoltSession -> {
-            String divolteSession = eventsForDivoltSession.getSessionId();
+            String divolteSession = eventsForDivoltSession.getOriginalSessionId();
             long epochSecondFirstEvent = eventsForDivoltSession.first().getEpochTimeStampSeconds();
             QueryRecord query = new QueryRecord()
                     .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
@@ -1138,7 +1139,7 @@ public class IncrementalWebSession
     private MultiQueryResponseRecord requestSessionsOfLastEvent(Collection<Events> events) {
         final List<QueryRecord> queries = new ArrayList<>();
         events.stream().forEach(eventsForDivoltSession -> {
-            String divolteSession = eventsForDivoltSession.getSessionId();
+            String divolteSession = eventsForDivoltSession.getOriginalSessionId();
             long epochSecondLastEvent = eventsForDivoltSession.last().getEpochTimeStampSeconds();
             QueryRecord query = new QueryRecord()
                     .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
@@ -1203,7 +1204,7 @@ public class IncrementalWebSession
             Event firstEvent = events.first();
             final String sessionIndexName = toSessionIndexName(firstEvent.getTimestamp());
             indicesToRequest.add(sessionIndexName);
-            final String divolteSession = events.getSessionId();//divolt session
+            final String divolteSession = events.getOriginalSessionId();//divolt session
             BoolQueryRecordRoot root = new BoolQueryRecordRoot();
             root
                     .addBoolQuery(
@@ -1230,7 +1231,7 @@ public class IncrementalWebSession
         final Collection<Events> eventsFromPast = new ArrayList<>();
         final Collection<Events> eventsOk = new ArrayList<>();
         for (Events events : groupOfEvents) {
-            Optional<WebSession> lastSession = lastSessionMapping.get(events.getSessionId());
+            Optional<WebSession> lastSession = lastSessionMapping.get(events.getOriginalSessionId());
             if (lastSession.isPresent() &&
                     lastSession.get().timestampFromPast(events.first().getTimestamp())) {
                 eventsFromPast.add(events);
@@ -1310,7 +1311,7 @@ public class IncrementalWebSession
         // Applies all events to session documents and collect results.
         return webEvents.stream()
                 .map(events -> {
-                    String divolteSession = events.getSessionId();
+                    String divolteSession = events.getOriginalSessionId();
                     if (lastSessionMapping.get(divolteSession).isPresent()) {
                         boolean isRewind = sessionsInRewind.contains(divolteSession);
                         return new SessionsCalculator(checkers,
@@ -1318,7 +1319,7 @@ public class IncrementalWebSession
                                 sessionInternalFields,
                                 eventsInternalFields,
                                 _FIELDS_TO_RETURN,
-                                lastSessionMapping.get(events.getSessionId()).get()).processEvents(events, isRewind);
+                                lastSessionMapping.get(events.getOriginalSessionId()).get()).processEvents(events, isRewind);
                     } else {
                         return new SessionsCalculator(checkers,
                                 _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
@@ -1344,14 +1345,14 @@ public class IncrementalWebSession
         // Applies all events to session documents and collect results.
         return webEvents.stream()
                 .map(events -> {
-                    String divolteSession = events.getSessionId();
+                    String divolteSession = events.getOriginalSessionId();
                     if (lastSessionMapping.get(divolteSession).isPresent()) {
                         return new SessionsCalculator(checkers,
                                 _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
                                 sessionInternalFields,
                                 eventsInternalFields,
                                 _FIELDS_TO_RETURN,
-                                lastSessionMapping.get(events.getSessionId()).get()).processEvents(events, false);
+                                lastSessionMapping.get(events.getOriginalSessionId()).get()).processEvents(events, false);
                     } else {
                         return new SessionsCalculator(checkers,
                                 _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,

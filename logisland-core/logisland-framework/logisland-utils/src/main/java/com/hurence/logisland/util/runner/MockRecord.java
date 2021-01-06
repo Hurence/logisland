@@ -15,19 +15,17 @@
  */
 package com.hurence.logisland.util.runner;
 
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.RecordUtils;
-import org.junit.Assert;
-
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MockRecord extends StandardRecord {
 
@@ -35,117 +33,121 @@ public class MockRecord extends StandardRecord {
     private static final float floatDelta = 0.000001f;
     private static final double doubleDelta = 0.000001d;
     private static Logger logger = LoggerFactory.getLogger(MockRecord.class);
-
-	//private final Set<String> assertedFields;
 	
     public MockRecord(Record toClone) {
         super(toClone);
-        
-      //  this.assertedFields = new HashSet<>();
     }
 
-    public void assertFieldExists(final String fieldName) {
+    public MockRecord assertFieldExists(final String fieldName) {
         Assert.assertTrue("Field " + fieldName + " does not exist", hasField(fieldName));
-		//assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertFieldNotExists(final String fieldName) {
+    public MockRecord assertFieldNotExists(final String fieldName) {
         Assert.assertFalse("Attribute " + fieldName + " not exists with value " + getField(fieldName),
                 hasField(fieldName));
-		//assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertFieldTypeEquals(final String fieldName, final FieldType type) {
+    public MockRecord assertFieldTypeEquals(final String fieldName, final FieldType type) {
         Assert.assertEquals(type, getField(fieldName).getType());
-        //assertedFields.add(fieldName);
+        return this;
     }
 
 
-    public void assertFieldEquals(final String fieldName, final String expectedValue) {
+    public MockRecord assertFieldEquals(final String fieldName, final String expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asString());
-		//assertedFields.add(fieldName);
+        return this;
 	}
     
-    public void assertFieldEquals(final String fieldName, final boolean expectedValue) {
+    public MockRecord assertFieldEquals(final String fieldName, final boolean expectedValue) {
         Assert.assertEquals(new Boolean(expectedValue), getField(fieldName).asBoolean());
-      //  assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertFieldEquals(final String fieldName, final int expectedValue) {
+    public MockRecord assertFieldEquals(final String fieldName, final int expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asInteger().intValue());
-		//assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertFieldEquals(final String fieldName, final long expectedValue) {
+    public MockRecord assertFieldEquals(final String fieldName, final long expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asLong().longValue());
-		//assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertFieldEquals(final String fieldName, final float expectedValue) {
+    public MockRecord assertFieldEquals(final String fieldName, final float expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asFloat(), floatDelta);
-		//assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertFieldEquals(final String fieldName, final double expectedValue) {
+    public MockRecord assertFieldEquals(final String fieldName, final double expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asDouble(), doubleDelta);
-		//assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertFieldEquals(final String fieldName, final byte[] expectedValue) {
+    public MockRecord assertFieldEquals(final String fieldName, final byte[] expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
-       // assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertFieldEquals(final String fieldName, final Record expectedValue) {
+    public MockRecord assertFieldEquals(final String fieldName, final Record expectedValue) {
         Record record = getField(fieldName).asRecord();
         MockRecord mockRecord = new MockRecord(record);
         mockRecord.assertContentEqualsExceptTechnicalFields(expectedValue);
+        return this;
     }
 
-    public <K,V> void assertFieldEquals(final String fieldName, final Map<K, V> expectedValue) {
+    public <K,V> MockRecord assertFieldEquals(final String fieldName, final Map<K, V> expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
+        return this;
     }
 
-    public <E> void assertFieldEquals(final String fieldName, final List<E> expectedValue) {
+    public <E> MockRecord assertFieldEquals(final String fieldName, final List<E> expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
+        return this;
     }
 
-    public void assertNullField(final String fieldName) {
+    public MockRecord assertNullField(final String fieldName) {
         Assert.assertNull(getField(fieldName).getRawValue());
+        return this;
     }
 
-    public void assertNotNullField(final String fieldName) {
+    public MockRecord assertNotNullField(final String fieldName) {
         Assert.assertNotNull(getField(fieldName).getRawValue());
+        return this;
     }
 
-    public void assertFieldNotEquals(final String fieldName, final String expectedValue) {
+    public MockRecord assertFieldNotEquals(final String fieldName, final String expectedValue) {
         Assert.assertNotSame(expectedValue, getField(fieldName).asString());
-		//assertedFields.add(fieldName);
+        return this;
     }
 
-    public void assertStringFieldStartWith(final String fieldName, final String expectedValue) {
+    public MockRecord assertStringFieldStartWith(final String fieldName, final String expectedValue) {
         Assert.assertNotNull(getField(fieldName).asString());
         String msg = "'" + getField(fieldName).asString()  +"' does not start by '" + expectedValue +"'";
         Assert.assertTrue(msg, getField(fieldName).asString().startsWith(expectedValue));
+        return this;
     }
 
-    public void assertStringFieldEndWith(final String fieldName, final String expectedValue) {
+    public MockRecord assertStringFieldEndWith(final String fieldName, final String expectedValue) {
         Assert.assertNotNull(getField(fieldName).asString());
         String msg = "'" + getField(fieldName).asString()  +"' does not end by '" + expectedValue +"'";
         Assert.assertTrue(msg, getField(fieldName).asString().endsWith(expectedValue));
+        return this;
     }
 
-
-    public void assertRecordSizeEquals(final int size) {
+    public MockRecord assertRecordSizeEquals(final int size) {
         Assert.assertEquals(size, size());
+        return this;
     }
 
-    public void assertAllFieldsAsserted(List<String> ignoreFields) {
+    public MockRecord assertAllFieldsAsserted(List<String> ignoreFields) {
 		// get missing asserted fields
 		Set<String> fields = new HashSet<>(getAllFieldNames());
 		fields.removeAll(ignoreFields);
 		//fields.removeAll(assertedFields);
 		Assert.assertEquals("List of not asserted fields: " + fields, 0, fields.size());
+        return this;
     }
     
     /**
@@ -153,11 +155,12 @@ public class MockRecord extends StandardRecord {
      *
      * @param record to compare content against
      */
-    public void assertContentEquals(final Record record) {
+    public MockRecord assertContentEquals(final Record record) {
         Assert.assertEquals(this, record);
+        return this;
     }
 
-    public void assertContentEqualsExceptTechnicalFields(final Record expected) {
+    public MockRecord assertContentEqualsExceptTechnicalFields(final Record expected) {
         Assert.assertEquals(expected.size(), this.size());
         expected.getAllFields().forEach(field -> {
             if (this.isInternField(field)) return;
@@ -169,6 +172,7 @@ public class MockRecord extends StandardRecord {
             logger.debug("testing field {}", field);
             Assert.assertEquals(field, expected.getField(field.getName()));
         });
+        return this;
     }
 
 }

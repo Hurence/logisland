@@ -2,6 +2,7 @@ package com.hurence.logisland.processor.webAnalytics.modele;
 
 import com.hurence.logisland.processor.webAnalytics.IncrementalWebSession;
 import com.hurence.logisland.processor.webAnalytics.util.DateUtils;
+import com.hurence.logisland.processor.webAnalytics.util.SessionsCalculator;
 import com.hurence.logisland.record.*;
 
 import java.time.*;

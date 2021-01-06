@@ -1,6 +1,7 @@
-package com.hurence.logisland.processor.webAnalytics.modele;
+package com.hurence.logisland.processor.webAnalytics.util;
 
 import com.hurence.logisland.processor.webAnalytics.IncrementalWebSession;
+import com.hurence.logisland.processor.webAnalytics.modele.*;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -122,7 +123,7 @@ public class SessionsCalculator {
      * @return this object for convenience.
      */
     public SessionsCalculator processEvents(final Events events, final boolean isRewind) {
-        logger.debug("Applying {} events to session '{}'", events.size(), events.getSessionId());
+        logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
 
         if (this.lastSessionBeforeProcessing != null) {
             // One or more sessions were already stored in datastore.
@@ -180,7 +181,7 @@ public class SessionsCalculator {
         }
 
         final Iterator<Event> iterator = events.iterator();
-        logger.debug("Processing event sessionId=" + events.getSessionId() + " eventCount=" + eventProcessedCounter);
+        logger.debug("Processing event sessionId=" + events.getOriginalSessionId() + " eventCount=" + eventProcessedCounter);
 
         if (session == null) {
             // No web-session yet in datastore.
@@ -207,15 +208,15 @@ public class SessionsCalculator {
                 // Invalid check found:
                 // 1. keep current web-session untouched (and save it)
                 // 2. create a new web-session from the current web-event and rename/increase session-id.
-                final String[] oldSessionId = event.getSessionId().split(IncrementalWebSession.EXTRA_SESSION_DELIMITER);
-                final int index = (oldSessionId.length == 1) ? 2 // only one web session so far => create 2nd one
-                        : Integer.valueOf(oldSessionId[1]) + 1; // +1 on web session
-                final String newSessionId = oldSessionId[0] + IncrementalWebSession.EXTRA_SESSION_DELIMITER + index;
+                final String[] oldSessionIdSplitted = event.getSessionId().split(IncrementalWebSession.EXTRA_SESSION_DELIMITER);
+                final int index = (oldSessionIdSplitted.length == 1) ? 2 // only one web session so far => create 2nd one
+                        : Integer.valueOf(oldSessionIdSplitted[1]) + 1; // +1 on web session
+                final String newSessionId = oldSessionIdSplitted[0] + IncrementalWebSession.EXTRA_SESSION_DELIMITER + index;
                 final Collection<Event> eventsForNextSession = events.tailSet(event);
                 // Rewrite all remaining web-events with new session identifier.
                 eventsForNextSession.forEach(eventToChangeSession -> eventToChangeSession.setSessionId(newSessionId));
                 // Mark event that triggered the new sessions with the reason.
-                event.record.setField(eventInternalFields.getNewSessionReasonField(), FieldType.STRING, isSessionValid.reason());
+                event.getRecord().setField(eventInternalFields.getNewSessionReasonField(), FieldType.STRING, isSessionValid.reason());
 
                 final Events nextEvents = new Events(eventsForNextSession);
 
@@ -236,7 +237,7 @@ public class SessionsCalculator {
         // In case there are few events older than the current web-session, all those events must
         // be taken into account despite the fact that setting the timestamp of the first event
         // will 'hide' the next ones.
-        final Field eventTimestampField = event.record.getField(eventInternalFields.getTimestampField());
+        final Field eventTimestampField = event.getRecord().getField(eventInternalFields.getTimestampField());
         final long eventTimestamp = eventTimestampField.asLong();
 
         // Sanity check.
@@ -267,7 +268,7 @@ public class SessionsCalculator {
             creationTimestamp = field.asLong();
         }
 
-        final Field visitedPage = event.record.getField(eventInternalFields.getVisitedPageField());
+        final Field visitedPage = event.getRecord().getField(eventInternalFields.getVisitedPageField());
         // FIRST_VISITED_PAGE
         if (!isFieldAssigned(sessionInternalRecord.getField(webSessionInternalFields.getFirstVisitedPageField()))) {
             sessionInternalRecord.setField(webSessionInternalFields.getFirstVisitedPageField(), FieldType.STRING, visitedPage.asString());
@@ -292,8 +293,8 @@ public class SessionsCalculator {
         // Add the userid sessionInternalRecord if available
         final Field userIdField = sessionInternalRecord.getField(webSessionInternalFields.getUserIdField());
         if ((!isFieldAssigned(userIdField) || "undefined".equalsIgnoreCase(userIdField.asString()))
-                && isFieldAssigned(event.record.getField(eventInternalFields.getUserIdField()))) {
-            final String userId = event.record.getField(eventInternalFields.getUserIdField()).asString();
+                && isFieldAssigned(event.getRecord().getField(eventInternalFields.getUserIdField()))) {
+            final String userId = event.getRecord().getField(eventInternalFields.getUserIdField()).asString();
             if (userId != null) {
                 sessionInternalRecord.setField(webSessionInternalFields.getUserIdField(), FieldType.STRING, userId);
             }
@@ -323,7 +324,7 @@ public class SessionsCalculator {
         }
 
         // Extra
-        final Field transactionIdField = event.record.getField(eventInternalFields.getTransactionIdField());
+        final Field transactionIdField = event.getRecord().getField(eventInternalFields.getTransactionIdField());
         if (isFieldAssigned(transactionIdField)
                 && (!"undefined".equalsIgnoreCase(transactionIdField.asString()))
                 && (!transactionIdField.asString().isEmpty())) {
