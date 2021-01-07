@@ -46,7 +46,7 @@ public class SessionCalculatorTest {
         events.add(event0);
         events.add(event1);
         events.add(event2);
-        calculator.processEvents(events, false, null);
+        calculator.processEvents(events, null);
         List<WebSession> sessions = new ArrayList<>(calculator.getCalculatedSessions());
         assertEquals(3, sessions.size());
         new MockRecord(event0.getRecord())
@@ -94,7 +94,7 @@ public class SessionCalculatorTest {
         events.add(event0);
         events.add(event1);
         events.add(event2);
-        calculator.processEvents(events, false, null);
+        calculator.processEvents(events, null);
         List<WebSession> sessions = new ArrayList<>(calculator.getCalculatedSessions());
         assertEquals(3, sessions.size());
         new MockRecord(event0.getRecord())

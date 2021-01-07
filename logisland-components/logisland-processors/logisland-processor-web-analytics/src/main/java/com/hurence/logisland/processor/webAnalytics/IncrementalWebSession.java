@@ -1405,21 +1405,21 @@ public class IncrementalWebSession
         return webEvents.stream()
                 .map(events -> {
                     String divolteSession = events.getOriginalSessionId();
+                    SessionsCalculator sessionCalc = new SessionsCalculator(checkers,
+                            _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
+                            sessionInternalFields,
+                            eventsInternalFields,
+                            _FIELDS_TO_RETURN,
+                            divolteSession);
                     if (lastSessionMapping.get(divolteSession).isPresent()) {
                         boolean isRewind = sessionsInRewind.contains(divolteSession);
-                        return new SessionsCalculator(checkers,
-                                _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
-                                sessionInternalFields,
-                                eventsInternalFields,
-                                _FIELDS_TO_RETURN,
-                                divolteSession).processEvents(events, isRewind, lastSessionMapping.get(events.getOriginalSessionId()).get());
+                        if (isRewind) {//only keep sessionId but not counters etc because we will recompute the whole session
+                            return sessionCalc.processEvents(events, lastSessionMapping.get(divolteSession).get().getSessionId());
+                        } else {
+                            return sessionCalc.processEventsKnowingLastSession(events, lastSessionMapping.get(divolteSession).get());
+                        }
                     } else {
-                        return new SessionsCalculator(checkers,
-                                _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
-                                sessionInternalFields,
-                                eventsInternalFields,
-                                _FIELDS_TO_RETURN,
-                                divolteSession).processEvents(events, false, null);
+                        return sessionCalc.processEventsKnowingLastSession(events, null);
                     }
                 })
                 .collect(Collectors.toList());
@@ -1439,21 +1439,17 @@ public class IncrementalWebSession
         return webEvents.stream()
                 .map(events -> {
                     String divolteSession = events.getOriginalSessionId();
-                    if (lastSessionMapping.get(divolteSession).isPresent()) {
-                        return new SessionsCalculator(checkers,
-                                _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
-                                sessionInternalFields,
-                                eventsInternalFields,
-                                _FIELDS_TO_RETURN,
-                                divolteSession).processEvents(events, false, lastSessionMapping.get(events.getOriginalSessionId()).get());
-                    } else {
-                        return new SessionsCalculator(checkers,
-                                _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
-                                sessionInternalFields,
-                                eventsInternalFields,
-                                _FIELDS_TO_RETURN,
-                                divolteSession).processEvents(events, false, null);
-                    }
+                    SessionsCalculator sessionsCalculator = new SessionsCalculator(checkers,
+                            _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
+                            sessionInternalFields,
+                            eventsInternalFields,
+                            _FIELDS_TO_RETURN,
+                            divolteSession);
+//                    if (lastSessionMapping.get(divolteSession).isPresent()) {
+                        return sessionsCalculator.processEventsKnowingLastSession(events, lastSessionMapping.get(events.getOriginalSessionId()).orElse(null));
+//                    } else {
+//                        return sessionsCalculator.processEventsKnowingLastSession(events, null);
+//                    }
                 })
                 .collect(Collectors.toList());
     }

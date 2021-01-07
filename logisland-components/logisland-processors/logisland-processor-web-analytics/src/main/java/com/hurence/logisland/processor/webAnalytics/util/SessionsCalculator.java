@@ -123,7 +123,7 @@ public class SessionsCalculator {
 //
 //        return this;
 //    }
-    public SessionsCalculator processEvents(final Events events, boolean isRewind, final WebSession currentWebSession) {
+    public SessionsCalculator processEventsKnowingLastSession(final Events events, final WebSession currentWebSession) {
         logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
         if (currentWebSession != null) {
             events.forEach(event -> event.setSessionId(currentWebSession.getSessionId()));
@@ -131,14 +131,21 @@ public class SessionsCalculator {
             //considered as first session
             events.forEach(event -> event.setSessionId(divolteSessionId));
         }
-        if (isRewind) {
-            this.processEvents(null, events);//force a new session (but will have good name with renaming)
-        } else {
-            this.processEvents(currentWebSession, events);
-        }
+        this.processEvents(currentWebSession, events);
         return this;
     }
 
+    public SessionsCalculator processEvents(final Events events, final String currentSessionId) {
+        logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
+        if (currentSessionId != null) {
+            events.forEach(event -> event.setSessionId(currentSessionId));
+        } else {
+            //considered as first session
+            events.forEach(event -> event.setSessionId(divolteSessionId));
+        }
+        this.processEvents(null, events);
+        return this;
+    }
     /**
      * Returns {@code true} if the specified web-event checked against the provided web-session is valid;
      * {@code false} otherwise.

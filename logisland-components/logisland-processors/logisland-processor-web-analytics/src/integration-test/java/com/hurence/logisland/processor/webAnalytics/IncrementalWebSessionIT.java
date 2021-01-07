@@ -2125,7 +2125,7 @@ public class IncrementalWebSessionIT {
         testRunner.clearQueues();
         testRunner.enqueue(event2, event6);
         testRunner.run();
-        testRunner.assertOutputErrorCount(0);
+        testRunner.assertOutputErrorCount(0);//TODO random failure
         testRunner.assertOutputRecordsCount(7 + 4);//7 events et 4 sessions
 
         getFirstRecordWithId(buildId(time1, SESSION1), testRunner.getOutputRecords())
