@@ -44,7 +44,7 @@ public class MockRecord extends StandardRecord {
     }
 
     public MockRecord assertFieldNotExists(final String fieldName) {
-        Assert.assertFalse("Attribute " + fieldName + " not exists with value " + getField(fieldName),
+        Assert.assertFalse("Attribute " + fieldName + " should not exists but got " + getField(fieldName),
                 hasField(fieldName));
         return this;
     }

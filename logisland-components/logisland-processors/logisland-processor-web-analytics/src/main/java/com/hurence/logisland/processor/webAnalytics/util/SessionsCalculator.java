@@ -27,7 +27,7 @@ public class SessionsCalculator {
     private static Logger logger = LoggerFactory.getLogger(SessionsCalculator.class);
 
     private final String divolteSessionId;
-    private final WebSession lastSessionBeforeProcessing;
+//    private final WebSession lastSessionBeforeProcessing;
     // The resulting sessions from the processed web events.
     // MAKE SURE LAST SESSION IS AT LAST POSITION!!!
     private final List<WebSession> calculatedSessions = new ArrayList<>();
@@ -58,25 +58,7 @@ public class SessionsCalculator {
         this.webSessionInternalFields = webSessionInternalFields;
         this.eventInternalFields = eventInternalFields;
         this.fieldsToCopyFromEventsToSessions = fieldsToCopyFromEventsToSessions;
-        this.lastSessionBeforeProcessing = null;
         this.divolteSessionId = divolteSessionId;
-    }
-
-
-    public SessionsCalculator(Collection<SessionCheck> checkers,
-                              long sessionInactivityTimeoutInSeconds,
-                              WebSession.InternalFields webSessionInternalFields,
-                              Event.InternalFields eventInternalFields,
-                              Collection<String> fieldsToCopyFromEventsToSessions,
-                              WebSession lastSessionBeforeProcessing) {
-
-        this.checkers = checkers;
-        this.sessionInactivityTimeoutInSeconds = sessionInactivityTimeoutInSeconds;
-        this.webSessionInternalFields = webSessionInternalFields;
-        this.eventInternalFields = eventInternalFields;
-        this.fieldsToCopyFromEventsToSessions = fieldsToCopyFromEventsToSessions;
-        this.lastSessionBeforeProcessing = lastSessionBeforeProcessing;
-        this.divolteSessionId = lastSessionBeforeProcessing.getOriginalSessionId();
     }
 
     /**
@@ -122,26 +104,40 @@ public class SessionsCalculator {
      * @param events the events to process.
      * @return this object for convenience.
      */
-    public SessionsCalculator processEvents(final Events events, final boolean isRewind) {
+//    public SessionsCalculator processEvents(final Events events, final boolean isRewind) {
+//        logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
+//
+//        if (this.lastSessionBeforeProcessing != null) {
+//            // One or more sessions were already stored in datastore.
+//            final String sessionIdOfCurrentSession = this.lastSessionBeforeProcessing.getSessionId();
+//            events.forEach(event -> event.setSessionId(sessionIdOfCurrentSession));
+//            if (isRewind) {
+//                this.processEvents(null, events);//force a new session (but will have good name with renaming)
+//            } else {
+//                this.processEvents(lastSessionBeforeProcessing, events);
+//            }
+//        } else {
+//            // No web session yet exists for this session identifier. Create a new one.
+//            this.processEvents(null, events);
+//        }
+//
+//        return this;
+//    }
+    public SessionsCalculator processEvents(final Events events, boolean isRewind, final WebSession currentWebSession) {
         logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
-
-        if (this.lastSessionBeforeProcessing != null) {
-            // One or more sessions were already stored in datastore.
-            final String sessionIdOfCurrentSession = this.lastSessionBeforeProcessing.getSessionId();
-            events.forEach(event -> event.setSessionId(sessionIdOfCurrentSession));
-            if (isRewind) {
-                this.processEvents(null, events);//force a new session (but will have good name with renaming
-            } else {
-                this.processEvents(lastSessionBeforeProcessing, events);
-            }
+        if (currentWebSession != null) {
+            events.forEach(event -> event.setSessionId(currentWebSession.getSessionId()));
         } else {
-            // No web session yet exists for this session identifier. Create a new one.
-            this.processEvents(null, events);
+            //considered as first session
+            events.forEach(event -> event.setSessionId(divolteSessionId));
         }
-
+        if (isRewind) {
+            this.processEvents(null, events);//force a new session (but will have good name with renaming)
+        } else {
+            this.processEvents(currentWebSession, events);
+        }
         return this;
     }
-
 
     /**
      * Returns {@code true} if the specified web-event checked against the provided web-session is valid;
