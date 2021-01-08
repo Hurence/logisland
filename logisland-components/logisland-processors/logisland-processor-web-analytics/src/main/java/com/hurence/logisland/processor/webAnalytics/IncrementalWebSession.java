@@ -686,23 +686,26 @@ public class IncrementalWebSession
 
         //This method may update lastSessionMapping to current session (only the name will be used) when rewind is detected !
         SplittedEvents splittedEvents = handleRewindAndGetAllNeededEvents(groupOfEvents, lastSessionMapping);
-        Collection<Events> allEvents = Stream.concat(
-                splittedEvents.getEventsfromPast().stream(),
-                splittedEvents.getEventsInNominalMode().stream()
-        ).collect(Collectors.toList());
 
-        final boolean isRewind = !splittedEvents.getEventsfromPast().isEmpty();
+        final Collection<Events> allEvents = splittedEvents.getAllEvents().collect(Collectors.toList());
+        final Collection<SessionsCalculator> calculatedSessions = computeSessions(lastSessionMapping, splittedEvents, allEvents);
+
+        updateCacheWithLastSessions(calculatedSessions);
+        return addEsIndexInfoAndConcatOutput(allEvents, calculatedSessions);
+    }
+
+    public Collection<SessionsCalculator> computeSessions(Map<String, Optional<WebSession>> lastSessionMapping, SplittedEvents splittedEvents, Collection<Events> allEvents) {
         final Collection<SessionsCalculator> calculatedSessions;
-        if (isRewind) {
-            Set<String> sessionsInRewind = splittedEvents.getEventsfromPast().stream()
-                    .map(Events::getOriginalSessionId)
-                    .collect(Collectors.toSet());
+        if (splittedEvents.isThereEventsFromPast()) {
+            Set<String> sessionsInRewind = splittedEvents.getDivolteSessionsWithEventsFromPast();
             calculatedSessions = this.processEvents(allEvents, lastSessionMapping, sessionsInRewind);
         } else {
             calculatedSessions = this.processEvents(allEvents, lastSessionMapping);
         }
+        return calculatedSessions;
+    }
 
-        //update cache
+    public void updateCacheWithLastSessions(Collection<SessionsCalculator> calculatedSessions) {
         calculatedSessions
                 .forEach(sessionsCalculator -> {
                     String divolteSession = sessionsCalculator.getDivolteSessionId();
@@ -711,7 +714,10 @@ public class IncrementalWebSession
                             .findFirst().get();
                     cacheService.set(divolteSession, lastSession);
                 });
+    }
 
+    private List<Record> addEsIndexInfoAndConcatOutput(Collection<Events> allEvents,
+                                                Collection<SessionsCalculator> calculatedSessions) {
         List<Record> outputEvents = allEvents
                 .stream()
                 .flatMap(events -> events.getAll().stream())
@@ -784,13 +790,12 @@ public class IncrementalWebSession
         //get all events but only for events containing elements from the past
         final Collection<Events> allEvents = splittedEvents.getAllEventsThatContainsEventsFromPast().collect(Collectors.toList());
         final Set<String> divoltSessionIds = allEvents.stream().map(Events::getOriginalSessionId).collect(Collectors.toSet());
-//        try {
-//            Thread.sleep(5000L);//TODO find a way to not sleep
-            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-
+        try {
+            Thread.sleep(200L);//Unfortunately without this some test randomly fails. It seems that session indices are not properly refreshed..
+        } catch (InterruptedException e) {
+            getLogger().error("error while waiting 200ms", e);
+        }
+        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
         final Map<String/*divolteSession*/, Optional<WebSession>> sessionsOfFirstEvents = requestCurrentSessionsToEs(allEvents);
         divoltSessionIds.forEach(divoltSessionId -> {
             if (!sessionsOfFirstEvents.containsKey(divoltSessionId)) {
@@ -952,7 +957,7 @@ public class IncrementalWebSession
 */
 
 /*
-    GET new_openanalytics_webevents.2020.10/_search
+    GET webenvent_index_prefix<wildcard>/_search
     {
         "query": {
            "bool": {
@@ -1502,12 +1507,6 @@ public class IncrementalWebSession
             }
         });
         if (sessionsRequests.isEmpty()) return mappingToReturn;
-        try {
-            //Wait 5 seconds to be be sure index are created (sessionsRequest should only happen when session not in cache...)
-            Thread.sleep(5000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
         MultiQueryResponseRecord multiQueryResponses = this.elasticsearchClientService.multiQueryGet(
                 new MultiQueryRecord(sessionsRequests)

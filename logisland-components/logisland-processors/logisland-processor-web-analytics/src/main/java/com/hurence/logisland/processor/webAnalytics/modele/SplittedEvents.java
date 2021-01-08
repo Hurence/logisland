@@ -1,6 +1,8 @@
 package com.hurence.logisland.processor.webAnalytics.modele;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SplittedEvents {
@@ -28,13 +30,20 @@ public class SplittedEvents {
     }
 
     public Stream<Events> getAllEventsThatContainsEventsFromPast() {
-        return Stream.concat(
-                getEventsfromPast().stream(),
-                getEventsInNominalMode().stream()
-        ).filter(events -> {
+        return getAllEvents().filter(events -> {
             String dilvotSession = events.getOriginalSessionId();
             return  dilvotSession != null && containEventsFromPast(dilvotSession);
         });
+    }
+
+    public boolean isThereEventsFromPast() {
+        return  !getEventsfromPast().isEmpty();
+    }
+
+    public Set<String> getDivolteSessionsWithEventsFromPast() {
+        return getEventsfromPast().stream()
+                .map(Events::getOriginalSessionId)
+                .collect(Collectors.toSet());
     }
 
     private boolean containEventsFromPast(String dilvotSession) {

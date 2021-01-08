@@ -104,25 +104,6 @@ public class SessionsCalculator {
      * @param events the events to process.
      * @return this object for convenience.
      */
-//    public SessionsCalculator processEvents(final Events events, final boolean isRewind) {
-//        logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
-//
-//        if (this.lastSessionBeforeProcessing != null) {
-//            // One or more sessions were already stored in datastore.
-//            final String sessionIdOfCurrentSession = this.lastSessionBeforeProcessing.getSessionId();
-//            events.forEach(event -> event.setSessionId(sessionIdOfCurrentSession));
-//            if (isRewind) {
-//                this.processEvents(null, events);//force a new session (but will have good name with renaming)
-//            } else {
-//                this.processEvents(lastSessionBeforeProcessing, events);
-//            }
-//        } else {
-//            // No web session yet exists for this session identifier. Create a new one.
-//            this.processEvents(null, events);
-//        }
-//
-//        return this;
-//    }
     public SessionsCalculator processEventsKnowingLastSession(final Events events, final WebSession currentWebSession) {
         logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
         if (currentWebSession != null) {
