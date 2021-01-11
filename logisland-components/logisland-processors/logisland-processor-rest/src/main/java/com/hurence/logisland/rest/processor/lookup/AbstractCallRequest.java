@@ -16,6 +16,7 @@
 package com.hurence.logisland.rest.processor.lookup;
 
 
+import com.google.common.collect.Lists;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -31,6 +32,7 @@ import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public abstract class AbstractCallRequest extends AbstractHttpProcessor
@@ -58,6 +60,27 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
             .build();
+
+    /*
+            tag1=valuea,valueb;tag2=valuea,valuec
+     */
+    public static final PropertyDescriptor TAG_KEY_VALUE = new PropertyDescriptor.Builder()
+            .name("tag.map")
+            .description("the tags from the record with their values to allow the bulk rest call")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    /*
+            records.threshold=1000
+     */
+    public static final PropertyDescriptor RECORDS_THRESHOLD = new PropertyDescriptor.Builder()
+            .name("records.threshold")
+            .description("the number of records you want to bulk together to construct the curl body")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
 
     public static final PropertyDescriptor REQUEST_BODY = new PropertyDescriptor.Builder()
             .name("request.body")
@@ -152,6 +175,8 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
         props.add(CONFLICT_RESOLUTION_POLICY);
         props.add(VALID_HTTP_CODES);
         props.add(KEEP_ONLY_BODY_RESPONSE);
+        props.add(TAG_KEY_VALUE);
+        props.add(RECORDS_THRESHOLD);
         return Collections.unmodifiableList(props);
     }
 
@@ -213,6 +238,62 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
         return Optional.empty();
     }
 
+    ArrayList<Optional<String>> concatBody(Collection<Record> records, ProcessContext context) {
+        ArrayList<Optional<String>> result = new ArrayList<>();
+        if (records != null && !records.isEmpty()) {
+            int partition_size = (context.getPropertyValue(RECORDS_THRESHOLD).isSet()) ? context.getPropertyValue(RECORDS_THRESHOLD).asInteger() : 1000;
+            ArrayList<Record> records_list = new ArrayList<>(records);
+            for (List<Record> partition : Lists.partition(records_list, partition_size)) {
+
+                StringBuffer buffer = new StringBuffer();
+                for (Record record : partition  ) {
+                    if (triggerRestCall(record, context) && record.getField("ItemId") != null && record.getField("Userid")  != null
+                            && record.getField("ItemId").isSet() && record.getField("Userid").isSet()) {
+                        buffer.append("{");
+
+                        try {
+                            buffer.append("\"id\":" + Long.parseLong(record.getField("Userid").asString() + record.getField("ItemId").asString()));
+                            buffer.append(",");
+                        } catch (NumberFormatException e) {
+                            getLogger().debug("User id or Item can't be parsed to long (maybe undefined)" + e.getMessage());
+                        }
+
+                        try {
+                            if (record.getField("SecondsViewed").isSet()) {
+                                buffer.append("\"timeWatched\":" + record.getField("SecondsViewed").asLong());
+                                buffer.append(",");
+                            }
+
+                            if (record.getField("VideoPercentViewed").isSet()) {
+                                buffer.append("\"watched\":" + record.getField("VideoPercentViewed").asInteger());
+                                buffer.append(",");
+                            }
+                        } catch (Exception e) {
+                            getLogger().debug("Best effort mode didn't work to get seconds and/or percent viewed , can happen on live session " + e.getMessage());
+                        }
+
+                        buffer.append("\"presentationId\":" + "\"" + record.getField("ItemId").asString() + "\"");
+                        buffer.append(",");
+                        try {
+                            buffer.append("\"userId\":" + record.getField("Userid").asLong());
+                        }catch (NumberFormatException e)
+                        {
+                            buffer.append("\"userId\":-1" );
+                        }
+
+                        buffer.append("},");
+                    }
+
+                }
+                if (buffer.length() > 0) {
+                    buffer.setLength(buffer.length() - 1);
+                    result.add(Optional.ofNullable("[ " + buffer + " ]"));
+                }
+            }
+        }
+        return  result;
+    }
+
     Optional<String> calculMimTyp(Record record, ProcessContext context) {
         if (context.getPropertyValue(REQUEST_MIME_TYPE).isSet()) {
             return Optional.ofNullable(context.getPropertyValue(REQUEST_MIME_TYPE.getName()).evaluate(record).asString());
@@ -225,5 +306,34 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
             return Optional.ofNullable(context.getPropertyValue(REQUEST_METHOD.getName()).evaluate(record).asString());
         }
         return Optional.empty();
+    }
+
+        /*
+            tag1=valuea,valueb;tag2=valuea,valuec
+            if the record contains one of the tag of the property with one of the value for this tag it will return true
+     */
+    Boolean triggerRestCall(Record record, ProcessContext context) {
+         AtomicBoolean result = new AtomicBoolean(false);
+        if (context.getPropertyValue(TAG_KEY_VALUE).isSet()) {
+           String tag_list = context.getPropertyValue(TAG_KEY_VALUE).asString();
+            String [] keyValuePairs = tag_list.split(";");
+            Map<String,String> map = new HashMap<>();
+            for(String pair : keyValuePairs)                        //iterate over the pairs
+            {
+                String[] entry = pair.split("=");                   //split the pairs to get key and value
+                map.put(entry[0].trim(), entry[1].trim());          //add them to the hashmap and trim whitespaces
+            }
+            map.forEach( (k,v) -> { //k here is tag1 and tag2
+                if ( record.getField(k) != null && record.getField(k).isSet()){
+                    String[] single_values = v.split(",");
+                    List<String> stringList = new ArrayList<>(Arrays.asList(single_values)); // List(valuea,valueb) for tag1 List(valuea,valuec) for tag2
+                    String recordValue = record.getField(k).asString();
+                    if (stringList.contains(recordValue)){
+                        result.set(true);
+                    }
+                }
+            });
+        }
+        return result.get();
     }
 }

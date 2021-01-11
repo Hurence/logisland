@@ -154,7 +154,9 @@ public interface TestRunner {
 
 
     /**
-     * Enqueues the given Records into the Processor's input queue
+     * Clone (to be able to compare input with output even with mutable that directly modify input records)
+     * then Enqueues the given Records into the Processor's input queue
+     *
      *
      * @param Records to enqueue
      */
@@ -162,7 +164,8 @@ public interface TestRunner {
 
 
     /**
-     * Enqueues the given Records into the Processor's input queue
+     * Clone (to be able to compare input with output even with mutable that directly modify input records)
+     * then Enqueues the given Records into the Processor's input queue
      *
      * @param records to enqueue
      */
@@ -170,7 +173,8 @@ public interface TestRunner {
 
 
     /**
-     * Enqueues the given Records into the Processor's input queue
+     * Clone (to be able to compare input with output even with mutable that directly modify input records)
+     * then Enqueues the given Records into the Processor's input queue
      *
      * @param values to enqueue
      */
