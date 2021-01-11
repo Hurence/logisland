@@ -790,8 +790,8 @@ public class IncrementalWebSession
         //get all events but only for events containing elements from the past
         final Collection<Events> allEvents = splittedEvents.getAllEventsThatContainsEventsFromPast().collect(Collectors.toList());
         final Set<String> divoltSessionIds = allEvents.stream().map(Events::getOriginalSessionId).collect(Collectors.toSet());
-        try {
-            Thread.sleep(200L);//Unfortunately without this some test randomly fails. It seems that session indices are not properly refreshed..
+        try {//TODO find another solution
+            Thread.sleep(600L);//Unfortunately without this some test randomly fails. It seems that session indices are not properly refreshed..
         } catch (InterruptedException e) {
             getLogger().error("error while waiting 200ms", e);
         }
@@ -922,40 +922,6 @@ public class IncrementalWebSession
         return events;
     }
 
-/* TODO Delete if okay and not needed
-    GET new_openanalytics_webevents.2020.10/_search
-    {
-        "query": {
-        "bool": {
-            "must": [
-            {
-                "term": {
-                "sessionId.raw": {
-                    "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#4"
-                }
-            }
-            },
-            {
-                "range": {
-                "h2kTimestamp": {
-                    "lte": Tmin
-                }
-            }
-            }
-          ]
-        }
-    },
-        "sort": [
-        {
-            "h2kTimestamp": {
-            "order": "desc"
-        }
-        }
-      ],
-        "size": 10000
-    }
-*/
-
 /*
     GET webenvent_index_prefix<wildcard>/_search
     {
@@ -963,23 +929,11 @@ public class IncrementalWebSession
            "bool": {
             "should": [
               {
-                "bool": {
-                    "must": [
-                        {
-                            "term": {
-                              "sessionId.raw": {
-                                "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al#4"<--- session courante
-                              }
-                            }
-                        },{
-                            "range": {
-                              "h2kTimestamp": {
-                                "lte": Tmin
-                              }
-                            }
-                        }
-                     ]
-                }
+                 "term": {
+                      "sessionId.raw": {
+                        "value": "<session_id_first_event>"
+                      }
+                 }
               },
               {
                 "bool": {
@@ -987,7 +941,7 @@ public class IncrementalWebSession
                         {
                             "wildcard": {
                               "sessionId.raw": {
-                                "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al*"<--- all event needed that may already have been processed because of a delay in network.
+                                "value": "<divolte_session_id>*"
                               }
                             }
                         },{
@@ -1000,21 +954,34 @@ public class IncrementalWebSession
                         }
                      ]
                 }
+              },
+               {
+                "bool": {
+                    "should": [
+                        {
+                             "term": {
+                                  "sessionId.raw": {
+                                    "value": "<session_id_last_event>"
+                                  }
+                             }
+                        },
+                        ...
+                        {
+                             "term": {
+                                  "sessionId.raw": {
+                                    "value": "<session_id_last_event + (N - 1)>"
+                                  }
+                             }
+                        }
+                     ]
+                }
               }
             ]
            }
         },
-        "sort": [
-            {
-                "h2kTimestamp": {
-                    "order": "desc"
-                }
-            }
-        ],
         "size": 10000
     }
 */
-
     private MultiQueryResponseRecord getMissingEventsForSessionsFromEs(Collection<EventsToQueryInfo> eventsToQuery) {
         final List<QueryRecord> queries = new ArrayList<>();
         eventsToQuery.forEach(info -> {
@@ -1041,13 +1008,6 @@ public class IncrementalWebSession
                                 new TermQueryRecord(eventsInternalFields.getSessionIdField() + ".raw", session),
                                 BoolCondition.MUST
                         );
-                        //TODO Removed this part because some times we need all events of the session. ie test "testNotOrderedIncomingEvents2InOneBatch2222222222"
-                        //Is this true ? remove or not remove ?
-//                        .addBoolQuery(
-//                                new RangeQueryRecord(eventsInternalFields.getTimestampField())
-//                                        .setTo(info.min)
-//                                        .setIncludeUpper(true),
-//                                BoolCondition.MUST);
                 query.addBoolQuery(boolQueryForEventsOfFirstSession, BoolCondition.SHOULD);
             });
             if (!info.lastSessions.isEmpty()) {
@@ -1119,27 +1079,26 @@ public class IncrementalWebSession
 //              {
 //                  "wildcard": {
 //                      "sessionId.raw": {
-//                          "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al*"
+//                          "value": "<divolte_session_id>*"
 //                      }
 //                  }
 //              },
 //              {
 //                  "range": {
-//                       "firstEventEpoch": {
-//                          "lte": Tmin
-//                       }
-//                  }
-//              },
-//              {
-//                  "range": {
-//                       "lastEventEpoch": {
-//                          "gte": Tmin
+//                       "firstEventEpochSeconds": {
+//                          "lte": TmaxEvent
 //                       }
 //                  }
 //              }
 //        ]
-//      }
-//    },
+//      },
+//    "sort": [
+//        {
+//            "firstEventEpochSeconds": {
+//               "order": "desc"
+//            }
+//        }
+//    ],
 //    "size": 1
 //}
 
@@ -1177,7 +1136,7 @@ public class IncrementalWebSession
         return rsp;
     }
 
-    //    GET new_openanalytics_websessions-*/_search
+//GET new_openanalytics_websessions-*/_search
 //{
 //    "query": {
 //      "bool": {
@@ -1185,30 +1144,28 @@ public class IncrementalWebSession
 //              {
 //                  "wildcard": {
 //                      "sessionId.raw": {
-//                          "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al*"
+//                          "value": "<divolte_session_id>*"
 //                      }
 //                  }
 //              },
 //              {
 //                  "range": {
-//                       "firstEventEpoch": {
-//                          "lte": Tmax
-//                       }
-//                  }
-//              },
-//              {
-//                  "range": {
-//                       "lastEventEpoch": {
-//                          "gte": Tmax
+//                       "lastEventEpochSeconds": {
+//                          "gte": TmaxEvent
 //                       }
 //                  }
 //              }
 //        ]
-//      }
-//    },
-//    "size": 1
+//      },
+//    "sort": [
+//        {
+//            "lastEventEpochSeconds": {
+//               "order": "asc"
+//            }
+//        }
+//    ],
+//    "size": numberOfFuturSessionToFetchWhenReceivingPastEvents
 //}
-
     /**
      * request current session or closer >
      * @param events
@@ -1241,87 +1198,6 @@ public class IncrementalWebSession
         MultiQueryRecord multiQuery = new MultiQueryRecord(queries);
         MultiQueryResponseRecord rsp = elasticsearchClientService.multiQueryGet(multiQuery);
         return rsp;
-    }
-
-    private QueryRecord buildQueryForQueryingCurrentFromDivoltSessionAndEpochSeconds(String divolteSession, long epochSeconds) {
-        return new QueryRecord()
-                .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
-                .addType(_ES_SESSION_TYPE_NAME)
-                .addBoolQuery(
-                        new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
-                        BoolCondition.MUST
-                ).addBoolQuery(
-                        new RangeQueryRecord(_FIRST_EVENT_EPOCH_SECONDS_FIELD)
-                                .setTo(epochSeconds)
-                                .setIncludeUpper(true),
-                        BoolCondition.MUST
-                ).addBoolQuery(
-                        new RangeQueryRecord(_LAST_EVENT_EPOCH_SECONDS_FIELD)
-                                .setFrom(epochSeconds)
-                                .setIncludeLower(true),
-                        BoolCondition.MUST
-                ).size(1);
-    }
-
-//    GET new_openanalytics_websessions-*/_search
-//{
-//    "query": {
-//      "bool": {
-//          "must": [
-//          {
-//              "wildcard": {
-//              "sessionId.raw": {
-//                  "value": "0:kfdxb7hf:U4e3OplHDO8Hda8yIS3O2iCdBOcVE_al*"
-//              }
-//          }
-//          },
-//          {
-//              "range": {
-//              "h2kTimestamp": {
-//                  "gt": 1601448439663
-//              }
-//          }
-//          }
-//        ]
-//      }
-//    }
-//}
-    private void deleteFuturSessions(Collection<Events> eventsFromPast) {
-        /*
-            Pour chaque events trouver le min, effacer toutes les sessions avec
-            originalSessionId = sessionId && firstEventTs(session) > firstEventTs(input events)
-           ==> du coup on a plus que les sessions plus ancienne ou la session actuelle dans es.
-        */
-        //We could use a deleteByQuery here, but in 2.4 this is a plugin and may not be available.
-        // Another solution is to use the Bulk api with delete query using id of documents.
-        // We could add a method in ElasticSearchCLient interface isSupportingDeleteByQuery() to use it when available.
-        final QueryRecord queryRecord = new QueryRecord();
-        queryRecord.setRefresh(false);
-        Set<String> indicesToRequest = new HashSet<>();
-        for (Events events : eventsFromPast) {
-            Event firstEvent = events.first();
-            final String sessionIndexName = toSessionIndexName(firstEvent.getTimestamp());
-            indicesToRequest.add(sessionIndexName);
-            final String divolteSession = events.getOriginalSessionId();//divolt session
-            BoolQueryRecordRoot root = new BoolQueryRecordRoot();
-            root
-                    .addBoolQuery(
-                            new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
-                            BoolCondition.MUST
-                    )
-                    .addBoolQuery(
-                            new RangeQueryRecord(sessionInternalFields.getTimestampField())
-                                    .setFrom(firstEvent.getEpochTimeStampMilli())
-                                    .setIncludeLower(false),
-                            BoolCondition.MUST
-                    );
-            queryRecord
-                    .addCollection(sessionIndexName)
-                    .addType(_ES_SESSION_TYPE_NAME)
-                    .addBoolQuery(root, BoolCondition.SHOULD);
-        }
-        elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToRequest.toArray(new String[0]), 100000L);
-        elasticsearchClientService.deleteByQuery(queryRecord);
     }
 
     private SplittedEvents getSplittedEvents(Collection<Events> groupOfEvents,
@@ -1469,10 +1345,10 @@ public class IncrementalWebSession
 //    }
 //},
 //    "sort": [
-//    {
-//        "h2kTimestamp": {
-//        "order": "desc"
-//    }
+//        {
+//            "h2kTimestamp": {
+//            "order": "desc"
+//        }
 //    }
 //  ],
 //    "size": 1
