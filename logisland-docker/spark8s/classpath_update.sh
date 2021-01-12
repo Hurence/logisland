@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # update $app_classpath so that it contains all logisland jars except for engines.
 # we look for jars into specified dir recursively.
@@ -15,9 +15,9 @@ initSparkJarsOptRecursively() {
           #echo "add jar ${name}"
           if [[ -z "$app_classpath" ]]
           then
-            app_classpath="$entry"
+            app_classpath="local://$entry"
           else
-            app_classpath="$entry,$app_classpath"
+            app_classpath="local://$entry:$app_classpath"
           fi
       else
           if [[ ! ${name} == "engines" ]]
