@@ -250,7 +250,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       .option("kafka.security.protocol", securityProtocol)
       .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
       .option("topic", outputTopics.mkString(","))
-      .option("checkpointLocation", "checkpoints")
+      .option("checkpointLocation", "checkpoints")//Rewind not working because of this ?
+
 
   }
 

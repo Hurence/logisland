@@ -61,7 +61,8 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
     }
 
 
-
+    //ValidationContext même a la confusion finalement ce n'est qu'un wrapper de Map<PropertyDescrisptor, String>
+    //==> interface Properties à la place ? ou juste Map<PropertyDescrisptor, String> ?
     @Override
     public final Collection<ValidationResult> validate(final ValidationContext context) {
         // goes through supported properties
@@ -117,7 +118,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
         if (!results.isEmpty()) {
             for (ValidationResult result:results) {
                 logger.warn(result.toString());
-                            }
+            }
         }
 
         return results;

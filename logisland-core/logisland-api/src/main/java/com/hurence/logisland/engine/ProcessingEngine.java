@@ -22,6 +22,7 @@ import com.hurence.logisland.component.ConfigurableComponent;
  */
 public interface ProcessingEngine extends ConfigurableComponent {
 
+//TODO    void init(EngineContext engineContext);
     /**
      * start the engine with a context
      *

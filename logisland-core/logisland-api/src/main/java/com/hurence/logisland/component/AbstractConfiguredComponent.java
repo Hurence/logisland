@@ -219,7 +219,6 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     @Override
     public Collection<ValidationResult> validate(final ValidationContext context) {
-
         return component.validate(context);
     }
 

@@ -84,6 +84,12 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       val pipelineMetricPrefix = streamContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
       val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
+      //TODO DANGER ! Ici j'ai l'impression que ce broadcast peut influencer tous les streams du job !!! (même sparkContext)
+      // Je pense donc que ce broadcast devrait être fait au niveau de l'engine et non pas au niveau du stream qui utilise le
+      // même SparkContext que tout les autres stream associé a l'engine.
+      // En général on utilise qu'un seul stream... Mais ca veut dire que les jobs multi stream sont problablement buggé !
+      // Dans les fait la configuration des services étant identique pour tous les stream cela ne doit pas posé de problème
+      // en pratique actuellement.
       controllerServiceLookupSink = ssc.sparkContext.broadcast(
         ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
       )
@@ -93,7 +99,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
       spark.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
 
-
+      //TODO Je pense que ces deux ligne ne servent a rien
       val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
       streamContext.setControllerServiceLookup(controllerServiceLookup)
 

@@ -280,7 +280,7 @@ trait StructuredStreamProviderService extends ControllerService {
     // do the parallel processing
     val df2 = df.mapPartitions(record => record.map(record => serializeRecords(serializer, keySerializer, record)))
 
-    var checkpointLocation : String = "checkpoints/" + streamContext.getIdentifier
+    var checkpointLocation : String = "checkpoints/" + streamContext.getIdentifier//TODO should be same than in source ?!
     if (GlobalOptions.checkpointLocation != null) {
       checkpointLocation = GlobalOptions.checkpointLocation
       logger.info(s"Saving structured stream using checkpointLocation: $checkpointLocation")

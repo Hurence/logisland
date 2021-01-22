@@ -385,7 +385,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     /**
       * Provides subclasses the ability to perform initialization logic
       */
-    override def init(context: ComponentContext): Unit = {
+    override def init(context: EngineContext): Unit = {
         super.init(context)
         val engineContext = context.asInstanceOf[EngineContext]
         val sparkMaster = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_MASTER).asString
@@ -551,7 +551,10 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
         val streamingContext = createStreamingContext(engineContext)
+        //TODO should ensure stream here are compatible with this engine. (They are SparkRecordStream) in
+        // customValidate method of AbstractConfigurableComponent
         if (!engineContext.getStreamContexts.map(p => p.getStream).filter(p => p.isInstanceOf[AbstractKafkaRecordStream]).isEmpty) {
+            //TODO not usefull, anyway stream are started by themselves in createStreamingContext
             streamingContext.start()
         }
 
@@ -582,7 +585,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
                 val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
-
+                //TODO initialiser les service ici, les brodcast puis les passer à la méthode start ?
                 kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()
             } catch {

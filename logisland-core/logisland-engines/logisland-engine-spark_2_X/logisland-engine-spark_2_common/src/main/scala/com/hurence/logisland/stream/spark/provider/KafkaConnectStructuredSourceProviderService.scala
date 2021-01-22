@@ -69,11 +69,10 @@ class KafkaConnectStructuredSourceProviderService extends KafkaConnectBaseProvid
             .option(StreamOptions.KAFKA_CONNECT_CONNECTOR_CLASS.getName, delegateConnectorClass)
             .option(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE.getName, offsetBackingStore)
             .option(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES.getName, offsetBackingStoreProperties)
-            .load(streamContext.getIdentifier)
-            //Topic, Partition, Key, Value
+            .load(streamContext.getIdentifier)//TODO ???? surement lie au pb du rewind...
+            //topic, sourcePartition, sourceOffset, key, value
             .as[(String, String, String, Array[Byte], Array[Byte])]
-            .map(r =>
-                new StandardRecord("kafka_connect")
+            .map(r => new StandardRecord("kafka_connect")
                     .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._4)
                     .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._5))
             .coalesce(maxPartitions)

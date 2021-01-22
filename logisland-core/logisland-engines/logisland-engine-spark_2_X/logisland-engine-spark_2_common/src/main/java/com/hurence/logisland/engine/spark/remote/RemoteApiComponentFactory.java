@@ -158,7 +158,6 @@ public class RemoteApiComponentFactory {
             logger.info("We have a new configuration. Resetting current engine");
             logger.info("Configuring dataflow. Last change at {} is {}", dataflow.getLastModified(), dataflow.getModificationReason());
 
-
             List<ControllerServiceConfiguration> css = dataflow.getServices().stream()
                     .map(this::getControllerServiceConfiguration)
                     .collect(Collectors.toList());
