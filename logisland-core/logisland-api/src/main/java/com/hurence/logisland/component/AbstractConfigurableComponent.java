@@ -17,6 +17,7 @@ package com.hurence.logisland.component;
 
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
@@ -216,6 +217,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
         identifier = context.getIdentifier();
         componentLogger = context.getLogger();
     }
+
 
     /**
      * @return the logger that has been provided to the component by the

@@ -29,4 +29,5 @@ public interface RecordStream extends ConfigurableComponent {
      * stop the stream processing
      */
     void stop();
+
 }

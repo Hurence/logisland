@@ -18,15 +18,12 @@ package com.hurence.logisland.stream.spark.structured
 import java.util
 import java.util.Collections
 
-import com.hurence.logisland.component.PropertyDescriptor
-import com.hurence.logisland.engine.EngineContext
+import com.hurence.logisland.component.{ComponentContext, PropertyDescriptor}
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
+import com.hurence.logisland.stream.AbstractRecordStream
 import com.hurence.logisland.stream.StreamProperties._
-import com.hurence.logisland.stream.spark.SparkRecordStream
 import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamProviderServiceReader, StructuredStreamProviderServiceWriter}
-import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark._
-import org.apache.spark.broadcast.Broadcast
+import com.hurence.logisland.stream.spark.{SparkRecordStream, SparkStreamContext}
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.streaming.StreamingContext
@@ -36,9 +33,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
   protected var appName: String = ""
   @transient protected var ssc: StreamingContext = _
-  @transient protected var streamContext: StreamContext = _
-  protected var engineContext: EngineContext = _
-  protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = _
+  @transient protected var streamContext: SparkStreamContext = _
   protected var needMetricsReset = false
 
 
@@ -51,33 +46,23 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     Collections.unmodifiableList(descriptors)
   }
 
-  override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
-    this.appName = appName
-    this.ssc = ssc
+  override def init(streamContext: SparkStreamContext) = {
+    super.init(streamContext.asInstanceOf[ComponentContext])
+    this.appName = streamContext.appName
+    this.ssc = streamContext.ssc
     this.streamContext = streamContext
-    this.engineContext = engineContext
   }
 
-  override def getStreamContext(): StreamingContext = this.ssc
+  private def getStreamingContext(): StreamingContext = this.ssc
 
   override def start() = {
     if (ssc == null)
       throw new IllegalStateException("stream not initialized")
-
     try {
 
       val pipelineMetricPrefix = streamContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
       val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-      //TODO DANGER ! Ici j'ai l'impression que ce broadcast peut influencer tous les streams du job !!! (même sparkContext)
-      // Je pense donc que ce broadcast devrait être fait au niveau de l'engine et non pas au niveau du stream qui utilise le
-      // même SparkContext que tout les autres stream associé a l'engine.
-      // En général on utilise qu'un seul stream... Mais ca veut dire que les jobs multi stream sont problablement buggé !
-      // Dans les fait la configuration des services étant identique pour tous les stream cela ne doit pas posé de problème
-      // en pratique actuellement.
-      controllerServiceLookupSink = ssc.sparkContext.broadcast(
-        ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
-      )
       val spark = SparkSession.builder()
         .config(this.ssc.sparkContext.getConf)
         .getOrCreate()
@@ -85,7 +70,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       spark.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
 
       //TODO Je pense que ces deux ligne ne servent a rien
-      val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
+      val controllerServiceLookup = streamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
       streamContext.setControllerServiceLookup(controllerServiceLookup)
 
       val readStreamService = streamContext.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
@@ -103,7 +88,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       streamContext.getProcessContexts.addAll(
         PipelineConfigurationBroadcastWrapper.getInstance().get(streamContext.getIdentifier))
 
-      val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)
+      val readDF = readStreamService.load(spark, streamContext.broadCastedControllerServiceLookupSink, streamContext)
 
       val writeStreamService = streamContext.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
         .asControllerService()
@@ -111,7 +96,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
       // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
       val ds = writeStreamService
-        .save(readDF, controllerServiceLookupSink, streamContext)
+        .save(readDF, streamContext.broadCastedControllerServiceLookupSink, streamContext)
       pipelineTimerContext.stop()
 
     }
@@ -127,9 +112,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
   = {
     super.stop()
     //stop the source
-    val thisStream = SQLContext.getOrCreate(getStreamContext().sparkContext).streams.active.find(stream => streamContext.getIdentifier.equals(stream.name));
+    val thisStream = SQLContext.getOrCreate(getStreamingContext().sparkContext).streams.active.find(stream => streamContext.getIdentifier.equals(stream.name));
     if (thisStream.isDefined) {
-      if (!getStreamContext().sparkContext.isStopped && thisStream.get.isActive) {
+      if (!getStreamingContext().sparkContext.isStopped && thisStream.get.isActive) {
         try {
           thisStream.get.stop()
           thisStream.get.awaitTermination()
@@ -141,6 +126,8 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       logger.warn(s"Unable to find an active streaming query for stream ${streamContext.getIdentifier}")
     }
   }
+
+
 }
 
 

@@ -40,8 +40,10 @@ import java.util.{Collections, UUID}
 import com.hurence.logisland.component.{AllowableValue, ComponentContext, InitializationException, PropertyDescriptor}
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
-import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream}
+import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream, SparkStreamContext}
+import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.streaming.StreamingQueryListener
@@ -380,6 +382,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     private val conf = new SparkConf()
     private var running = false
     protected var batchDurationMs: Int = 1000
+    protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
 
 
     /**
@@ -550,34 +553,14 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
       */
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
-        val streamingContext = createStreamingContext(engineContext)
-        //TODO should ensure stream here are compatible with this engine. (They are SparkRecordStream) in
-        // customValidate method of AbstractConfigurableComponent
-        if (!engineContext.getStreamContexts.map(p => p.getStream).filter(p => p.isInstanceOf[AbstractKafkaRecordStream]).isEmpty) {
-            //TODO not usefull, anyway stream are started by themselves in createStreamingContext
-            streamingContext.start()
-        }
-
-    }
-
-    protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {
-        return StreamingContext.getActiveOrCreate(() =>
-            return new StreamingContext(sparkContext, Milliseconds(batchDurationMs))
-        )
-    }
-
-    protected def getCurrentSparkContext(): SparkContext = {
-        return SparkContext.getOrCreate(conf)
-    }
-
-
-    def createStreamingContext(engineContext: EngineContext): StreamingContext = {
-
-
         @transient val sc = getCurrentSparkContext()
         @transient val ssc = getCurrentSparkStreamingContext(sc)
         val appName = sc.appName;
 
+        logger.info("broadCasting services")
+        controllerServiceLookupSink = ssc.sparkContext.broadcast(
+            ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
+        )
 
         /**
           * loop over processContext
@@ -585,8 +568,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
                 val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
-                //TODO initialiser les service ici, les brodcast puis les passer à la méthode start ?
-                kafkaStream.setup(appName, ssc, streamingContext, engineContext)
+                val sparkStreamContext = new SparkStreamContext(streamingContext, appName, ssc, controllerServiceLookupSink)
+                kafkaStream.init(sparkStreamContext)
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>
@@ -594,9 +577,27 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             }
 
         })
-        ssc
+
+        //TODO should ensure stream here are compatible with this engine. (They are SparkRecordStream) in
+        // customValidate method of AbstractConfigurableComponent
+        if (!engineContext.getStreamContexts.isEmpty) {
+            ssc.start()
+        } else {
+            logger.error("There is no stream to start ! This should never happen as configuration should be considered" +
+            " wrong in this case, therefore code should never reach this code");
+            //TODO throw error ? Was not the case, in doubt i do not do it...
+        }
     }
 
+    protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {
+        StreamingContext.getActiveOrCreate(() =>
+            return new StreamingContext(sparkContext, Milliseconds(batchDurationMs))
+        )
+    }
+
+    protected def getCurrentSparkContext(): SparkContext = {
+        SparkContext.getOrCreate(conf)
+    }
 
     override def stop(engineContext: EngineContext) = {
         running = false

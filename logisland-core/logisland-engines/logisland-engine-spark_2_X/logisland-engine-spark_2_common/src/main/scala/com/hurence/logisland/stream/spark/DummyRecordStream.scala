@@ -17,7 +17,7 @@ package com.hurence.logisland.stream.spark
 
 import java.util
 
-import com.hurence.logisland.component.PropertyDescriptor
+import com.hurence.logisland.component.{ComponentContext, PropertyDescriptor}
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark.SparkUtils
@@ -36,7 +36,16 @@ class DummyRecordStream extends AbstractRecordStream with SparkRecordStream {
       * @return PropertyDescriptor objects this processor currently supports
       */
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
-        return new util.ArrayList[PropertyDescriptor]()
+        new util.ArrayList[PropertyDescriptor]()
+    }
+
+    /**
+      * init the stream with spark streaming context
+      *
+      */
+    override def init(context: SparkStreamContext): Unit = {
+        super.init(context.asInstanceOf[ComponentContext])
+        streamingContext = context.ssc
     }
 
     override def start(): Unit = {
@@ -52,17 +61,5 @@ class DummyRecordStream extends AbstractRecordStream with SparkRecordStream {
 
     }
 
-    /**
-      * setup the stream with spark app properties
-      *
-      * @param appName
-      * @param ssc
-      * @param streamContext
-      */
-    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext): Unit = {
-        streamingContext = ssc
 
-    }
-
-    override def getStreamContext(): StreamingContext = streamingContext
 }

@@ -28,7 +28,6 @@ import java.util.List;
 public class StandardStreamContext extends AbstractConfiguredComponent implements StreamContext {
 
     private final List<ProcessContext> processContexts = new ArrayList<>();
-    private final Instant creationDate = Instant.now();
 
     public StandardStreamContext(final RecordStream recordStream, final String id) {
         super(recordStream, id);

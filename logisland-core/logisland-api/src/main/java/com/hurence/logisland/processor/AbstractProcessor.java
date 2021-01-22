@@ -29,7 +29,7 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
     }
 
     @Override
-    public void init(ProcessContext context) throws InitializationException {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
     }
 

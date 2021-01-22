@@ -96,6 +96,38 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
     }
 
     @Override
+    public void init(ComponentContext context) {
+        try {
+            super.init(context);
+            vertx = Vertx.vertx();
+            options = new ProtonClientOptions();
+            protonClient = ProtonClient.create(vertx);
+
+            streamContext = (StreamContext) context;
+            if (streamContext.getPropertyValue(StreamOptions.READ_TOPIC_SERIALIZER).asString().equals(StreamOptions.NO_SERIALIZER.getValue())) {
+                deserializer = null;
+            } else {
+                deserializer = buildSerializer(streamContext.getPropertyValue(StreamOptions.READ_TOPIC_SERIALIZER).asString(),
+                        streamContext.getPropertyValue(StreamOptions.AVRO_INPUT_SCHEMA).asString());
+            }
+            serializer = buildSerializer(streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC_SERIALIZER).asString(),
+                    streamContext.getPropertyValue(StreamOptions.AVRO_OUTPUT_SCHEMA).asString());
+
+            contentType = streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC_CONTENT_TYPE).asString();
+
+            ControllerServiceLookup controllerServiceLookup = streamContext.getControllerServiceLookup();
+            for (ProcessContext processContext : streamContext.getProcessContexts()) {
+                if (processContext.getProcessor().hasControllerService()) {
+                    processContext.setControllerServiceLookup(controllerServiceLookup);
+                }
+                processContext.getProcessor().init(processContext);
+            }
+        } catch (InitializationException ie) {
+            throw new IllegalStateException("Unable to initialize processor pipeline", ie);
+        }
+    }
+
+    @Override
     public void start() {
         connectionControl = new ConnectionControl(
                 streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_MAX_DELAY).asLong(),
@@ -247,37 +279,6 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
         super.stop();
     }
 
-    @Override
-    public void init(ComponentContext context) {
-        try {
-            super.init(context);
-            vertx = Vertx.vertx();
-            options = new ProtonClientOptions();
-            protonClient = ProtonClient.create(vertx);
-
-            streamContext = (StreamContext) context;
-            if (streamContext.getPropertyValue(StreamOptions.READ_TOPIC_SERIALIZER).asString().equals(StreamOptions.NO_SERIALIZER.getValue())) {
-                deserializer = null;
-            } else {
-                deserializer = buildSerializer(streamContext.getPropertyValue(StreamOptions.READ_TOPIC_SERIALIZER).asString(),
-                        streamContext.getPropertyValue(StreamOptions.AVRO_INPUT_SCHEMA).asString());
-            }
-            serializer = buildSerializer(streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC_SERIALIZER).asString(),
-                    streamContext.getPropertyValue(StreamOptions.AVRO_OUTPUT_SCHEMA).asString());
-
-            contentType = streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC_CONTENT_TYPE).asString();
-
-            ControllerServiceLookup controllerServiceLookup = streamContext.getControllerServiceLookup();
-            for (ProcessContext processContext : streamContext.getProcessContexts()) {
-                if (processContext.getProcessor().hasControllerService()) {
-                    processContext.setControllerServiceLookup(controllerServiceLookup);
-                }
-                processContext.getProcessor().init(processContext);
-            }
-        } catch (InitializationException ie) {
-            throw new IllegalStateException("Unable to initialize processor pipeline", ie);
-        }
-    }
 
 
     private void handleConnectionFailure(boolean remoteClose) {

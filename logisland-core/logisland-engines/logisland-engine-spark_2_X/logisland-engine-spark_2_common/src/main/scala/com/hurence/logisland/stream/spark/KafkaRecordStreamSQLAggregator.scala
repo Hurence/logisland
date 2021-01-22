@@ -1,19 +1,4 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/**
   * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,17 +21,14 @@ import java.util.Collections
 import com.hurence.logisland.annotation.documentation.{CapabilityDescription, Tags}
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record}
-import com.hurence.logisland.util.spark.{ProcessorMetrics, SparkUtils}
-import com.hurence.logisland.validator.StandardValidators
+import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.util.spark.SparkUtils
 import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
+import org.apache.spark.streaming.kafka010.OffsetRange
 import org.slf4j.LoggerFactory
-
-import scala.collection.JavaConversions._
-import com.hurence.logisland.stream.StreamProperties._
 
 
 @Tags(Array("stream", "SQL", "query", "record"))
@@ -64,6 +46,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
         descriptors.add(OUTPUT_RECORD_TYPE)
         Collections.unmodifiableList(descriptors)
     }
+
 
     override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
         if (!rdd.isEmpty()) {
@@ -155,6 +138,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
         }
         None
     }
+
 }
 
 

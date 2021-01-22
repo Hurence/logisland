@@ -1,19 +1,4 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/**
   * Copyright (C) 2016 Hurence (support@hurence.com)
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,19 +20,18 @@ import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
+import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.record.RecordSchemaUtil
 import com.hurence.logisland.util.spark.ProcessorMetrics
-import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.errors.OffsetOutOfRangeException
 import org.apache.spark.TaskContext
-import org.apache.spark.groupon.metrics.{SparkMeter, UserMetricsSystem}
+import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.kafka010.{CanCommitOffsets, HasOffsetRanges, OffsetRange}
+import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
-import com.hurence.logisland.stream.StreamProperties._
 
 
 class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
@@ -59,6 +43,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
         descriptors.addAll(super.getSupportedPropertyDescriptors())
         Collections.unmodifiableList(descriptors)
     }
+
+
 
     /**
       * launch the chain of processing for each partition of the RDD in parallel
@@ -140,7 +126,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                               * process incoming events
                               */
                             if (processor.hasControllerService) {
-                                val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
+                                val controllerServiceLookup = streamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
                                 processorContext.setControllerServiceLookup(controllerServiceLookup)
                             }
 
@@ -222,5 +208,6 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
         }
         else None
     }
+
 }
 
