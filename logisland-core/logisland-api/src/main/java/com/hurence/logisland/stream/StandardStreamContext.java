@@ -85,10 +85,5 @@ public class StandardStreamContext extends AbstractConfiguredComponent implement
         return new StandardPropertyValue(rawValue);
     }
 
-    @Override
-    public void verifyModifiable() throws IllegalStateException {
-
-    }
-
 
 }

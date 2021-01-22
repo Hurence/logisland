@@ -23,8 +23,8 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
 import org.slf4j.Logger;
@@ -579,7 +579,7 @@ public class RunPython extends AbstractProcessor {
     }
     
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
 
         logger.debug("customValidate");

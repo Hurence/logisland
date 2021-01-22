@@ -25,7 +25,7 @@ import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.*;
@@ -155,7 +155,7 @@ public class MockDatastoreService implements DatastoreClientService {
     }
 
     @Override
-    public Collection<ValidationResult> validate(ValidationContext context) {
+    public Collection<ValidationResult> validate(Configuration context) {
         return Collections.emptyList();
     }
 

@@ -62,9 +62,4 @@ public class StandardProcessContext extends AbstractConfiguredComponent implemen
         return new StandardPropertyValue(rawValue);
     }
 
-    @Override
-    public void verifyModifiable() throws IllegalStateException {
-
-    }
-
 }

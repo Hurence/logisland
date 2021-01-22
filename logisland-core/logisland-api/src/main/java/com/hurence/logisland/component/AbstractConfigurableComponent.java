@@ -17,8 +17,7 @@ package com.hurence.logisland.component;
 
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
-import com.hurence.logisland.processor.AbstractProcessor;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import org.slf4j.Logger;
@@ -56,7 +55,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * @return Collection of ValidationResult objects that will be added to any
      * other validation findings - may be null
      */
-    protected Collection<ValidationResult> customValidate(ValidationContext context){
+    protected Collection<ValidationResult> customValidate(Configuration context){
         return Collections.emptySet();
     }
 
@@ -64,7 +63,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
     //ValidationContext même a la confusion finalement ce n'est qu'un wrapper de Map<PropertyDescrisptor, String>
     //==> interface Properties à la place ? ou juste Map<PropertyDescrisptor, String> ?
     @Override
-    public final Collection<ValidationResult> validate(final ValidationContext context) {
+    public final Collection<ValidationResult> validate(final Configuration context) {
         // goes through supported properties
         final Collection<ValidationResult> results = new ArrayList<>();
         final List<PropertyDescriptor> supportedDescriptors = getSupportedPropertyDescriptors();

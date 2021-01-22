@@ -28,7 +28,7 @@ import com.hurence.logisland.serializer.ExtendedJsonSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.serializer.SerializerProvider;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.*;
@@ -142,7 +142,7 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
     RecordSerializer serializer;
     
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
         if (context.getPropertyValue(INPUT_AS_BODY).asBoolean() && context.getPropertyValue(REQUEST_BODY).isSet()) {
             validationResults.add(

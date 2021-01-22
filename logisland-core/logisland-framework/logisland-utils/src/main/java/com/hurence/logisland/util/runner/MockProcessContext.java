@@ -22,7 +22,7 @@ import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
-import com.hurence.logisland.processor.StandardValidationContext;
+import com.hurence.logisland.processor.StandardConfiguration;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
@@ -198,7 +198,7 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
      * non-null
      */
     public Collection<ValidationResult> validate() {
-        return component.validate(new StandardValidationContext(properties));
+        return component.validate(new StandardConfiguration(properties));
     }
 
     public boolean isValid() {

@@ -319,20 +319,19 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
       .selectExpr("CAST(offset AS STRING)", "CAST(body AS BINARY)")
       .as[(String, Array[Byte])]
       .map(r => {
-        val record: Option[Record]  = deserializeRecords(serializer = null, r._2)
-        record.map(r -> {
-
-          r
-        })
-//        new StandardRecord(readEventHub)
-//          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
-//          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
+//        val record: Option[Record]  = deserializeRecords(serializer = null, r._2)
+//        record.map(r -> {
+//
+//          r
+//        })
+        new StandardRecord(readEventHub)
+          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
+          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
       })
 
     df
   }
 
-  private addType()
   //    val serializer = SerializerProvider.getSerializer(
   //      streamContext.getPropertyValue(READ_TOPICS_SERIALIZER).asString,
   //      streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)

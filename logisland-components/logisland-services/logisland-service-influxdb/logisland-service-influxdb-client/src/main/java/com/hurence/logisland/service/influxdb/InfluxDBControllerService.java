@@ -31,8 +31,8 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.NotImplementedException;
 import org.influxdb.InfluxDB;
@@ -403,7 +403,7 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
     }
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
 
         final List<ValidationResult> problems = new ArrayList<>();
 

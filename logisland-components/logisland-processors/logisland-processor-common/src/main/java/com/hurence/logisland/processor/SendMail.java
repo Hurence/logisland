@@ -23,7 +23,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 
 import org.apache.commons.mail.EmailException;
@@ -628,7 +628,7 @@ public class SendMail extends AbstractProcessor {
     }
     
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
 
         logger.debug("customValidate");

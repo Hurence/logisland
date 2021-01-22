@@ -19,43 +19,23 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
-import com.hurence.logisland.controller.ControllerService;
-import com.hurence.logisland.controller.ControllerServiceLookup;
-import com.hurence.logisland.validator.ValidationContext;
-import org.apache.commons.lang3.NotImplementedException;
+import com.hurence.logisland.validator.Configuration;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StandardValidationContext implements ValidationContext {
+public class StandardConfiguration implements Configuration {
 
     private final Map<PropertyDescriptor, String> properties;
     private final Map<String, Boolean> expressionLanguageSupported;
 
-
-    public StandardValidationContext(final Map<PropertyDescriptor, String> properties) {
+    public StandardConfiguration(final Map<PropertyDescriptor, String> properties) {
         this.properties = new HashMap<>(properties);
         expressionLanguageSupported = new HashMap<>(properties.size());
         for (final PropertyDescriptor descriptor : properties.keySet()) {
             expressionLanguageSupported.put(descriptor.getName(), descriptor.isExpressionLanguageSupported());
         }
-    }
-
-    @Override
-    public PropertyValue newPropertyValue(final String rawValue) {
-        return new StandardPropertyValue(rawValue);
-    }
-
-
-    @Override
-    public ControllerServiceLookup getControllerServiceLookup() {
-        throw new NotImplementedException("todo");
-    }
-
-    @Override
-    public ValidationContext getControllerServiceValidationContext(ControllerService controllerService) {
-        throw new NotImplementedException("todo");
     }
 
     @Override
@@ -68,23 +48,4 @@ public class StandardValidationContext implements ValidationContext {
     public Map<PropertyDescriptor, String> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
-
-
-    @Override
-    public boolean isExpressionLanguagePresent(final String value) {
-       /* if (value == null) {
-            return false;
-        }
-
-        final List<Range> elRanges = Query.extractExpressionRanges(value);
-        return (elRanges != null && !elRanges.isEmpty());*/
-        return false;
-    }
-
-    @Override
-    public boolean isExpressionLanguageSupported(final String propertyName) {
-        final Boolean supported = expressionLanguageSupported.get(propertyName);
-        return Boolean.TRUE.equals(supported);
-    }
-
 }

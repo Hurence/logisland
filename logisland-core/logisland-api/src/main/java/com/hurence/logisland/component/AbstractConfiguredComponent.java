@@ -17,16 +17,13 @@ package com.hurence.logisland.component;
 
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
-import com.hurence.logisland.processor.StandardValidationContext;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.processor.StandardConfiguration;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -60,9 +57,6 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         lock.lock();
         ValidationResult result =null;
         try {
-
-            verifyModifiable();
-
             final PropertyDescriptor descriptor = component.getPropertyDescriptor(name);
             result = descriptor.validate(value);
             if (!result.isValid()) {
@@ -106,8 +100,6 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
         lock.lock();
         try {
-            verifyModifiable();
-
             final PropertyDescriptor descriptor = component.getPropertyDescriptor(name);
             String value = null;
             if (!descriptor.isRequired() && (value = properties.remove(descriptor)) != null) {
@@ -206,19 +198,16 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
                 return false;
             }
         }
-
         return true;
     }
 
     @Override
     public Collection<ValidationResult> getValidationErrors() {
-        return validate(new StandardValidationContext(getProperties()));
+        return validate(new StandardConfiguration(getProperties()));
     }
 
-    public abstract void verifyModifiable() throws IllegalStateException;
-
     @Override
-    public Collection<ValidationResult> validate(final ValidationContext context) {
+    public Collection<ValidationResult> validate(final Configuration context) {
         return component.validate(context);
     }
 

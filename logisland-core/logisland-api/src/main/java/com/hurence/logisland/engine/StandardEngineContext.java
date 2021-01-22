@@ -81,11 +81,6 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
     }
 
     @Override
-    public void verifyModifiable() throws IllegalStateException {
-
-    }
-
-    @Override
     public boolean isValid() {
         boolean engineValid = super.isValid();
         boolean streamsValid = true;

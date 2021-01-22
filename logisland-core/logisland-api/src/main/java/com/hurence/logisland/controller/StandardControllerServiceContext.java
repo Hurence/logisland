@@ -51,10 +51,6 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
         return new StandardPropertyValue(rawValue);
     }
 
-    @Override
-    public void verifyModifiable() throws IllegalStateException {
-
-    }
 
     @Override
     public ControllerServiceLookup getControllerServiceLookup() {

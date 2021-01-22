@@ -41,7 +41,7 @@ import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
 
@@ -71,7 +71,7 @@ public class ComputeAggsProcessor extends AbstractProcessor {
     }
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
         final Collection<ValidationResult> validations = new ArrayList<>();
         Set<Map.Entry<PropertyDescriptor, String>> props = context.getProperties().entrySet();
         if (props.isEmpty()) {

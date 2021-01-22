@@ -36,7 +36,7 @@ import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
 import com.hurence.logisland.util.Tuple;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.io.IOUtils;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -125,8 +125,8 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     }
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
-        return RedisUtils.validate(validationContext);
+    protected Collection<ValidationResult> customValidate(Configuration configuration) {
+        return RedisUtils.validate(configuration);
     }
 
     @Override

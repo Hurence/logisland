@@ -31,7 +31,7 @@ import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.junit.jupiter.api.Test;
 
@@ -1158,7 +1158,7 @@ public class IncrementalWebSessionTest {
         }
 
         @Override
-        public Collection<ValidationResult> validate(ValidationContext context) {
+        public Collection<ValidationResult> validate(Configuration context) {
             return Collections.emptyList();
         }
 

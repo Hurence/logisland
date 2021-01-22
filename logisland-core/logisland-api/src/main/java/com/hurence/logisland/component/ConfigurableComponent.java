@@ -16,7 +16,7 @@
 package com.hurence.logisland.component;
 
 
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.io.Serializable;
@@ -36,7 +36,7 @@ public interface ConfigurableComponent extends Serializable{
      * only. If the collection is empty then the component is valid. Guaranteed
      * non-null
      */
-    Collection<ValidationResult> validate(ValidationContext context);
+    Collection<ValidationResult> validate(Configuration context);
 
     /**
      * @param name to lookup the descriptor

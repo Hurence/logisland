@@ -25,11 +25,11 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
-import com.hurence.logisland.processor.StandardValidationContext;
+import com.hurence.logisland.processor.StandardConfiguration;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -376,8 +376,8 @@ public class StandardProcessorTestRunner implements TestRunner {
     @Override
     public void assertNotValid(final ControllerService service) {
 
-        final ValidationContext validationContext = new StandardValidationContext(this.getConfigOfService(service).getProperties());
-        final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
+        final Configuration configuration = new StandardConfiguration(this.getConfigOfService(service).getProperties());
+        final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(configuration);
 
         for (final ValidationResult result : results) {
             if (!result.isValid()) {
@@ -389,8 +389,8 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void assertValid(final ControllerService service) {
-        final ValidationContext validationContext = new StandardValidationContext(this.getConfigOfService(service).getProperties());
-        final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
+        final Configuration configuration = new StandardConfiguration(this.getConfigOfService(service).getProperties());
+        final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(configuration);
 
         for (final ValidationResult result : results) {
             if (!result.isValid()) {
