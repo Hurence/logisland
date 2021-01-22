@@ -23,13 +23,15 @@ import com.hurence.logisland.component.{InitializationException, PropertyDescrip
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.stream.StreamContext
-import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
+import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamProviderServiceReader, StructuredStreamProviderServiceWriter}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-class KafkaConnectBaseProviderService extends AbstractControllerService with StructuredStreamProviderService {
+class KafkaConnectBaseProviderService extends AbstractControllerService
+  with StructuredStreamProviderServiceReader
+  with StructuredStreamProviderServiceWriter {
 
     var connectorProperties = ""
     var keyConverter = ""

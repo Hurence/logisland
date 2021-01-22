@@ -13,12 +13,11 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
 
     <properties>
-
         <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.4.0</spark.version>
-        <kafka.version>0.10.2.1</kafka.version>
         <scala.version>2.11.8</scala.version>
-
+        <spark.version>2.4.0</spark.version>
+        <kafka.binary.version>0-10</kafka.binary.version>
+        <kafka.version>0.10.2.1</kafka.version>
     </properties>
 
 
@@ -42,7 +41,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             </dependency>
             <dependency>
                 <groupId>org.apache.bahir</groupId>
-                <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
+                <artifactId>spark-sql-streaming-mqtt_${scala.binary.version}</artifactId>
                 <version>2.3.2</version>
                 <scope>runtime</scope>
                 <optional>true</optional>
@@ -123,7 +122,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         </dependency>
         <dependency>
             <groupId>com.banzaicloud</groupId>
-            <artifactId>spark-metrics_2.11</artifactId>
+            <artifactId>spark-metrics_${scala.binary.version}</artifactId>
             <version>2.4-1.0.5</version>
         </dependency>
         <dependency>

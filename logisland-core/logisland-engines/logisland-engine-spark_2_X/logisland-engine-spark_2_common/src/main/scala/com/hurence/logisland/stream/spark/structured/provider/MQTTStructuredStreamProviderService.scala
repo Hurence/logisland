@@ -39,6 +39,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
+import com.hurence.logisland.logging.ComponentLog
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
@@ -48,8 +49,9 @@ import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 @CapabilityDescription("Provide a ways to use Mqtt a input or output in StructuredStream streams")
-class MQTTStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
-
+class MQTTStructuredStreamProviderService extends AbstractControllerService
+  with StructuredStreamProviderServiceReader
+  with StructuredStreamProviderServiceWriter {
 
     var brokerUrl = ""
     var persistence = ""

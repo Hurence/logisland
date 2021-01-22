@@ -37,6 +37,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
+import com.hurence.logisland.logging.ComponentLog
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
@@ -46,16 +47,15 @@ import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
 
 /**
   * Compatible with kafka 0.10.0 or higher
   */
 @CapabilityDescription("Provide a ways to use kafka as input or output in StructuredStream streams")
-class KafkaStructuredStreamProviderService() extends AbstractControllerService with StructuredStreamProviderService {
-
-  // private val logger = LoggerFactory.getLogger(this.getClass)
-
+class KafkaStructuredStreamProviderService() extends AbstractControllerService
+  with StructuredStreamProviderServiceReader
+  with StructuredStreamProviderServiceWriter {
 
   var appName = ""
   var kafkaSinkParams: Map[String, Object] = _
@@ -74,8 +74,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
   var kafkaLingerMs = "5"
   var kafkaAcks = "0"
   var kafkaOffset = "latest"
-  var inputSerializerType = ""
-  var outputSerializerType = ""
 
   var securityProtocol = ""
   var saslKbServiceName = ""
@@ -96,9 +94,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
         outputTopics = context.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
         errorTopics = context.getPropertyValue(ERROR_TOPICS).asString.split(",").toSet
         metricsTopics = DEFAULT_METRICS_TOPIC.getValue.split(",").toSet
-
-        inputSerializerType = context.getPropertyValue(INPUT_SERIALIZER).asString()
-        outputSerializerType = context.getPropertyValue(OUTPUT_SERIALIZER).asString()
 
         topicAutocreate = context.getPropertyValue(KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
         topicDefaultPartitions = context.getPropertyValue(KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
@@ -144,7 +139,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     import spark.implicits._
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
-    logger.info(s"starting Kafka direct stream on topics $inputTopics from $startingOffsets offsets, and maxOffsetsPerTrigger :$maxOffsetsPerTrigger")
+    getLogger.info(s"starting Kafka direct stream on topics $inputTopics from $startingOffsets offsets, and maxOffsetsPerTrigger :$maxOffsetsPerTrigger")
     var df = spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
@@ -158,17 +153,14 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       df = df.option("maxOffsetsPerTrigger", maxOffsetsPerTrigger.get)
     }
 
-
     df.load()
       .selectExpr("CAST(key AS BINARY)", "CAST(value AS BINARY)")
       .as[(Array[Byte], Array[Byte])]
       .map(r => {
-        new StandardRecord(inputTopics.head)
+        new StandardRecord(streamContext.getIdentifier)
           .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
           .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
       })
-
-
   }
 
   /**
@@ -182,11 +174,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     descriptors.add(ERROR_TOPICS)
     descriptors.add(INPUT_TOPICS)
     descriptors.add(OUTPUT_TOPICS)
-    descriptors.add(AVRO_INPUT_SCHEMA)
-    descriptors.add(AVRO_OUTPUT_SCHEMA)
-    descriptors.add(INPUT_SERIALIZER)
-    descriptors.add(OUTPUT_SERIALIZER)
-    descriptors.add(ERROR_SERIALIZER)
     descriptors.add(KAFKA_TOPIC_AUTOCREATE)
     descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
     descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
@@ -195,8 +182,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     descriptors.add(KAFKA_STARTING_OFFSETS)
     descriptors.add(KAFKA_FAIL_ON_DATA_LOSS)
     descriptors.add(KAFKA_MAX_OFFSETS_PER_TRIGGER)
-    descriptors.add(WINDOW_DURATION)
-    descriptors.add(SLIDE_DURATION)
+//    descriptors.add(WINDOW_DURATION)
+//    descriptors.add(SLIDE_DURATION)
     descriptors.add(KAFKA_SECURITY_PROTOCOL)
     descriptors.add(KAFKA_SASL_KERBEROS_SERVICE_NAME)
     Collections.unmodifiableList(descriptors)
@@ -220,7 +207,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       if (!topic.equals(NONE_TOPIC) && !AdminUtils.topicExists(zkUtils, topic)) {
         AdminUtils.createTopic(zkUtils, topic, topicDefaultPartitions, topicDefaultReplicationFactor)
         Thread.sleep(1000)
-        logger.info(s"created topic $topic with" +
+        getLogger.info(s"created topic $topic with" +
           s" $topicDefaultPartitions partitions and" +
           s" $topicDefaultReplicationFactor replicas")
       }

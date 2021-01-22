@@ -385,7 +385,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     /**
       * Provides subclasses the ability to perform initialization logic
       */
-    override def init(context: EngineContext): Unit = {
+    def init(context: EngineContext): Unit = {
         super.init(context)
         val engineContext = context.asInstanceOf[EngineContext]
         val sparkMaster = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_MASTER).asString

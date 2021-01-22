@@ -32,8 +32,8 @@ package com.hurence.logisland.stream
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.serializer._
-import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
-import com.hurence.logisland.validator.{StandardValidators,Validator,ValidationResult}
+import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamProviderServiceReader, StructuredStreamProviderServiceWriter}
+import com.hurence.logisland.validator.{StandardValidators, ValidationResult, Validator}
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -293,6 +293,14 @@ object StreamProperties {
     .required(false)
     .build
 
+  val OUTPUT_MODE: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("output.mode")
+    .description("output mode for the streaming sink. By default will use output mode by default of the sink (see sink doc)")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)//TODO outputmode validator
+    .required(false)
+    .build
+
+
   val STATE_TIMEOUT_MS: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("state.timeout.ms")
     .description("the time in ms before we invalidate the microbatch state")
@@ -466,7 +474,7 @@ object StreamProperties {
     .name("read.stream.service.provider")
     .description("the controller service that gives connection information")
     .required(true)
-    .identifiesControllerService(classOf[StructuredStreamProviderService])
+    .identifiesControllerService(classOf[StructuredStreamProviderServiceReader])
     .build
 
 
@@ -499,7 +507,7 @@ object StreamProperties {
     .name("write.stream.service.provider")
     .description("the controller service that gives connection information")
     .required(true)
-    .identifiesControllerService(classOf[StructuredStreamProviderService])
+    .identifiesControllerService(classOf[StructuredStreamProviderServiceWriter])
     .build
 
 

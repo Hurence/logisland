@@ -53,6 +53,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
+import com.hurence.logisland.logging.ComponentLog
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
@@ -61,6 +62,7 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
+import org.slf4j.Logger
 
 import scala.collection.JavaConversions._
 
@@ -72,7 +74,8 @@ import scala.collection.JavaConversions._
 @CapabilityDescription("Generates data at the specified number of rows per second, each output row contains a timestamp and value. " +
   "Where timestamp is a Timestamp type containing the time of message dispatch, and value is of Long type containing the message count, " +
   "starting from 0 as the first row. This source is intended for testing and benchmarking. Used in StructuredStream streams.")
-class RateStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
+class RateStructuredStreamProviderService extends AbstractControllerService
+  with StructuredStreamProviderServiceReader {
 
 
   val LOCAL_FILE_INPUT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
@@ -190,13 +193,4 @@ class RateStructuredStreamProviderService extends AbstractControllerService with
     recordSeq.toDS()
   }
 
-  /**
-    * create a streaming DataFrame that represents data received
-    *
-    * @param streamContext
-    * @return DataFrame currently loaded
-    */
-  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
-    throw new IllegalArgumentException("RateStructuredStreamProviderService class does not support write operation");
-  }
 }

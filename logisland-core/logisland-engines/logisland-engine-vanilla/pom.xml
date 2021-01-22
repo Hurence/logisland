@@ -123,15 +123,12 @@
 
 
         <!-- Test dependencies -->
-
-
         <dependency>
             <groupId>com.salesforce.kafka.test</groupId>
             <artifactId>kafka-junit4</artifactId>
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.11</artifactId>

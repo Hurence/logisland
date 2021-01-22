@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.stream.spark.structured.provider
 
+import java.io.ByteArrayInputStream
 import java.time.{Duration, Instant}
 import java.util
 import java.util.Collections
@@ -25,6 +26,7 @@ import com.hurence.logisland.component.{InitializationException, PropertyDescrip
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.runner.GlobalOptions
+import com.hurence.logisland.serializer.RecordSerializer
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
@@ -38,7 +40,9 @@ import org.apache.spark.sql.{Dataset, SparkSession}
   * https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/structured-streaming-eventhubs-integration.md
   */
 @CapabilityDescription("Provides a ways to use azure event hubs as input or output in StructuredStream streams")
-class AzureEventHubsStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
+class AzureEventHubsStructuredStreamProviderService extends AbstractControllerService
+  with StructuredStreamProviderServiceReader
+  with StructuredStreamProviderServiceWriter {
 
   var namespace : String = null
   var readPositionString: String = null
@@ -307,7 +311,7 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     val options = eventHubsConf.toMap
     val optionsString = options.toString()
 
-    logger.info(s"Starting azure event hubs structured stream on event hub $readEventHub in $namespace namespace with configuration:\n$optionsString")
+    getLogger.info(s"Starting azure event hubs structured stream on event hub $readEventHub in $namespace namespace with configuration:\n$optionsString")
     val df = spark.readStream
       .format("eventhubs")
       .options(options)
@@ -315,12 +319,46 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
       .selectExpr("CAST(offset AS STRING)", "CAST(body AS BINARY)")
       .as[(String, Array[Byte])]
       .map(r => {
-        new StandardRecord(readEventHub)
-          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
-          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
+        val record: Option[Record]  = deserializeRecords(serializer = null, r._2)
+        record.map(r -> {
+
+          r
+        })
+//        new StandardRecord(readEventHub)
+//          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
+//          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
       })
 
     df
+  }
+
+  private addType()
+  //    val serializer = SerializerProvider.getSerializer(
+  //      streamContext.getPropertyValue(READ_TOPICS_SERIALIZER).asString,
+  //      streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+  //
+  //    val keySerializer = SerializerProvider.getSerializer(
+  //      streamContext.getPropertyValue(READ_TOPICS_KEY_SERIALIZER).asString,
+  //      null)
+
+  protected def doDeserialize(serializer: RecordSerializer, bytes: Array[Byte]): Record = {
+    val bais = new ByteArrayInputStream(bytes)
+    try {
+      serializer.deserialize(bais)
+    } finally {
+      bais.close()
+    }
+  }
+
+  protected def deserializeRecords(serializer: RecordSerializer, bytes: Array[Byte]) = {
+    try {
+      val deserialized = doDeserialize(serializer, bytes)
+      Some(deserialized)
+    } catch {
+      case t: Throwable =>
+        getLogger.error(s"exception while deserializing events ${t.getMessage} ! This means the event will be ignored !")
+        None
+    }
   }
 
   /**
@@ -348,7 +386,7 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
       checkpointLocation = GlobalOptions.checkpointLocation
     }
 
-    logger.info(s"Starting azure event hubs structured stream to event hub $writeEventHub in " +
+    getLogger.info(s"Starting azure event hubs structured stream to event hub $writeEventHub in " +
       s"$namespace namespace with checkpointLocation $checkpointLocation")
 
     // Write key-value data from a DataFrame to a specific event hub specified in an option

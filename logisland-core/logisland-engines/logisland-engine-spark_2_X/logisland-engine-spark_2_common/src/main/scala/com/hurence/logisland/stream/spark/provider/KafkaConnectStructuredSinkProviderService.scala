@@ -81,7 +81,7 @@ class KafkaConnectStructuredSinkProviderService extends KafkaConnectBaseProvider
 
                 override def close(errorOrNull: Throwable): Unit = {
                     if (errorOrNull != null) {
-                        logger.error("Error while storing data", errorOrNull)
+                        getLogger.error("Error while storing data", errorOrNull)
                     }
                     writer().flushPartition(TaskContext.getPartitionId())
                 }

@@ -36,11 +36,11 @@ public class ProviderServiceAsReaderRunner {
 
     private static Logger logger = LoggerFactory.getLogger(ProviderServiceAsReaderRunner.class);
 
-    private final StructuredStreamProviderService provider;
+    private final StructuredStreamProviderServiceReader provider;
     private final MockControllerServiceLookup serviceLookup;
 
 
-    public ProviderServiceAsReaderRunner(StructuredStreamProviderService provider) {
+    public ProviderServiceAsReaderRunner(StructuredStreamProviderServiceReader provider) {
         this.provider = provider;
         this.serviceLookup = new MockControllerServiceLookup();
     }

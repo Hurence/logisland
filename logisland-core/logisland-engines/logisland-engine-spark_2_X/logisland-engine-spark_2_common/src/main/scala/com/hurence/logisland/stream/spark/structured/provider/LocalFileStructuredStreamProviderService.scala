@@ -37,6 +37,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
+import com.hurence.logisland.logging.ComponentLog
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
@@ -50,8 +51,8 @@ import org.apache.spark.sql.{Dataset, SparkSession}
   * @author bailett
   */
 @CapabilityDescription("Provide a way to read a local file as input in StructuredStream streams")
-class LocalFileStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
-
+class LocalFileStructuredStreamProviderService extends AbstractControllerService
+  with StructuredStreamProviderServiceReader {
 
   val LOCAL_INPUT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("local.input.path")
@@ -153,15 +154,5 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
         new StandardRecord("line")
           .setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, r)
       })
-  }
-
-  /**
-    * create a streaming DataFrame that represents data received
-    *
-    * @param streamContext
-    * @return DataFrame currently loaded
-    */
-  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
-    throw new IllegalArgumentException("LocalFileStructuredStreamProviderService class does not support write operation yet")
   }
 }

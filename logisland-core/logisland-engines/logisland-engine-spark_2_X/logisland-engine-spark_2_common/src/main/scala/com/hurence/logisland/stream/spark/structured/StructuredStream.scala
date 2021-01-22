@@ -23,20 +23,16 @@ import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.stream.spark.SparkRecordStream
-import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
+import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamProviderServiceReader, StructuredStreamProviderServiceWriter}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.{Dataset, SQLContext, SparkSession}
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.streaming.StreamingContext
 import org.slf4j.LoggerFactory
 
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
-
-
-  protected var provider: StructuredStreamProviderService = _
-
 
   protected var appName: String = ""
   @transient protected var ssc: StreamingContext = _
@@ -50,19 +46,8 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-
     descriptors.add(READ_STREAM_SERVICE_PROVIDER)
-    descriptors.add(READ_TOPICS_SERIALIZER)
-    descriptors.add(READ_TOPICS_KEY_SERIALIZER)
     descriptors.add(WRITE_STREAM_SERVICE_PROVIDER)
-    descriptors.add(WRITE_TOPICS_SERIALIZER)
-    descriptors.add(WRITE_TOPICS_KEY_SERIALIZER)
-    descriptors.add(GROUPBY)
-    descriptors.add(STATE_TIMEOUT_MS)
-    descriptors.add(CHUNK_SIZE)
-    descriptors.add(AVRO_INPUT_SCHEMA)
-    descriptors.add(AVRO_OUTPUT_SCHEMA)
-
     Collections.unmodifiableList(descriptors)
   }
 
@@ -103,10 +88,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
       streamContext.setControllerServiceLookup(controllerServiceLookup)
 
-
       val readStreamService = streamContext.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
         .asControllerService()
-        .asInstanceOf[StructuredStreamProviderService]
+        .asInstanceOf[StructuredStreamProviderServiceReader]
 
       //TODO stange way to update streamcontext, should'nt it be broadcasted ?
       // moreover the streamcontext should always be the last updated one in this function for me.
@@ -123,10 +107,11 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
       val writeStreamService = streamContext.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
         .asControllerService()
-        .asInstanceOf[StructuredStreamProviderService]
+        .asInstanceOf[StructuredStreamProviderServiceWriter]
 
       // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-      val ds = writeStreamService.save(readDF, controllerServiceLookupSink, streamContext)
+      val ds = writeStreamService
+        .save(readDF, controllerServiceLookupSink, streamContext)
       pipelineTimerContext.stop()
 
     }

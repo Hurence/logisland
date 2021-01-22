@@ -1,0 +1,189 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----< [0;36mcom.hurence.logisland:webanal-spark-2.4-streaming-pipepline[0;1m >-----[m
+[[1;34mINFO[m] [1mBuilding webanal-spark-2.4-streaming-pipepline 1.4.0[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mwebanal-spark-2.4-streaming-pipepline[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.9:tree[m [1m(default-cli)[m @ [36mwebanal-spark-2.4-streaming-pipepline[0;1m ---[m
+[[1;34mINFO[m] com.hurence.logisland:webanal-spark-2.4-streaming-pipepline:jar:1.4.0
+[[1;34mINFO[m] +- org.apache.spark:spark-streaming_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- org.apache.spark:spark-tags_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- org.scala-lang:scala-library:jar:2.11.12:test
+[[1;34mINFO[m] |  \- org.spark-project.spark:unused:jar:1.0.0:test
+[[1;34mINFO[m] +- org.apache.spark:spark-sql_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- com.univocity:univocity-parsers:jar:2.7.3:test
+[[1;34mINFO[m] |  +- org.apache.spark:spark-sketch_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- org.apache.spark:spark-catalyst_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  |  +- org.scala-lang:scala-reflect:jar:2.11.12:test
+[[1;34mINFO[m] |  |  +- org.codehaus.janino:janino:jar:3.0.9:test
+[[1;34mINFO[m] |  |  +- org.codehaus.janino:commons-compiler:jar:3.0.9:test
+[[1;34mINFO[m] |  |  +- org.antlr:antlr4-runtime:jar:4.7:test
+[[1;34mINFO[m] |  |  \- commons-codec:commons-codec:jar:1.10:test
+[[1;34mINFO[m] |  +- org.apache.orc:orc-core:jar:nohive:1.5.2:test
+[[1;34mINFO[m] |  |  +- org.apache.orc:orc-shims:jar:1.5.2:test
+[[1;34mINFO[m] |  |  +- com.google.protobuf:protobuf-java:jar:2.5.0:test
+[[1;34mINFO[m] |  |  +- commons-lang:commons-lang:jar:2.6:test
+[[1;34mINFO[m] |  |  \- io.airlift:aircompressor:jar:0.10:test
+[[1;34mINFO[m] |  +- org.apache.orc:orc-mapreduce:jar:nohive:1.5.2:test
+[[1;34mINFO[m] |  +- org.apache.parquet:parquet-column:jar:1.10.0:test
+[[1;34mINFO[m] |  |  +- org.apache.parquet:parquet-common:jar:1.10.0:test
+[[1;34mINFO[m] |  |  \- org.apache.parquet:parquet-encoding:jar:1.10.0:test
+[[1;34mINFO[m] |  +- org.apache.parquet:parquet-hadoop:jar:1.10.0:test
+[[1;34mINFO[m] |  |  +- org.apache.parquet:parquet-format:jar:2.4.0:test
+[[1;34mINFO[m] |  |  +- org.apache.parquet:parquet-jackson:jar:1.10.0:test
+[[1;34mINFO[m] |  |  +- org.codehaus.jackson:jackson-mapper-asl:jar:1.9.13:test
+[[1;34mINFO[m] |  |  \- org.codehaus.jackson:jackson-core-asl:jar:1.9.13:test
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.6.7.1:test
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.6.0:test
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.6.7:test
+[[1;34mINFO[m] |  +- org.apache.arrow:arrow-vector:jar:0.10.0:test
+[[1;34mINFO[m] |  |  +- org.apache.arrow:arrow-format:jar:0.10.0:test
+[[1;34mINFO[m] |  |  +- org.apache.arrow:arrow-memory:jar:0.10.0:test
+[[1;34mINFO[m] |  |  +- joda-time:joda-time:jar:2.9.9:test
+[[1;34mINFO[m] |  |  +- com.carrotsearch:hppc:jar:0.7.2:test
+[[1;34mINFO[m] |  |  \- com.vlkan:flatbuffers:jar:1.2.0-3f79e055:test
+[[1;34mINFO[m] |  \- org.apache.xbean:xbean-asm6-shaded:jar:4.8:test
+[[1;34mINFO[m] +- org.apache.spark:spark-core_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- org.apache.avro:avro:jar:1.8.2:test
+[[1;34mINFO[m] |  |  +- com.thoughtworks.paranamer:paranamer:jar:2.7:test
+[[1;34mINFO[m] |  |  +- org.apache.commons:commons-compress:jar:1.8.1:test
+[[1;34mINFO[m] |  |  \- org.tukaani:xz:jar:1.5:test
+[[1;34mINFO[m] |  +- org.apache.avro:avro-mapred:jar:hadoop2:1.8.2:test
+[[1;34mINFO[m] |  |  \- org.apache.avro:avro-ipc:jar:1.8.2:test
+[[1;34mINFO[m] |  +- com.twitter:chill_2.11:jar:0.9.3:test
+[[1;34mINFO[m] |  |  \- com.esotericsoftware:kryo-shaded:jar:4.0.2:test
+[[1;34mINFO[m] |  |     +- com.esotericsoftware:minlog:jar:1.3.0:test
+[[1;34mINFO[m] |  |     \- org.objenesis:objenesis:jar:2.5.1:test
+[[1;34mINFO[m] |  +- com.twitter:chill-java:jar:0.9.3:test
+[[1;34mINFO[m] |  +- org.apache.hadoop:hadoop-client:jar:2.6.5:test
+[[1;34mINFO[m] |  |  +- org.apache.hadoop:hadoop-common:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |  +- commons-cli:commons-cli:jar:1.2:test
+[[1;34mINFO[m] |  |  |  +- xmlenc:xmlenc:jar:0.52:test
+[[1;34mINFO[m] |  |  |  +- commons-httpclient:commons-httpclient:jar:3.1:test
+[[1;34mINFO[m] |  |  |  +- commons-io:commons-io:jar:2.4:test
+[[1;34mINFO[m] |  |  |  +- commons-collections:commons-collections:jar:3.2.2:test
+[[1;34mINFO[m] |  |  |  +- commons-configuration:commons-configuration:jar:1.6:test
+[[1;34mINFO[m] |  |  |  |  +- commons-digester:commons-digester:jar:1.8:test
+[[1;34mINFO[m] |  |  |  |  |  \- commons-beanutils:commons-beanutils:jar:1.7.0:test
+[[1;34mINFO[m] |  |  |  |  \- commons-beanutils:commons-beanutils-core:jar:1.8.0:test
+[[1;34mINFO[m] |  |  |  +- com.google.code.gson:gson:jar:2.2.4:test
+[[1;34mINFO[m] |  |  |  +- org.apache.hadoop:hadoop-auth:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |  |  +- org.apache.httpcomponents:httpclient:jar:4.2.5:test
+[[1;34mINFO[m] |  |  |  |  |  \- org.apache.httpcomponents:httpcore:jar:4.2.4:test
+[[1;34mINFO[m] |  |  |  |  \- org.apache.directory.server:apacheds-kerberos-codec:jar:2.0.0-M15:test
+[[1;34mINFO[m] |  |  |  |     +- org.apache.directory.server:apacheds-i18n:jar:2.0.0-M15:test
+[[1;34mINFO[m] |  |  |  |     +- org.apache.directory.api:api-asn1-api:jar:1.0.0-M20:test
+[[1;34mINFO[m] |  |  |  |     \- org.apache.directory.api:api-util:jar:1.0.0-M20:test
+[[1;34mINFO[m] |  |  |  +- org.apache.curator:curator-client:jar:2.6.0:test
+[[1;34mINFO[m] |  |  |  \- org.htrace:htrace-core:jar:3.0.4:test
+[[1;34mINFO[m] |  |  +- org.apache.hadoop:hadoop-hdfs:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |  +- org.mortbay.jetty:jetty-util:jar:6.1.26:test
+[[1;34mINFO[m] |  |  |  \- xerces:xercesImpl:jar:2.9.1:test
+[[1;34mINFO[m] |  |  |     \- xml-apis:xml-apis:jar:1.3.04:test
+[[1;34mINFO[m] |  |  +- org.apache.hadoop:hadoop-mapreduce-client-app:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |  +- org.apache.hadoop:hadoop-mapreduce-client-common:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |  |  +- org.apache.hadoop:hadoop-yarn-client:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |  |  \- org.apache.hadoop:hadoop-yarn-server-common:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |  \- org.apache.hadoop:hadoop-mapreduce-client-shuffle:jar:2.6.5:test
+[[1;34mINFO[m] |  |  +- org.apache.hadoop:hadoop-yarn-api:jar:2.6.5:test
+[[1;34mINFO[m] |  |  +- org.apache.hadoop:hadoop-mapreduce-client-core:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |  \- org.apache.hadoop:hadoop-yarn-common:jar:2.6.5:test
+[[1;34mINFO[m] |  |  |     +- javax.xml.bind:jaxb-api:jar:2.2.2:test
+[[1;34mINFO[m] |  |  |     |  \- javax.xml.stream:stax-api:jar:1.0-2:test
+[[1;34mINFO[m] |  |  |     +- org.codehaus.jackson:jackson-jaxrs:jar:1.9.13:test
+[[1;34mINFO[m] |  |  |     \- org.codehaus.jackson:jackson-xc:jar:1.9.13:test
+[[1;34mINFO[m] |  |  +- org.apache.hadoop:hadoop-mapreduce-client-jobclient:jar:2.6.5:test
+[[1;34mINFO[m] |  |  \- org.apache.hadoop:hadoop-annotations:jar:2.6.5:test
+[[1;34mINFO[m] |  +- org.apache.spark:spark-launcher_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- org.apache.spark:spark-kvstore_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  |  \- org.fusesource.leveldbjni:leveldbjni-all:jar:1.8:test
+[[1;34mINFO[m] |  +- org.apache.spark:spark-network-common_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- org.apache.spark:spark-network-shuffle_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- org.apache.spark:spark-unsafe_2.11:jar:2.4.0:test
+[[1;34mINFO[m] |  +- javax.activation:activation:jar:1.1.1:test
+[[1;34mINFO[m] |  +- org.apache.curator:curator-recipes:jar:2.6.0:test
+[[1;34mINFO[m] |  |  +- org.apache.curator:curator-framework:jar:2.6.0:test
+[[1;34mINFO[m] |  |  \- com.google.guava:guava:jar:16.0.1:test
+[[1;34mINFO[m] |  +- org.apache.zookeeper:zookeeper:jar:3.4.6:test
+[[1;34mINFO[m] |  +- javax.servlet:javax.servlet-api:jar:3.1.0:test
+[[1;34mINFO[m] |  +- org.apache.commons:commons-lang3:jar:3.5:test
+[[1;34mINFO[m] |  +- org.apache.commons:commons-math3:jar:3.4.1:test
+[[1;34mINFO[m] |  +- com.google.code.findbugs:jsr305:jar:1.3.9:test
+[[1;34mINFO[m] |  +- org.slf4j:jul-to-slf4j:jar:1.7.16:test
+[[1;34mINFO[m] |  +- org.slf4j:jcl-over-slf4j:jar:1.7.16:test
+[[1;34mINFO[m] |  +- log4j:log4j:jar:1.2.16:provided
+[[1;34mINFO[m] |  +- org.slf4j:slf4j-log4j12:jar:1.7.16:test
+[[1;34mINFO[m] |  +- com.ning:compress-lzf:jar:1.0.3:test
+[[1;34mINFO[m] |  +- org.xerial.snappy:snappy-java:jar:1.1.7.1:test
+[[1;34mINFO[m] |  +- org.lz4:lz4-java:jar:1.4.0:test
+[[1;34mINFO[m] |  +- com.github.luben:zstd-jni:jar:1.3.2-2:test
+[[1;34mINFO[m] |  +- org.roaringbitmap:RoaringBitmap:jar:0.5.11:test
+[[1;34mINFO[m] |  +- commons-net:commons-net:jar:3.1:test
+[[1;34mINFO[m] |  +- org.json4s:json4s-jackson_2.11:jar:3.5.3:test
+[[1;34mINFO[m] |  |  \- org.json4s:json4s-core_2.11:jar:3.5.3:test
+[[1;34mINFO[m] |  |     +- org.json4s:json4s-ast_2.11:jar:3.5.3:test
+[[1;34mINFO[m] |  |     +- org.json4s:json4s-scalap_2.11:jar:3.5.3:test
+[[1;34mINFO[m] |  |     \- org.scala-lang.modules:scala-xml_2.11:jar:1.0.6:test
+[[1;34mINFO[m] |  +- org.glassfish.jersey.core:jersey-client:jar:2.22.2:test
+[[1;34mINFO[m] |  |  +- javax.ws.rs:javax.ws.rs-api:jar:2.0.1:test
+[[1;34mINFO[m] |  |  +- org.glassfish.hk2:hk2-api:jar:2.4.0-b34:test
+[[1;34mINFO[m] |  |  |  +- org.glassfish.hk2:hk2-utils:jar:2.4.0-b34:test
+[[1;34mINFO[m] |  |  |  \- org.glassfish.hk2.external:aopalliance-repackaged:jar:2.4.0-b34:test
+[[1;34mINFO[m] |  |  +- org.glassfish.hk2.external:javax.inject:jar:2.4.0-b34:test
+[[1;34mINFO[m] |  |  \- org.glassfish.hk2:hk2-locator:jar:2.4.0-b34:test
+[[1;34mINFO[m] |  +- org.glassfish.jersey.core:jersey-common:jar:2.22.2:test
+[[1;34mINFO[m] |  |  +- javax.annotation:javax.annotation-api:jar:1.2:test
+[[1;34mINFO[m] |  |  +- org.glassfish.jersey.bundles.repackaged:jersey-guava:jar:2.22.2:test
+[[1;34mINFO[m] |  |  \- org.glassfish.hk2:osgi-resource-locator:jar:1.0.1:test
+[[1;34mINFO[m] |  +- org.glassfish.jersey.core:jersey-server:jar:2.22.2:test
+[[1;34mINFO[m] |  |  +- org.glassfish.jersey.media:jersey-media-jaxb:jar:2.22.2:test
+[[1;34mINFO[m] |  |  \- javax.validation:validation-api:jar:1.1.0.Final:test
+[[1;34mINFO[m] |  +- org.glassfish.jersey.containers:jersey-container-servlet:jar:2.22.2:test
+[[1;34mINFO[m] |  +- org.glassfish.jersey.containers:jersey-container-servlet-core:jar:2.22.2:test
+[[1;34mINFO[m] |  +- io.netty:netty-all:jar:4.1.17.Final:test
+[[1;34mINFO[m] |  +- io.netty:netty:jar:3.9.9.Final:test
+[[1;34mINFO[m] |  +- com.clearspring.analytics:stream:jar:2.7.0:test
+[[1;34mINFO[m] |  +- io.dropwizard.metrics:metrics-core:jar:3.1.5:test
+[[1;34mINFO[m] |  +- io.dropwizard.metrics:metrics-jvm:jar:3.1.5:test
+[[1;34mINFO[m] |  +- io.dropwizard.metrics:metrics-json:jar:3.1.5:test
+[[1;34mINFO[m] |  +- io.dropwizard.metrics:metrics-graphite:jar:3.1.5:test
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.module:jackson-module-scala_2.11:jar:2.6.7.1:test
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.module:jackson-module-paranamer:jar:2.7.9:test
+[[1;34mINFO[m] |  +- org.apache.ivy:ivy:jar:2.4.0:test
+[[1;34mINFO[m] |  +- oro:oro:jar:2.0.8:test
+[[1;34mINFO[m] |  +- net.razorvine:pyrolite:jar:4.13:test
+[[1;34mINFO[m] |  +- net.sf.py4j:py4j:jar:0.10.7:test
+[[1;34mINFO[m] |  \- org.apache.commons:commons-crypto:jar:1.0.0:test
+[[1;34mINFO[m] +- org.apache.spark:spark-streaming-kafka-0-10_2.11:jar:2.4.0:test
+[[1;34mINFO[m] +- org.apache.spark:spark-sql-kafka-0-10_2.11:jar:2.4.0:test
+[[1;34mINFO[m] +- com.salesforce.kafka.test:kafka-junit5:jar:3.2.2:test
+[[1;34mINFO[m] |  +- com.salesforce.kafka.test:kafka-junit-core:jar:3.2.2:test
+[[1;34mINFO[m] |  \- org.apache.curator:curator-test:jar:2.12.0:test
+[[1;34mINFO[m] |     \- org.javassist:javassist:jar:3.18.1-GA:test
+[[1;34mINFO[m] +- org.apache.kafka:kafka_2.11:jar:0.11.0.3:test
+[[1;34mINFO[m] |  +- net.sf.jopt-simple:jopt-simple:jar:5.0.3:test
+[[1;34mINFO[m] |  +- com.yammer.metrics:metrics-core:jar:2.2.0:test
+[[1;34mINFO[m] |  +- com.101tec:zkclient:jar:0.10:test
+[[1;34mINFO[m] |  \- org.scala-lang.modules:scala-parser-combinators_2.11:jar:1.0.4:test
+[[1;34mINFO[m] +- org.apache.kafka:kafka-clients:jar:0.11.0.3:test
+[[1;34mINFO[m] |  \- net.jpountz.lz4:lz4:jar:1.3.0:test
+[[1;34mINFO[m] +- junit:junit:jar:4.12:test
+[[1;34mINFO[m] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter:jar:5.5.2:test
+[[1;34mINFO[m] |  +- org.junit.jupiter:junit-jupiter-api:jar:5.5.2:test
+[[1;34mINFO[m] |  |  +- org.opentest4j:opentest4j:jar:1.2.0:runtime
+[[1;34mINFO[m] |  |  \- org.junit.platform:junit-platform-commons:jar:1.5.2:runtime
+[[1;34mINFO[m] |  +- org.junit.jupiter:junit-jupiter-params:jar:5.5.2:test
+[[1;34mINFO[m] |  \- org.junit.jupiter:junit-jupiter-engine:jar:5.5.0-M1:test
+[[1;34mINFO[m] +- org.junit.vintage:junit-vintage-engine:jar:5.5.2:runtime
+[[1;34mINFO[m] |  +- org.apiguardian:apiguardian-api:jar:1.1.0:runtime
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.5.2:runtime
+[[1;34mINFO[m] \- org.slf4j:slf4j-api:jar:1.7.16:compile
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;32mBUILD SUCCESS[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  1.757 s
+[[1;34mINFO[m] Finished at: 2021-01-14T16:28:59+01:00
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
