@@ -63,7 +63,7 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
         }
         countDownLatch = new CountDownLatch(engineContext.getStreamContexts().size());
         Runtime.getRuntime().addShutdownHook(new Thread(()-> {
-            shutdown(engineContext);
+            stop(engineContext);
         }));
         logger.info("Started");
 
@@ -71,7 +71,7 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
     }
 
     @Override
-    public void shutdown(EngineContext engineContext) {
+    public void stop(EngineContext engineContext) {
         logger.info("Stopping");
         engineContext.getStreamContexts().forEach(streamContext -> {
             try {
@@ -87,16 +87,16 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
     }
 
     @Override
+    public void softStop(EngineContext engineContext) {
+        stop(engineContext);
+    }
+
+    @Override
     public void awaitTermination(EngineContext engineContext) {
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
             logger.warn("Interrupted while waiting");
         }
-    }
-
-    @Override
-    public void reset(EngineContext engineContext) {
-        shutdown(engineContext);
     }
 }

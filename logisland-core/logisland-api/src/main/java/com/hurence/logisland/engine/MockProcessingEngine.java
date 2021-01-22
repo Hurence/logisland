@@ -45,13 +45,26 @@ public class MockProcessingEngine extends AbstractProcessingEngine {
     }
 
     @Override
+    public void init(EngineContext engineContext) {
+
+    }
+
+    @Override
     public void start(EngineContext engineContext) {
         logger.info("engine start");
     }
 
     @Override
-    public void shutdown(EngineContext engineContext) {
+    public void stop(EngineContext engineContext) {
+        logger.info("engine reset");
+        engineContext.getStreamContexts().clear();
+        engineContext.getControllerServiceConfigurations().clear();
         logger.info("engine shutdown");
+    }
+
+    @Override
+    public void softStop(EngineContext engineContext) {
+        stop(engineContext);
     }
 
     @Override
@@ -59,10 +72,4 @@ public class MockProcessingEngine extends AbstractProcessingEngine {
         logger.info("engine awaitTermination");
     }
 
-    @Override
-    public void reset(EngineContext engineContext) {
-        logger.info("engine reset");
-        engineContext.getStreamContexts().clear();
-        engineContext.getControllerServiceConfigurations().clear();
-    }
 }

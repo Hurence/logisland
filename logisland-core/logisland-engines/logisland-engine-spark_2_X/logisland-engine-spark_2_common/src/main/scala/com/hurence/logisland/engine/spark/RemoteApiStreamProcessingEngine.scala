@@ -143,7 +143,7 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
                         case default: Throwable => {
                             currentDataflow = null
                             logger.warn("Unexpected exception while trying to poll for new dataflow configuration", default)
-                            reset(engineContext)
+                            softStop(engineContext)
                         }
                     } finally {
                         if (changed) {
@@ -178,21 +178,17 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
     }
 
 
-    override def shutdown(engineContext: EngineContext): Unit = {
-        super.shutdown(engineContext)
+    override def stop(engineContext: EngineContext): Unit = {
+        super.stop(engineContext)
     }
 
-    /**
-      * Reset the engine by stopping the streaming context.
-      */
-    override def reset(engineContext: EngineContext): Unit  = {
-        logger.info(s"Resetting engine ${
-            engineContext.getIdentifier
-        }")
-        super.stop(engineContext, false)
+    override def softStop(engineContext: EngineContext): Unit = {
+        logger.info(s"Resetting engine ${engineContext.getIdentifier}")
+        super.softStop(engineContext)
         engineContext.getStreamContexts.clear()
         engineContext.getControllerServiceConfigurations.clear()
     }
+
 
 
 }

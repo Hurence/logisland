@@ -173,7 +173,7 @@ public class RemoteApiComponentFactory {
             });
 
             logger.info("Restarting engine");
-            engineContext.getEngine().reset(engineContext);
+            engineContext.getEngine().softStop(engineContext);
             css.forEach(engineContext::addControllerServiceConfiguration);
             sc.forEach(engineContext::addStreamContext);
 

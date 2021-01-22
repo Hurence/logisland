@@ -96,7 +96,7 @@ public class SparkRecordStreamProcessingTest {
             public void run() {
                 System.setProperty("hadoop.home.dir", "/");
                 engine.start(engineContext);
-                engine.shutdown(engineContext);
+                engine.stop(engineContext);
                 System.out.println("done");
             }
         };

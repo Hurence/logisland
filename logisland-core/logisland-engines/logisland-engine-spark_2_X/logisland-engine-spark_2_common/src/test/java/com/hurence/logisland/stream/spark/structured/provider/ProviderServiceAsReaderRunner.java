@@ -52,7 +52,7 @@ public class ProviderServiceAsReaderRunner {
             engineContext.getEngine().start(engineContext);
             engineContext.getEngine().awaitTermination(engineContext);
         } catch (Exception ex) {
-            engineContext.getEngine().shutdown(engineContext);
+            engineContext.getEngine().stop(engineContext);
         }
     }
 

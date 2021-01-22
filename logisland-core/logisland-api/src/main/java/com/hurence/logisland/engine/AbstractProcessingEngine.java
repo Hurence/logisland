@@ -16,18 +16,30 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
+import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public abstract class AbstractProcessingEngine extends AbstractConfigurableComponent implements ProcessingEngine {
 
     @Override
     protected Collection<ValidationResult> customValidate(Configuration context){
-
-
         return Collections.emptySet();
     }
+
+    @Override
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+        return super.getPropertyDescriptors();
+    }
+
+    @Override
+    public void init(EngineContext engineContext) throws InitializationException {
+        super.init(engineContext);
+    }
+
 }

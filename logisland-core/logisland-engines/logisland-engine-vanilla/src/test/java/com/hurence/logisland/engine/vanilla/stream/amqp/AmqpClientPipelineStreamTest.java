@@ -48,7 +48,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -228,7 +227,7 @@ public class AmqpClientPipelineStreamTest {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                context.getEngine().shutdown(context);
+                context.getEngine().stop(context);
             }
         }, 2000);
 
@@ -274,7 +273,7 @@ public class AmqpClientPipelineStreamTest {
 
             if (inQueue.size() == 0) {
                 vertx.cancelTimer(id);
-                context.getEngine().shutdown(context);
+                context.getEngine().stop(context);
             }
         });
 

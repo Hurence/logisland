@@ -37,7 +37,7 @@ import java.util.concurrent.Executors
 import java.util.regex.Pattern
 import java.util.{Collections, UUID}
 
-import com.hurence.logisland.component.{AllowableValue, ComponentContext, PropertyDescriptor}
+import com.hurence.logisland.component.{AllowableValue, ComponentContext, InitializationException, PropertyDescriptor}
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
 import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream}
@@ -385,7 +385,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     /**
       * Provides subclasses the ability to perform initialization logic
       */
-    def init(context: EngineContext): Unit = {
+    override def init(context: EngineContext): Unit  = {
         super.init(context)
         val engineContext = context.asInstanceOf[EngineContext]
         val sparkMaster = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_MASTER).asString
@@ -452,7 +452,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         sys.ShutdownHookThread {
             logger.info("Gracefully stopping Spark Streaming Application")
-            shutdown(engineContext)
+            stop(engineContext)
             logger.info("Application stopped")
         }
 
@@ -486,7 +486,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
                     executor.submit(new Runnable {
                         override def run(): Unit = {
                             Thread.sleep(1000);
-                            engineContext.getEngine.reset(engineContext)
+                            engineContext.getEngine.stop(engineContext)
                         }
                     })
                 }
@@ -598,15 +598,19 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     }
 
 
-    override def shutdown(engineContext: EngineContext) = {
-        if (running) {
-            running = false
-            logger.info(s"shutting down Spark engine")
-            stop(engineContext, true)
-        }
+    override def stop(engineContext: EngineContext) = {
+        running = false
+        logger.info(s"stopping Spark engine")
+        doStop(engineContext, true)
     }
 
-    def stop(engineContext: EngineContext, doStopSparkContext: Boolean) = {
+    override def softStop(engineContext: EngineContext): Unit = {
+        running = false
+        logger.info(s"stopping Spark engine")
+        doStop(engineContext, false)
+    }
+
+    protected def doStop(engineContext: EngineContext, doStopSparkContext: Boolean) = {
         synchronized {
             val sc = getCurrentSparkContext();
             if (!sc.isStopped) {
@@ -671,14 +675,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
                 case unknown: Throwable => throw unknown
             }
         }
-    }
-
-
-    /**
-      * Reset the engine by stopping the streaming context.
-      */
-    override def reset(engineContext: EngineContext): Unit = {
-        shutdown(engineContext)
     }
 
 

@@ -487,8 +487,11 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         ssc
     }
 
+    override def softStop(engineContext: EngineContext): Unit = {
+        stop(engineContext)
+    }
 
-    override def shutdown(engineContext: EngineContext) = {
+    override def stop(engineContext: EngineContext) = {
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
 
@@ -533,15 +536,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
                 case unknown: Throwable => throw unknown
             }
         }
-    }
-
-    /**
-      * Reset the engine by stopping the streaming context.
-      *
-      * @param engineContext
-      */
-    override def    reset(engineContext: EngineContext): Unit = {
-        //not supported
     }
 }
 

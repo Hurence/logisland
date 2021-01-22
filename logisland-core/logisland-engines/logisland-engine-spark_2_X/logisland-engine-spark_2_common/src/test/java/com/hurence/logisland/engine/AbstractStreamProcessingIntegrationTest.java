@@ -18,7 +18,6 @@ package com.hurence.logisland.engine;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.stream.StreamProperties;
-import com.hurence.logisland.util.spark.SparkUtils;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
 import kafka.server.KafkaConfig;
@@ -160,7 +159,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     @After
     public void tearDown() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
-        engine.shutdown(engineContext);
+        engine.stop(engineContext);
         Thread.sleep(2000);
 
         if (kafkaServer != null) {
