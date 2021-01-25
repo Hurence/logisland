@@ -133,9 +133,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             if (!processor.isInitialized) {
                                 processor.init(processorContext)
                             }
-
+                            processor.start()
                             outgoingEvents = processor.process(processorContext, incomingEvents)
-
+                            processor.stop()
                             /**
                               * compute metrics
                               */

@@ -133,7 +133,9 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
                 streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_MAX_DELAY).asLong(),
                 streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_INITIAL_DELAY).asLong(),
                 streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_BACKOFF).asDouble());
-
+        for (ProcessContext processContext : streamContext.getProcessContexts()) {
+            processContext.getProcessor().start();
+        }
         try {
             setupConnection();
         } catch (Throwable t) {
@@ -249,6 +251,11 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
 
     @Override
     public void stop() {
+        if (streamContext!=null && streamContext.getProcessContexts() != null) {
+            for (ProcessContext processContext : streamContext.getProcessContexts()) {
+                processContext.getProcessor().stop();
+            }
+        }
         if (connectionControl != null) {
             connectionControl.setRunning(false);
         }

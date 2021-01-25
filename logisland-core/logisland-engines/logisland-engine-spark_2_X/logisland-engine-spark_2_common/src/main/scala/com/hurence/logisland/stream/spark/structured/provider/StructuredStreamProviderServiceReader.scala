@@ -175,11 +175,13 @@ trait StructuredStreamProviderServiceReader extends ControllerService {
         }
 
         // processor setup (don't forget that)
-        if (!processor.isInitialized)
+        if (!processor.isInitialized) {
           processor.init(processorContext)
-
+        }
+        processor.start()
         // do the actual processing
         processingRecords = processor.process(processorContext, processingRecords)
+        processor.stop()
 
         // compute metrics
         ProcessorMetrics.computeMetrics(

@@ -41,14 +41,10 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
 
     private static final Logger logger = LoggerFactory.getLogger(StandardControllerServiceLookup.class);
 
-
     private static final AtomicLong currentId = new AtomicLong(0);
 
     public StandardControllerServiceLookup(Collection<ControllerServiceConfiguration> configurations) {
-
         this.configurations = configurations;
-
-
     }
 
     @Override
