@@ -18,14 +18,5 @@ package com.hurence.logisland.controller;
 
 
 import com.hurence.logisland.component.ComponentContext;
-import com.hurence.logisland.kerberos.KerberosContext;
-import com.hurence.logisland.logging.ComponentLog;
 
-public interface ControllerServiceInitializationContext extends KerberosContext, ComponentContext {
-
-    /**
-     * @return the {@link ControllerServiceLookup} which can be used to obtain
-     * Controller Services
-     */
-    ControllerServiceLookup getControllerServiceLookup();
-}
+public interface ControllerServiceInitializationContext extends ComponentContext { }

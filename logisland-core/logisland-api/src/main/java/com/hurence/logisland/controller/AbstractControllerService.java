@@ -17,31 +17,14 @@
 package com.hurence.logisland.controller;
 
 
-import com.hurence.logisland.annotation.lifecycle.OnDisabled;
-import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.logging.ComponentLog;
-
-import java.io.IOException;
 
 public abstract class AbstractControllerService extends AbstractConfigurableComponent implements ControllerService {
 
-    private ControllerServiceLookup serviceLookup;
-    private volatile boolean enabled = true;
-
     @Override
     public void initialize(final ControllerServiceInitializationContext context) throws InitializationException {
-        serviceLookup = context.getControllerServiceLookup();
         init(context);
-    }
-
-    /**
-     * @return the {@link ControllerServiceLookup} that was passed to the
-     * {@link #init(ControllerServiceInitializationContext)} method
-     */
-    protected ControllerServiceLookup getControllerServiceLookup() {
-        return serviceLookup;
     }
 
     /**
@@ -55,17 +38,4 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
         super.init(context);
     }
 
-    @OnEnabled
-    public void enabled() {
-        this.enabled = true;
-    }
-
-    @OnDisabled
-    public void disabled() {
-        this.enabled = false;
-    }
-
-    public boolean isEnabled() {
-        return this.enabled;
-    }
 }

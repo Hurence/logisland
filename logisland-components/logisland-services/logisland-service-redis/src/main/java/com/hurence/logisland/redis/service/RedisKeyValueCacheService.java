@@ -190,9 +190,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
                                 + firstResult.getClass().getName() + " with value " + firstResult.toString());
                     }
                 }
-            } while (isEnabled());
-
-            return null;
+            } while (true);
         });
     }
 

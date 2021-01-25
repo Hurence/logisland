@@ -21,13 +21,11 @@ import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
-import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,32 +68,10 @@ public class MockControllerServiceInitializationContext implements ControllerSer
         return null;
     }
 
-
-    @Override
-    public ControllerServiceLookup getControllerServiceLookup() {
-        return serviceLookup;
-    }
-
     @Override
     public ComponentLog getLogger() {
         return logger;
     }
-
-    @Override
-    public String getKerberosServicePrincipal() {
-        return null; //this needs to be wired in.
-    }
-
-    @Override
-    public File getKerberosServiceKeytab() {
-        return null; //this needs to be wired in.
-    }
-
-    @Override
-    public File getKerberosConfigurationFile() {
-        return null; //this needs to be wired in.
-    }
-
 
     @Override
     public ValidationResult setProperty(final String propertyName, final String propertyValue) {
@@ -126,9 +102,9 @@ public class MockControllerServiceInitializationContext implements ControllerSer
         if (descriptor == null)
             throw new IllegalArgumentException(String.format("there is no such property '{}' in service '{}'", propertyName, controllerService.getIdentifier()));
         if (properties.containsKey(descriptor)) {
-            return new MockPropertyValue(properties.get(descriptor), getControllerServiceLookup(), VariableRegistry.EMPTY_REGISTRY, descriptor);
+            return new MockPropertyValue(properties.get(descriptor), serviceLookup, VariableRegistry.EMPTY_REGISTRY, descriptor);
         } else {
-            return new MockPropertyValue(descriptor.getDefaultValue(), getControllerServiceLookup(), VariableRegistry.EMPTY_REGISTRY, descriptor);
+            return new MockPropertyValue(descriptor.getDefaultValue(), serviceLookup, VariableRegistry.EMPTY_REGISTRY, descriptor);
         }
     }
 

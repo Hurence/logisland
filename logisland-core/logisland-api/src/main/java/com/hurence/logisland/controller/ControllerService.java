@@ -164,6 +164,20 @@ import com.hurence.logisland.processor.Processor;
 public interface ControllerService extends ConfigurableComponent {
 
     /**
+     * Initialize heavy object or start them (ie connections). Make service
+     * enabled
+     * Calling stop() then start() on a service should make the service ok.
+     */
+    default void start() {}
+
+    /**
+     * Stop heavy object or stop them (ie connections). To free resources as
+     * the services is not necessary anymore.
+     * Calling stop() then start() on a service should make the service ok
+     */
+    default void stop() {}
+
+    /**
      * Provides the Controller Service with access to objects that may be of use
      * throughout the life of the service. This method will be called before any
      * properties are set

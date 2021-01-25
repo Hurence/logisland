@@ -26,8 +26,6 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
         super(controllerService, identifier);
     }
 
-
-
     @Override
     public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {
         return getPropertyValue(descriptor.getName());
@@ -43,7 +41,7 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
         final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return PropertyValueFactory.getInstance(descriptor, propValue, getControllerServiceLookup());
+        return PropertyValueFactory.getInstance(descriptor, propValue, null);
     }
 
     @Override
@@ -51,25 +49,4 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
         return new StandardPropertyValue(rawValue);
     }
 
-
-    @Override
-    public ControllerServiceLookup getControllerServiceLookup() {
-        return null;
-    }
-
-
-    @Override
-    public String getKerberosServicePrincipal() {
-        return null;
-    }
-
-    @Override
-    public File getKerberosServiceKeytab() {
-        return null;
-    }
-
-    @Override
-    public File getKerberosConfigurationFile() {
-        return null;
-    }
 }
