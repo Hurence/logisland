@@ -18,7 +18,6 @@ package com.hurence.logisland.connect.sink;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import com.hurence.logisland.connect.AbstractKafkaConnectComponent;
-import com.hurence.logisland.connect.source.KafkaConnectStreamSourceProvider;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.data.SchemaAndValue;

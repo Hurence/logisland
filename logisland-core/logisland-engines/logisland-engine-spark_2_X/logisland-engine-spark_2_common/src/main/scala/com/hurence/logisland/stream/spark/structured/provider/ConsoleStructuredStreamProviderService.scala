@@ -26,6 +26,7 @@ import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer.SerializerProvider
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties.{AVRO_OUTPUT_SCHEMA, OUTPUT_MODE, WRITE_TOPICS_KEY_SERIALIZER, WRITE_TOPICS_SERIALIZER}
+import com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService.{NUM_ROWS_TO_SHOW, TRUNCATE_OUTPUT}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
@@ -36,27 +37,9 @@ import org.apache.spark.sql.{Dataset, Encoders, ForeachWriter, SparkSession}
 class ConsoleStructuredStreamProviderService extends AbstractControllerService
   with StructuredStreamProviderServiceWriter {
 
-    val NUM_ROWS_TO_SHOW: PropertyDescriptor = new PropertyDescriptor.Builder()
-      .name("rows")
-      .description("Number of rows to print every trigger (default: 20 see spark documentation)")
-      .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
-      .required(true)
-      .build
-
-    val TRUNCATE_OUTPUT: PropertyDescriptor = new PropertyDescriptor.Builder()
-      .name("truncate")
-      .description("Whether to truncate the output if too long (default: true see spark documentation) ")
-      .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-      .required(false)
-      .build
-
     var  numRows: Option[Long] = _
     var  truncate: Option[Boolean] = _
     var  outputMode: Option[String] = _
-    var writeTopicValueSerializerClassName: String = _
-    var writeTopicValueAvroSchema: String = null
-    var writeTopicKeySerializerClassName: String = _
-    var writeTopicKeyAvroSchema: String = null
 
     @OnEnabled
     @throws[InitializationException]
@@ -79,10 +62,6 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService
                 } else {
                     outputMode = None
                 }
-//                writeTopicValueSerializerClassName = context.getPropertyValue(WRITE_TOPICS_SERIALIZER).asString
-//                writeTopicValueAvroSchema = context.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString
-//                writeTopicKeySerializerClassName = context.getPropertyValue(WRITE_TOPICS_KEY_SERIALIZER).asString
-//                writeTopicKeyAvroSchema = null
             } catch {
                 case e: Exception =>
                     throw new InitializationException(e)
@@ -107,23 +86,9 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService
     /**
       * create a streaming DataFrame that represents data received
       *
-      * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): StreamingQuery = {
-        // make sure controller service lookup won't be serialized !!
-//        streamContext.setControllerServiceLookup(null)
-        write(df, controllerServiceLookupSink, streamContext)
-          .queryName(streamContext.getIdentifier)
-          .start()
-    }
-    /**
-      * create a streaming DataFrame that represents data received
-      *
-      * @param streamContext
-      * @return DataFrame currently loaded
-      */
-    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[String] = {
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): StreamingQuery = {
         val dataStreamWriter = df
           .map(_.toString())(Encoders.STRING)
           .writeStream
@@ -138,5 +103,23 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService
             dataStreamWriter.outputMode(outputMode.get)
         }
         dataStreamWriter
+          .queryName(getIdentifier)
+          .start()
     }
+}
+
+object ConsoleStructuredStreamProviderService {
+    val NUM_ROWS_TO_SHOW: PropertyDescriptor = new PropertyDescriptor.Builder()
+      .name("rows")
+      .description("Number of rows to print every trigger (default: 20 see spark documentation)")
+      .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+      .required(true)
+      .build
+
+    val TRUNCATE_OUTPUT: PropertyDescriptor = new PropertyDescriptor.Builder()
+      .name("truncate")
+      .description("Whether to truncate the output if too long (default: true see spark documentation) ")
+      .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+      .required(false)
+      .build
 }

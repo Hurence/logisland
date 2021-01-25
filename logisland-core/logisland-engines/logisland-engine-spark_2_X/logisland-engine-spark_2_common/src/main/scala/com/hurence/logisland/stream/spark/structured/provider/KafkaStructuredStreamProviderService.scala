@@ -30,6 +30,7 @@
   */
 package com.hurence.logisland.stream.spark.structured.provider
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
 import java.util.Collections
 
@@ -39,10 +40,13 @@ import com.hurence.logisland.component.{InitializationException, PropertyDescrip
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.logging.ComponentLog
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
+import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService.{AVRO_READ_VALUE_SCHEMA, AVRO_WRITE_VALUE_SCHEMA, READ_VALUE_SERIALIZER, WRITE_KEY_SERIALIZER, WRITE_VALUE_SERIALIZER}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
+import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.kafka.common.security.JaasUtils
@@ -81,6 +85,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   var failOnDataLoss = true
   var maxOffsetsPerTrigger: Option[Long] = None
 
+  var readValueSerializer: RecordSerializer = null
+  var writeValueSerializer: RecordSerializer = null
+  var writeKeySerializer: RecordSerializer = null
 
   @OnEnabled
   @throws[InitializationException]
@@ -120,7 +127,16 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
           createTopicsIfNeeded(zkUtils, metricsTopics, 1, 1)
         }
 
+        readValueSerializer = SerializerProvider.getSerializer(
+          context.getPropertyValue(READ_VALUE_SERIALIZER).asString,
+          context.getPropertyValue(AVRO_READ_VALUE_SCHEMA).asString)
 
+        writeValueSerializer = SerializerProvider.getSerializer(
+          context.getPropertyValue(WRITE_VALUE_SERIALIZER).asString,
+          context.getPropertyValue(AVRO_WRITE_VALUE_SCHEMA).asString)
+
+        writeKeySerializer = SerializerProvider.getSerializer(
+          context.getPropertyValue(WRITE_KEY_SERIALIZER).asString, null)
       } catch {
         case e: Exception =>
           throw new InitializationException(e)
@@ -132,10 +148,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     * create a streaming DataFrame that represents data received
     *
     * @param spark
-    * @param streamContext
     * @return DataFrame currently loaded
     */
-  override def read(spark: SparkSession, streamContext: StreamContext) = {
+  override def read(spark: SparkSession) = {
     import spark.implicits._
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
@@ -156,10 +171,13 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     df.load()
       .selectExpr("CAST(key AS BINARY)", "CAST(value AS BINARY)")
       .as[(Array[Byte], Array[Byte])]
-      .map(r => {
-        new StandardRecord(streamContext.getIdentifier)
-          .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
-          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
+      .flatMap(r => {
+        readValueSerializer match {
+          case sr: NoopSerializer => Some(new StandardRecord("kafka")
+            .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
+            .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2))
+          case _ => SerializingTool.deserializeRecords(readValueSerializer, r._2)
+        }
       })
   }
 
@@ -186,6 +204,12 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
 //    descriptors.add(SLIDE_DURATION)
     descriptors.add(KAFKA_SECURITY_PROTOCOL)
     descriptors.add(KAFKA_SASL_KERBEROS_SERVICE_NAME)
+    descriptors.add(READ_VALUE_SERIALIZER)
+    descriptors.add(AVRO_READ_VALUE_SCHEMA)
+    descriptors.add(WRITE_VALUE_SERIALIZER)
+    descriptors.add(AVRO_WRITE_VALUE_SCHEMA)
+    descriptors.add(WRITE_KEY_SERIALIZER)
+
     Collections.unmodifiableList(descriptors)
   }
 
@@ -217,18 +241,20 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   /**
     * create a streaming DataFrame that represents data received
     *
-    * @param streamContext
     * @return DataFrame currently loaded
     */
-  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext) = {
+  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) = {
     val sender = df.sparkSession.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
 
     import df.sparkSession.implicits._
 
-    // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-    df.map(r => {
-      (r.getField(FieldDictionary.RECORD_KEY).asBytes(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
-    })
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+
+    df.mapPartitions(record => record.map(record => SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)))
+      // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
+      .map(r => {
+        (r.getField(FieldDictionary.RECORD_KEY).asBytes(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
+      })
       .as[(Array[Byte], Array[Byte])]
       .toDF("key", "value")
       .writeStream
@@ -237,18 +263,51 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       .option("kafka.security.protocol", securityProtocol)
       .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
       .option("topic", outputTopics.mkString(","))
-      .option("checkpointLocation", "checkpoints")//Rewind not working because of this ?
-
+      .option("checkpointLocation", "checkpoints") //Rewind not working because of this ?
+      .start()
 
   }
+}
 
-  private def getOrElse[T](record: Record, field: String, defaultValue: T): T = {
-    val value = record.getField(field)
-    if (value != null && value.isSet) {
-      return value.getRawValue.asInstanceOf[T]
-    }
-    defaultValue
-  }
+object KafkaStructuredStreamProviderService {
+  val READ_VALUE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("read.value.serializer")
+    .description("the serializer to use to deserialize value of topic messages as record")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+    .defaultValue(NO_SERIALIZER.getValue)
+    .build
 
+  val AVRO_READ_VALUE_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("read.value.schema")
+    .description("the avro schema definition")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
 
+  val WRITE_VALUE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("write.value.serializer")
+    .description("the serializer to use to serialize records into value topic messages")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+    .defaultValue(NO_SERIALIZER.getValue)
+    .build
+
+  val AVRO_WRITE_VALUE_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("write.value.schema")
+    .description("the avro schema definition")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val WRITE_KEY_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("write.key.serializer")
+    .description("The key serializer to use")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+    .defaultValue(NO_SERIALIZER.getValue)
+    .build
 }

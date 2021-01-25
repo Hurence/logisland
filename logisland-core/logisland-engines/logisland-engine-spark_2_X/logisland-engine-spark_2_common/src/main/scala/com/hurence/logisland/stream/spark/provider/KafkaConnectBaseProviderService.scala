@@ -26,7 +26,7 @@ import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamProviderServiceReader, StructuredStreamProviderServiceWriter}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.streaming.DataStreamWriter
+import org.apache.spark.sql.streaming.{DataStreamWriter, StreamingQuery}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 class KafkaConnectBaseProviderService extends AbstractControllerService
@@ -92,10 +92,9 @@ class KafkaConnectBaseProviderService extends AbstractControllerService
       * create a streaming DataFrame that represents data received
       *
       * @param spark
-      * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def read(spark: SparkSession, streamContext: StreamContext): Dataset[Record] = {
+    override def read(spark: SparkSession): Dataset[Record] = {
         throw new UnsupportedOperationException("Operation not supported. Please be sure to use the right component")
     }
 
@@ -103,10 +102,9 @@ class KafkaConnectBaseProviderService extends AbstractControllerService
     /**
       * create a streaming DataFrame that represents data to be written
       *
-      * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): StreamingQuery = {
         throw new UnsupportedOperationException("Operation not supported. Please be sure to use the right component")
     }
 

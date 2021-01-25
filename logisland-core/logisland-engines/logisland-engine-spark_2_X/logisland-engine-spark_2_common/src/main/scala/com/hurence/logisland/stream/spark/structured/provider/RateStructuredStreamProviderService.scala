@@ -179,10 +179,9 @@ class RateStructuredStreamProviderService extends AbstractControllerService
     * create a streaming DataFrame that represents data received
     *
     * @param spark
-    * @param streamContext
     * @return DataFrame currently loaded
     */
-  override def read(spark: SparkSession, streamContext: StreamContext) = {
+  override def read(spark: SparkSession) = {
     import spark.implicits._
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
