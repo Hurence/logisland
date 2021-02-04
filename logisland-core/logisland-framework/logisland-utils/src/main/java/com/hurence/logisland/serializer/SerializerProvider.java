@@ -25,6 +25,7 @@ public class SerializerProvider {
 
     private static ComponentLog logger = new StandardComponentLogger("serializerProvider", SerializerProvider.class);
     private static String AVRO_SERIALIZER = AvroSerializer.class.getName();
+    private static String CONFLUENT_SERIALIZER = ConfluentSerializer.class.getName();
     private static String JSON_SERIALIZER = JsonSerializer.class.getName();
     private static String EXTENDED_JSON_SERIALIZER = ExtendedJsonSerializer.class.getName();
 
@@ -50,6 +51,8 @@ public class SerializerProvider {
                 Schema.Parser parser = new Schema.Parser();
                 Schema schema = parser.parse(schemaContent);
                 return new AvroSerializer(schema);
+            } else if (inSerializerClass.equals(CONFLUENT_SERIALIZER)) {
+                return new ConfluentSerializer(schemaContent);
             } else if (inSerializerClass.equals(JSON_SERIALIZER)) {
                 return new JsonSerializer();
             } else if (inSerializerClass.equals(EXTENDED_JSON_SERIALIZER)) {
@@ -63,6 +66,29 @@ public class SerializerProvider {
             } else if (inSerializerClass.equals(STRING_SERIALIZER)) {
                 return new StringSerializer();
             } else {
+                return new NoopSerializer();
+            }
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, e.toString());
+            return new NoopSerializer();
+        }
+
+    }
+
+    /**
+     * build a serializer
+     *
+     * @param inSerializerClass the serializer type
+     * @param schemaUrl     the schema url for the registry
+     * @param schema     Confluent Avro schema
+     * @return the serializer
+     */
+    public static RecordSerializer  getSerializer(final String inSerializerClass, final String schemaUrl, Schema schema) {
+
+        try {
+            if (inSerializerClass.equals(CONFLUENT_SERIALIZER)) {
+                return new ConfluentSerializer(schemaUrl,schema);
+            }else {
                 return new NoopSerializer();
             }
         } catch (Exception e) {

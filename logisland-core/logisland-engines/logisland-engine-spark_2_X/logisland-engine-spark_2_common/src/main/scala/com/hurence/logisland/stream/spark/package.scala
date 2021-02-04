@@ -108,6 +108,29 @@ object StreamProperties {
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .build
 
+  val AVRO_SCHEMA_NAME: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("avro.schema.name")
+    .description("The avro schema name to get in the schema registry")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val AVRO_SCHEMA_URL: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("avro.schema.url")
+    .description("The avro schema url for the schema registry")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val AVRO_SCHEMA_VERSION: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("avro.schema.version")
+    .description("The avro schema version to use for the schema registry")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+
+
   val AVRO_OUTPUT_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("avro.output.schema")
     .description("the avro schema definition for the output serialization")
@@ -117,6 +140,8 @@ object StreamProperties {
 
   val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName,
     "avro serialization", "serialize events as avro blocs")
+  val CONFLUENT_SERIALIZER = new AllowableValue(classOf[ConfluentSerializer].getName,
+    "confluent avro serialization", "serialize events as confluent avro blocs")
   val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName,
     "json serialization", "serialize events as json blocs")
   val EXTENDED_JSON_SERIALIZER = new AllowableValue(classOf[ExtendedJsonSerializer].getName,
@@ -136,7 +161,7 @@ object StreamProperties {
     .description("")
     .required(false)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER,CONFLUENT_SERIALIZER)
     .defaultValue(KRYO_SERIALIZER.getValue)
     .build
 

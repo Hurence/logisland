@@ -38,8 +38,9 @@ engine:
       type: service
       documentation: elasticsearch service implementation
       configuration:
-        hosts: "opendistro-es-discovery.hdp-storage:9300"
-        cluster.name: opendistro-es
+        hosts: opendistro-es-client-service.hdp-storage:9200
+        username: admin
+        password: admin
         batch.size: 2000
         flush.interval: 2
 
@@ -54,224 +55,12 @@ engine:
         kafka.input.topics: divolte.events.hurence
         kafka.output.topics: logisland.events.hurence
         kafka.error.topics: logisland.errors.hurence
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.AvroSerializer
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.ConfluentSerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        avro.input.schema: >
-          {
-            "type": "record",
-            "namespace": "net.hurence.hdp.divolte.record",
-            "name": "WebeventRecord",
-            "fields": [
-              // simple fields
-              { "name": "applicationId",        "type": "string" },
-              { "name": "tenantId",             "type": "string" },
-              { "name": "firstInSession",       "type": "boolean" },
-              { "name": "timestamp",            "type": "long" },
-              { "name": "clientTimestamp",      "type": "long" },
-              { "name": "remoteHost",           "type": "string" },
-              { "name": "xForwardedFor",
-                "type": [
-                    "null",
-                    { "type": "array", 
-                      "items": { "name": "ip", "type": "string" } 
-                    }],
-                "default": null },
-
-              // URL fields
-              { "name": "referer",              "type": ["null", "string"], "default": null },
-              { "name": "location",             "type": "string" },
-              { "name": "validDomain",          "type": "string" },
-
-              // event detection fields
-              { "name": "detectedCorruption",   "type": "boolean" },
-              { "name": "detectedDuplicate",    "type": "boolean" },
-              { "name": "eventType",            "type": ["null", "string"], "default": null },
-              
-              // pixel fields
-              { "name": "viewportPixelWidth",   "type": ["null", "int"],    "default": null },
-              { "name": "viewportPixelHeight",  "type": ["null", "int"],    "default": null },
-              { "name": "screenPixelWidth",     "type": ["null", "int"],    "default": null },
-              { "name": "screenPixelHeight",    "type": ["null", "int"],    "default": null },
-              { "name": "devicePixelRatio",     "type": ["null", "int"],    "default": null },
-
-              // identifier fields
-              { "name": "partyId",              "type": ["null", "string"], "default": null },
-              { "name": "sessionId",            "type": ["null", "string"], "default": null },
-              { "name": "pageViewId",           "type": ["null", "string"], "default": null },
-              { "name": "eventId",              "type": ["null", "string"], "default": null },
-
-              // userAgent fields
-              { "name": "userAgent",                   "type": ["null", "string"], "default": null },
-              { "name": "userAgentName",               "type": ["null", "string"], "default": null },
-              { "name": "userAgentFamily",             "type": ["null", "string"], "default": null },
-              { "name": "userAgentVendor",             "type": ["null", "string"], "default": null },
-              { "name": "userAgentType",               "type": ["null", "string"], "default": null },
-              { "name": "userAgentVersion",            "type": ["null", "string"], "default": null },
-              { "name": "userAgentDeviceCategory",     "type": ["null", "string"], "default": null },
-              { "name": "userAgentOsFamily",           "type": ["null", "string"], "default": null },
-              { "name": "userAgentOsVersion",          "type": ["null", "string"], "default": null },
-              { "name": "userAgentOsVendor",           "type": ["null", "string"], "default": null },
-
-              // ip2geo fields
-              { "name": "ip2geoEnabled",               "type": "string" },
-              { "name": "cityId",                      "type": ["null", "int"],    "default": null },
-              { "name": "cityName",                    "type": ["null", "string"], "default": null },
-              { "name": "continentCode",               "type": ["null", "string"], "default": null },
-              { "name": "continentId",                 "type": ["null", "int"],    "default": null },
-              { "name": "continentName",               "type": ["null", "string"], "default": null },
-              { "name": "countryCode",                 "type": ["null", "string"], "default": null },
-              { "name": "countryId",                   "type": ["null", "int"],    "default": null },
-              { "name": "countryName",                 "type": ["null", "string"], "default": null },
-              { "name": "latitude",                    "type": ["null", "double"], "default": null },
-              { "name": "longitude",                   "type": ["null", "double"], "default": null },
-              { "name": "metroCode",                   "type": ["null", "int"],    "default": null },
-              { "name": "timeZone",                    "type": ["null", "string"], "default": null },
-              { "name": "mostSpecificSubdivisionCode", "type": ["null", "string"], "default": null },
-              { "name": "mostSpecificSubdivisionId",   "type": ["null", "int"],    "default": null },
-              { "name": "mostSpecificSubdivisionName", "type": ["null", "string"], "default": null },
-              { "name": "postalCode",                  "type": ["null", "string"], "default": null },
-              { "name": "subdivisionCodes",
-                "type": [
-                  "null", 
-                  { "type": "array", 
-                    "items": { "name": "subdivisionCode", "type": "string" }
-                  }],
-                "default": null },
-              { "name": "subdivisionIds",
-                "type": [
-                  "null", 
-                  { "type": "array", 
-                    "items": { "name": "subdivisionId", "type": "int" }
-                  }],
-                "default": null },
-              { "name": "subdivisionNames",
-                "type": [
-                  "null", 
-                  { "type": "array", 
-                    "items": { "name": "subdivisionName", "type": "string" }
-                  }],
-                "default": null },
-              
-              // Pagetype detection
-              { "name": "locationPath",            "type": ["null", "string"], "default": null },
-              { "name": "locationQueryString",     "type": ["null", "string"], "default": null },
-              { "name": "searchPhrase",            "type": ["null", "string"], "default": null },
-              { "name": "pageType",                "type": ["null", "string"], "default": null },
-              
-              // simple parameter fields
-              { "name": "tagName",                 "type": ["null", "string"], "default": null },
-              { "name": "hitType",                 "type": ["null", "string"], "default": null },
-              { "name": "clickTarget",             "type": ["null", "string"], "default": null },
-              { "name": "clickText",               "type": ["null", "string"], "default": null },
-              { "name": "clickUrl",                "type": ["null", "string"], "default": null },
-              { "name": "scrollThreshold",         "type": ["null", "int"],    "default": null },
-              { "name": "scrollUnits",             "type": ["null", "string"], "default": null },
-              { "name": "scrollDirection",         "type": ["null", "string"], "default": null },
-              { "name": "timePageOpen",            "type": ["null", "long"],   "default": null },
-              { "name": "userId",                  "type": ["null", "string"], "default": null },
-              
-              // fields specific to Google analytics + field for the name of the tag
-              { "name": "gtmStart",                "type": ["null", "long"],   "default": null },
-              { "name": "gtmTimerId",              "type": ["null", "long"],   "default": null },
-              { "name": "gtmTimerEventNumber",     "type": ["null", "long"],   "default": null },
-              { "name": "gtmTimerInterval",        "type": ["null", "long"],   "default": null },
-              { "name": "gtmTimerElapsedTime",     "type": ["null", "long"],   "default": null },
-              { "name": "gtmTimerStartTime",       "type": ["null", "long"],   "default": null },
-              { "name": "gtmTimerCurrentTime",     "type": ["null", "long"],   "default": null },
-              { "name": "eventValue",              "type": ["null", "string"], "default": null },
-              { "name": "eventCategory",           "type": ["null", "string"], "default": null },
-              { "name": "eventAction",             "type": ["null", "string"], "default": null },
-              { "name": "eventLabel",              "type": ["null", "string"], "default": null },
-              { "name": "socialAction",            "type": ["null", "string"], "default": null },
-              { "name": "socialNetwork",           "type": ["null", "string"], "default": null },
-              { "name": "socialActionTarget",      "type": ["null", "string"], "default": null },
-              { "name": "timingLabel",             "type": ["null", "string"], "default": null },
-              { "name": "timingCategory",          "type": ["null", "string"], "default": null },
-              { "name": "timingVar",               "type": ["null", "string"], "default": null },
-              { "name": "timingValue",             "type": ["null", "string"], "default": null },
-          
-              // SEO fields
-              { "name": "itemListIndex",           "type": ["null", "int"],    "default": null },
-              { "name": "itemListPage",            "type": ["null", "int"],    "default": null },
-                
-              // custom parameters
-              { "name": "customizationEnabled",    "type": "string" },
-              { "name": "hdpCustom",               
-                "type": [
-                  "null",
-                  { "type": "map",
-                    "values": { "type": "string" }
-                  }],
-                "default": null },
-              
-              // intranet tagging
-              { "name": "intranetTagging",         "type": "string" },
-              { "name": "intranetIp",              "type": "string" },
-
-              // ecommerce fields
-              { "name": "ecommerceEnabled",        "type": "string" },
-              { "name": "itemId",                  "type": ["null", "string"], "default": null },
-              { "name": "itemCanonicalUrl",        "type": ["null", "string"], "default": null },
-              { "name": "itemPrice",               "type": ["null", "float"],  "default": null },
-              { "name": "discountedPrice",         "type": ["null", "float"],  "default": null },
-              { "name": "itemQuantity",            "type": ["null", "int"],    "default": null },
-              
-              { "name": "currentCart",
-                "type": [
-                  "null", 
-                  { "type": "array", 
-                    "items": { 
-                      "name": "item", 
-                      "type": "record", 
-                      "fields": [
-                        { "name": "price", "type": "double" },
-                        { "name": "quantity", "type": "int" },
-                        { "name": "sku", "type": "string" }
-                      ]
-                    }
-                  }],
-                "default": null },
-
-              { "name": "checkoutId",              "type": ["null", "string"], "default": null },
-              { "name": "checkoutTotal",           "type": ["null", "float"],  "default": null },
-              { "name": "discountedTotal",         "type": ["null", "float"],  "default": null },
-              { "name": "shippingCost",            "type": ["null", "float"],  "default": null },
-              { "name": "checkoutCurrency",        "type": ["null", "string"], "default": null },
-              
-              { "name": "itemAttributes",               
-                "type": [
-                  "null",
-                  { "type": "map",
-                    "values": { "type": "string" }
-                  }],
-                "default": null },
-
-              // media fields
-              { "name": "mediaEnabled",            "type": "string" },
-              { "name": "mediaEvent",              "type": ["null", "string"], "default": null },
-              { "name": "mediaPlayer",             "type": ["null", "string"], "default": null },
-              { "name": "mediaUrl",                "type": ["null", "string"], "default": null },
-              { "name": "mediaPublisher",          "type": ["null", "string"], "default": null },
-              { "name": "mediaTitle",              "type": ["null", "string"], "default": null },
-              { "name": "mediaId",                 "type": ["null", "string"], "default": null },
-
-              { "name": "mediaDuration",           "type": ["null", "long"], "default": null },
-              { "name": "mediaCurrentTime",        "type": ["null", "long"], "default": null },
-              { "name": "mediaElapsedTime",        "type": ["null", "long"], "default": null },
-              { "name": "mediaPercent",            "type": ["null", "int"],  "default": null },
-            
-              { "name": "mediaAttributes",               
-                "type": [
-                  "null",
-                  { "type": "map",
-                    "values": { "type": "string" }
-                  }],
-                "default": null }
-
-              // merchandising fields
-            ]
-          }
+        avro.schema.url: "http://avro-schema-registry.hdp-storage:5000"
+        avro.schema.name: "divolte.events.hurence"
+        avro.schema.version: 1
         kafka.metadata.broker.list: "hdp-kafka-brokers.hdp-storage:9092"
         kafka.zookeeper.quorum: "hdp-zookeeper-nodes.hdp-storage:2181"
         kafka.topic.autoCreate: false
@@ -280,6 +69,19 @@ engine:
 #        kafka.manual.offset.reset: smallest
 
       processorConfigurations:
+        - processor: clean_location
+          component: com.hurence.logisland.processor.RemoveFields
+          type: processor
+          documentation: Clean the location
+          configuration:
+            fields.to.remove: location
+
+        - processor: Websession_index_name
+          component: com.hurence.logisland.processor.AddFields
+          type: processor
+          documentation: a processor that specifies the name of the websession elasticsearch index into a field used by the BulkAdd processor afterward.
+          configuration:
+            websessionIndex: ${'openanalytics_websessions.' + new java.text.SimpleDateFormat('yyyy.MM').format(new java.util.Date(timestamp));}
 
         # put to elasticsearch
         - processor: es_publisher

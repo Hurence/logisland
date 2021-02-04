@@ -34,7 +34,6 @@ package com.hurence.logisland.stream.spark
 import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
-
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
@@ -46,6 +45,7 @@ import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark._
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
+import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.TopicPartition
@@ -84,6 +84,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
     descriptors.add(INPUT_TOPICS)
     descriptors.add(OUTPUT_TOPICS)
     descriptors.add(AVRO_INPUT_SCHEMA)
+    descriptors.add(AVRO_SCHEMA_NAME)
+    descriptors.add(AVRO_SCHEMA_URL)
+    descriptors.add(AVRO_SCHEMA_VERSION)
     descriptors.add(AVRO_OUTPUT_SCHEMA)
     descriptors.add(INPUT_SERIALIZER)
     descriptors.add(OUTPUT_SERIALIZER)
@@ -122,7 +125,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
 
     try {
 
-      // Define the Kafka parameters, broker list must be specified
+      // Define the Kafka parameters, broker list must be spedeserializingcified
       val inputTopics = streamContext.getPropertyValue(INPUT_TOPICS).asString.split(",").toSet
       val outputTopics = streamContext.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
       val errorTopics = streamContext.getPropertyValue(ERROR_TOPICS).asString.split(",").toSet
@@ -291,6 +294,19 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
     SerializerProvider.getSerializer(inSerializerClass, schemaContent)
   }
 
+
+  /**
+   * build a serializer
+   *
+   * @param inSerializerClass the serializer type
+   * @param schemaUrl     url for the schema
+   * @param schema the AVRO Schema
+   * @return the serializer
+   */
+  def getSerializer(inSerializerClass: String, schemaUrl: String, schema: Schema ): RecordSerializer = {
+    SerializerProvider.getSerializer(inSerializerClass, schemaUrl, schema)
+  }
+
   /**
     *
     * @param partition
@@ -303,7 +319,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
         val bais = new ByteArrayInputStream(rawEvent.value())
         val deserialized = serializer.deserialize(bais)
         bais.close()
-
         Some(deserialized)
       } catch {
         case t: Throwable =>
