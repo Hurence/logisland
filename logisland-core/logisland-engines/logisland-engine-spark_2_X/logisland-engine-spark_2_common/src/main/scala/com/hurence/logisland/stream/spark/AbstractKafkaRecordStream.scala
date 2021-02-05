@@ -294,19 +294,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
     SerializerProvider.getSerializer(inSerializerClass, schemaContent)
   }
 
-
-  /**
-   * build a serializer
-   *
-   * @param inSerializerClass the serializer type
-   * @param schemaUrl     url for the schema
-   * @param schema the AVRO Schema
-   * @return the serializer
-   */
-  def getSerializer(inSerializerClass: String, schemaUrl: String, schema: Schema ): RecordSerializer = {
-    SerializerProvider.getSerializer(inSerializerClass, schemaUrl, schema)
-  }
-
   /**
     *
     * @param partition

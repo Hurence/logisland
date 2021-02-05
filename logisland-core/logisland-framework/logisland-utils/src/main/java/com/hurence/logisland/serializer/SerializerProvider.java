@@ -74,27 +74,4 @@ public class SerializerProvider {
         }
 
     }
-
-    /**
-     * build a serializer
-     *
-     * @param inSerializerClass the serializer type
-     * @param schemaUrl     the schema url for the registry
-     * @param schema     Confluent Avro schema
-     * @return the serializer
-     */
-    public static RecordSerializer  getSerializer(final String inSerializerClass, final String schemaUrl, Schema schema) {
-
-        try {
-            if (inSerializerClass.equals(CONFLUENT_SERIALIZER)) {
-                return new ConfluentSerializer(schemaUrl,schema);
-            }else {
-                return new NoopSerializer();
-            }
-        } catch (Exception e) {
-            logger.log(LogLevel.ERROR, e.toString());
-            return new NoopSerializer();
-        }
-
-    }
 }

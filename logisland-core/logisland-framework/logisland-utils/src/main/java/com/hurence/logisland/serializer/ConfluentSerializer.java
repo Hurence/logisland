@@ -82,7 +82,6 @@ public class ConfluentSerializer implements RecordSerializer {
     public ConfluentSerializer(String schemaUrl,Schema schemaInput){
         try {
             CachedSchemaRegistryClient schemaRegistryClient  = new CachedSchemaRegistryClient(schemaUrl, 10);
-            schemaRegistryClient.getAllSubjects().forEach(System.out::println);
             deserializer = new KafkaAvroDeserializer(schemaRegistryClient);
             serializer = new KafkaAvroSerializer(schemaRegistryClient);
             schema = schemaInput;

@@ -34,7 +34,6 @@ import java.util
 import java.util.Collections
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
-import com.hurence.logisland.serializer.RecordSerializer
 import com.hurence.logisland.util.record.RecordSchemaUtil
 import com.hurence.logisland.util.spark.ProcessorMetrics
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -47,7 +46,6 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 import com.hurence.logisland.stream.StreamProperties._
-import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 
 
 class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
@@ -84,31 +82,26 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val pipelineMetricPrefix = streamContext.getIdentifier + "." +
                             "partition" + partitionId + "."
                         val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms" ).time()
-                        //var inputSchema = ""
-/*
+                        var inputSchema = ""
+
                         if (!streamContext.getProperty(AVRO_SCHEMA_NAME).isEmpty
                           && !streamContext.getProperty(AVRO_SCHEMA_VERSION).isEmpty
-                            && !streamContext.getProperty(AVRO_SCHEMA_URL).isEmpty){*/
+                            && !streamContext.getProperty(AVRO_SCHEMA_URL).isEmpty){
 
                           val schemaUrl = streamContext.getPropertyValue(AVRO_SCHEMA_URL).asString
                           val schemaName = streamContext.getPropertyValue(AVRO_SCHEMA_NAME).asString
                           val schemaVersion = streamContext.getPropertyValue(AVRO_SCHEMA_VERSION).asInteger
-                          logger.info("Using schema " + schemaName + " with version " + schemaVersion + " from schema registry " +schemaUrl)
-                          val  schemaRegistryClient  = new CachedSchemaRegistryClient(schemaUrl,10)
-                          val schema = schemaRegistryClient.getBySubjectAndID(schemaName,schemaVersion)
-                          val deserializer = getSerializer(
-                            streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                            schemaUrl,schema)
+                          inputSchema = "{\"schemaName\":\"" + schemaName + "\"," + "\"schemaUrl\":\"" + schemaUrl + "\"," + "\"schemaVersion\":" +schemaVersion+ "}"
+                          logger.info("Using schema json " + inputSchema)
 
-                      //}
+                      }else {inputSchema = streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString}
                         /**
                           * create serializers
                           */
-/*
+
                          val deserializer = getSerializer(
                             streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                           streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
-*/
+                           inputSchema)
                         val serializer = getSerializer(
                             streamContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
                             streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
