@@ -34,6 +34,7 @@ package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.record.Record;
+import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -79,12 +80,16 @@ public class ConfluentSerializer implements RecordSerializer {
         }
 
     }
-    public ConfluentSerializer(String schemaUrl,Schema schemaInput){
-        try {
-            CachedSchemaRegistryClient schemaRegistryClient  = new CachedSchemaRegistryClient(schemaUrl, 10);
+
+
+//for unit test purposes
+   public ConfluentSerializer(MockSchemaRegistryClient schemaRegistryClient, final InputStream inputStream){
+       assert inputStream != null;
+       final Schema.Parser parser = new Schema.Parser();
+       try {
             deserializer = new KafkaAvroDeserializer(schemaRegistryClient);
             serializer = new KafkaAvroSerializer(schemaRegistryClient);
-            schema = schemaInput;
+           schema = parser.parse(inputStream);
         } catch (Exception e) {
             logger.error("Error initalizing schema registry", e);
             throw new RuntimeException(e);
@@ -95,7 +100,12 @@ public class ConfluentSerializer implements RecordSerializer {
 
     @Override
     public void serialize(OutputStream objectDataOutput, Record record) throws RecordSerializationException {
-        throw new  RecordSerializationException(" Serialization not implemented");
+        byte[] bytes = serializer.serialize(schema.getFullName(),record);
+        try {
+            objectDataOutput.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
