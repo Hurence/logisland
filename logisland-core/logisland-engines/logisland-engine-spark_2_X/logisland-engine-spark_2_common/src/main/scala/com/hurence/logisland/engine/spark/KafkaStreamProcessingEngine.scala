@@ -72,7 +72,7 @@ object KafkaStreamProcessingEngine {
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
         .description("The url to Spark Master")
-        .required(true)
+        .required(false)
         // The regex allows "local[K]" with K as an integer,  "local[*]", "yarn", "yarn-client", "yarn-cluster" and "spark://HOST[:PORT]"
         // there is NO support for "mesos://HOST:PORT"
         .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile(
@@ -87,7 +87,7 @@ object KafkaStreamProcessingEngine {
     val SPARK_APP_NAME = new PropertyDescriptor.Builder()
         .name("spark.app.name")
         .description("Tha application name")
-        .required(true)
+        .required(false)
         .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^[a-zA-z0-9-_\\.]+$")))
         .defaultValue("logisland")
         .build

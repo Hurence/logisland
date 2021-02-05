@@ -12,13 +12,13 @@ engine:
   type: engine
   documentation: Hurence Analytics - Create consolidate sessions object
   configuration:
-    spark.app.name: feed-ES
-    spark.master: local[*]
+    #spark.app.name: feed-ES
+    #spark.master: local[*]
     # spark.deploy-mode: { { .Values.spark.deploy.mode } }
-    spark.executor.cores: 1
+    #spark.executor.cores: 1
     # spark.total.executor.cores: { { .Values.spark.totalExecutorCores } }
-    spark.driver.memory: 1g
-    spark.executor.memory: 1g
+    #spark.driver.memory: 1g
+    #spark.executor.memory: 1g
     spark.serializer: org.apache.spark.serializer.KryoSerializer
     spark.streaming.backpressure.enabled: true
     spark.streaming.unpersist: false
