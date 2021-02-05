@@ -125,7 +125,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
 
     try {
 
-      // Define the Kafka parameters, broker list must be spedeserializingcified
+      // Define the Kafka parameters, broker list must be specified
       val inputTopics = streamContext.getPropertyValue(INPUT_TOPICS).asString.split(",").toSet
       val outputTopics = streamContext.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
       val errorTopics = streamContext.getPropertyValue(ERROR_TOPICS).asString.split(",").toSet
