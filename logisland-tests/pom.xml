@@ -12,7 +12,8 @@
     <artifactId>logisland-tests</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>webanal-spark-2.4-streaming-pipepline</module>
+        <module>webanal-spark-2.4-streaming-pipeline</module>
+        <module>webanal-spark-2.4-kafka0.10-streaming-pipeline</module>
     </modules>
 
 
