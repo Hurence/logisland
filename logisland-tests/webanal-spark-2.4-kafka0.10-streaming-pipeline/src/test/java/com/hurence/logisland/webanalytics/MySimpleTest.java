@@ -2,6 +2,7 @@ package com.hurence.logisland.webanalytics;
 
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.webanalytics.test.util.EventsGenerator;
+import com.hurence.logisland.webanalytics.util.KafkaUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -33,19 +34,18 @@ public class MySimpleTest {
             1, true, 2,
             topic1, topic2);
 
-//    /**
-//     *
-//     */
+    private static KafkaUtils kafkaUtils = new KafkaUtils(embeddedKafka);
+
     @Test
-    public void simpleTest2() throws Exception {
+    public void testWithEvent() throws Exception {
         logger.info("Starting test");
         EventsGenerator eventGen = new EventsGenerator("divolte_1");
         logger.info("Adding an event in topic");
 
         Record event = eventGen.generateEvent(0, "url");
-        addingEventsToTopicPartition(topic2, 0, event);
-        addingEventsToTopicPartition(topic2, 0, "session1", event);
-        addingEventsToTopicPartition(topic2, 0, "session2", event);
+        kafkaUtils.addingEventsToTopicPartition(topic2, 0, event);
+        kafkaUtils.addingEventsToTopicPartition(topic2, 0, "session1", event);
+        kafkaUtils.addingEventsToTopicPartition(topic2, 0, "session2", event);
 
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", embeddedKafka);
         consumerProps.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
@@ -109,35 +109,5 @@ public class MySimpleTest {
         });
 
         assertTrue(latch.await(90, TimeUnit.SECONDS));
-    }
-
-    private void addingEventsToTopicPartition(String topicName, int partitionId, Record record) throws InterruptedException {
-//        String key = record.getField(TestMappings.eventsInternalFields.getTimestampField()).asString();
-        String key = record.getField("ts").asString();
-        addingEventsToTopicPartition(topicName, partitionId, key, record);
-    }
-
-    private void addingEventsToTopicPartition(String topicName, int partitionId, String key, Record record) throws InterruptedException {
-        // Define the record we want to produce
-        final ProducerRecord<String, Record> producerRecord = new ProducerRecord<String, Record>(
-                topicName,
-                partitionId,
-                key,
-                record
-        );
-
-        Map<String, Object> senderProps = KafkaTestUtils.producerProps(embeddedKafka);
-        senderProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        senderProps.put("value.serializer", "com.hurence.logisland.serializer.KafkaRecordSerializer");
-        try (final KafkaProducer<String, Record> producer = new KafkaProducer<>(senderProps)) {
-            final Future<RecordMetadata> future = producer.send(producerRecord);
-            producer.flush();
-            while (!future.isDone()) {
-                Thread.sleep(500L);
-            }
-            logger.trace("Produce completed:{}", producerRecord);
-        }  catch (Exception e) {
-            logger.error("error while sending data to kafka", e);
-        }
     }
 }

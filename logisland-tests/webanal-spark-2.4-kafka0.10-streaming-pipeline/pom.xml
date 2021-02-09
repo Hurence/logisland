@@ -52,12 +52,6 @@
             <artifactId>logisland-engine-spark_2_4</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-            <exclusions>
-<!--                <exclusion>-->
-<!--                    <groupId></groupId>-->
-<!--                    <artifactId></artifactId>-->
-<!--                </exclusion>-->
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -91,24 +85,6 @@
             <artifactId>spark-sql-kafka-${kafka.spark.version}_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.spark</groupId>-->
-<!--            <artifactId>spark-streaming_${scala.binary.version}</artifactId>-->
-<!--            <version>${spark.version}</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.spark</groupId>-->
-<!--            <artifactId>spark-core_${scala.binary.version}</artifactId>-->
-<!--            <version>${spark.version}</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
-        <!--        <dependency>-->
-<!--            <groupId>org.apache.spark</groupId>-->
-<!--            <artifactId>spark-streaming-kafka-${kafka.spark.version}_${scala.binary.version}</artifactId>-->
-<!--            <version>${spark.version}</version>-->
-<!--        </dependency>-->
-
 
 <!--        Library to test with embedded kafka for version 0.10.X -->
         <dependency>
@@ -138,5 +114,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>
