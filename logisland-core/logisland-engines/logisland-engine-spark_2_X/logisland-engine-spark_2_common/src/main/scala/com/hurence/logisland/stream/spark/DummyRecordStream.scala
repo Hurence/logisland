@@ -43,9 +43,9 @@ class DummyRecordStream extends AbstractRecordStream with SparkRecordStream {
       * init the stream with spark streaming context
       *
       */
-    override def init(context: SparkStreamContext): Unit = {
-        super.init(context.asInstanceOf[ComponentContext])
-        streamingContext = context.ssc
+    override def init(sparkStreamContext: SparkStreamContext): Unit = {
+        super.init(sparkStreamContext.streamingContext)
+        streamingContext = sparkStreamContext.ssc
     }
 
     override def start(): Unit = {

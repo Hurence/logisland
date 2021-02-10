@@ -72,8 +72,7 @@ public final class ComponentFactory {
                         }
                     });
 
-            ((AbstractConfigurableComponent) engine).init(engineContext);
-
+            engine.init(engineContext);
             logger.info("created engine {} with id {}", configuration.getComponent(), currentId.get());
 
 
@@ -105,6 +104,7 @@ public final class ComponentFactory {
             // set the config properties
             configuration.getConfiguration()
                     .entrySet().forEach(e -> instance.setProperty(e.getKey(), e.getValue()));
+
             logger.info("created stream {} with id {}", configuration.getComponent(), configuration.getStream());
             return Optional.of(instance);
 

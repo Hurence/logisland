@@ -197,7 +197,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming_${scala.binary.version}</artifactId>
             <scope>provided</scope>
-
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>

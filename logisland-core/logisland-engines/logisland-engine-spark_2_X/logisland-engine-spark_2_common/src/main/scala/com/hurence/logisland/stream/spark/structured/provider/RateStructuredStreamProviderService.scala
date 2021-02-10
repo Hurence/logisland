@@ -85,14 +85,6 @@ class RateStructuredStreamProviderService extends AbstractControllerService
     .required(true)
     .build
 
-  val HAS_CSV_HEADER: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("has.csv.header")
-    .description("Is this a csv file with the first line as a header")
-    .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-    .required(false)
-    .defaultValue("true")
-    .build
-
   val CSV_DELIMITER: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("csv.delimiter")
     .description("the delimiter")
@@ -100,14 +92,6 @@ class RateStructuredStreamProviderService extends AbstractControllerService
     .required(false)
     .defaultValue(",")
     .build
-
-  val LOCAL_FILE_OUTPUT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("local.file.output.path")
-    .description("the location of the file to be writen")
-    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-    .required(false)
-    .build
-
 
   var recordSeq:Seq[Record] = _
 
@@ -167,10 +151,7 @@ class RateStructuredStreamProviderService extends AbstractControllerService
     */
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-
     descriptors.add(LOCAL_FILE_INPUT_PATH)
-    descriptors.add(LOCAL_FILE_OUTPUT_PATH)
-    descriptors.add(HAS_CSV_HEADER)
     descriptors.add(CSV_DELIMITER)
     Collections.unmodifiableList(descriptors)
   }
@@ -184,10 +165,6 @@ class RateStructuredStreamProviderService extends AbstractControllerService
   override def read(spark: SparkSession) = {
     import spark.implicits._
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-
-   // val headers = records.iterator.next.toMap.keySet
-
-
 
     recordSeq.toDS()
   }

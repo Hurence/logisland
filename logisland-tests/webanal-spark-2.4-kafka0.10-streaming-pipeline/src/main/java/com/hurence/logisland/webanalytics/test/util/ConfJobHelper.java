@@ -1,6 +1,7 @@
 package com.hurence.logisland.webanalytics.test.util;
 
 import com.hurence.logisland.component.ComponentFactory;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.config.LogislandConfiguration;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 public class ConfJobHelper {
 
@@ -35,16 +37,19 @@ public class ConfJobHelper {
         service.getConfiguration().putAll(confToModify);
     }
 
-    public void initEngineContext() {
-        this.engineContext = ComponentFactory.getEngineContext(jobConfig.getEngine())
-                .orElseThrow(() -> new IllegalArgumentException("engineInstance could not be instantiated"));
-        if (!engineContext.isValid()) {
+    public void initJob() throws InitializationException {
+        // instantiate engine and all the processor from the config
+        // this init the engine
+        Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(jobConfig.getEngine());
+        if (!engineInstance.isPresent()) {
+            throw new IllegalArgumentException("engineInstance could not be instantiated");
+        }
+        if (!engineInstance.get().isValid()) {
             throw new IllegalArgumentException("engineInstance is not valid with input configuration !");
         }
-    }
-
-    public EngineContext getEngineContext() {
-        return engineContext;
+        engineContext = engineInstance.get();
+        logger.info("Initialized Logisland job version {}", jobConfig.getVersion());
+        logger.info(jobConfig.getDocumentation());
     }
 
     public void startJob() {

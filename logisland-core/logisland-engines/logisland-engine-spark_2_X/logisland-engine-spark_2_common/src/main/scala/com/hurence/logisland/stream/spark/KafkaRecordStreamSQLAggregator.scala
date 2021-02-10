@@ -61,10 +61,10 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
             // this is used to implicitly convert an RDD to a DataFrame.
             @transient lazy val deserializer = getSerializer(
-                streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                sparkStreamContext.streamingContext.getPropertyValue(INPUT_SERIALIZER).asString,
+                sparkStreamContext.streamingContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 
-            val inputTopics = streamContext.getPropertyValue(INPUT_TOPICS).asString
+            val inputTopics = sparkStreamContext.streamingContext.getPropertyValue(INPUT_TOPICS).asString
 
             //here how to handle elements that are not successfully deserialized ???
             //currently we lose them !
@@ -76,7 +76,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
               */
             val schema = try {
                 val parser = new Schema.Parser
-                val schema = parser.parse(streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                val schema = parser.parse(sparkStreamContext.streamingContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
                 SparkUtils.convertAvroSchemaToDataframeSchema(schema)
             }
             catch {
@@ -96,8 +96,8 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
 
 
-                val query = streamContext.getPropertyValue(SQL_QUERY).asString()
-                val outputRecordType = streamContext.getPropertyValue(OUTPUT_RECORD_TYPE).asString()
+                val query = sparkStreamContext.streamingContext.getPropertyValue(SQL_QUERY).asString()
+                val outputRecordType = sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_RECORD_TYPE).asString()
 
                 sqlContext.sql(query).rdd
                     .foreachPartition(rows => {
@@ -106,11 +106,11 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
                           * create serializers
                           */
                         val serializer = getSerializer(
-                            streamContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
-                            streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
+                            sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
+                            sparkStreamContext.streamingContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
                         val errorSerializer = getSerializer(
-                            streamContext.getPropertyValue(ERROR_SERIALIZER).asString,
-                            streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
+                            sparkStreamContext.streamingContext.getPropertyValue(ERROR_SERIALIZER).asString,
+                            sparkStreamContext.streamingContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
 
 
 
@@ -119,13 +119,13 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
                           * push outgoing events and errors to Kafka
                           */
                         kafkaSink.value.produce(
-                            streamContext.getPropertyValue(OUTPUT_TOPICS).asString,
+                            sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_TOPICS).asString,
                             outgoingEvents,
                             serializer
                         )
 
                         kafkaSink.value.produce(
-                            streamContext.getPropertyValue(ERROR_TOPICS).asString,
+                            sparkStreamContext.streamingContext.getPropertyValue(ERROR_TOPICS).asString,
                             outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERRORS)),
                             errorSerializer
                         )

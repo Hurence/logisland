@@ -40,12 +40,19 @@ engine:
 
   controllerServiceConfigurations:
 
+  # Kafka sink configuration
+#    - controllerService: kafka_service
+#      component: com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService
+#      configuration:
+#        local.input.path: "/tmp/test.csv"
+
+
     # Kafka sink configuration
     - controllerService: kafka_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
       configuration:
 #        output.mode: "complete"
-        kafka.input.topics: test-simple
+        kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_out
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: com.hurence.logisland.serializer.ExtendedJsonSerializer

@@ -112,6 +112,7 @@ public class StreamProcessingRunner {
             logger.info("Using checkpoint location: " + GlobalOptions.checkpointLocation);
 
             // instantiate engine and all the processor from the config
+            // This init the engine as well
             engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
             if (!engineInstance.isPresent()) {
                 throw new IllegalArgumentException("engineInstance could not be instantiated");

@@ -84,8 +84,8 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
             // this is used to implicitly convert an RDD to a DataFrame.
 
             val deserializer = getSerializer(
-                streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                sparkStreamContext.streamingContext.getPropertyValue(INPUT_SERIALIZER).asString,
+                sparkStreamContext.streamingContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 
 
             val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
@@ -94,14 +94,14 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
             if (!records.isEmpty()) {
 
 
-                val sdf = new SimpleDateFormat(streamContext.getPropertyValue(DATE_FORMAT).asString)
+                val sdf = new SimpleDateFormat(sparkStreamContext.streamingContext.getPropertyValue(DATE_FORMAT).asString)
 
 
-                val numPartitions = streamContext.getPropertyValue(NUM_PARTITIONS).asInteger()
-                val outputFormat = streamContext.getPropertyValue(OUTPUT_FORMAT).asString()
-                val doExcludeErrors = streamContext.getPropertyValue(EXCLUDE_ERRORS).asBoolean()
-                val recordType = streamContext.getPropertyValue(RECORD_TYPE).asString()
-                val outPath = streamContext.getPropertyValue(OUTPUT_FOLDER_PATH).asString()
+                val numPartitions = sparkStreamContext.streamingContext.getPropertyValue(NUM_PARTITIONS).asInteger()
+                val outputFormat = sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_FORMAT).asString()
+                val doExcludeErrors = sparkStreamContext.streamingContext.getPropertyValue(EXCLUDE_ERRORS).asBoolean()
+                val recordType = sparkStreamContext.streamingContext.getPropertyValue(RECORD_TYPE).asString()
+                val outPath = sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_FOLDER_PATH).asString()
 
                 val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
                     .filter(r =>
@@ -122,7 +122,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
                 if (!records.isEmpty()) {
                     var df: DataFrame = null;
-                    val inputFormat = streamContext.getPropertyValue(INPUT_FORMAT).asString()
+                    val inputFormat = sparkStreamContext.streamingContext.getPropertyValue(INPUT_FORMAT).asString()
                     if (inputFormat.isEmpty) {
 
                         val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))

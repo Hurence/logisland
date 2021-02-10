@@ -24,5 +24,5 @@ trait SparkRecordStream extends RecordStream {
       * init the stream with spark streaming context
       *
       */
-    def init(context: SparkStreamContext): Unit
+    def init(sparkStreamContext: SparkStreamContext): Unit
 }

@@ -45,7 +45,7 @@ import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.sql.streaming.StreamingQueryListener
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
@@ -443,7 +443,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         }
 
-        @transient val sparkContext = getCurrentSparkContext()
+        val sparkContext = getCurrentSparkContext()
 
         UserMetricsSystem.initialize(sparkContext, "LogislandMetrics")
 
@@ -553,35 +553,45 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
       */
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
-        @transient val sc = getCurrentSparkContext()
-        @transient val ssc = getCurrentSparkStreamingContext(sc)
+        val sc = getCurrentSparkContext()
+        val ssc = getCurrentSparkStreamingContext(sc)
         val appName = sc.appName;
+        val spark = SparkSession.builder()
+          .config(ssc.sparkContext.getConf)
+          .getOrCreate()
 
         logger.info("broadCasting services")
-        controllerServiceLookupSink = ssc.sparkContext.broadcast(
+        controllerServiceLookupSink = spark.sparkContext.broadcast(
             ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
         )
         //TODO broadcast ProcessContexts ? Déplacer les broadcast dans init ?
+
         /**
           * loop over processContext
           */
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
                 val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
-                val sparkStreamContext = new SparkStreamContext(streamingContext, appName, ssc, controllerServiceLookupSink)
+                val sparkStreamContext = new SparkStreamContext(
+                    streamingContext,
+                    appName,
+                    ssc,
+                    spark,
+                    controllerServiceLookupSink
+                )
                 kafkaStream.init(sparkStreamContext)
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>
                     throw new IllegalStateException("something bad happened, please check Kafka or cluster health", ex)
             }
-
         })
+
 
         //TODO should ensure stream here are compatible with this engine. (They are SparkRecordStream) in
         // customValidate method of AbstractConfigurableComponent
         if (!engineContext.getStreamContexts.isEmpty) {
-            ssc.start()
+//            ssc.start()
         } else {
             logger.error("There is no stream to start ! This should never happen as configuration should be considered" +
             " wrong in this case, therefore code should never reach this code");

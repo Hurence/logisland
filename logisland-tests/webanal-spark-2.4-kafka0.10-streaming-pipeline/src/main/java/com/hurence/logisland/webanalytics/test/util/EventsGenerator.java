@@ -18,12 +18,9 @@ public class EventsGenerator {
 
     public Record generateEvent(long timestamp, String url) {
         Record record = new StandardRecord("generated");
-//        record.setStringField(TestMappings.eventsInternalFields.getSessionIdField(), sessionId);
-//        record.setLongField(TestMappings.eventsInternalFields.getTimestampField(), timestamp);
-//        record.setStringField(TestMappings.eventsInternalFields.getVisitedPageField(), url);
-        record.setStringField("sessionId", sessionId);
-        record.setLongField("ts", timestamp);
-        record.setStringField("TestMappings.eventsInternalFields.getVisitedPageField()", url);
+        record.setStringField(TestMappings.eventsInternalFields.getSessionIdField(), sessionId);
+        record.setLongField(TestMappings.eventsInternalFields.getTimestampField(), timestamp);
+        record.setStringField(TestMappings.eventsInternalFields.getVisitedPageField(), url);
         return record;
     }
 
