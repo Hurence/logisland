@@ -1,9 +1,9 @@
 package com.hurence.logisland.webanalytics;
 
-import com.hurence.logisland.bean.KeyValue;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.webanalytics.test.util.EventsGenerator;
 import com.hurence.logisland.webanalytics.util.KafkaUtils;
+import com.hurence.logisland.webanalytics.util.SparkMethods;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -20,10 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.test.rule.KafkaEmbedded;
 
-import java.io.Serializable;
-
 @Ignore
-public class SparkStreamingMultiSourceAndSinkTest implements Serializable {
+public class SparkStreamingMultiSourceAndSinkTest {
 
     private static Logger logger = LoggerFactory.getLogger(SparkStreamingMultiSourceAndSinkTest.class);
 
@@ -50,7 +48,6 @@ public class SparkStreamingMultiSourceAndSinkTest implements Serializable {
                 .getOrCreate();
         logger.info("Created SparkSession");
 
-
 //    // Subscribe to 1 topic
         Dataset<Row> df = spark
                 .readStream()
@@ -75,14 +72,8 @@ public class SparkStreamingMultiSourceAndSinkTest implements Serializable {
                         new StructField("counter", DataTypes.LongType, true, null)
                 }
         );
-        Dataset<Row> dataset = df.map(new MapFunction<Row, Row>() {
-                   @Override
-                   public Row call(Row row) throws Exception {
-                       KeyValue kv = new KeyValue(row.getString(0), row.getLong(1));
-                       logger.info("processing key {} with count {}", kv.key, kv.count);
-                       return row;
-                   }
-               }, RowEncoder.apply(schema));
+
+        Dataset<Row> dataset = df.map((MapFunction<Row, Row>) SparkMethods::mapRowIntoKeyValueRow, RowEncoder.apply(schema));
 
         logger.info("Start streaming");
         // Start running the query that prints the session updates to the console
@@ -158,14 +149,7 @@ public class SparkStreamingMultiSourceAndSinkTest implements Serializable {
                 }
         );
 
-        Dataset<Row> dataset = df.map(new MapFunction<Row, Row>() {
-            @Override
-            public Row call(Row row) throws Exception {
-                KeyValue kv = new KeyValue(row.getString(0), row.getLong(1));
-                logger.info("processing key {} with count {}", kv.key, kv.count);
-                return row;
-            }
-        }, RowEncoder.apply(schema));
+        Dataset<Row> dataset = df.map((MapFunction<Row, Row>) SparkMethods::mapRowIntoKeyValueRow, RowEncoder.apply(schema));
 
         logger.info("Start streaming");
         // Start running the query that prints the session updates to the console
@@ -234,14 +218,7 @@ public class SparkStreamingMultiSourceAndSinkTest implements Serializable {
                 }
         );
 
-        Dataset<Row> dataset = df.map(new MapFunction<Row, Row>() {
-            @Override
-            public Row call(Row row) throws Exception {
-                KeyValue kv = new KeyValue(row.getString(0), row.getLong(1));
-                logger.info("processing key {} with count {}", kv.key, kv.count);
-                return row;
-            }
-        }, RowEncoder.apply(schema));
+        Dataset<Row> dataset = df.map((MapFunction<Row, Row>) SparkMethods::mapRowIntoKeyValueRow, RowEncoder.apply(schema));
 
         logger.info("Start streaming");
         // Start running the query that prints the session updates to the console
@@ -272,5 +249,6 @@ public class SparkStreamingMultiSourceAndSinkTest implements Serializable {
             Thread.sleep(sleep);
         }
     }
+
 
 }

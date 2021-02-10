@@ -22,7 +22,10 @@ import com.hurence.logisland.annotation.documentation.{CapabilityDescription, Ta
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator.{MAX_RESULTS_COUNT, OUTPUT_RECORD_TYPE, SQL_QUERY}
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.{ERROR_SERIALIZER, ERROR_TOPICS, INPUT_SERIALIZER, INPUT_TOPICS, OUTPUT_SERIALIZER, OUTPUT_TOPICS}
 import com.hurence.logisland.util.spark.SparkUtils
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
@@ -140,5 +143,34 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
     }
 
 }
+
+object KafkaRecordStreamSQLAggregator {
+
+  val SQL_QUERY = new PropertyDescriptor.Builder()
+    .name("sql.query")
+    .description("The SQL query to execute, " +
+      "please note that the table name must exists in input topics names")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val MAX_RESULTS_COUNT = new PropertyDescriptor.Builder()
+    .name("max.results.count")
+    .description("the max number of rows to output. (-1 for no limit)")
+    .required(false)
+    .addValidator(StandardValidators.INTEGER_VALIDATOR)
+    .defaultValue("-1")
+    .build
+
+  val OUTPUT_RECORD_TYPE = new PropertyDescriptor.Builder()
+    .name("output.record.type")
+    .description("the output type of the record")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue("aggregation")
+    .build
+
+}
+
 
 

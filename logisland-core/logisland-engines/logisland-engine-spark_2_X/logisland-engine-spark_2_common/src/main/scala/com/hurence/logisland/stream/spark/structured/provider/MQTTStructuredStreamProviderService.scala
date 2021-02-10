@@ -44,6 +44,7 @@ import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, Standar
 import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService.{AVRO_READ_VALUE_SCHEMA, AVRO_WRITE_VALUE_SCHEMA, READ_VALUE_SERIALIZER, WRITE_KEY_SERIALIZER, WRITE_VALUE_SERIALIZER}
+import com.hurence.logisland.stream.spark.structured.provider.MqttProperties.{MQTT_BROKER_URL, MQTT_CLEAN_SESSION, MQTT_CLIENTID, MQTT_CONNECTION_TIMEOUT, MQTT_KEEP_ALIVE, MQTT_PASSWORD, MQTT_PERSISTENCE, MQTT_QOS, MQTT_TOPIC, MQTT_USERNAME, MQTT_VERSION}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast

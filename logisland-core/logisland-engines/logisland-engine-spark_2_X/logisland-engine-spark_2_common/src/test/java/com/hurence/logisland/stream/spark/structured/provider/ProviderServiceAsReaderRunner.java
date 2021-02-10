@@ -62,9 +62,7 @@ public class ProviderServiceAsReaderRunner {
         engineConfiguration.setDocumentation("Plain java engine");
         engineConfiguration.setComponent(KafkaStreamProcessingEngine.class.getCanonicalName());
         Map<String, String> props = new HashMap<>();
-        props.put(StreamProperties.READ_TOPICS_SERIALIZER().getName(), "none");
         props.put(StreamProperties.READ_STREAM_SERVICE_PROVIDER().getName(), "local_file_service");
-        props.put(StreamProperties.WRITE_TOPICS_SERIALIZER().getName(), StreamProperties.JSON_SERIALIZER().getValue());
         props.put(StreamProperties.WRITE_STREAM_SERVICE_PROVIDER().getName(), "console_service");
         StreamConfiguration streamConfiguration = testStructuredStreamStream(props);
 //        streamConfiguration.addProcessorConfiguration(debugProcessorConfiguration(Collections.emptyMap()));

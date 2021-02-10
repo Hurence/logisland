@@ -22,6 +22,7 @@ import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
 import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine;
 import com.hurence.logisland.stream.StreamProperties;
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties;
 import com.hurence.logisland.util.runner.MockProcessor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -70,16 +71,16 @@ public class ProgrammaticStreamProcessingIntegrationTest extends AbstractStreamP
 
     private StreamConfiguration createStreamConfig() {
         Map<String, String> properties = new HashMap<>();
-        properties.put(StreamProperties.KAFKA_METADATA_BROKER_LIST().getName(), BROKERHOST + ":" + BROKERPORT);
-        properties.put(StreamProperties.KAFKA_ZOOKEEPER_QUORUM().getName(), ZKHOST + ":" + zkServer.port());
-        properties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
-        properties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "1");
-        properties.put(StreamProperties.INPUT_SERIALIZER().getName(), StreamProperties.KRYO_SERIALIZER().getValue());
-        properties.put(StreamProperties.OUTPUT_SERIALIZER().getName(), StreamProperties.KRYO_SERIALIZER().getValue());
-        properties.put(StreamProperties.KAFKA_MANUAL_OFFSET_RESET().getName(), StreamProperties.LATEST_OFFSET().getValue());
+        properties.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(), BROKERHOST + ":" + BROKERPORT);
+        properties.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(), ZKHOST + ":" + zkServer.port());
+        properties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
+        properties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "1");
+        properties.put(KafkaProperties.INPUT_SERIALIZER().getName(), StreamProperties.KRYO_SERIALIZER().getValue());
+        properties.put(KafkaProperties.OUTPUT_SERIALIZER().getName(), StreamProperties.KRYO_SERIALIZER().getValue());
+        properties.put(KafkaProperties.KAFKA_MANUAL_OFFSET_RESET().getName(), StreamProperties.LATEST_OFFSET().getValue());
 
-        properties.put(StreamProperties.INPUT_TOPICS().getName(), INPUT_TOPIC);
-        properties.put(StreamProperties.OUTPUT_TOPICS().getName(), OUTPUT_TOPIC);
+        properties.put(KafkaProperties.INPUT_TOPICS().getName(), INPUT_TOPIC);
+        properties.put(KafkaProperties.OUTPUT_TOPICS().getName(), OUTPUT_TOPIC);
 
         StreamConfiguration conf = new StreamConfiguration();
         conf.setComponent(KafkaRecordStreamParallelProcessing.class.getName());

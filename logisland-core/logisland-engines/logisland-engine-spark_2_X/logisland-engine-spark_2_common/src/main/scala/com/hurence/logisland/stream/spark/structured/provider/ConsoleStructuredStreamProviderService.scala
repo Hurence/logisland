@@ -23,15 +23,13 @@ import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.Record
-import com.hurence.logisland.serializer.SerializerProvider
-import com.hurence.logisland.stream.StreamContext
-import com.hurence.logisland.stream.StreamProperties.{AVRO_OUTPUT_SCHEMA, OUTPUT_MODE, WRITE_TOPICS_KEY_SERIALIZER, WRITE_TOPICS_SERIALIZER}
+import com.hurence.logisland.stream.StreamProperties.OUTPUT_MODE
 import com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService.{NUM_ROWS_TO_SHOW, TRUNCATE_OUTPUT}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.streaming.{DataStreamWriter, OutputMode, StreamingQuery}
-import org.apache.spark.sql.{Dataset, Encoders, ForeachWriter, SparkSession}
+import org.apache.spark.sql.streaming.StreamingQuery
+import org.apache.spark.sql.{Dataset, Encoders}
 
 @CapabilityDescription("Provide a ways to print output in console in a StructuredStream streams")
 class ConsoleStructuredStreamProviderService extends AbstractControllerService

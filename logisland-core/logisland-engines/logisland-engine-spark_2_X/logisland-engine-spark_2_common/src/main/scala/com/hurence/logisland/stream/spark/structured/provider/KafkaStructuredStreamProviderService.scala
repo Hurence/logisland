@@ -43,6 +43,7 @@ import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, Standar
 import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.{DEFAULT_METRICS_TOPIC, ERROR_TOPICS, INPUT_TOPICS, KAFKA_FAIL_ON_DATA_LOSS, KAFKA_MAX_OFFSETS_PER_TRIGGER, KAFKA_METADATA_BROKER_LIST, KAFKA_SASL_KERBEROS_SERVICE_NAME, KAFKA_SECURITY_PROTOCOL, KAFKA_STARTING_OFFSETS, KAFKA_TOPIC_AUTOCREATE, KAFKA_TOPIC_DEFAULT_PARTITIONS, KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR, KAFKA_ZOOKEEPER_QUORUM, NONE_TOPIC, OUTPUT_TOPICS}
 import com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService.{AVRO_READ_VALUE_SCHEMA, AVRO_WRITE_VALUE_SCHEMA, READ_VALUE_SERIALIZER, WRITE_KEY_SERIALIZER, WRITE_VALUE_SERIALIZER}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
@@ -200,8 +201,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     descriptors.add(KAFKA_STARTING_OFFSETS)
     descriptors.add(KAFKA_FAIL_ON_DATA_LOSS)
     descriptors.add(KAFKA_MAX_OFFSETS_PER_TRIGGER)
-//    descriptors.add(WINDOW_DURATION)
-//    descriptors.add(SLIDE_DURATION)
     descriptors.add(KAFKA_SECURITY_PROTOCOL)
     descriptors.add(KAFKA_SASL_KERBEROS_SERVICE_NAME)
     descriptors.add(READ_VALUE_SERIALIZER)

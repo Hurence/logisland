@@ -51,7 +51,7 @@ public class LogIslandRecordConverter implements Converter {
     /**
      * The record type to use. If not provided {@link LogIslandRecordConverter#PROPERTY_RECORD_TYPE} will be used.
      */
-    public static final String PROPERTY_RECORD_TYPE = StreamProperties.RECORD_TYPE().getName();
+    public static final String PROPERTY_RECORD_TYPE = "record.type";
 
     /**
      * The default type for logisland {@link Record} created by this converter.

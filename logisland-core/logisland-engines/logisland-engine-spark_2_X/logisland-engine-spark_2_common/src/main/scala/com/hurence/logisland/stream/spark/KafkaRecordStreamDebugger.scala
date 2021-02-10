@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.{ERROR_SERIALIZER, ERROR_TOPICS, INPUT_SERIALIZER, INPUT_TOPICS, KAFKA_METADATA_BROKER_LIST, OUTPUT_SERIALIZER, OUTPUT_TOPICS}
 
 class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
     val logger = LoggerFactory.getLogger(this.getClass.getName)

@@ -19,7 +19,6 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
-import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.stream.AbstractRecordStream
 import com.hurence.logisland.stream.StreamProperties._
@@ -27,20 +26,11 @@ import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamP
 import com.hurence.logisland.stream.spark.{SparkRecordStream, SparkStreamContext}
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.streaming.{GroupStateTimeout, OutputMode}
-import org.apache.spark.sql.{Dataset, SQLContext, SparkSession}
-import org.apache.spark.streaming.StreamingContext
-import org.slf4j.LoggerFactory
+import org.apache.spark.sql.{Dataset, SQLContext}
 
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
-  protected var appName: String = ""
-  @transient protected var ssc: StreamingContext = _
-  @transient protected var spark: SparkSession = _
   @transient protected var sparkStreamContext: SparkStreamContext = _
-  protected var needMetricsReset = false
-
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
 
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -51,25 +41,20 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
   override def init(sparkStreamContext: SparkStreamContext) = {
     super.init(sparkStreamContext.streamingContext)
-    this.appName = sparkStreamContext.appName
-    this.ssc = sparkStreamContext.ssc
     this.sparkStreamContext = sparkStreamContext
-    this.spark = sparkStreamContext.spark
-
   }
 
-  private def getStreamingContext(): StreamingContext = this.ssc
-
+  private def sparkSession = sparkStreamContext.spark;
 
   override def start() = {
-    if (ssc == null || spark == null)
+    if (sparkSession == null)
       throw new IllegalStateException("stream not initialized")
     try {
 
       val pipelineMetricPrefix = sparkStreamContext.streamingContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
       val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-      spark.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
+      sparkSession.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
 
       //TODO Je pense que ces deux ligne ne servent a rien
       val controllerServiceLookup = sparkStreamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
@@ -86,13 +71,11 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       // while cleaning streams code... Indeed I am afraid the remote api engines use this strange behaviour here
       // to change config on the fly when it should use the setup method (maybe using broadcast as well).
       // In this method start, the config should be considered already up to date in my opinion.
-      sparkStreamContext.streamingContext.getProcessContexts.clear()
-      sparkStreamContext.streamingContext.getProcessContexts.addAll(
-        PipelineConfigurationBroadcastWrapper.getInstance().get(sparkStreamContext.streamingContext.getIdentifier))
+//      sparkStreamContext.streamingContext.getProcessContexts.clear()
+//      sparkStreamContext.streamingContext.getProcessContexts.addAll(
+//        PipelineConfigurationBroadcastWrapper.getInstance().get(sparkStreamContext.streamingContext.getIdentifier))
 
-
-
-            val readDF = readStreamService.read(spark)
+      val readDF = readStreamService.read(sparkSession)
       val transformedInputData: Dataset[Record] = transformInputData(readDF)
       val writeStreamService = sparkStreamContext.streamingContext.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
         .asControllerService()
@@ -103,28 +86,27 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     }
     catch {
       case ex: Throwable =>
-        logger.error("Error while processing the streaming query. ", ex)
+        getLogger.error("Error while processing the streaming query. ", ex)
         throw new IllegalStateException("Error while processing the streaming query", ex)
     }
   }
 
-  override def stop(): Unit
-
-  = {
+  override def stop(): Unit = {
     super.stop()
     //stop the source
-    val thisStream = SQLContext.getOrCreate(getStreamingContext().sparkContext).streams.active.find(stream => sparkStreamContext.streamingContext.getIdentifier.equals(stream.name));
+
+    val thisStream = SQLContext.getOrCreate(sparkSession.sparkContext).streams.active.find(stream => sparkStreamContext.streamingContext.getIdentifier.equals(stream.name));
     if (thisStream.isDefined) {
-      if (!getStreamingContext().sparkContext.isStopped && thisStream.get.isActive) {
+      if (!sparkSession.sparkContext.isStopped && thisStream.get.isActive) {
         try {
           thisStream.get.stop()
           thisStream.get.awaitTermination()
         } catch {
-          case ex: Throwable => logger.warn(s"Stream ${sparkStreamContext.streamingContext.getIdentifier} may not have been correctly stopped")
+          case ex: Throwable => getLogger.warn(s"Stream ${sparkStreamContext.streamingContext.getIdentifier} may not have been correctly stopped")
         }
       }
     } else {
-      logger.warn(s"Unable to find an active streaming query for stream ${sparkStreamContext.streamingContext.getIdentifier}")
+      getLogger.warn(s"Unable to find an active streaming query for stream ${sparkStreamContext.streamingContext.getIdentifier}")
     }
   }
 
@@ -148,12 +130,4 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       })
     }
   }
-
-
-
-
-
-
 }
-
-

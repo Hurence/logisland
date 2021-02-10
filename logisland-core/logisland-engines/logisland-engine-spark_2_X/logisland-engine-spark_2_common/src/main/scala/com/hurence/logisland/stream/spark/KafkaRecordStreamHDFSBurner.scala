@@ -22,7 +22,10 @@ import java.util.Collections
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, FieldType}
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner.{DATE_FORMAT, EXCLUDE_ERRORS, INPUT_FORMAT, NUM_PARTITIONS, OUTPUT_FOLDER_PATH, OUTPUT_FORMAT, RECORD_TYPE}
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.INPUT_SERIALIZER
 import com.hurence.logisland.util.spark.SparkUtils
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
@@ -196,6 +199,64 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
     }
 
 
+}
+
+object KafkaRecordStreamHDFSBurner {
+
+  val OUTPUT_FOLDER_PATH = new PropertyDescriptor.Builder()
+    .name("output.folder.path")
+    .description("the location where to put files : file:///tmp/out")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+
+  val INPUT_FORMAT = new PropertyDescriptor.Builder()
+    .name("input.format")
+    .description("Used to load data from a raw record_value. Only json supported")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue("")
+    .build
+
+  val OUTPUT_FORMAT = new PropertyDescriptor.Builder()
+    .name("output.format")
+    .description("can be parquet, orc csv")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(FILE_FORMAT_PARQUET, FILE_FORMAT_TXT, FILE_FORMAT_JSON, FILE_FORMAT_JSON)
+    .build
+
+  val RECORD_TYPE = new PropertyDescriptor.Builder()
+    .name("record.type")
+    .description("the type of event to filter")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val NUM_PARTITIONS = new PropertyDescriptor.Builder()
+    .name("num.partitions")
+    .description("the numbers of physical files on HDFS")
+    .required(false)
+    .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+    .defaultValue("4")
+    .build
+
+  val EXCLUDE_ERRORS = new PropertyDescriptor.Builder()
+    .name("exclude.errors")
+    .description("do we include records with errors ?")
+    .required(false)
+    .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+    .defaultValue("true")
+    .build
+
+  val DATE_FORMAT = new PropertyDescriptor.Builder()
+    .name("date.format")
+    .description("The format of the date for the partition")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue("yyyy-MM-dd")
+    .build
 }
 
 
