@@ -76,19 +76,11 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
-            // Get the singleton instance of SQLContext
-            val sqlContext = SparkSession
-                .builder()
-                .appName(appName)
-                .config(ssc.sparkContext.getConf)
-                .getOrCreate()
-
-
             // this is used to implicitly convert an RDD to a DataFrame.
 
             val deserializer = getSerializer(
-                sparkStreamContext.streamingContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                sparkStreamContext.streamingContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_SERIALIZER).asString,
+                sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 
 
             val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
@@ -97,14 +89,14 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
             if (!records.isEmpty()) {
 
 
-                val sdf = new SimpleDateFormat(sparkStreamContext.streamingContext.getPropertyValue(DATE_FORMAT).asString)
+                val sdf = new SimpleDateFormat(sparkStreamContext.logislandStreamContext.getPropertyValue(DATE_FORMAT).asString)
 
 
-                val numPartitions = sparkStreamContext.streamingContext.getPropertyValue(NUM_PARTITIONS).asInteger()
-                val outputFormat = sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_FORMAT).asString()
-                val doExcludeErrors = sparkStreamContext.streamingContext.getPropertyValue(EXCLUDE_ERRORS).asBoolean()
-                val recordType = sparkStreamContext.streamingContext.getPropertyValue(RECORD_TYPE).asString()
-                val outPath = sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_FOLDER_PATH).asString()
+                val numPartitions = sparkStreamContext.logislandStreamContext.getPropertyValue(NUM_PARTITIONS).asInteger()
+                val outputFormat = sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_FORMAT).asString()
+                val doExcludeErrors = sparkStreamContext.logislandStreamContext.getPropertyValue(EXCLUDE_ERRORS).asBoolean()
+                val recordType = sparkStreamContext.logislandStreamContext.getPropertyValue(RECORD_TYPE).asString()
+                val outPath = sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_FOLDER_PATH).asString()
 
                 val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
                     .filter(r =>
@@ -125,7 +117,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
                 if (!records.isEmpty()) {
                     var df: DataFrame = null;
-                    val inputFormat = sparkStreamContext.streamingContext.getPropertyValue(INPUT_FORMAT).asString()
+                    val inputFormat = sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_FORMAT).asString()
                     if (inputFormat.isEmpty) {
 
                         val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))
@@ -142,7 +134,8 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                         df = sqlContext.createDataFrame(rows, schema)
                     } else {
                         if ("json".equals(inputFormat)) {
-                            import sqlContext.implicits._
+                            val mySqlContext = sqlContext
+                            import mySqlContext.implicits._
                             val rdf = records.map(record => (record.getType, record.getField(FieldDictionary.RECORD_DAYTIME).asString))
                                 .toDF(FieldDictionary.RECORD_TYPE, FieldDictionary.RECORD_DAYTIME)
                             val json = sqlContext.read.json(records.map(record => record.getField(FieldDictionary.RECORD_VALUE).asString()))

@@ -24,62 +24,9 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.engine.spark.remote.model.DataFlow
 import com.hurence.logisland.engine.spark.remote.{RemoteApiClient, RemoteApiComponentFactory}
-import com.hurence.logisland.stream.StandardStreamContext
-import com.hurence.logisland.stream.spark.DummyRecordStream
+
 import com.hurence.logisland.validator.StandardValidators
-import org.apache.spark.streaming.dstream.DStream
 import org.slf4j.LoggerFactory
-
-object RemoteApiStreamProcessingEngine {
-    val REMOTE_API_BASE_URL = new PropertyDescriptor.Builder()
-        .name("remote.api.baseUrl")
-        .description("The base URL of the remote server providing logisland configuration")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build
-
-    val REMOTE_API_POLLING_RATE = new PropertyDescriptor.Builder()
-        .name("remote.api.polling.rate")
-        .description("Remote api polling rate in milliseconds")
-        .required(true)
-        .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
-        .build
-
-    val REMOTE_API_CONFIG_PUSH_RATE = new PropertyDescriptor.Builder()
-        .name("remote.api.push.rate")
-        .description("Remote api configuration push rate in milliseconds")
-        .required(true)
-        .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
-        .build
-
-    val REMOTE_API_CONNECT_TIMEOUT = new PropertyDescriptor.Builder()
-        .name("remote.api.timeouts.connect")
-        .description("Remote api connection timeout in milliseconds")
-        .required(false)
-        .defaultValue("10000")
-        .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
-        .build
-
-    val REMOTE_API_SOCKET_TIMEOUT = new PropertyDescriptor.Builder()
-        .name("remote.api.timeouts.socket")
-        .description("Remote api default read/write socket timeout in milliseconds")
-        .required(false)
-        .defaultValue("10000")
-        .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
-        .build
-
-    val REMOTE_API_USER = new PropertyDescriptor.Builder()
-        .name("remote.api.auth.user")
-        .description("The basic authentication user for the remote api endpoint.")
-        .required(false)
-        .build
-
-    val REMOTE_API_PASSWORD = new PropertyDescriptor.Builder()
-        .name("remote.api.auth.password")
-        .description("The basic authentication password for the remote api endpoint.")
-        .required(false)
-        .build
-}
 
 class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
 
@@ -191,4 +138,54 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
 
 
 
+}
+object RemoteApiStreamProcessingEngine {
+    val REMOTE_API_BASE_URL = new PropertyDescriptor.Builder()
+      .name("remote.api.baseUrl")
+      .description("The base URL of the remote server providing logisland configuration")
+      .required(true)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .build
+
+    val REMOTE_API_POLLING_RATE = new PropertyDescriptor.Builder()
+      .name("remote.api.polling.rate")
+      .description("Remote api polling rate in milliseconds")
+      .required(true)
+      .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
+      .build
+
+    val REMOTE_API_CONFIG_PUSH_RATE = new PropertyDescriptor.Builder()
+      .name("remote.api.push.rate")
+      .description("Remote api configuration push rate in milliseconds")
+      .required(true)
+      .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
+      .build
+
+    val REMOTE_API_CONNECT_TIMEOUT = new PropertyDescriptor.Builder()
+      .name("remote.api.timeouts.connect")
+      .description("Remote api connection timeout in milliseconds")
+      .required(false)
+      .defaultValue("10000")
+      .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
+      .build
+
+    val REMOTE_API_SOCKET_TIMEOUT = new PropertyDescriptor.Builder()
+      .name("remote.api.timeouts.socket")
+      .description("Remote api default read/write socket timeout in milliseconds")
+      .required(false)
+      .defaultValue("10000")
+      .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
+      .build
+
+    val REMOTE_API_USER = new PropertyDescriptor.Builder()
+      .name("remote.api.auth.user")
+      .description("The basic authentication user for the remote api endpoint.")
+      .required(false)
+      .build
+
+    val REMOTE_API_PASSWORD = new PropertyDescriptor.Builder()
+      .name("remote.api.auth.password")
+      .description("The basic authentication password for the remote api endpoint.")
+      .required(false)
+      .build
 }

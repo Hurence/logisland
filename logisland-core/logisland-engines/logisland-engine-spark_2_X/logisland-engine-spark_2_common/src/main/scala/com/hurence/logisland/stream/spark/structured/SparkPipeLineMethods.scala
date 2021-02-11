@@ -20,7 +20,7 @@ class SparkPipeLineMethods(val streamContext: StreamContext,
                            val controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) extends Serializable {
 
   def this(sparkStreamContext: SparkStreamContext) {
-    this(sparkStreamContext.streamingContext, sparkStreamContext.broadCastedControllerServiceLookupSink)
+    this(sparkStreamContext.logislandStreamContext, sparkStreamContext.broadCastedControllerServiceLookupSink)
   }
 
   def executePipeline(iterator: Iterator[Record]) = {

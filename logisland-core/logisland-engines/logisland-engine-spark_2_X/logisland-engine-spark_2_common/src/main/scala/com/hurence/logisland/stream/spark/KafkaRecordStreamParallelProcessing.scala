@@ -68,7 +68,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val partitionId = TaskContext.get.partitionId()
                         val offsetRange = offsetRanges(TaskContext.get.partitionId)
 
-                        val pipelineMetricPrefix = sparkStreamContext.streamingContext.getIdentifier + "." +
+                        val pipelineMetricPrefix = sparkStreamContext.logislandStreamContext.getIdentifier + "." +
                             "partition" + partitionId + "."
                         val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms" ).time()
 
@@ -77,14 +77,14 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                           * create serializers
                           */
                         val deserializer = getSerializer(
-                            sparkStreamContext.streamingContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                            sparkStreamContext.streamingContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_SERIALIZER).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
                         val serializer = getSerializer(
-                            sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
-                            sparkStreamContext.streamingContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
                         val errorSerializer = getSerializer(
-                            sparkStreamContext.streamingContext.getPropertyValue(ERROR_SERIALIZER).asString,
-                            sparkStreamContext.streamingContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(ERROR_SERIALIZER).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
 
                         /**
                           * process events by chaining output records
@@ -93,7 +93,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         var incomingEvents: util.Collection[Record] = Collections.emptyList()
                         var outgoingEvents: util.Collection[Record] = Collections.emptyList()
 
-                        sparkStreamContext.streamingContext.getProcessContexts.foreach(processorContext => {
+                        sparkStreamContext.logislandStreamContext.getProcessContexts.foreach(processorContext => {
                             val startTime = System.currentTimeMillis()
                             val processor = processorContext.getProcessor
 
@@ -105,7 +105,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                               */
                             if (firstPass) {
                                 incomingEvents = if (
-                                    sparkStreamContext.streamingContext.getPropertyValue(INPUT_SERIALIZER).asString
+                                    sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_SERIALIZER).asString
                                         == NO_SERIALIZER.getValue) {
                                     // parser
                                     partition.map(rawMessage => {
@@ -155,9 +155,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         /**
                           * Do we make records compliant with a given Avro schema ?
                           */
-                        if (sparkStreamContext.streamingContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).isSet) {
+                        if (sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).isSet) {
                             try {
-                                val strSchema = sparkStreamContext.streamingContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString()
+                                val strSchema = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString()
                                 val schema = RecordSchemaUtil.compileSchema(strSchema)
 
                                 outgoingEvents = outgoingEvents.map(record => RecordSchemaUtil.convertToValidRecord(record, schema))
@@ -173,13 +173,13 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                           * push outgoing events and errors to Kafka
                           */
                         kafkaSink.value.produce(
-                            sparkStreamContext.streamingContext.getPropertyValue(OUTPUT_TOPICS).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_TOPICS).asString,
                             outgoingEvents.toList,
                             serializer
                         )
 
                         kafkaSink.value.produce(
-                            sparkStreamContext.streamingContext.getPropertyValue(ERROR_TOPICS).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(ERROR_TOPICS).asString,
                             outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERRORS)).toList,
                             errorSerializer
                         )
@@ -189,8 +189,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                 }
                 catch {
                     case ex: OffsetOutOfRangeException =>
-                        val inputTopics = sparkStreamContext.streamingContext.getPropertyValue(INPUT_TOPICS).asString
-                        val brokerList = sparkStreamContext.streamingContext.getPropertyValue(KAFKA_METADATA_BROKER_LIST).asString
+                        val inputTopics = sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_TOPICS).asString
+                        val brokerList = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_METADATA_BROKER_LIST).asString
                        /* val latestOffsetsString = zkSink.value.loadOffsetRangesFromZookeeper(
                             brokerList,
                             appName,

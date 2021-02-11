@@ -31,6 +31,10 @@ import org.apache.spark.sql.{Dataset, SQLContext}
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
   @transient protected var sparkStreamContext: SparkStreamContext = _
+  private var isReady = false
+  private var keys: String = _
+  private var stateTimeoutDuration: Long = _
+  private var chunkSize: Int = _
 
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -40,27 +44,35 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
   }
 
   override def init(sparkStreamContext: SparkStreamContext) = {
-    super.init(sparkStreamContext.streamingContext)
+    super.init(sparkStreamContext.logislandStreamContext)
     this.sparkStreamContext = sparkStreamContext
+    if (context.getPropertyValue(GROUPBY).isSet) {
+      keys = context.getPropertyValue(GROUPBY).asString()
+      stateTimeoutDuration = context.getPropertyValue(STATE_TIMEOUT_MS).asLong()
+      chunkSize = context.getPropertyValue(CHUNK_SIZE).asInteger()
+    }
+    isReady = true;
   }
 
-  private def sparkSession = sparkStreamContext.spark;
+  private def context = sparkStreamContext.logislandStreamContext
+
+  private def sparkSession = sparkStreamContext.spark
 
   override def start() = {
-    if (sparkSession == null)
+    if (!isReady)
       throw new IllegalStateException("stream not initialized")
     try {
 
-      val pipelineMetricPrefix = sparkStreamContext.streamingContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
+      val pipelineMetricPrefix = context.getIdentifier /*+ ".partition" + partitionId*/ + "."
       val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
       sparkSession.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
 
       //TODO Je pense que ces deux ligne ne servent a rien
       val controllerServiceLookup = sparkStreamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
-      sparkStreamContext.streamingContext.setControllerServiceLookup(controllerServiceLookup)
+      context.setControllerServiceLookup(controllerServiceLookup)
 
-      val readStreamService = sparkStreamContext.streamingContext.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
+      val readStreamService = context.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
         .asControllerService()
         .asInstanceOf[StructuredStreamProviderServiceReader]
 
@@ -77,7 +89,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
       val readDF = readStreamService.read(sparkSession)
       val transformedInputData: Dataset[Record] = transformInputData(readDF)
-      val writeStreamService = sparkStreamContext.streamingContext.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
+      val writeStreamService = context.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
         .asControllerService()
         .asInstanceOf[StructuredStreamProviderServiceWriter]
         .write(transformedInputData, sparkStreamContext.broadCastedControllerServiceLookupSink)
@@ -95,28 +107,26 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     super.stop()
     //stop the source
 
-    val thisStream = SQLContext.getOrCreate(sparkSession.sparkContext).streams.active.find(stream => sparkStreamContext.streamingContext.getIdentifier.equals(stream.name));
+    val thisStream = SQLContext.getOrCreate(sparkSession.sparkContext).streams.active.find(stream => context.getIdentifier.equals(stream.name));
     if (thisStream.isDefined) {
       if (!sparkSession.sparkContext.isStopped && thisStream.get.isActive) {
         try {
           thisStream.get.stop()
           thisStream.get.awaitTermination()
         } catch {
-          case ex: Throwable => getLogger.warn(s"Stream ${sparkStreamContext.streamingContext.getIdentifier} may not have been correctly stopped")
+          case ex: Throwable => getLogger.warn(s"Stream ${context.getIdentifier} may not have been correctly stopped")
         }
       }
     } else {
-      getLogger.warn(s"Unable to find an active streaming query for stream ${sparkStreamContext.streamingContext.getIdentifier}")
+      getLogger.warn(s"Unable to find an active streaming query for stream ${context.getIdentifier}")
     }
+    this.isReady = false
   }
 
   def transformInputData(readDF: Dataset[Record]): Dataset[Record] = {
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
     val pipelineMethods = new SparkPipeLineMethods(sparkStreamContext)
-    if (sparkStreamContext.streamingContext.getPropertyValue(GROUPBY).isSet) {
-      val keys = sparkStreamContext.streamingContext.getPropertyValue(GROUPBY).asString()
-      val stateTimeoutDuration = sparkStreamContext.streamingContext.getPropertyValue(STATE_TIMEOUT_MS).asLong()
-      val chunkSize = sparkStreamContext.streamingContext.getPropertyValue(CHUNK_SIZE).asInteger()
+    if (context.getPropertyValue(GROUPBY).isSet) {
       import readDF.sparkSession.implicits._
       readDF
         .filter(_.hasField(keys))

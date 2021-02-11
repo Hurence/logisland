@@ -6,8 +6,9 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.StreamingContext
 
-case class SparkStreamContext(streamingContext: StreamContext,
-                              appName: String,
-                              ssc: StreamingContext,
-                              spark: SparkSession,
-                              broadCastedControllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) {}
+case class SparkStreamContext(logislandStreamContext: StreamContext,
+                              defaultBatchDurationMs: Int,
+                              @transient spark: SparkSession,
+                              broadCastedControllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) {
+
+}

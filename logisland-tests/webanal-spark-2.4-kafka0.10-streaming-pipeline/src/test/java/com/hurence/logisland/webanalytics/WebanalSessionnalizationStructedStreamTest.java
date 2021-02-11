@@ -37,7 +37,7 @@ public class WebanalSessionnalizationStructedStreamTest {
      */
     @Test
     @Ignore
-    public void myTest() throws IOException, InterruptedException, InitializationException {
+    public void mySimpleDebugTest() throws IOException, InterruptedException, InitializationException {
         String confFilePath = getClass().getClassLoader().getResource("conf/my-conf-test.yaml").getFile();
         ConfJobHelper confJob = new ConfJobHelper(confFilePath);
         Map<String, String> confKafka = new HashMap<>();
@@ -46,16 +46,41 @@ public class WebanalSessionnalizationStructedStreamTest {
         confJob.modifyControllerServiceConf("kafka_service", confKafka);
         confJob.initJob();
         confJob.startJob();
-
+        boolean running = true;
         long ts = 0L;
-        while (true) {
+        while (running) {
             logger.info("Adding an event in topic");
             Record event = eventGen.generateEvent(ts, "url");
             kafkaUtils.addingEventsToTopicPartition(logisland_raw, 0, event);
-            logger.info("Waiting 5 sec");
-            long sleep = 5000L;
-            ts += sleep;
-            Thread.sleep(sleep);
+            long increment = 5000L;
+            ts += increment;
+            running = ts != increment * 10;
         }
+        Thread.sleep(10000L);
+        confJob.stopJob();
+    }
+
+    @Test
+    public void mySimpleDebugTestWithServices() throws IOException, InterruptedException, InitializationException {
+        String confFilePath = getClass().getClassLoader().getResource("conf/my-conf-test.yaml").getFile();
+        ConfJobHelper confJob = new ConfJobHelper(confFilePath);
+        Map<String, String> confKafka = new HashMap<>();
+        confKafka.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(), embeddedKafka.getZookeeperConnectionString());
+        confKafka.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(), embeddedKafka.getBrokersAsString());
+        confJob.modifyControllerServiceConf("kafka_service", confKafka);
+        confJob.initJob();
+        confJob.startJob();
+        boolean running = true;
+        long ts = 0L;
+        while (running) {
+            logger.info("Adding an event in topic");
+            Record event = eventGen.generateEvent(ts, "url");
+            kafkaUtils.addingEventsToTopicPartition(logisland_raw, 0, event);
+            long increment = 5000L;
+            ts += increment;
+            running = ts != increment * 10;
+        }
+        Thread.sleep(10000L);
+        confJob.stopJob();
     }
 }

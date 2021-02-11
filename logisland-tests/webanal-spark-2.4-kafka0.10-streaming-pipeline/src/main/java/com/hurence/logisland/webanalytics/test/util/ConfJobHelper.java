@@ -52,6 +52,10 @@ public class ConfJobHelper {
         logger.info(jobConfig.getDocumentation());
     }
 
+    public void stopJob() {
+        engineContext.getEngine().stop(engineContext);
+    }
+
     public void startJob() {
         String engineName = engineContext.getEngine().getIdentifier();
         try {
@@ -63,9 +67,8 @@ public class ConfJobHelper {
         }
     }
 
-    public void startThenAwaitTermination() {
+    public void awaitTermination() {
         String engineName = engineContext.getEngine().getIdentifier();
-        startJob();
         try {
             logger.info("Waiting termination of engine {}", engineName);
             engineContext.getEngine().awaitTermination(engineContext);
@@ -77,5 +80,8 @@ public class ConfJobHelper {
         }
     }
 
-
+    public void startThenAwaitTermination() {
+        startJob();
+        awaitTermination();
+    }
 }

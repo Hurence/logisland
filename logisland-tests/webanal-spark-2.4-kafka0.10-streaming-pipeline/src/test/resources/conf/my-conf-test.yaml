@@ -125,8 +125,8 @@ engine:
 
       processorConfigurations:
 
-        - processor: debug
-          component: com.hurence.logisland.processor.DebugStream
-          type: processor
-          documentation: print input
+#        - processor: debug
+#          component: com.hurence.logisland.processor.DebugStream
+#          type: processor
+#          documentation: print input
 
