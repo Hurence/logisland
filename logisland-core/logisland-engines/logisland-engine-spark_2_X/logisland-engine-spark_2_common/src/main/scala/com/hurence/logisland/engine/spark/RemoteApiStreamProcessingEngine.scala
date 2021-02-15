@@ -133,7 +133,7 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
         logger.info(s"Resetting engine ${engineContext.getIdentifier}")
         super.softStop(engineContext)
         engineContext.getStreamContexts.clear()
-        engineContext.getControllerServiceConfigurations.clear()
+        engineContext.getControllerServiceContexts.clear()
     }
 
 

@@ -30,15 +30,13 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
 
     protected String identifier = "";
     protected ComponentLog componentLogger;
-    private static Logger logger = LoggerFactory.getLogger(AbstractConfigurableComponent.class);
+//    private static Logger logger = LoggerFactory.getLogger(AbstractConfigurableComponent.class);
 
     @Override
     public String getIdentifier() {
         return identifier;
     }
 
-
-    @Deprecated
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
@@ -117,7 +115,8 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
         // log issues
         if (!results.isEmpty()) {
             for (ValidationResult result:results) {
-                logger.warn(result.toString());
+                getLogger().error(result.toString());
+//                logger.warn();
             }
         }
 
@@ -215,7 +214,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      */
     public void init(final ComponentContext context) throws InitializationException {
         identifier = context.getIdentifier();
-        componentLogger = context.getLogger();
+//        componentLogger = context.getLogger();
     }
 
 

@@ -36,7 +36,7 @@ public class ConfJobHelper {
     }
 
     public void initEngineContext() {
-        this.engineContext = ComponentFactory.getEngineContext(jobConfig.getEngine())
+        this.engineContext = ComponentFactory.buildAndSetUpEngineContext(jobConfig.getEngine())
                 .orElseThrow(() -> new IllegalArgumentException("engineInstance could not be instantiated"));
         if (!engineContext.isValid()) {
             throw new IllegalArgumentException("engineInstance is not valid with input configuration !");

@@ -64,6 +64,11 @@ public class MockControllerServiceInitializationContext implements ControllerSer
     }
 
     @Override
+    public boolean isValid(boolean strictCheck) {
+        return isValid();
+    }
+
+    @Override
     public Collection<ValidationResult> getValidationErrors() {
         return null;
     }
@@ -118,4 +123,8 @@ public class MockControllerServiceInitializationContext implements ControllerSer
         return properties;
     }
 
+    @Override
+    public ControllerService getService() {
+        return controllerService;
+    }
 }

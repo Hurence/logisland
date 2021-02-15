@@ -46,7 +46,7 @@ public class ProviderServiceAsReaderRunner {
     }
 
     public void run() {
-        EngineContext engineContext = ComponentFactory.getEngineContext(getEngineConfiguration()).get();
+        EngineContext engineContext = ComponentFactory.buildAndSetUpEngineContext(getEngineConfiguration()).get();
         Assert.assertTrue(engineContext.isValid());
         try {
             engineContext.getEngine().start(engineContext);

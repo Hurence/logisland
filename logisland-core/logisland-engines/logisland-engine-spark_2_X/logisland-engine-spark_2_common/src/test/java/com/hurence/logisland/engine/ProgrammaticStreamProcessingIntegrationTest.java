@@ -27,7 +27,6 @@ import com.hurence.logisland.util.runner.MockProcessor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.stream.spark.AbstractKafkaRecordStream;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -65,7 +64,7 @@ public class ProgrammaticStreamProcessingIntegrationTest extends AbstractStreamP
         conf.setConfiguration(properties);
         conf.addPipelineConfigurations(createStreamConfig());
 
-        return ComponentFactory.getEngineContext(conf);
+        return ComponentFactory.buildAndSetUpEngineContext(conf);
     }
 
 

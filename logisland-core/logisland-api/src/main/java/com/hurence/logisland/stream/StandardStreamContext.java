@@ -84,5 +84,19 @@ public class StandardStreamContext extends AbstractConfiguredComponent implement
         return new StandardPropertyValue(rawValue);
     }
 
+    @Override
+    public boolean isValid(boolean strictCheck) {
+        boolean streamValid = super.isValid(strictCheck);
+        if (!streamValid) {
+            getLogger().error("conf of stream is not valid !");
+        }
+        boolean processorsValid = true;
+        for (final ProcessContext processContext : processContexts) {
+            if (!processContext.isValid(strictCheck)) {
+                processorsValid = false;
+            }
+        }
+        return streamValid && processorsValid;
+    }
 
 }

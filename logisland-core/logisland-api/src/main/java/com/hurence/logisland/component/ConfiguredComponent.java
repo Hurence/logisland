@@ -69,6 +69,13 @@ public interface ConfiguredComponent extends Serializable {
     boolean isValid();
 
     /**
+     *
+     * @param strictCheck
+     * @return if configuration is valid and if configuration does not contain unsupported properties
+     */
+    boolean isValid(boolean strictCheck);
+
+    /**
      * @return the any validation errors for this connectable
      */
     Collection<ValidationResult> getValidationErrors();

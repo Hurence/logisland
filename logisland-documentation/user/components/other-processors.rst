@@ -56831,3 +56831,6434 @@ In the list below, the names of required properties appear in **bold**. Any othe
 Extra informations
 __________________
 .. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.useragent.ParseUserAgent: 
+
+ParseUserAgent
+--------------
+The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest. There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them. This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.
+
+Module
+______
+com.hurence.logisland:logisland-processor-useragent:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.useragent.ParseUserAgent
+
+Tags
+____
+User-Agent, clickstream, DMP
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "cache.enabled", "Enable caching. Caching to avoid to redo the same computation for many identical User-Agent strings.", "", "true", "false", "false"
+   "cache.size", "Set the size of the cache.", "", "1000", "false", "false"
+   "**useragent.field**", "Must contain the name of the field that contains the User-Agent value in the incoming record.", "", "null", "false", "false"
+   "useragent.keep", "Defines if the field that contained the User-Agent must be kept or not in the resulting records.", "", "true", "false", "false"
+   "confidence.enabled", "Enable confidence reporting. Each field will report a confidence attribute with a value comprised between 0 and 10000.", "", "false", "false", "false"
+   "ambiguity.enabled", "Enable ambiguity reporting. Reports a count of ambiguities.", "", "false", "false", "false"
+   "fields", "Defines the fields to be returned.", "", "DeviceClass, DeviceName, DeviceBrand, DeviceCpu, DeviceFirmwareVersion, DeviceVersion, OperatingSystemClass, OperatingSystemName, OperatingSystemVersion, OperatingSystemNameVersion, OperatingSystemVersionBuild, LayoutEngineClass, LayoutEngineName, LayoutEngineVersion, LayoutEngineVersionMajor, LayoutEngineNameVersion, LayoutEngineNameVersionMajor, LayoutEngineBuild, AgentClass, AgentName, AgentVersion, AgentVersionMajor, AgentNameVersion, AgentNameVersionMajor, AgentBuild, AgentLanguage, AgentLanguageCode, AgentInformationEmail, AgentInformationUrl, AgentSecurity, AgentUuid, FacebookCarrier, FacebookDeviceClass, FacebookDeviceName, FacebookDeviceVersion, FacebookFBOP, FacebookFBSS, FacebookOperatingSystemName, FacebookOperatingSystemVersion, Anonymized, HackerAttackVector, HackerToolkit, KoboAffiliate, KoboPlatformId, IECompatibilityVersion, IECompatibilityVersionMajor, IECompatibilityNameVersion, IECompatibilityNameVersionMajor, __SyntaxError__, Carrier, GSAInstallationID, WebviewAppName, WebviewAppNameVersionMajor, WebviewAppVersion, WebviewAppVersionMajor", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseUserAgent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.CalculWebSession: 
+
+CalculWebSession
+----------------
+This processor creates web-sessions based on incoming web-events.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.CalculWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+   "number.of.future.session.when.event.from.past", "The number of session it will look for when searching session of last events", "", "1", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/CalculWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.IncrementalWebSession: 
+
+IncrementalWebSession
+---------------------
+This processor creates and updates web-sessions based on incoming web-events. Note that both web-sessions and web-events are stored in elasticsearch.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ Then each web-session associated to each group is retrieved from elasticsearch.
+ In case none exists yet then a new web session is created based on the first web event.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, or retrieved, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- are save in elasticsearch. And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.IncrementalWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+   "number.of.future.session.when.event.from.past", "The number of session it will look for when searching session of last events", "", "1", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IncrementalWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic: 
+
+SetSourceOfTraffic
+------------------
+Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
+including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
+When analysing user experience on a webshop, it is crucial to collect, process, and report the campaign and traffic-source data. 
+To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
+i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
+, the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
+By default the source of traffic information are placed in a flat structure (specified by the **source_of_traffic.prefix** property
+with a default value of source_of_traffic). To work properly the SetSourceOfTraffic processor needs to have access to an 
+Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic
+
+Tags
+____
+session, traffic, source, web, analytics
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "referer.field", "Name of the field containing the referer value in the session", "", "referer", "false", "false"
+   "first.visited.page.field", "Name of the field containing the first visited page in the session", "", "firstVisitedPage", "false", "false"
+   "utm_source.field", "Name of the field containing the utm_source value in the session", "", "utm_source", "false", "false"
+   "utm_medium.field", "Name of the field containing the utm_medium value in the session", "", "utm_medium", "false", "false"
+   "utm_campaign.field", "Name of the field containing the utm_campaign value in the session", "", "utm_campaign", "false", "false"
+   "utm_content.field", "Name of the field containing the utm_content value in the session", "", "utm_content", "false", "false"
+   "utm_term.field", "Name of the field containing the utm_term value in the session", "", "utm_term", "false", "false"
+   "source_of_traffic.prefix", "Suffix for the source of the traffic related fields", "", "source_of_traffic", "false", "false"
+   "source_of_traffic.hierarchical", "Should the additional source of trafic information fields be added under a hierarchical father field or not.", "", "false", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "Name of the cache service to use.", "", "null", "false", "false"
+   "cache.validity.timeout", "Timeout validity (in seconds) of an entry in the cache.", "", "0", "false", "false"
+   "debug", "If true, an additional debug field is added. If the source info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the source fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+   "**es.index**", "Name of the ES index containing the list of search engines and social network. ", "", "null", "false", "false"
+   "es.type", "Name of the ES type to use.", "", "default", "false", "false"
+   "es.search_engine.field", "Name of the ES field used to specify that the domain is a search engine.", "", "search_engine", "false", "false"
+   "es.social_network.field", "Name of the ES field used to specify that the domain is a social network.", "", "social_network", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/SetSourceOfTraffic-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
+
+IpToFqdn
+--------
+Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToFqdn
+
+Tags
+____
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "false", "false"
+   "overwrite.fqdn.field", "If the field should be overwritten when it already exists.", "", "false", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 84600 seconds, which corresponds to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "false", "false"
+   "resolution.timeout", "The amount of time, in milliseconds, to wait at most for the resolution to occur. This avoids to block the stream for too much time. Default value is 1000ms. If the delay expires and no resolution could occur before, the FQDN field is not created. A special value of 0 disables the logisland timeout and the resolution request may last for many seconds if the IP cannot be translated into a FQDN by the underlying operating system. In any case, whether the timeout occurs in logisland of in the operating system, the fact that a timeout occurs is kept in the cache system so that a resolution request for the same IP will not occur before the cache entry expires.", "", "1000", "false", "false"
+   "debug", "If true, some additional debug fields are added. If the FQDN field is named X, a debug field named X_os_resolution_time_ms contains the resolution time in ms (using the operating system, not the cache). This field is added whether the resolution occurs or time is out. A debug field named  X_os_resolution_timeout contains a boolean value to indicate if the timeout occurred. Finally, a debug field named X_from_cache contains a boolean value to indicate the origin of the FQDN field. The default value for this property is false (debug is disabled.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToFqdn-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToGeo: 
+
+IpToGeo
+-------
+Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToGeo
+
+Tags
+____
+geo, enrich, ip
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**iptogeo.service**", "The reference to the IP to Geo service to use.", "", "null", "false", "false"
+   "geo.fields", "Comma separated list of geo information fields to add to the record. Defaults to '*', which means to include all available fields. If a list of fields is specified and the data is not available, the geo field is not created. The geo fields are dependant on the underlying defined Ip to Geo service. The currently only supported type of Ip to Geo service is the Maxmind Ip to Geo service. This means that the currently supported list of geo fields is the following:**continent**: the identified continent for this IP address. **continent_code**: the identified continent code for this IP address. **city**: the identified city for this IP address. **latitude**: the identified latitude for this IP address. **longitude**: the identified longitude for this IP address. **location**: the identified location for this IP address, defined as Geo-point expressed as a string with the format: 'latitude,longitude'. **accuracy_radius**: the approximate accuracy radius, in kilometers, around the latitude and longitude for the location. **time_zone**: the identified time zone for this IP address. **subdivision_N**: the identified subdivision for this IP address. N is a one-up number at the end of the attribute name, starting with 0. **subdivision_isocode_N**: the iso code matching the identified subdivision_N. **country**: the identified country for this IP address. **country_isocode**: the iso code for the identified country for this IP address. **postalcode**: the identified postal code for this IP address. **lookup_micros**: the number of microseconds that the geo lookup took. The Ip to Geo service must have the lookup_micros property enabled in order to have this field available.", "", "*", "false", "false"
+   "geo.hierarchical", "Should the additional geo information fields be added under a hierarchical father field or not.", "", "true", "false", "false"
+   "geo.hierarchical.suffix", "Suffix to use for the field holding geo information. If geo.hierarchical is true, then use this suffix appended to the IP field name to define the father field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo", "false", "false"
+   "geo.flat.suffix", "Suffix to use for geo information fields when they are flat. If geo.hierarchical is false, then use this suffix appended to the IP field name but before the geo field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo_", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "debug", "If true, an additional debug field is added. If the geo info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToGeo-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.networkpacket.ParseNetworkPacket: 
+
+ParseNetworkPacket
+------------------
+The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode).  In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records. The fields of packet headers are then extracted and made available in dedicated record fields. See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_ for an example of usage of this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
+
+Tags
+____
+PCap, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "**flow.mode**", "Flow Mode. Indicate whether packets are provided in batch mode (via pcap files) or in stream mode (without headers). Allowed values are batch and stream.", "batch, stream", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
+
+BulkAddElasticsearch
+--------------------
+Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**default.index**", "The name of the index to insert into", "", "null", "false", "**true**"
+   "**default.type**", "The type of this document (used by Elasticsearch for indexing and searching)", "", "null", "false", "**true**"
+   "**timebased.index**", "do we add a date suffix", "no (no date added to default index), today (today's date added to default index), yesterday (yesterday's date added to default index)", "no", "false", "false"
+   "es.index.field", "the name of the event field containing es index name => will override index value if set", "", "null", "false", "false"
+   "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/BulkAddElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
+
+FetchHBaseRow
+-------------
+Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.FetchHBaseRow
+
+Tags
+____
+hbase, scan, fetch, get, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "false", "**true**"
+   "**row.identifier.field**", "The field containing the identifier of the row to fetch.", "", "null", "false", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of \"\"<colFamily>:<colQualifier>\"\" pairs to fetch. To return all columns for a given family, leave off the qualifier such as \"\"<colFamily1>,<colFamily2>\"\".", "", "null", "false", "**true**"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "table.name.default", "The table to use if table name field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/FetchHBaseRow-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch: 
+
+MultiGetElasticsearch
+---------------------
+Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.
+Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+
+ - index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.
+ - ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+ - excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :
+
+ - index (same field name as the incoming record) : name of the elasticsearch index.
+ - type (same field name as the incoming record) : name of the elasticsearch type.
+ - id (same field name as the incoming record) : retrieved document id.
+ - a list of String fields containing :
+
+   * field name : the retrieved field name
+   * field value : the retrieved field value
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**es.index.field**", "the name of the incoming records field containing es index name to use in multiget query. ", "", "null", "false", "false"
+   "**es.type.field**", "the name of the incoming records field containing es type name to use in multiget query", "", "null", "false", "false"
+   "**es.ids.field**", "the name of the incoming records field containing es document Ids to use in multiget query", "", "null", "false", "false"
+   "**es.includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "false", "false"
+   "**es.excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/MultiGetElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.PutHBaseCell: 
+
+PutHBaseCell
+------------
+Adds the Contents of a Record to HBase as the value of a single cell
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.PutHBaseCell
+
+Tags
+____
+hadoop, hbase
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to put data into", "", "null", "false", "**true**"
+   "row.identifier.field", "Specifies  field containing the Row ID to use when inserting data into HBase", "", "null", "false", "**true**"
+   "row.identifier.encoding.strategy", "Specifies the data type of Row ID used when inserting data into HBase. The default behavior is to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string to the correct byte[] representation. The Binary option should be used if you are using Binary row keys in HBase", "String (Stores the value of row id as a UTF-8 String.), Binary (Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.)", "String", "false", "false"
+   "**column.family.field**", "The field containing the  Column Family to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**column.qualifier.field**", "The field containing the  Column Qualifier to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**batch.size**", "The maximum number of Records to process in a single execution. The Records will be grouped by table, and a single Put per table will be performed.", "", "25", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "false", "false"
+   "column.family.default", "The column family to use if column family field is not set", "", "null", "false", "false"
+   "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/PutHBaseCell-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.xml.EvaluateXPath: 
+
+EvaluateXPath
+-------------
+Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to new attributes in the records, depending on configuration of the Processor. XPaths are entered by adding user-defined properties; the name of the property maps to the Attribute Name into which the result will be placed. The value of the property must be a valid XPath expression. If the expression matches nothing, no attributes is added. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-xml:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.xml.EvaluateXPath
+
+Tags
+____
+XML, evaluate, XPath
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source**", "Indicates the attribute containing the xml data to evaluate xpath against.", "", "null", "false", "false"
+   "**validate_dtd**", "Specifies whether or not the XML content should be validated against the DTD.", "true, false", "true", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "An attribute", "An XPath expression", " the attribute is set to the result of the XPath Expression.", "", "null", false
+
+Extra informations
+__________________
+.. include:: ./details/EvaluateXPath-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.ConsolidateSession: 
+
+ConsolidateSession
+------------------
+The ConsolidateSession processor is the Logisland entry point to get and process events from the Web Analytics.As an example here is an incoming event from the Web Analytics:
+
+"fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.ConsolidateSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ConsolidateSession-Detail.rst
+See Also:
+_________
+`com.hurence.logisland.processor.webanalytics.IncrementalWebSession`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.DetectOutliers: 
+
+DetectOutliers
+--------------
+Outlier Analysis: A Hybrid Approach
+
+In order to function at scale, a two-phase approach is taken
+
+For every data point
+
+- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
+- Gather a biased sample (biased by recency)
+- Extremely deterministic in space and cheap in computation
+
+For every outlier candidate
+
+- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
+- Expensive computationally, but run infrequently
+
+This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
+
+Module
+______
+com.hurence.logisland:logisland-processor-outlier-detection:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.DetectOutliers
+
+Tags
+____
+analytic, outlier, record, iot, timeseries
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**value.field**", "the numeric field to get the value", "", "record_value", "false", "false"
+   "**time.field**", "the numeric field to get the value", "", "record_time", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "**rotation.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**rotation.policy.amount**", "...", "", "100", "false", "false"
+   "**rotation.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "**chunking.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**chunking.policy.amount**", "...", "", "100", "false", "false"
+   "**chunking.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "sketchy.outlier.algorithm", "...", "SKETCHY_MOVING_MAD", "SKETCHY_MOVING_MAD", "false", "false"
+   "batch.outlier.algorithm", "...", "RAD", "RAD", "false", "false"
+   "global.statistics.min", "minimum value", "", "null", "false", "false"
+   "global.statistics.max", "maximum value", "", "null", "false", "false"
+   "global.statistics.mean", "mean value", "", "null", "false", "false"
+   "global.statistics.stddev", "standard deviation value", "", "null", "false", "false"
+   "**zscore.cutoffs.normal**", "zscoreCutoffs level for normal outlier", "", "0.000000000000001", "false", "false"
+   "**zscore.cutoffs.moderate**", "zscoreCutoffs level for moderate outlier", "", "1.5", "false", "false"
+   "**zscore.cutoffs.severe**", "zscoreCutoffs level for severe outlier", "", "10.0", "false", "false"
+   "zscore.cutoffs.notEnoughData", "zscoreCutoffs level for notEnoughData outlier", "", "100", "false", "false"
+   "smooth", "do smoothing ?", "", "false", "false", "false"
+   "decay", "the decay", "", "0.1", "false", "false"
+   "**min.amount.to.predict**", "minAmountToPredict", "", "100", "false", "false"
+   "min_zscore_percentile", "minZscorePercentile", "", "50.0", "false", "false"
+   "reservoir_size", "the size of points reservoir", "", "100", "false", "false"
+   "rpca.force.diff", "No Description Provided.", "", "null", "false", "false"
+   "rpca.lpenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.min.records", "No Description Provided.", "", "null", "false", "false"
+   "rpca.spenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.threshold", "No Description Provided.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/DetectOutliers-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch: 
+
+EnrichRecordsElasticsearch
+--------------------------
+Enrich input records with content indexed in elasticsearch using multiget queries.
+Each incoming record must be possibly enriched with information stored in elasticsearch. 
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "false", "**true**"
+   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "false", "**true**"
+   "es.type", "The name of the ES type to use in multiget query.", "", "default", "false", "**true**"
+   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "false", "**true**"
+   "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/EnrichRecordsElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.excel.ExcelExtract: 
+
+ExcelExtract
+------------
+Consumes a Microsoft Excel document and converts each worksheet's line to a structured record. The processor is assuming to receive raw excel file as input record.
+
+Module
+______
+com.hurence.logisland:logisland-processor-excel:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.excel.ExcelExtract
+
+Tags
+____
+excel, processor, poi
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "sheets", "Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions. Any sheets not specified in this value will be ignored.", "", "", "false", "false"
+   "skip.columns", "Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.", "", "", "false", "false"
+   "field.names", "The comma separated list representing the names of columns of extracted cells. Order matters! You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+   "skip.rows", "The row number of the first row to start processing.Use this to skip over rows of data at the top of your worksheet that are not part of the dataset.Empty rows of data anywhere in the spreadsheet will always be skipped, no matter what this value is set to.", "", "0", "false", "false"
+   "record.type", "Default type of record", "", "excel_record", "false", "false"
+   "field.row.header", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ExcelExtract-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchIP: 
+
+MatchIP
+-------
+IP address Query matching (using `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>)`_
+
+You can use this processor to handle custom events matching IP address (CIDR)
+The record sent from a matching an IP address record is tagged appropriately.
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchIP
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchIP-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchQuery: 
+
+MatchQuery
+----------
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchQuery
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchQuery-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.bro.ParseBroEvent: 
+
+ParseBroEvent
+-------------
+The ParseBroEvent processor is the Logisland entry point to get and process `Bro <https://www.bro.org>`_ events. The `Bro-Kafka plugin <https://github.com/bro/bro-plugins/tree/master/kafka>`_ should be used and configured in order to have Bro events sent to Kafka. See the `Bro/Logisland tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-bro-events.html>`_ for an example of usage for this processor. The ParseBroEvent processor does some minor pre-processing on incoming Bro events from the Bro-Kafka plugin to adapt them to Logisland.
+
+Basically the events coming from the Bro-Kafka plugin are JSON documents with a first level field indicating the type of the event. The ParseBroEvent processor takes the incoming JSON document, sets the event type in a record_type field and sets the original sub-fields of the JSON event as first level fields in the record. Also any dot in a field name is transformed into an underscore. Thus, for instance, the field id.orig_h becomes id_orig_h. The next processors in the stream can then process the Bro events generated by this ParseBroEvent processor.
+
+As an example here is an incoming event from Bro:
+
+{
+
+   "conn": {
+
+     "id.resp_p": 9092,
+
+     "resp_pkts": 0,
+
+     "resp_ip_bytes": 0,
+
+     "local_orig": true,
+
+     "orig_ip_bytes": 0,
+
+     "orig_pkts": 0,
+
+     "missed_bytes": 0,
+
+     "history": "Cc",
+
+     "tunnel_parents": [],
+
+     "id.orig_p": 56762,
+
+     "local_resp": true,
+
+     "uid": "Ct3Ms01I3Yc6pmMZx7",
+
+     "conn_state": "OTH",
+
+     "id.orig_h": "172.17.0.2",
+
+     "proto": "tcp",
+
+     "id.resp_h": "172.17.0.3",
+
+     "ts": 1487596886.953917
+
+   }
+
+ }
+
+It gets processed and transformed into the following Logisland record by the ParseBroEvent processor:
+
+"@timestamp": "2017-02-20T13:36:32Z"
+
+"record_id": "6361f80a-c5c9-4a16-9045-4bb51736333d"
+
+"record_time": 1487597792782
+
+"record_type": "conn"
+
+"id_resp_p": 9092
+
+"resp_pkts": 0
+
+"resp_ip_bytes": 0
+
+"local_orig": true
+
+"orig_ip_bytes": 0
+
+"orig_pkts": 0
+
+"missed_bytes": 0
+
+"history": "Cc"
+
+"tunnel_parents": []
+
+"id_orig_p": 56762
+
+"local_resp": true
+
+"uid": "Ct3Ms01I3Yc6pmMZx7"
+
+"conn_state": "OTH"
+
+"id_orig_h": "172.17.0.2"
+
+"proto": "tcp"
+
+"id_resp_h": "172.17.0.3"
+
+"ts": 1487596886.953917
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.bro.ParseBroEvent
+
+Tags
+____
+bro, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseBroEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
+
+ParseNetflowEvent
+-----------------
+The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor is the Logisland entry point to  process Netflow (V5) events. NetFlow is a feature introduced on Cisco routers that provides the ability to collect IP network traffic.We can distinguish 2 components:
+
+	- Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one or more flow collectors
+
+	- Flow collector: responsible for reception, storage and pre-processing of flow data received from a flow exporter
+
+The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)
+Netflow are sent to kafka in order to be processed by logisland.
+In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.netflow.ParseNetflowEvent
+
+Tags
+____
+netflow, security
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+   "output.record.type", "the output type of the record", "", "netflowevent", "false", "false"
+   "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseNetflowEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.scripting.python.RunPython: 
+
+RunPython
+---------
+ !!!! WARNING !!!!
+
+The RunPython processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
+
+This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
+
+Module
+______
+com.hurence.logisland:logisland-processor-scripting:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.scripting.python.RunPython
+
+Tags
+____
+scripting, python
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "script.code.imports", "For inline mode only. This is the python code that should hold the import statements if required.", "", "null", "false", "false"
+   "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "false", "false"
+   "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "false", "false"
+   "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "false", "false"
+   "dependencies.path", "The path to the additional dependencies for the user's python code, whether using inline or file mode. This is optional as your code may not have additional dependencies. If you defined **script.path** (so using file mode) and if **dependencies.path** is not defined, Logisland will scan a potential directory named **dependencies** in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "false", "false"
+   "logisland.dependencies.path", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this parameter.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/RunPython-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URIDecoder: 
+
+URIDecoder
+----------
+Decode one or more field containing an URI with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URIDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLCleaner: 
+
+URLCleaner
+----------
+Remove some or all query parameters from one or more field containing an uri which should be preferably encoded.
+If the uri is not encoded the behaviour is not defined in case the decoded uri contains '#', '?', '=', '&' which were encoded.
+Indeed this processor assumes that the start of query part of the uri start at the first '?' then end at the first '#' or at the end of the uri as
+specified by rfc3986 available at https://tools.ietf.org/html/rfc3986#section-3.4. 
+We assume as well that key value pairs are separed by '=', and are separed by '&': exemple 'param1=value1&param2=value2'.
+The processor can remove also parameters that have only a name and no value. The character used to separate the key and the value '=' is configurable.
+The character used to separate two parameters '&' is also configurable.
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLCleaner
+
+Tags
+____
+record, fields, url, params, param, remove, keep, query, uri, parameter, clean, decoded, raw
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**url.fields**", "List of fields (URL) to decode and optionnaly the output field for the url modified. Syntax should be <name>,<name:newName>,...,<name>. So fields name can not contain ',' nor ':'", "", "null", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+   "url.keep.params", "List of param names to keep in the input url (others will be removed). Can not be given at the same time as url.remove.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.params", "List of param names to remove from the input url (others will be kept). Can not be given at the same time as url.keep.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.all", "Remove all params if true.", "", "null", "false", "false"
+   "parameter.separator", "the character to use to separate the parameters in the query part of the uris", "", "&", "false", "false"
+   "key.value.separator", "the character to use to separate the parameter name from the parameter value in the query part of the uris", "", "=", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLDecoder: 
+
+URLDecoder
+----------
+Decode one or more field containing an URL with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+   "charset", "Charset to use to decode the URL", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.useragent.ParseUserAgent: 
+
+ParseUserAgent
+--------------
+The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest. There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them. This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.
+
+Module
+______
+com.hurence.logisland:logisland-processor-useragent:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.useragent.ParseUserAgent
+
+Tags
+____
+User-Agent, clickstream, DMP
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "cache.enabled", "Enable caching. Caching to avoid to redo the same computation for many identical User-Agent strings.", "", "true", "false", "false"
+   "cache.size", "Set the size of the cache.", "", "1000", "false", "false"
+   "**useragent.field**", "Must contain the name of the field that contains the User-Agent value in the incoming record.", "", "null", "false", "false"
+   "useragent.keep", "Defines if the field that contained the User-Agent must be kept or not in the resulting records.", "", "true", "false", "false"
+   "confidence.enabled", "Enable confidence reporting. Each field will report a confidence attribute with a value comprised between 0 and 10000.", "", "false", "false", "false"
+   "ambiguity.enabled", "Enable ambiguity reporting. Reports a count of ambiguities.", "", "false", "false", "false"
+   "fields", "Defines the fields to be returned.", "", "DeviceClass, DeviceName, DeviceBrand, DeviceCpu, DeviceFirmwareVersion, DeviceVersion, OperatingSystemClass, OperatingSystemName, OperatingSystemVersion, OperatingSystemNameVersion, OperatingSystemVersionBuild, LayoutEngineClass, LayoutEngineName, LayoutEngineVersion, LayoutEngineVersionMajor, LayoutEngineNameVersion, LayoutEngineNameVersionMajor, LayoutEngineBuild, AgentClass, AgentName, AgentVersion, AgentVersionMajor, AgentNameVersion, AgentNameVersionMajor, AgentBuild, AgentLanguage, AgentLanguageCode, AgentInformationEmail, AgentInformationUrl, AgentSecurity, AgentUuid, FacebookCarrier, FacebookDeviceClass, FacebookDeviceName, FacebookDeviceVersion, FacebookFBOP, FacebookFBSS, FacebookOperatingSystemName, FacebookOperatingSystemVersion, Anonymized, HackerAttackVector, HackerToolkit, KoboAffiliate, KoboPlatformId, IECompatibilityVersion, IECompatibilityVersionMajor, IECompatibilityNameVersion, IECompatibilityNameVersionMajor, __SyntaxError__, Carrier, GSAInstallationID, WebviewAppName, WebviewAppNameVersionMajor, WebviewAppVersion, WebviewAppVersionMajor", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseUserAgent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.CalculWebSession: 
+
+CalculWebSession
+----------------
+This processor creates web-sessions based on incoming web-events.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.CalculWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+   "number.of.future.session.when.event.from.past", "The number of session it will look for when searching session of last events", "", "1", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/CalculWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.IncrementalWebSession: 
+
+IncrementalWebSession
+---------------------
+This processor creates and updates web-sessions based on incoming web-events. Note that both web-sessions and web-events are stored in elasticsearch.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ Then each web-session associated to each group is retrieved from elasticsearch.
+ In case none exists yet then a new web session is created based on the first web event.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, or retrieved, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- are save in elasticsearch. And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.IncrementalWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+   "number.of.future.session.when.event.from.past", "The number of session it will look for when searching session of last events", "", "1", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IncrementalWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic: 
+
+SetSourceOfTraffic
+------------------
+Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
+including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
+When analysing user experience on a webshop, it is crucial to collect, process, and report the campaign and traffic-source data. 
+To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
+i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
+, the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
+By default the source of traffic information are placed in a flat structure (specified by the **source_of_traffic.prefix** property
+with a default value of source_of_traffic). To work properly the SetSourceOfTraffic processor needs to have access to an 
+Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic
+
+Tags
+____
+session, traffic, source, web, analytics
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "referer.field", "Name of the field containing the referer value in the session", "", "referer", "false", "false"
+   "first.visited.page.field", "Name of the field containing the first visited page in the session", "", "firstVisitedPage", "false", "false"
+   "utm_source.field", "Name of the field containing the utm_source value in the session", "", "utm_source", "false", "false"
+   "utm_medium.field", "Name of the field containing the utm_medium value in the session", "", "utm_medium", "false", "false"
+   "utm_campaign.field", "Name of the field containing the utm_campaign value in the session", "", "utm_campaign", "false", "false"
+   "utm_content.field", "Name of the field containing the utm_content value in the session", "", "utm_content", "false", "false"
+   "utm_term.field", "Name of the field containing the utm_term value in the session", "", "utm_term", "false", "false"
+   "source_of_traffic.prefix", "Suffix for the source of the traffic related fields", "", "source_of_traffic", "false", "false"
+   "source_of_traffic.hierarchical", "Should the additional source of trafic information fields be added under a hierarchical father field or not.", "", "false", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "Name of the cache service to use.", "", "null", "false", "false"
+   "cache.validity.timeout", "Timeout validity (in seconds) of an entry in the cache.", "", "0", "false", "false"
+   "debug", "If true, an additional debug field is added. If the source info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the source fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+   "**es.index**", "Name of the ES index containing the list of search engines and social network. ", "", "null", "false", "false"
+   "es.type", "Name of the ES type to use.", "", "default", "false", "false"
+   "es.search_engine.field", "Name of the ES field used to specify that the domain is a search engine.", "", "search_engine", "false", "false"
+   "es.social_network.field", "Name of the ES field used to specify that the domain is a social network.", "", "social_network", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/SetSourceOfTraffic-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
+
+IpToFqdn
+--------
+Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToFqdn
+
+Tags
+____
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "false", "false"
+   "overwrite.fqdn.field", "If the field should be overwritten when it already exists.", "", "false", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 84600 seconds, which corresponds to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "false", "false"
+   "resolution.timeout", "The amount of time, in milliseconds, to wait at most for the resolution to occur. This avoids to block the stream for too much time. Default value is 1000ms. If the delay expires and no resolution could occur before, the FQDN field is not created. A special value of 0 disables the logisland timeout and the resolution request may last for many seconds if the IP cannot be translated into a FQDN by the underlying operating system. In any case, whether the timeout occurs in logisland of in the operating system, the fact that a timeout occurs is kept in the cache system so that a resolution request for the same IP will not occur before the cache entry expires.", "", "1000", "false", "false"
+   "debug", "If true, some additional debug fields are added. If the FQDN field is named X, a debug field named X_os_resolution_time_ms contains the resolution time in ms (using the operating system, not the cache). This field is added whether the resolution occurs or time is out. A debug field named  X_os_resolution_timeout contains a boolean value to indicate if the timeout occurred. Finally, a debug field named X_from_cache contains a boolean value to indicate the origin of the FQDN field. The default value for this property is false (debug is disabled.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToFqdn-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToGeo: 
+
+IpToGeo
+-------
+Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToGeo
+
+Tags
+____
+geo, enrich, ip
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**iptogeo.service**", "The reference to the IP to Geo service to use.", "", "null", "false", "false"
+   "geo.fields", "Comma separated list of geo information fields to add to the record. Defaults to '*', which means to include all available fields. If a list of fields is specified and the data is not available, the geo field is not created. The geo fields are dependant on the underlying defined Ip to Geo service. The currently only supported type of Ip to Geo service is the Maxmind Ip to Geo service. This means that the currently supported list of geo fields is the following:**continent**: the identified continent for this IP address. **continent_code**: the identified continent code for this IP address. **city**: the identified city for this IP address. **latitude**: the identified latitude for this IP address. **longitude**: the identified longitude for this IP address. **location**: the identified location for this IP address, defined as Geo-point expressed as a string with the format: 'latitude,longitude'. **accuracy_radius**: the approximate accuracy radius, in kilometers, around the latitude and longitude for the location. **time_zone**: the identified time zone for this IP address. **subdivision_N**: the identified subdivision for this IP address. N is a one-up number at the end of the attribute name, starting with 0. **subdivision_isocode_N**: the iso code matching the identified subdivision_N. **country**: the identified country for this IP address. **country_isocode**: the iso code for the identified country for this IP address. **postalcode**: the identified postal code for this IP address. **lookup_micros**: the number of microseconds that the geo lookup took. The Ip to Geo service must have the lookup_micros property enabled in order to have this field available.", "", "*", "false", "false"
+   "geo.hierarchical", "Should the additional geo information fields be added under a hierarchical father field or not.", "", "true", "false", "false"
+   "geo.hierarchical.suffix", "Suffix to use for the field holding geo information. If geo.hierarchical is true, then use this suffix appended to the IP field name to define the father field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo", "false", "false"
+   "geo.flat.suffix", "Suffix to use for geo information fields when they are flat. If geo.hierarchical is false, then use this suffix appended to the IP field name but before the geo field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo_", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "debug", "If true, an additional debug field is added. If the geo info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToGeo-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.networkpacket.ParseNetworkPacket: 
+
+ParseNetworkPacket
+------------------
+The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode).  In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records. The fields of packet headers are then extracted and made available in dedicated record fields. See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_ for an example of usage of this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
+
+Tags
+____
+PCap, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "**flow.mode**", "Flow Mode. Indicate whether packets are provided in batch mode (via pcap files) or in stream mode (without headers). Allowed values are batch and stream.", "batch, stream", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
+
+BulkAddElasticsearch
+--------------------
+Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**default.index**", "The name of the index to insert into", "", "null", "false", "**true**"
+   "**default.type**", "The type of this document (used by Elasticsearch for indexing and searching)", "", "null", "false", "**true**"
+   "**timebased.index**", "do we add a date suffix", "no (no date added to default index), today (today's date added to default index), yesterday (yesterday's date added to default index)", "no", "false", "false"
+   "es.index.field", "the name of the event field containing es index name => will override index value if set", "", "null", "false", "false"
+   "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/BulkAddElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
+
+FetchHBaseRow
+-------------
+Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.FetchHBaseRow
+
+Tags
+____
+hbase, scan, fetch, get, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "false", "**true**"
+   "**row.identifier.field**", "The field containing the identifier of the row to fetch.", "", "null", "false", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of \"\"<colFamily>:<colQualifier>\"\" pairs to fetch. To return all columns for a given family, leave off the qualifier such as \"\"<colFamily1>,<colFamily2>\"\".", "", "null", "false", "**true**"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "table.name.default", "The table to use if table name field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/FetchHBaseRow-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch: 
+
+MultiGetElasticsearch
+---------------------
+Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.
+Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+
+ - index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.
+ - ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+ - excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :
+
+ - index (same field name as the incoming record) : name of the elasticsearch index.
+ - type (same field name as the incoming record) : name of the elasticsearch type.
+ - id (same field name as the incoming record) : retrieved document id.
+ - a list of String fields containing :
+
+   * field name : the retrieved field name
+   * field value : the retrieved field value
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**es.index.field**", "the name of the incoming records field containing es index name to use in multiget query. ", "", "null", "false", "false"
+   "**es.type.field**", "the name of the incoming records field containing es type name to use in multiget query", "", "null", "false", "false"
+   "**es.ids.field**", "the name of the incoming records field containing es document Ids to use in multiget query", "", "null", "false", "false"
+   "**es.includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "false", "false"
+   "**es.excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/MultiGetElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.PutHBaseCell: 
+
+PutHBaseCell
+------------
+Adds the Contents of a Record to HBase as the value of a single cell
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.PutHBaseCell
+
+Tags
+____
+hadoop, hbase
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to put data into", "", "null", "false", "**true**"
+   "row.identifier.field", "Specifies  field containing the Row ID to use when inserting data into HBase", "", "null", "false", "**true**"
+   "row.identifier.encoding.strategy", "Specifies the data type of Row ID used when inserting data into HBase. The default behavior is to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string to the correct byte[] representation. The Binary option should be used if you are using Binary row keys in HBase", "String (Stores the value of row id as a UTF-8 String.), Binary (Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.)", "String", "false", "false"
+   "**column.family.field**", "The field containing the  Column Family to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**column.qualifier.field**", "The field containing the  Column Qualifier to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**batch.size**", "The maximum number of Records to process in a single execution. The Records will be grouped by table, and a single Put per table will be performed.", "", "25", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "false", "false"
+   "column.family.default", "The column family to use if column family field is not set", "", "null", "false", "false"
+   "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/PutHBaseCell-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.xml.EvaluateXPath: 
+
+EvaluateXPath
+-------------
+Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to new attributes in the records, depending on configuration of the Processor. XPaths are entered by adding user-defined properties; the name of the property maps to the Attribute Name into which the result will be placed. The value of the property must be a valid XPath expression. If the expression matches nothing, no attributes is added. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-xml:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.xml.EvaluateXPath
+
+Tags
+____
+XML, evaluate, XPath
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source**", "Indicates the attribute containing the xml data to evaluate xpath against.", "", "null", "false", "false"
+   "**validate_dtd**", "Specifies whether or not the XML content should be validated against the DTD.", "true, false", "true", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "An attribute", "An XPath expression", " the attribute is set to the result of the XPath Expression.", "", "null", false
+
+Extra informations
+__________________
+.. include:: ./details/EvaluateXPath-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.ConsolidateSession: 
+
+ConsolidateSession
+------------------
+The ConsolidateSession processor is the Logisland entry point to get and process events from the Web Analytics.As an example here is an incoming event from the Web Analytics:
+
+"fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.ConsolidateSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ConsolidateSession-Detail.rst
+See Also:
+_________
+`com.hurence.logisland.processor.webanalytics.IncrementalWebSession`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.DetectOutliers: 
+
+DetectOutliers
+--------------
+Outlier Analysis: A Hybrid Approach
+
+In order to function at scale, a two-phase approach is taken
+
+For every data point
+
+- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
+- Gather a biased sample (biased by recency)
+- Extremely deterministic in space and cheap in computation
+
+For every outlier candidate
+
+- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
+- Expensive computationally, but run infrequently
+
+This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
+
+Module
+______
+com.hurence.logisland:logisland-processor-outlier-detection:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.DetectOutliers
+
+Tags
+____
+analytic, outlier, record, iot, timeseries
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**value.field**", "the numeric field to get the value", "", "record_value", "false", "false"
+   "**time.field**", "the numeric field to get the value", "", "record_time", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "**rotation.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**rotation.policy.amount**", "...", "", "100", "false", "false"
+   "**rotation.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "**chunking.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**chunking.policy.amount**", "...", "", "100", "false", "false"
+   "**chunking.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "sketchy.outlier.algorithm", "...", "SKETCHY_MOVING_MAD", "SKETCHY_MOVING_MAD", "false", "false"
+   "batch.outlier.algorithm", "...", "RAD", "RAD", "false", "false"
+   "global.statistics.min", "minimum value", "", "null", "false", "false"
+   "global.statistics.max", "maximum value", "", "null", "false", "false"
+   "global.statistics.mean", "mean value", "", "null", "false", "false"
+   "global.statistics.stddev", "standard deviation value", "", "null", "false", "false"
+   "**zscore.cutoffs.normal**", "zscoreCutoffs level for normal outlier", "", "0.000000000000001", "false", "false"
+   "**zscore.cutoffs.moderate**", "zscoreCutoffs level for moderate outlier", "", "1.5", "false", "false"
+   "**zscore.cutoffs.severe**", "zscoreCutoffs level for severe outlier", "", "10.0", "false", "false"
+   "zscore.cutoffs.notEnoughData", "zscoreCutoffs level for notEnoughData outlier", "", "100", "false", "false"
+   "smooth", "do smoothing ?", "", "false", "false", "false"
+   "decay", "the decay", "", "0.1", "false", "false"
+   "**min.amount.to.predict**", "minAmountToPredict", "", "100", "false", "false"
+   "min_zscore_percentile", "minZscorePercentile", "", "50.0", "false", "false"
+   "reservoir_size", "the size of points reservoir", "", "100", "false", "false"
+   "rpca.force.diff", "No Description Provided.", "", "null", "false", "false"
+   "rpca.lpenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.min.records", "No Description Provided.", "", "null", "false", "false"
+   "rpca.spenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.threshold", "No Description Provided.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/DetectOutliers-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch: 
+
+EnrichRecordsElasticsearch
+--------------------------
+Enrich input records with content indexed in elasticsearch using multiget queries.
+Each incoming record must be possibly enriched with information stored in elasticsearch. 
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "false", "**true**"
+   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "false", "**true**"
+   "es.type", "The name of the ES type to use in multiget query.", "", "default", "false", "**true**"
+   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "false", "**true**"
+   "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/EnrichRecordsElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.excel.ExcelExtract: 
+
+ExcelExtract
+------------
+Consumes a Microsoft Excel document and converts each worksheet's line to a structured record. The processor is assuming to receive raw excel file as input record.
+
+Module
+______
+com.hurence.logisland:logisland-processor-excel:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.excel.ExcelExtract
+
+Tags
+____
+excel, processor, poi
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "sheets", "Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions. Any sheets not specified in this value will be ignored.", "", "", "false", "false"
+   "skip.columns", "Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.", "", "", "false", "false"
+   "field.names", "The comma separated list representing the names of columns of extracted cells. Order matters! You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+   "skip.rows", "The row number of the first row to start processing.Use this to skip over rows of data at the top of your worksheet that are not part of the dataset.Empty rows of data anywhere in the spreadsheet will always be skipped, no matter what this value is set to.", "", "0", "false", "false"
+   "record.type", "Default type of record", "", "excel_record", "false", "false"
+   "field.row.header", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ExcelExtract-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchIP: 
+
+MatchIP
+-------
+IP address Query matching (using `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>)`_
+
+You can use this processor to handle custom events matching IP address (CIDR)
+The record sent from a matching an IP address record is tagged appropriately.
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchIP
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchIP-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchQuery: 
+
+MatchQuery
+----------
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchQuery
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchQuery-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.bro.ParseBroEvent: 
+
+ParseBroEvent
+-------------
+The ParseBroEvent processor is the Logisland entry point to get and process `Bro <https://www.bro.org>`_ events. The `Bro-Kafka plugin <https://github.com/bro/bro-plugins/tree/master/kafka>`_ should be used and configured in order to have Bro events sent to Kafka. See the `Bro/Logisland tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-bro-events.html>`_ for an example of usage for this processor. The ParseBroEvent processor does some minor pre-processing on incoming Bro events from the Bro-Kafka plugin to adapt them to Logisland.
+
+Basically the events coming from the Bro-Kafka plugin are JSON documents with a first level field indicating the type of the event. The ParseBroEvent processor takes the incoming JSON document, sets the event type in a record_type field and sets the original sub-fields of the JSON event as first level fields in the record. Also any dot in a field name is transformed into an underscore. Thus, for instance, the field id.orig_h becomes id_orig_h. The next processors in the stream can then process the Bro events generated by this ParseBroEvent processor.
+
+As an example here is an incoming event from Bro:
+
+{
+
+   "conn": {
+
+     "id.resp_p": 9092,
+
+     "resp_pkts": 0,
+
+     "resp_ip_bytes": 0,
+
+     "local_orig": true,
+
+     "orig_ip_bytes": 0,
+
+     "orig_pkts": 0,
+
+     "missed_bytes": 0,
+
+     "history": "Cc",
+
+     "tunnel_parents": [],
+
+     "id.orig_p": 56762,
+
+     "local_resp": true,
+
+     "uid": "Ct3Ms01I3Yc6pmMZx7",
+
+     "conn_state": "OTH",
+
+     "id.orig_h": "172.17.0.2",
+
+     "proto": "tcp",
+
+     "id.resp_h": "172.17.0.3",
+
+     "ts": 1487596886.953917
+
+   }
+
+ }
+
+It gets processed and transformed into the following Logisland record by the ParseBroEvent processor:
+
+"@timestamp": "2017-02-20T13:36:32Z"
+
+"record_id": "6361f80a-c5c9-4a16-9045-4bb51736333d"
+
+"record_time": 1487597792782
+
+"record_type": "conn"
+
+"id_resp_p": 9092
+
+"resp_pkts": 0
+
+"resp_ip_bytes": 0
+
+"local_orig": true
+
+"orig_ip_bytes": 0
+
+"orig_pkts": 0
+
+"missed_bytes": 0
+
+"history": "Cc"
+
+"tunnel_parents": []
+
+"id_orig_p": 56762
+
+"local_resp": true
+
+"uid": "Ct3Ms01I3Yc6pmMZx7"
+
+"conn_state": "OTH"
+
+"id_orig_h": "172.17.0.2"
+
+"proto": "tcp"
+
+"id_resp_h": "172.17.0.3"
+
+"ts": 1487596886.953917
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.bro.ParseBroEvent
+
+Tags
+____
+bro, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseBroEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
+
+ParseNetflowEvent
+-----------------
+The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor is the Logisland entry point to  process Netflow (V5) events. NetFlow is a feature introduced on Cisco routers that provides the ability to collect IP network traffic.We can distinguish 2 components:
+
+	- Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one or more flow collectors
+
+	- Flow collector: responsible for reception, storage and pre-processing of flow data received from a flow exporter
+
+The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)
+Netflow are sent to kafka in order to be processed by logisland.
+In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.netflow.ParseNetflowEvent
+
+Tags
+____
+netflow, security
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+   "output.record.type", "the output type of the record", "", "netflowevent", "false", "false"
+   "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseNetflowEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.scripting.python.RunPython: 
+
+RunPython
+---------
+ !!!! WARNING !!!!
+
+The RunPython processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
+
+This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
+
+Module
+______
+com.hurence.logisland:logisland-processor-scripting:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.scripting.python.RunPython
+
+Tags
+____
+scripting, python
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "script.code.imports", "For inline mode only. This is the python code that should hold the import statements if required.", "", "null", "false", "false"
+   "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "false", "false"
+   "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "false", "false"
+   "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "false", "false"
+   "dependencies.path", "The path to the additional dependencies for the user's python code, whether using inline or file mode. This is optional as your code may not have additional dependencies. If you defined **script.path** (so using file mode) and if **dependencies.path** is not defined, Logisland will scan a potential directory named **dependencies** in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "false", "false"
+   "logisland.dependencies.path", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this parameter.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/RunPython-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URIDecoder: 
+
+URIDecoder
+----------
+Decode one or more field containing an URI with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URIDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLCleaner: 
+
+URLCleaner
+----------
+Remove some or all query parameters from one or more field containing an uri which should be preferably encoded.
+If the uri is not encoded the behaviour is not defined in case the decoded uri contains '#', '?', '=', '&' which were encoded.
+Indeed this processor assumes that the start of query part of the uri start at the first '?' then end at the first '#' or at the end of the uri as
+specified by rfc3986 available at https://tools.ietf.org/html/rfc3986#section-3.4. 
+We assume as well that key value pairs are separed by '=', and are separed by '&': exemple 'param1=value1&param2=value2'.
+The processor can remove also parameters that have only a name and no value. The character used to separate the key and the value '=' is configurable.
+The character used to separate two parameters '&' is also configurable.
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLCleaner
+
+Tags
+____
+record, fields, url, params, param, remove, keep, query, uri, parameter, clean, decoded, raw
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**url.fields**", "List of fields (URL) to decode and optionnaly the output field for the url modified. Syntax should be <name>,<name:newName>,...,<name>. So fields name can not contain ',' nor ':'", "", "null", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+   "url.keep.params", "List of param names to keep in the input url (others will be removed). Can not be given at the same time as url.remove.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.params", "List of param names to remove from the input url (others will be kept). Can not be given at the same time as url.keep.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.all", "Remove all params if true.", "", "null", "false", "false"
+   "parameter.separator", "the character to use to separate the parameters in the query part of the uris", "", "&", "false", "false"
+   "key.value.separator", "the character to use to separate the parameter name from the parameter value in the query part of the uris", "", "=", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLDecoder: 
+
+URLDecoder
+----------
+Decode one or more field containing an URL with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+   "charset", "Charset to use to decode the URL", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.useragent.ParseUserAgent: 
+
+ParseUserAgent
+--------------
+The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest. There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them. This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.
+
+Module
+______
+com.hurence.logisland:logisland-processor-useragent:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.useragent.ParseUserAgent
+
+Tags
+____
+User-Agent, clickstream, DMP
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "cache.enabled", "Enable caching. Caching to avoid to redo the same computation for many identical User-Agent strings.", "", "true", "false", "false"
+   "cache.size", "Set the size of the cache.", "", "1000", "false", "false"
+   "**useragent.field**", "Must contain the name of the field that contains the User-Agent value in the incoming record.", "", "null", "false", "false"
+   "useragent.keep", "Defines if the field that contained the User-Agent must be kept or not in the resulting records.", "", "true", "false", "false"
+   "confidence.enabled", "Enable confidence reporting. Each field will report a confidence attribute with a value comprised between 0 and 10000.", "", "false", "false", "false"
+   "ambiguity.enabled", "Enable ambiguity reporting. Reports a count of ambiguities.", "", "false", "false", "false"
+   "fields", "Defines the fields to be returned.", "", "DeviceClass, DeviceName, DeviceBrand, DeviceCpu, DeviceFirmwareVersion, DeviceVersion, OperatingSystemClass, OperatingSystemName, OperatingSystemVersion, OperatingSystemNameVersion, OperatingSystemVersionBuild, LayoutEngineClass, LayoutEngineName, LayoutEngineVersion, LayoutEngineVersionMajor, LayoutEngineNameVersion, LayoutEngineNameVersionMajor, LayoutEngineBuild, AgentClass, AgentName, AgentVersion, AgentVersionMajor, AgentNameVersion, AgentNameVersionMajor, AgentBuild, AgentLanguage, AgentLanguageCode, AgentInformationEmail, AgentInformationUrl, AgentSecurity, AgentUuid, FacebookCarrier, FacebookDeviceClass, FacebookDeviceName, FacebookDeviceVersion, FacebookFBOP, FacebookFBSS, FacebookOperatingSystemName, FacebookOperatingSystemVersion, Anonymized, HackerAttackVector, HackerToolkit, KoboAffiliate, KoboPlatformId, IECompatibilityVersion, IECompatibilityVersionMajor, IECompatibilityNameVersion, IECompatibilityNameVersionMajor, __SyntaxError__, Carrier, GSAInstallationID, WebviewAppName, WebviewAppNameVersionMajor, WebviewAppVersion, WebviewAppVersionMajor", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseUserAgent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.CalculWebSession: 
+
+CalculWebSession
+----------------
+This processor creates web-sessions based on incoming web-events.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.CalculWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/CalculWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.IncrementalWebSession: 
+
+IncrementalWebSession
+---------------------
+This processor creates and updates web-sessions based on incoming web-events. Note that both web-sessions and web-events are stored in elasticsearch.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ Then each web-session associated to each group is retrieved from elasticsearch.
+ In case none exists yet then a new web session is created based on the first web event.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, or retrieved, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- are save in elasticsearch. And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.IncrementalWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+   "number.of.future.session.when.event.from.past", "The number of session it will look for when searching session of last events", "", "1", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IncrementalWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic: 
+
+SetSourceOfTraffic
+------------------
+Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
+including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
+When analysing user experience on a webshop, it is crucial to collect, process, and report the campaign and traffic-source data. 
+To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
+i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
+, the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
+By default the source of traffic information are placed in a flat structure (specified by the **source_of_traffic.prefix** property
+with a default value of source_of_traffic). To work properly the SetSourceOfTraffic processor needs to have access to an 
+Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic
+
+Tags
+____
+session, traffic, source, web, analytics
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "referer.field", "Name of the field containing the referer value in the session", "", "referer", "false", "false"
+   "first.visited.page.field", "Name of the field containing the first visited page in the session", "", "firstVisitedPage", "false", "false"
+   "utm_source.field", "Name of the field containing the utm_source value in the session", "", "utm_source", "false", "false"
+   "utm_medium.field", "Name of the field containing the utm_medium value in the session", "", "utm_medium", "false", "false"
+   "utm_campaign.field", "Name of the field containing the utm_campaign value in the session", "", "utm_campaign", "false", "false"
+   "utm_content.field", "Name of the field containing the utm_content value in the session", "", "utm_content", "false", "false"
+   "utm_term.field", "Name of the field containing the utm_term value in the session", "", "utm_term", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic", "false", "false"
+   "source_of_traffic.hierarchical", "Should the additional source of trafic information fields be added under a hierarchical father field or not.", "", "false", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "Name of the cache service to use.", "", "null", "false", "false"
+   "cache.validity.timeout", "Timeout validity (in seconds) of an entry in the cache.", "", "0", "false", "false"
+   "debug", "If true, an additional debug field is added. If the source info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the source fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+   "**es.index**", "Name of the ES index containing the list of search engines and social network. ", "", "null", "false", "false"
+   "es.type", "Name of the ES type to use.", "", "default", "false", "false"
+   "es.search_engine.field", "Name of the ES field used to specify that the domain is a search engine.", "", "search_engine", "false", "false"
+   "es.social_network.field", "Name of the ES field used to specify that the domain is a social network.", "", "social_network", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/SetSourceOfTraffic-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
+
+IpToFqdn
+--------
+Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToFqdn
+
+Tags
+____
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "false", "false"
+   "overwrite.fqdn.field", "If the field should be overwritten when it already exists.", "", "false", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 84600 seconds, which corresponds to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "false", "false"
+   "resolution.timeout", "The amount of time, in milliseconds, to wait at most for the resolution to occur. This avoids to block the stream for too much time. Default value is 1000ms. If the delay expires and no resolution could occur before, the FQDN field is not created. A special value of 0 disables the logisland timeout and the resolution request may last for many seconds if the IP cannot be translated into a FQDN by the underlying operating system. In any case, whether the timeout occurs in logisland of in the operating system, the fact that a timeout occurs is kept in the cache system so that a resolution request for the same IP will not occur before the cache entry expires.", "", "1000", "false", "false"
+   "debug", "If true, some additional debug fields are added. If the FQDN field is named X, a debug field named X_os_resolution_time_ms contains the resolution time in ms (using the operating system, not the cache). This field is added whether the resolution occurs or time is out. A debug field named  X_os_resolution_timeout contains a boolean value to indicate if the timeout occurred. Finally, a debug field named X_from_cache contains a boolean value to indicate the origin of the FQDN field. The default value for this property is false (debug is disabled.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToFqdn-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToGeo: 
+
+IpToGeo
+-------
+Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToGeo
+
+Tags
+____
+geo, enrich, ip
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**iptogeo.service**", "The reference to the IP to Geo service to use.", "", "null", "false", "false"
+   "geo.fields", "Comma separated list of geo information fields to add to the record. Defaults to '*', which means to include all available fields. If a list of fields is specified and the data is not available, the geo field is not created. The geo fields are dependant on the underlying defined Ip to Geo service. The currently only supported type of Ip to Geo service is the Maxmind Ip to Geo service. This means that the currently supported list of geo fields is the following:**continent**: the identified continent for this IP address. **continent_code**: the identified continent code for this IP address. **city**: the identified city for this IP address. **latitude**: the identified latitude for this IP address. **longitude**: the identified longitude for this IP address. **location**: the identified location for this IP address, defined as Geo-point expressed as a string with the format: 'latitude,longitude'. **accuracy_radius**: the approximate accuracy radius, in kilometers, around the latitude and longitude for the location. **time_zone**: the identified time zone for this IP address. **subdivision_N**: the identified subdivision for this IP address. N is a one-up number at the end of the attribute name, starting with 0. **subdivision_isocode_N**: the iso code matching the identified subdivision_N. **country**: the identified country for this IP address. **country_isocode**: the iso code for the identified country for this IP address. **postalcode**: the identified postal code for this IP address. **lookup_micros**: the number of microseconds that the geo lookup took. The Ip to Geo service must have the lookup_micros property enabled in order to have this field available.", "", "*", "false", "false"
+   "geo.hierarchical", "Should the additional geo information fields be added under a hierarchical father field or not.", "", "true", "false", "false"
+   "geo.hierarchical.suffix", "Suffix to use for the field holding geo information. If geo.hierarchical is true, then use this suffix appended to the IP field name to define the father field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo", "false", "false"
+   "geo.flat.suffix", "Suffix to use for geo information fields when they are flat. If geo.hierarchical is false, then use this suffix appended to the IP field name but before the geo field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo_", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "debug", "If true, an additional debug field is added. If the geo info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToGeo-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.networkpacket.ParseNetworkPacket: 
+
+ParseNetworkPacket
+------------------
+The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode).  In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records. The fields of packet headers are then extracted and made available in dedicated record fields. See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_ for an example of usage of this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
+
+Tags
+____
+PCap, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "**flow.mode**", "Flow Mode. Indicate whether packets are provided in batch mode (via pcap files) or in stream mode (without headers). Allowed values are batch and stream.", "batch, stream", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
+
+BulkAddElasticsearch
+--------------------
+Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**default.index**", "The name of the index to insert into", "", "null", "false", "**true**"
+   "**default.type**", "The type of this document (used by Elasticsearch for indexing and searching)", "", "null", "false", "**true**"
+   "**timebased.index**", "do we add a date suffix", "no (no date added to default index), today (today's date added to default index), yesterday (yesterday's date added to default index)", "no", "false", "false"
+   "es.index.field", "the name of the event field containing es index name => will override index value if set", "", "null", "false", "false"
+   "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/BulkAddElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
+
+FetchHBaseRow
+-------------
+Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.FetchHBaseRow
+
+Tags
+____
+hbase, scan, fetch, get, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "false", "**true**"
+   "**row.identifier.field**", "The field containing the identifier of the row to fetch.", "", "null", "false", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of \"\"<colFamily>:<colQualifier>\"\" pairs to fetch. To return all columns for a given family, leave off the qualifier such as \"\"<colFamily1>,<colFamily2>\"\".", "", "null", "false", "**true**"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "table.name.default", "The table to use if table name field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/FetchHBaseRow-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch: 
+
+MultiGetElasticsearch
+---------------------
+Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.
+Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+
+ - index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.
+ - ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+ - excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :
+
+ - index (same field name as the incoming record) : name of the elasticsearch index.
+ - type (same field name as the incoming record) : name of the elasticsearch type.
+ - id (same field name as the incoming record) : retrieved document id.
+ - a list of String fields containing :
+
+   * field name : the retrieved field name
+   * field value : the retrieved field value
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**es.index.field**", "the name of the incoming records field containing es index name to use in multiget query. ", "", "null", "false", "false"
+   "**es.type.field**", "the name of the incoming records field containing es type name to use in multiget query", "", "null", "false", "false"
+   "**es.ids.field**", "the name of the incoming records field containing es document Ids to use in multiget query", "", "null", "false", "false"
+   "**es.includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "false", "false"
+   "**es.excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/MultiGetElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.PutHBaseCell: 
+
+PutHBaseCell
+------------
+Adds the Contents of a Record to HBase as the value of a single cell
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.PutHBaseCell
+
+Tags
+____
+hadoop, hbase
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to put data into", "", "null", "false", "**true**"
+   "row.identifier.field", "Specifies  field containing the Row ID to use when inserting data into HBase", "", "null", "false", "**true**"
+   "row.identifier.encoding.strategy", "Specifies the data type of Row ID used when inserting data into HBase. The default behavior is to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string to the correct byte[] representation. The Binary option should be used if you are using Binary row keys in HBase", "String (Stores the value of row id as a UTF-8 String.), Binary (Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.)", "String", "false", "false"
+   "**column.family.field**", "The field containing the  Column Family to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**column.qualifier.field**", "The field containing the  Column Qualifier to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**batch.size**", "The maximum number of Records to process in a single execution. The Records will be grouped by table, and a single Put per table will be performed.", "", "25", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "false", "false"
+   "column.family.default", "The column family to use if column family field is not set", "", "null", "false", "false"
+   "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/PutHBaseCell-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.xml.EvaluateXPath: 
+
+EvaluateXPath
+-------------
+Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to new attributes in the records, depending on configuration of the Processor. XPaths are entered by adding user-defined properties; the name of the property maps to the Attribute Name into which the result will be placed. The value of the property must be a valid XPath expression. If the expression matches nothing, no attributes is added. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-xml:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.xml.EvaluateXPath
+
+Tags
+____
+XML, evaluate, XPath
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source**", "Indicates the attribute containing the xml data to evaluate xpath against.", "", "null", "false", "false"
+   "**validate_dtd**", "Specifies whether or not the XML content should be validated against the DTD.", "true, false", "true", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "An attribute", "An XPath expression", " the attribute is set to the result of the XPath Expression.", "", "null", false
+
+Extra informations
+__________________
+.. include:: ./details/EvaluateXPath-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.ConsolidateSession: 
+
+ConsolidateSession
+------------------
+The ConsolidateSession processor is the Logisland entry point to get and process events from the Web Analytics.As an example here is an incoming event from the Web Analytics:
+
+"fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.ConsolidateSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ConsolidateSession-Detail.rst
+See Also:
+_________
+`com.hurence.logisland.processor.webanalytics.IncrementalWebSession`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.DetectOutliers: 
+
+DetectOutliers
+--------------
+Outlier Analysis: A Hybrid Approach
+
+In order to function at scale, a two-phase approach is taken
+
+For every data point
+
+- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
+- Gather a biased sample (biased by recency)
+- Extremely deterministic in space and cheap in computation
+
+For every outlier candidate
+
+- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
+- Expensive computationally, but run infrequently
+
+This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
+
+Module
+______
+com.hurence.logisland:logisland-processor-outlier-detection:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.DetectOutliers
+
+Tags
+____
+analytic, outlier, record, iot, timeseries
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**value.field**", "the numeric field to get the value", "", "record_value", "false", "false"
+   "**time.field**", "the numeric field to get the value", "", "record_time", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "**rotation.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**rotation.policy.amount**", "...", "", "100", "false", "false"
+   "**rotation.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "**chunking.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**chunking.policy.amount**", "...", "", "100", "false", "false"
+   "**chunking.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "sketchy.outlier.algorithm", "...", "SKETCHY_MOVING_MAD", "SKETCHY_MOVING_MAD", "false", "false"
+   "batch.outlier.algorithm", "...", "RAD", "RAD", "false", "false"
+   "global.statistics.min", "minimum value", "", "null", "false", "false"
+   "global.statistics.max", "maximum value", "", "null", "false", "false"
+   "global.statistics.mean", "mean value", "", "null", "false", "false"
+   "global.statistics.stddev", "standard deviation value", "", "null", "false", "false"
+   "**zscore.cutoffs.normal**", "zscoreCutoffs level for normal outlier", "", "0.000000000000001", "false", "false"
+   "**zscore.cutoffs.moderate**", "zscoreCutoffs level for moderate outlier", "", "1.5", "false", "false"
+   "**zscore.cutoffs.severe**", "zscoreCutoffs level for severe outlier", "", "10.0", "false", "false"
+   "zscore.cutoffs.notEnoughData", "zscoreCutoffs level for notEnoughData outlier", "", "100", "false", "false"
+   "smooth", "do smoothing ?", "", "false", "false", "false"
+   "decay", "the decay", "", "0.1", "false", "false"
+   "**min.amount.to.predict**", "minAmountToPredict", "", "100", "false", "false"
+   "min_zscore_percentile", "minZscorePercentile", "", "50.0", "false", "false"
+   "reservoir_size", "the size of points reservoir", "", "100", "false", "false"
+   "rpca.force.diff", "No Description Provided.", "", "null", "false", "false"
+   "rpca.lpenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.min.records", "No Description Provided.", "", "null", "false", "false"
+   "rpca.spenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.threshold", "No Description Provided.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/DetectOutliers-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch: 
+
+EnrichRecordsElasticsearch
+--------------------------
+Enrich input records with content indexed in elasticsearch using multiget queries.
+Each incoming record must be possibly enriched with information stored in elasticsearch. 
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "false", "**true**"
+   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "false", "**true**"
+   "es.type", "The name of the ES type to use in multiget query.", "", "default", "false", "**true**"
+   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "false", "**true**"
+   "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/EnrichRecordsElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.excel.ExcelExtract: 
+
+ExcelExtract
+------------
+Consumes a Microsoft Excel document and converts each worksheet's line to a structured record. The processor is assuming to receive raw excel file as input record.
+
+Module
+______
+com.hurence.logisland:logisland-processor-excel:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.excel.ExcelExtract
+
+Tags
+____
+excel, processor, poi
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "sheets", "Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions. Any sheets not specified in this value will be ignored.", "", "", "false", "false"
+   "skip.columns", "Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.", "", "", "false", "false"
+   "field.names", "The comma separated list representing the names of columns of extracted cells. Order matters! You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+   "skip.rows", "The row number of the first row to start processing.Use this to skip over rows of data at the top of your worksheet that are not part of the dataset.Empty rows of data anywhere in the spreadsheet will always be skipped, no matter what this value is set to.", "", "0", "false", "false"
+   "record.type", "Default type of record", "", "excel_record", "false", "false"
+   "field.row.header", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ExcelExtract-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchIP: 
+
+MatchIP
+-------
+IP address Query matching (using `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>)`_
+
+You can use this processor to handle custom events matching IP address (CIDR)
+The record sent from a matching an IP address record is tagged appropriately.
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchIP
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchIP-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchQuery: 
+
+MatchQuery
+----------
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchQuery
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchQuery-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.bro.ParseBroEvent: 
+
+ParseBroEvent
+-------------
+The ParseBroEvent processor is the Logisland entry point to get and process `Bro <https://www.bro.org>`_ events. The `Bro-Kafka plugin <https://github.com/bro/bro-plugins/tree/master/kafka>`_ should be used and configured in order to have Bro events sent to Kafka. See the `Bro/Logisland tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-bro-events.html>`_ for an example of usage for this processor. The ParseBroEvent processor does some minor pre-processing on incoming Bro events from the Bro-Kafka plugin to adapt them to Logisland.
+
+Basically the events coming from the Bro-Kafka plugin are JSON documents with a first level field indicating the type of the event. The ParseBroEvent processor takes the incoming JSON document, sets the event type in a record_type field and sets the original sub-fields of the JSON event as first level fields in the record. Also any dot in a field name is transformed into an underscore. Thus, for instance, the field id.orig_h becomes id_orig_h. The next processors in the stream can then process the Bro events generated by this ParseBroEvent processor.
+
+As an example here is an incoming event from Bro:
+
+{
+
+   "conn": {
+
+     "id.resp_p": 9092,
+
+     "resp_pkts": 0,
+
+     "resp_ip_bytes": 0,
+
+     "local_orig": true,
+
+     "orig_ip_bytes": 0,
+
+     "orig_pkts": 0,
+
+     "missed_bytes": 0,
+
+     "history": "Cc",
+
+     "tunnel_parents": [],
+
+     "id.orig_p": 56762,
+
+     "local_resp": true,
+
+     "uid": "Ct3Ms01I3Yc6pmMZx7",
+
+     "conn_state": "OTH",
+
+     "id.orig_h": "172.17.0.2",
+
+     "proto": "tcp",
+
+     "id.resp_h": "172.17.0.3",
+
+     "ts": 1487596886.953917
+
+   }
+
+ }
+
+It gets processed and transformed into the following Logisland record by the ParseBroEvent processor:
+
+"@timestamp": "2017-02-20T13:36:32Z"
+
+"record_id": "6361f80a-c5c9-4a16-9045-4bb51736333d"
+
+"record_time": 1487597792782
+
+"record_type": "conn"
+
+"id_resp_p": 9092
+
+"resp_pkts": 0
+
+"resp_ip_bytes": 0
+
+"local_orig": true
+
+"orig_ip_bytes": 0
+
+"orig_pkts": 0
+
+"missed_bytes": 0
+
+"history": "Cc"
+
+"tunnel_parents": []
+
+"id_orig_p": 56762
+
+"local_resp": true
+
+"uid": "Ct3Ms01I3Yc6pmMZx7"
+
+"conn_state": "OTH"
+
+"id_orig_h": "172.17.0.2"
+
+"proto": "tcp"
+
+"id_resp_h": "172.17.0.3"
+
+"ts": 1487596886.953917
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.bro.ParseBroEvent
+
+Tags
+____
+bro, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseBroEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
+
+ParseNetflowEvent
+-----------------
+The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor is the Logisland entry point to  process Netflow (V5) events. NetFlow is a feature introduced on Cisco routers that provides the ability to collect IP network traffic.We can distinguish 2 components:
+
+	- Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one or more flow collectors
+
+	- Flow collector: responsible for reception, storage and pre-processing of flow data received from a flow exporter
+
+The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)
+Netflow are sent to kafka in order to be processed by logisland.
+In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.netflow.ParseNetflowEvent
+
+Tags
+____
+netflow, security
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+   "output.record.type", "the output type of the record", "", "netflowevent", "false", "false"
+   "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseNetflowEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.scripting.python.RunPython: 
+
+RunPython
+---------
+ !!!! WARNING !!!!
+
+The RunPython processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
+
+This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
+
+Module
+______
+com.hurence.logisland:logisland-processor-scripting:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.scripting.python.RunPython
+
+Tags
+____
+scripting, python
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "script.code.imports", "For inline mode only. This is the python code that should hold the import statements if required.", "", "null", "false", "false"
+   "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "false", "false"
+   "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "false", "false"
+   "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "false", "false"
+   "dependencies.path", "The path to the additional dependencies for the user's python code, whether using inline or file mode. This is optional as your code may not have additional dependencies. If you defined **script.path** (so using file mode) and if **dependencies.path** is not defined, Logisland will scan a potential directory named **dependencies** in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "false", "false"
+   "logisland.dependencies.path", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this parameter.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/RunPython-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URIDecoder: 
+
+URIDecoder
+----------
+Decode one or more field containing an URI with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URIDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLCleaner: 
+
+URLCleaner
+----------
+Remove some or all query parameters from one or more field containing an uri which should be preferably encoded.
+If the uri is not encoded the behaviour is not defined in case the decoded uri contains '#', '?', '=', '&' which were encoded.
+Indeed this processor assumes that the start of query part of the uri start at the first '?' then end at the first '#' or at the end of the uri as
+specified by rfc3986 available at https://tools.ietf.org/html/rfc3986#section-3.4. 
+We assume as well that key value pairs are separed by '=', and are separed by '&': exemple 'param1=value1&param2=value2'.
+The processor can remove also parameters that have only a name and no value. The character used to separate the key and the value '=' is configurable.
+The character used to separate two parameters '&' is also configurable.
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLCleaner
+
+Tags
+____
+record, fields, url, params, param, remove, keep, query, uri, parameter, clean, decoded, raw
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**url.fields**", "List of fields (URL) to decode and optionnaly the output field for the url modified. Syntax should be <name>,<name:newName>,...,<name>. So fields name can not contain ',' nor ':'", "", "null", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+   "url.keep.params", "List of param names to keep in the input url (others will be removed). Can not be given at the same time as url.remove.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.params", "List of param names to remove from the input url (others will be kept). Can not be given at the same time as url.keep.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.all", "Remove all params if true.", "", "null", "false", "false"
+   "parameter.separator", "the character to use to separate the parameters in the query part of the uris", "", "&", "false", "false"
+   "key.value.separator", "the character to use to separate the parameter name from the parameter value in the query part of the uris", "", "=", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLDecoder: 
+
+URLDecoder
+----------
+Decode one or more field containing an URL with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+   "charset", "Charset to use to decode the URL", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.useragent.ParseUserAgent: 
+
+ParseUserAgent
+--------------
+The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest. There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them. This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.
+
+Module
+______
+com.hurence.logisland:logisland-processor-useragent:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.useragent.ParseUserAgent
+
+Tags
+____
+User-Agent, clickstream, DMP
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "cache.enabled", "Enable caching. Caching to avoid to redo the same computation for many identical User-Agent strings.", "", "true", "false", "false"
+   "cache.size", "Set the size of the cache.", "", "1000", "false", "false"
+   "**useragent.field**", "Must contain the name of the field that contains the User-Agent value in the incoming record.", "", "null", "false", "false"
+   "useragent.keep", "Defines if the field that contained the User-Agent must be kept or not in the resulting records.", "", "true", "false", "false"
+   "confidence.enabled", "Enable confidence reporting. Each field will report a confidence attribute with a value comprised between 0 and 10000.", "", "false", "false", "false"
+   "ambiguity.enabled", "Enable ambiguity reporting. Reports a count of ambiguities.", "", "false", "false", "false"
+   "fields", "Defines the fields to be returned.", "", "DeviceClass, DeviceName, DeviceBrand, DeviceCpu, DeviceFirmwareVersion, DeviceVersion, OperatingSystemClass, OperatingSystemName, OperatingSystemVersion, OperatingSystemNameVersion, OperatingSystemVersionBuild, LayoutEngineClass, LayoutEngineName, LayoutEngineVersion, LayoutEngineVersionMajor, LayoutEngineNameVersion, LayoutEngineNameVersionMajor, LayoutEngineBuild, AgentClass, AgentName, AgentVersion, AgentVersionMajor, AgentNameVersion, AgentNameVersionMajor, AgentBuild, AgentLanguage, AgentLanguageCode, AgentInformationEmail, AgentInformationUrl, AgentSecurity, AgentUuid, FacebookCarrier, FacebookDeviceClass, FacebookDeviceName, FacebookDeviceVersion, FacebookFBOP, FacebookFBSS, FacebookOperatingSystemName, FacebookOperatingSystemVersion, Anonymized, HackerAttackVector, HackerToolkit, KoboAffiliate, KoboPlatformId, IECompatibilityVersion, IECompatibilityVersionMajor, IECompatibilityNameVersion, IECompatibilityNameVersionMajor, __SyntaxError__, Carrier, GSAInstallationID, WebviewAppName, WebviewAppNameVersionMajor, WebviewAppVersion, WebviewAppVersionMajor", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseUserAgent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.CalculWebSession: 
+
+CalculWebSession
+----------------
+This processor creates web-sessions based on incoming web-events.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.CalculWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/CalculWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.IncrementalWebSession: 
+
+IncrementalWebSession
+---------------------
+This processor creates and updates web-sessions based on incoming web-events. Note that both web-sessions and web-events are stored in elasticsearch.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ Then each web-session associated to each group is retrieved from elasticsearch.
+ In case none exists yet then a new web session is created based on the first web event.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, or retrieved, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- are save in elasticsearch. And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.IncrementalWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+   "number.of.future.session.when.event.from.past", "The number of session it will look for when searching session of last events", "", "1", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IncrementalWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic: 
+
+SetSourceOfTraffic
+------------------
+Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
+including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
+When analysing user experience on a webshop, it is crucial to collect, process, and report the campaign and traffic-source data. 
+To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
+i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
+, the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
+By default the source of traffic information are placed in a flat structure (specified by the **source_of_traffic.prefix** property
+with a default value of source_of_traffic). To work properly the SetSourceOfTraffic processor needs to have access to an 
+Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic
+
+Tags
+____
+session, traffic, source, web, analytics
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "referer.field", "Name of the field containing the referer value in the session", "", "referer", "false", "false"
+   "first.visited.page.field", "Name of the field containing the first visited page in the session", "", "firstVisitedPage", "false", "false"
+   "utm_source.field", "Name of the field containing the utm_source value in the session", "", "utm_source", "false", "false"
+   "utm_medium.field", "Name of the field containing the utm_medium value in the session", "", "utm_medium", "false", "false"
+   "utm_campaign.field", "Name of the field containing the utm_campaign value in the session", "", "utm_campaign", "false", "false"
+   "utm_content.field", "Name of the field containing the utm_content value in the session", "", "utm_content", "false", "false"
+   "utm_term.field", "Name of the field containing the utm_term value in the session", "", "utm_term", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic", "false", "false"
+   "source_of_traffic.hierarchical", "Should the additional source of trafic information fields be added under a hierarchical father field or not.", "", "false", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "Name of the cache service to use.", "", "null", "false", "false"
+   "cache.validity.timeout", "Timeout validity (in seconds) of an entry in the cache.", "", "0", "false", "false"
+   "debug", "If true, an additional debug field is added. If the source info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the source fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+   "**es.index**", "Name of the ES index containing the list of search engines and social network. ", "", "null", "false", "false"
+   "es.type", "Name of the ES type to use.", "", "default", "false", "false"
+   "es.search_engine.field", "Name of the ES field used to specify that the domain is a search engine.", "", "search_engine", "false", "false"
+   "es.social_network.field", "Name of the ES field used to specify that the domain is a social network.", "", "social_network", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/SetSourceOfTraffic-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
+
+IpToFqdn
+--------
+Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToFqdn
+
+Tags
+____
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "false", "false"
+   "overwrite.fqdn.field", "If the field should be overwritten when it already exists.", "", "false", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 84600 seconds, which corresponds to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "false", "false"
+   "resolution.timeout", "The amount of time, in milliseconds, to wait at most for the resolution to occur. This avoids to block the stream for too much time. Default value is 1000ms. If the delay expires and no resolution could occur before, the FQDN field is not created. A special value of 0 disables the logisland timeout and the resolution request may last for many seconds if the IP cannot be translated into a FQDN by the underlying operating system. In any case, whether the timeout occurs in logisland of in the operating system, the fact that a timeout occurs is kept in the cache system so that a resolution request for the same IP will not occur before the cache entry expires.", "", "1000", "false", "false"
+   "debug", "If true, some additional debug fields are added. If the FQDN field is named X, a debug field named X_os_resolution_time_ms contains the resolution time in ms (using the operating system, not the cache). This field is added whether the resolution occurs or time is out. A debug field named  X_os_resolution_timeout contains a boolean value to indicate if the timeout occurred. Finally, a debug field named X_from_cache contains a boolean value to indicate the origin of the FQDN field. The default value for this property is false (debug is disabled.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToFqdn-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToGeo: 
+
+IpToGeo
+-------
+Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToGeo
+
+Tags
+____
+geo, enrich, ip
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**iptogeo.service**", "The reference to the IP to Geo service to use.", "", "null", "false", "false"
+   "geo.fields", "Comma separated list of geo information fields to add to the record. Defaults to '*', which means to include all available fields. If a list of fields is specified and the data is not available, the geo field is not created. The geo fields are dependant on the underlying defined Ip to Geo service. The currently only supported type of Ip to Geo service is the Maxmind Ip to Geo service. This means that the currently supported list of geo fields is the following:**continent**: the identified continent for this IP address. **continent_code**: the identified continent code for this IP address. **city**: the identified city for this IP address. **latitude**: the identified latitude for this IP address. **longitude**: the identified longitude for this IP address. **location**: the identified location for this IP address, defined as Geo-point expressed as a string with the format: 'latitude,longitude'. **accuracy_radius**: the approximate accuracy radius, in kilometers, around the latitude and longitude for the location. **time_zone**: the identified time zone for this IP address. **subdivision_N**: the identified subdivision for this IP address. N is a one-up number at the end of the attribute name, starting with 0. **subdivision_isocode_N**: the iso code matching the identified subdivision_N. **country**: the identified country for this IP address. **country_isocode**: the iso code for the identified country for this IP address. **postalcode**: the identified postal code for this IP address. **lookup_micros**: the number of microseconds that the geo lookup took. The Ip to Geo service must have the lookup_micros property enabled in order to have this field available.", "", "*", "false", "false"
+   "geo.hierarchical", "Should the additional geo information fields be added under a hierarchical father field or not.", "", "true", "false", "false"
+   "geo.hierarchical.suffix", "Suffix to use for the field holding geo information. If geo.hierarchical is true, then use this suffix appended to the IP field name to define the father field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo", "false", "false"
+   "geo.flat.suffix", "Suffix to use for geo information fields when they are flat. If geo.hierarchical is false, then use this suffix appended to the IP field name but before the geo field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo_", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "debug", "If true, an additional debug field is added. If the geo info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToGeo-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.networkpacket.ParseNetworkPacket: 
+
+ParseNetworkPacket
+------------------
+The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode).  In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records. The fields of packet headers are then extracted and made available in dedicated record fields. See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_ for an example of usage of this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
+
+Tags
+____
+PCap, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "**flow.mode**", "Flow Mode. Indicate whether packets are provided in batch mode (via pcap files) or in stream mode (without headers). Allowed values are batch and stream.", "batch, stream", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
+
+BulkAddElasticsearch
+--------------------
+Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**default.index**", "The name of the index to insert into", "", "null", "false", "**true**"
+   "**default.type**", "The type of this document (used by Elasticsearch for indexing and searching)", "", "null", "false", "**true**"
+   "**timebased.index**", "do we add a date suffix", "no (no date added to default index), today (today's date added to default index), yesterday (yesterday's date added to default index)", "no", "false", "false"
+   "es.index.field", "the name of the event field containing es index name => will override index value if set", "", "null", "false", "false"
+   "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/BulkAddElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
+
+FetchHBaseRow
+-------------
+Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.FetchHBaseRow
+
+Tags
+____
+hbase, scan, fetch, get, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "false", "**true**"
+   "**row.identifier.field**", "The field containing the identifier of the row to fetch.", "", "null", "false", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of \"\"<colFamily>:<colQualifier>\"\" pairs to fetch. To return all columns for a given family, leave off the qualifier such as \"\"<colFamily1>,<colFamily2>\"\".", "", "null", "false", "**true**"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "table.name.default", "The table to use if table name field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/FetchHBaseRow-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch: 
+
+MultiGetElasticsearch
+---------------------
+Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.
+Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+
+ - index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.
+ - ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+ - excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :
+
+ - index (same field name as the incoming record) : name of the elasticsearch index.
+ - type (same field name as the incoming record) : name of the elasticsearch type.
+ - id (same field name as the incoming record) : retrieved document id.
+ - a list of String fields containing :
+
+   * field name : the retrieved field name
+   * field value : the retrieved field value
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**es.index.field**", "the name of the incoming records field containing es index name to use in multiget query. ", "", "null", "false", "false"
+   "**es.type.field**", "the name of the incoming records field containing es type name to use in multiget query", "", "null", "false", "false"
+   "**es.ids.field**", "the name of the incoming records field containing es document Ids to use in multiget query", "", "null", "false", "false"
+   "**es.includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "false", "false"
+   "**es.excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/MultiGetElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.PutHBaseCell: 
+
+PutHBaseCell
+------------
+Adds the Contents of a Record to HBase as the value of a single cell
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.PutHBaseCell
+
+Tags
+____
+hadoop, hbase
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to put data into", "", "null", "false", "**true**"
+   "row.identifier.field", "Specifies  field containing the Row ID to use when inserting data into HBase", "", "null", "false", "**true**"
+   "row.identifier.encoding.strategy", "Specifies the data type of Row ID used when inserting data into HBase. The default behavior is to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string to the correct byte[] representation. The Binary option should be used if you are using Binary row keys in HBase", "String (Stores the value of row id as a UTF-8 String.), Binary (Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.)", "String", "false", "false"
+   "**column.family.field**", "The field containing the  Column Family to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**column.qualifier.field**", "The field containing the  Column Qualifier to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**batch.size**", "The maximum number of Records to process in a single execution. The Records will be grouped by table, and a single Put per table will be performed.", "", "25", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "false", "false"
+   "column.family.default", "The column family to use if column family field is not set", "", "null", "false", "false"
+   "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/PutHBaseCell-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.xml.EvaluateXPath: 
+
+EvaluateXPath
+-------------
+Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to new attributes in the records, depending on configuration of the Processor. XPaths are entered by adding user-defined properties; the name of the property maps to the Attribute Name into which the result will be placed. The value of the property must be a valid XPath expression. If the expression matches nothing, no attributes is added. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-xml:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.xml.EvaluateXPath
+
+Tags
+____
+XML, evaluate, XPath
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source**", "Indicates the attribute containing the xml data to evaluate xpath against.", "", "null", "false", "false"
+   "**validate_dtd**", "Specifies whether or not the XML content should be validated against the DTD.", "true, false", "true", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "An attribute", "An XPath expression", " the attribute is set to the result of the XPath Expression.", "", "null", false
+
+Extra informations
+__________________
+.. include:: ./details/EvaluateXPath-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.ConsolidateSession: 
+
+ConsolidateSession
+------------------
+The ConsolidateSession processor is the Logisland entry point to get and process events from the Web Analytics.As an example here is an incoming event from the Web Analytics:
+
+"fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.ConsolidateSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ConsolidateSession-Detail.rst
+See Also:
+_________
+`com.hurence.logisland.processor.webanalytics.IncrementalWebSession`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.DetectOutliers: 
+
+DetectOutliers
+--------------
+Outlier Analysis: A Hybrid Approach
+
+In order to function at scale, a two-phase approach is taken
+
+For every data point
+
+- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
+- Gather a biased sample (biased by recency)
+- Extremely deterministic in space and cheap in computation
+
+For every outlier candidate
+
+- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
+- Expensive computationally, but run infrequently
+
+This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
+
+Module
+______
+com.hurence.logisland:logisland-processor-outlier-detection:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.DetectOutliers
+
+Tags
+____
+analytic, outlier, record, iot, timeseries
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**value.field**", "the numeric field to get the value", "", "record_value", "false", "false"
+   "**time.field**", "the numeric field to get the value", "", "record_time", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "**rotation.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**rotation.policy.amount**", "...", "", "100", "false", "false"
+   "**rotation.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "**chunking.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**chunking.policy.amount**", "...", "", "100", "false", "false"
+   "**chunking.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "sketchy.outlier.algorithm", "...", "SKETCHY_MOVING_MAD", "SKETCHY_MOVING_MAD", "false", "false"
+   "batch.outlier.algorithm", "...", "RAD", "RAD", "false", "false"
+   "global.statistics.min", "minimum value", "", "null", "false", "false"
+   "global.statistics.max", "maximum value", "", "null", "false", "false"
+   "global.statistics.mean", "mean value", "", "null", "false", "false"
+   "global.statistics.stddev", "standard deviation value", "", "null", "false", "false"
+   "**zscore.cutoffs.normal**", "zscoreCutoffs level for normal outlier", "", "0.000000000000001", "false", "false"
+   "**zscore.cutoffs.moderate**", "zscoreCutoffs level for moderate outlier", "", "1.5", "false", "false"
+   "**zscore.cutoffs.severe**", "zscoreCutoffs level for severe outlier", "", "10.0", "false", "false"
+   "zscore.cutoffs.notEnoughData", "zscoreCutoffs level for notEnoughData outlier", "", "100", "false", "false"
+   "smooth", "do smoothing ?", "", "false", "false", "false"
+   "decay", "the decay", "", "0.1", "false", "false"
+   "**min.amount.to.predict**", "minAmountToPredict", "", "100", "false", "false"
+   "min_zscore_percentile", "minZscorePercentile", "", "50.0", "false", "false"
+   "reservoir_size", "the size of points reservoir", "", "100", "false", "false"
+   "rpca.force.diff", "No Description Provided.", "", "null", "false", "false"
+   "rpca.lpenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.min.records", "No Description Provided.", "", "null", "false", "false"
+   "rpca.spenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.threshold", "No Description Provided.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/DetectOutliers-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch: 
+
+EnrichRecordsElasticsearch
+--------------------------
+Enrich input records with content indexed in elasticsearch using multiget queries.
+Each incoming record must be possibly enriched with information stored in elasticsearch. 
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "false", "**true**"
+   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "false", "**true**"
+   "es.type", "The name of the ES type to use in multiget query.", "", "default", "false", "**true**"
+   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "false", "**true**"
+   "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/EnrichRecordsElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.excel.ExcelExtract: 
+
+ExcelExtract
+------------
+Consumes a Microsoft Excel document and converts each worksheet's line to a structured record. The processor is assuming to receive raw excel file as input record.
+
+Module
+______
+com.hurence.logisland:logisland-processor-excel:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.excel.ExcelExtract
+
+Tags
+____
+excel, processor, poi
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "sheets", "Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions. Any sheets not specified in this value will be ignored.", "", "", "false", "false"
+   "skip.columns", "Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.", "", "", "false", "false"
+   "field.names", "The comma separated list representing the names of columns of extracted cells. Order matters! You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+   "skip.rows", "The row number of the first row to start processing.Use this to skip over rows of data at the top of your worksheet that are not part of the dataset.Empty rows of data anywhere in the spreadsheet will always be skipped, no matter what this value is set to.", "", "0", "false", "false"
+   "record.type", "Default type of record", "", "excel_record", "false", "false"
+   "field.row.header", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ExcelExtract-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchIP: 
+
+MatchIP
+-------
+IP address Query matching (using `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>)`_
+
+You can use this processor to handle custom events matching IP address (CIDR)
+The record sent from a matching an IP address record is tagged appropriately.
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchIP
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchIP-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchQuery: 
+
+MatchQuery
+----------
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchQuery
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchQuery-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.bro.ParseBroEvent: 
+
+ParseBroEvent
+-------------
+The ParseBroEvent processor is the Logisland entry point to get and process `Bro <https://www.bro.org>`_ events. The `Bro-Kafka plugin <https://github.com/bro/bro-plugins/tree/master/kafka>`_ should be used and configured in order to have Bro events sent to Kafka. See the `Bro/Logisland tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-bro-events.html>`_ for an example of usage for this processor. The ParseBroEvent processor does some minor pre-processing on incoming Bro events from the Bro-Kafka plugin to adapt them to Logisland.
+
+Basically the events coming from the Bro-Kafka plugin are JSON documents with a first level field indicating the type of the event. The ParseBroEvent processor takes the incoming JSON document, sets the event type in a record_type field and sets the original sub-fields of the JSON event as first level fields in the record. Also any dot in a field name is transformed into an underscore. Thus, for instance, the field id.orig_h becomes id_orig_h. The next processors in the stream can then process the Bro events generated by this ParseBroEvent processor.
+
+As an example here is an incoming event from Bro:
+
+{
+
+   "conn": {
+
+     "id.resp_p": 9092,
+
+     "resp_pkts": 0,
+
+     "resp_ip_bytes": 0,
+
+     "local_orig": true,
+
+     "orig_ip_bytes": 0,
+
+     "orig_pkts": 0,
+
+     "missed_bytes": 0,
+
+     "history": "Cc",
+
+     "tunnel_parents": [],
+
+     "id.orig_p": 56762,
+
+     "local_resp": true,
+
+     "uid": "Ct3Ms01I3Yc6pmMZx7",
+
+     "conn_state": "OTH",
+
+     "id.orig_h": "172.17.0.2",
+
+     "proto": "tcp",
+
+     "id.resp_h": "172.17.0.3",
+
+     "ts": 1487596886.953917
+
+   }
+
+ }
+
+It gets processed and transformed into the following Logisland record by the ParseBroEvent processor:
+
+"@timestamp": "2017-02-20T13:36:32Z"
+
+"record_id": "6361f80a-c5c9-4a16-9045-4bb51736333d"
+
+"record_time": 1487597792782
+
+"record_type": "conn"
+
+"id_resp_p": 9092
+
+"resp_pkts": 0
+
+"resp_ip_bytes": 0
+
+"local_orig": true
+
+"orig_ip_bytes": 0
+
+"orig_pkts": 0
+
+"missed_bytes": 0
+
+"history": "Cc"
+
+"tunnel_parents": []
+
+"id_orig_p": 56762
+
+"local_resp": true
+
+"uid": "Ct3Ms01I3Yc6pmMZx7"
+
+"conn_state": "OTH"
+
+"id_orig_h": "172.17.0.2"
+
+"proto": "tcp"
+
+"id_resp_h": "172.17.0.3"
+
+"ts": 1487596886.953917
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.bro.ParseBroEvent
+
+Tags
+____
+bro, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseBroEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
+
+ParseNetflowEvent
+-----------------
+The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor is the Logisland entry point to  process Netflow (V5) events. NetFlow is a feature introduced on Cisco routers that provides the ability to collect IP network traffic.We can distinguish 2 components:
+
+	- Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one or more flow collectors
+
+	- Flow collector: responsible for reception, storage and pre-processing of flow data received from a flow exporter
+
+The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)
+Netflow are sent to kafka in order to be processed by logisland.
+In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.netflow.ParseNetflowEvent
+
+Tags
+____
+netflow, security
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+   "output.record.type", "the output type of the record", "", "netflowevent", "false", "false"
+   "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseNetflowEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.scripting.python.RunPython: 
+
+RunPython
+---------
+ !!!! WARNING !!!!
+
+The RunPython processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
+
+This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
+
+Module
+______
+com.hurence.logisland:logisland-processor-scripting:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.scripting.python.RunPython
+
+Tags
+____
+scripting, python
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "script.code.imports", "For inline mode only. This is the python code that should hold the import statements if required.", "", "null", "false", "false"
+   "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "false", "false"
+   "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "false", "false"
+   "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "false", "false"
+   "dependencies.path", "The path to the additional dependencies for the user's python code, whether using inline or file mode. This is optional as your code may not have additional dependencies. If you defined **script.path** (so using file mode) and if **dependencies.path** is not defined, Logisland will scan a potential directory named **dependencies** in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "false", "false"
+   "logisland.dependencies.path", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this parameter.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/RunPython-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URIDecoder: 
+
+URIDecoder
+----------
+Decode one or more field containing an URI with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URIDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLCleaner: 
+
+URLCleaner
+----------
+Remove some or all query parameters from one or more field containing an uri which should be preferably encoded.
+If the uri is not encoded the behaviour is not defined in case the decoded uri contains '#', '?', '=', '&' which were encoded.
+Indeed this processor assumes that the start of query part of the uri start at the first '?' then end at the first '#' or at the end of the uri as
+specified by rfc3986 available at https://tools.ietf.org/html/rfc3986#section-3.4. 
+We assume as well that key value pairs are separed by '=', and are separed by '&': exemple 'param1=value1&param2=value2'.
+The processor can remove also parameters that have only a name and no value. The character used to separate the key and the value '=' is configurable.
+The character used to separate two parameters '&' is also configurable.
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLCleaner
+
+Tags
+____
+record, fields, url, params, param, remove, keep, query, uri, parameter, clean, decoded, raw
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**url.fields**", "List of fields (URL) to decode and optionnaly the output field for the url modified. Syntax should be <name>,<name:newName>,...,<name>. So fields name can not contain ',' nor ':'", "", "null", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+   "url.keep.params", "List of param names to keep in the input url (others will be removed). Can not be given at the same time as url.remove.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.params", "List of param names to remove from the input url (others will be kept). Can not be given at the same time as url.keep.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.all", "Remove all params if true.", "", "null", "false", "false"
+   "parameter.separator", "the character to use to separate the parameters in the query part of the uris", "", "&", "false", "false"
+   "key.value.separator", "the character to use to separate the parameter name from the parameter value in the query part of the uris", "", "=", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLDecoder: 
+
+URLDecoder
+----------
+Decode one or more field containing an URL with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+   "charset", "Charset to use to decode the URL", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.useragent.ParseUserAgent: 
+
+ParseUserAgent
+--------------
+The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest. There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them. This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.
+
+Module
+______
+com.hurence.logisland:logisland-processor-useragent:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.useragent.ParseUserAgent
+
+Tags
+____
+User-Agent, clickstream, DMP
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "cache.enabled", "Enable caching. Caching to avoid to redo the same computation for many identical User-Agent strings.", "", "true", "false", "false"
+   "cache.size", "Set the size of the cache.", "", "1000", "false", "false"
+   "**useragent.field**", "Must contain the name of the field that contains the User-Agent value in the incoming record.", "", "null", "false", "false"
+   "useragent.keep", "Defines if the field that contained the User-Agent must be kept or not in the resulting records.", "", "true", "false", "false"
+   "confidence.enabled", "Enable confidence reporting. Each field will report a confidence attribute with a value comprised between 0 and 10000.", "", "false", "false", "false"
+   "ambiguity.enabled", "Enable ambiguity reporting. Reports a count of ambiguities.", "", "false", "false", "false"
+   "fields", "Defines the fields to be returned.", "", "DeviceClass, DeviceName, DeviceBrand, DeviceCpu, DeviceFirmwareVersion, DeviceVersion, OperatingSystemClass, OperatingSystemName, OperatingSystemVersion, OperatingSystemNameVersion, OperatingSystemVersionBuild, LayoutEngineClass, LayoutEngineName, LayoutEngineVersion, LayoutEngineVersionMajor, LayoutEngineNameVersion, LayoutEngineNameVersionMajor, LayoutEngineBuild, AgentClass, AgentName, AgentVersion, AgentVersionMajor, AgentNameVersion, AgentNameVersionMajor, AgentBuild, AgentLanguage, AgentLanguageCode, AgentInformationEmail, AgentInformationUrl, AgentSecurity, AgentUuid, FacebookCarrier, FacebookDeviceClass, FacebookDeviceName, FacebookDeviceVersion, FacebookFBOP, FacebookFBSS, FacebookOperatingSystemName, FacebookOperatingSystemVersion, Anonymized, HackerAttackVector, HackerToolkit, KoboAffiliate, KoboPlatformId, IECompatibilityVersion, IECompatibilityVersionMajor, IECompatibilityNameVersion, IECompatibilityNameVersionMajor, __SyntaxError__, Carrier, GSAInstallationID, WebviewAppName, WebviewAppNameVersionMajor, WebviewAppVersion, WebviewAppVersionMajor", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseUserAgent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.CalculWebSession: 
+
+CalculWebSession
+----------------
+This processor creates web-sessions based on incoming web-events.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.CalculWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/CalculWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.IncrementalWebSession: 
+
+IncrementalWebSession
+---------------------
+This processor creates and updates web-sessions based on incoming web-events. Note that both web-sessions and web-events are stored in elasticsearch.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ Then each web-session associated to each group is retrieved from elasticsearch.
+ In case none exists yet then a new web session is created based on the first web event.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, or retrieved, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+
+	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- are save in elasticsearch. And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.IncrementalWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "false", "false"
+   "**es.session.index.prefix**", "Prefix of the indices containing the web session documents.", "", "null", "false", "false"
+   "**es.session.index.suffix.date**", "suffix to add to prefix for web session indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "false", "false"
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "false", "false"
+   "**es.event.index.suffix.date**", "suffix to add to prefix for web event indices. It should be valid date format [yyyy.MM].", "", "null", "false", "false"
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "false", "false"
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic_", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "es.index.suffix.timezone", "The timezone to use to aprse timestamp into string date (for index names). See es.event.index.suffix.date and es.session.index.suffix.date. By default the system timezone is used. Supported by current system is : [Asia/Aden, America/Cuiaba, Etc/GMT+9, Etc/GMT+8, Africa/Nairobi, America/Marigot, Asia/Aqtau, Pacific/Kwajalein, America/El_Salvador, Asia/Pontianak, Africa/Cairo, Pacific/Pago_Pago, Africa/Mbabane, Asia/Kuching, Pacific/Honolulu, Pacific/Rarotonga, America/Guatemala, Australia/Hobart, Europe/London, America/Belize, America/Panama, Asia/Chungking, America/Managua, America/Indiana/Petersburg, Asia/Yerevan, Europe/Brussels, GMT, Europe/Warsaw, America/Chicago, Asia/Kashgar, Chile/Continental, Pacific/Yap, CET, Etc/GMT-1, Etc/GMT-0, Europe/Jersey, America/Tegucigalpa, Etc/GMT-5, Europe/Istanbul, America/Eirunepe, Etc/GMT-4, America/Miquelon, Etc/GMT-3, Europe/Luxembourg, Etc/GMT-2, Etc/GMT-9, America/Argentina/Catamarca, Etc/GMT-8, Etc/GMT-7, Etc/GMT-6, Europe/Zaporozhye, Canada/Yukon, Canada/Atlantic, Atlantic/St_Helena, Australia/Tasmania, Libya, Europe/Guernsey, America/Grand_Turk, US/Pacific-New, Asia/Samarkand, America/Argentina/Cordoba, Asia/Phnom_Penh, Africa/Kigali, Asia/Almaty, US/Alaska, Asia/Dubai, Europe/Isle_of_Man, America/Araguaina, Cuba, Asia/Novosibirsk, America/Argentina/Salta, Etc/GMT+3, Africa/Tunis, Etc/GMT+2, Etc/GMT+1, Pacific/Fakaofo, Africa/Tripoli, Etc/GMT+0, Israel, Africa/Banjul, Etc/GMT+7, Indian/Comoro, Etc/GMT+6, Etc/GMT+5, Etc/GMT+4, Pacific/Port_Moresby, US/Arizona, Antarctica/Syowa, Indian/Reunion, Pacific/Palau, Europe/Kaliningrad, America/Montevideo, Africa/Windhoek, Asia/Karachi, Africa/Mogadishu, Australia/Perth, Brazil/East, Etc/GMT, Asia/Chita, Pacific/Easter, Antarctica/Davis, Antarctica/McMurdo, Asia/Macao, America/Manaus, Africa/Freetown, Europe/Bucharest, Asia/Tomsk, America/Argentina/Mendoza, Asia/Macau, Europe/Malta, Mexico/BajaSur, Pacific/Tahiti, Africa/Asmera, Europe/Busingen, America/Argentina/Rio_Gallegos, Africa/Malabo, Europe/Skopje, America/Catamarca, America/Godthab, Europe/Sarajevo, Australia/ACT, GB-Eire, Africa/Lagos, America/Cordoba, Europe/Rome, Asia/Dacca, Indian/Mauritius, Pacific/Samoa, America/Regina, America/Fort_Wayne, America/Dawson_Creek, Africa/Algiers, Europe/Mariehamn, America/St_Johns, America/St_Thomas, Europe/Zurich, America/Anguilla, Asia/Dili, America/Denver, Africa/Bamako, Europe/Saratov, GB, Mexico/General, Pacific/Wallis, Europe/Gibraltar, Africa/Conakry, Africa/Lubumbashi, Asia/Istanbul, America/Havana, NZ-CHAT, Asia/Choibalsan, America/Porto_Acre, Asia/Omsk, Europe/Vaduz, US/Michigan, Asia/Dhaka, America/Barbados, Europe/Tiraspol, Atlantic/Cape_Verde, Asia/Yekaterinburg, America/Louisville, Pacific/Johnston, Pacific/Chatham, Europe/Ljubljana, America/Sao_Paulo, Asia/Jayapura, America/Curacao, Asia/Dushanbe, America/Guyana, America/Guayaquil, America/Martinique, Portugal, Europe/Berlin, Europe/Moscow, Europe/Chisinau, America/Puerto_Rico, America/Rankin_Inlet, Pacific/Ponape, Europe/Stockholm, Europe/Budapest, America/Argentina/Jujuy, Australia/Eucla, Asia/Shanghai, Universal, Europe/Zagreb, America/Port_of_Spain, Europe/Helsinki, Asia/Beirut, Asia/Tel_Aviv, Pacific/Bougainville, US/Central, Africa/Sao_Tome, Indian/Chagos, America/Cayenne, Asia/Yakutsk, Pacific/Galapagos, Australia/North, Europe/Paris, Africa/Ndjamena, Pacific/Fiji, America/Rainy_River, Indian/Maldives, Australia/Yancowinna, SystemV/AST4, Asia/Oral, America/Yellowknife, Pacific/Enderbury, America/Juneau, Australia/Victoria, America/Indiana/Vevay, Asia/Tashkent, Asia/Jakarta, Africa/Ceuta, Asia/Barnaul, America/Recife, America/Buenos_Aires, America/Noronha, America/Swift_Current, Australia/Adelaide, America/Metlakatla, Africa/Djibouti, America/Paramaribo, Europe/Simferopol, Europe/Sofia, Africa/Nouakchott, Europe/Prague, America/Indiana/Vincennes, Antarctica/Mawson, America/Kralendijk, Antarctica/Troll, Europe/Samara, Indian/Christmas, America/Antigua, Pacific/Gambier, America/Indianapolis, America/Inuvik, America/Iqaluit, Pacific/Funafuti, UTC, Antarctica/Macquarie, Canada/Pacific, America/Moncton, Africa/Gaborone, Pacific/Chuuk, Asia/Pyongyang, America/St_Vincent, Asia/Gaza, Etc/Universal, PST8PDT, Atlantic/Faeroe, Asia/Qyzylorda, Canada/Newfoundland, America/Kentucky/Louisville, America/Yakutat, Asia/Ho_Chi_Minh, Antarctica/Casey, Europe/Copenhagen, Africa/Asmara, Atlantic/Azores, Europe/Vienna, ROK, Pacific/Pitcairn, America/Mazatlan, Australia/Queensland, Pacific/Nauru, Europe/Tirane, Asia/Kolkata, SystemV/MST7, Australia/Canberra, MET, Australia/Broken_Hill, Europe/Riga, America/Dominica, Africa/Abidjan, America/Mendoza, America/Santarem, Kwajalein, America/Asuncion, Asia/Ulan_Bator, NZ, America/Boise, Australia/Currie, EST5EDT, Pacific/Guam, Pacific/Wake, Atlantic/Bermuda, America/Costa_Rica, America/Dawson, Asia/Chongqing, Eire, Europe/Amsterdam, America/Indiana/Knox, America/North_Dakota/Beulah, Africa/Accra, Atlantic/Faroe, Mexico/BajaNorte, America/Maceio, Etc/UCT, Pacific/Apia, GMT0, America/Atka, Pacific/Niue, Australia/Lord_Howe, Europe/Dublin, Pacific/Truk, MST7MDT, America/Monterrey, America/Nassau, America/Jamaica, Asia/Bishkek, America/Atikokan, Atlantic/Stanley, Australia/NSW, US/Hawaii, SystemV/CST6, Indian/Mahe, Asia/Aqtobe, America/Sitka, Asia/Vladivostok, Africa/Libreville, Africa/Maputo, Zulu, America/Kentucky/Monticello, Africa/El_Aaiun, Africa/Ouagadougou, America/Coral_Harbour, Pacific/Marquesas, Brazil/West, America/Aruba, America/North_Dakota/Center, America/Cayman, Asia/Ulaanbaatar, Asia/Baghdad, Europe/San_Marino, America/Indiana/Tell_City, America/Tijuana, Pacific/Saipan, SystemV/YST9, Africa/Douala, America/Chihuahua, America/Ojinaga, Asia/Hovd, America/Anchorage, Chile/EasterIsland, America/Halifax, Antarctica/Rothera, America/Indiana/Indianapolis, US/Mountain, Asia/Damascus, America/Argentina/San_Luis, America/Santiago, Asia/Baku, America/Argentina/Ushuaia, Atlantic/Reykjavik, Africa/Brazzaville, Africa/Porto-Novo, America/La_Paz, Antarctica/DumontDUrville, Asia/Taipei, Antarctica/South_Pole, Asia/Manila, Asia/Bangkok, Africa/Dar_es_Salaam, Poland, Atlantic/Madeira, Antarctica/Palmer, America/Thunder_Bay, Africa/Addis_Ababa, Asia/Yangon, Europe/Uzhgorod, Brazil/DeNoronha, Asia/Ashkhabad, Etc/Zulu, America/Indiana/Marengo, America/Creston, America/Punta_Arenas, America/Mexico_City, Antarctica/Vostok, Asia/Jerusalem, Europe/Andorra, US/Samoa, PRC, Asia/Vientiane, Pacific/Kiritimati, America/Matamoros, America/Blanc-Sablon, Asia/Riyadh, Iceland, Pacific/Pohnpei, Asia/Ujung_Pandang, Atlantic/South_Georgia, Europe/Lisbon, Asia/Harbin, Europe/Oslo, Asia/Novokuznetsk, CST6CDT, Atlantic/Canary, America/Knox_IN, Asia/Kuwait, SystemV/HST10, Pacific/Efate, Africa/Lome, America/Bogota, America/Menominee, America/Adak, Pacific/Norfolk, Europe/Kirov, America/Resolute, Pacific/Tarawa, Africa/Kampala, Asia/Krasnoyarsk, Greenwich, SystemV/EST5, America/Edmonton, Europe/Podgorica, Australia/South, Canada/Central, Africa/Bujumbura, America/Santo_Domingo, US/Eastern, Europe/Minsk, Pacific/Auckland, Africa/Casablanca, America/Glace_Bay, Canada/Eastern, Asia/Qatar, Europe/Kiev, Singapore, Asia/Magadan, SystemV/PST8, America/Port-au-Prince, Europe/Belfast, America/St_Barthelemy, Asia/Ashgabat, Africa/Luanda, America/Nipigon, Atlantic/Jan_Mayen, Brazil/Acre, Asia/Muscat, Asia/Bahrain, Europe/Vilnius, America/Fortaleza, Etc/GMT0, US/East-Indiana, America/Hermosillo, America/Cancun, Africa/Maseru, Pacific/Kosrae, Africa/Kinshasa, Asia/Kathmandu, Asia/Seoul, Australia/Sydney, America/Lima, Australia/LHI, America/St_Lucia, Europe/Madrid, America/Bahia_Banderas, America/Montserrat, Asia/Brunei, America/Santa_Isabel, Canada/Mountain, America/Cambridge_Bay, Asia/Colombo, Australia/West, Indian/Antananarivo, Australia/Brisbane, Indian/Mayotte, US/Indiana-Starke, Asia/Urumqi, US/Aleutian, Europe/Volgograd, America/Lower_Princes, America/Vancouver, Africa/Blantyre, America/Rio_Branco, America/Danmarkshavn, America/Detroit, America/Thule, Africa/Lusaka, Asia/Hong_Kong, Iran, America/Argentina/La_Rioja, Africa/Dakar, SystemV/CST6CDT, America/Tortola, America/Porto_Velho, Asia/Sakhalin, Etc/GMT+10, America/Scoresbysund, Asia/Kamchatka, Asia/Thimbu, Africa/Harare, Etc/GMT+12, Etc/GMT+11, Navajo, America/Nome, Europe/Tallinn, Turkey, Africa/Khartoum, Africa/Johannesburg, Africa/Bangui, Europe/Belgrade, Jamaica, Africa/Bissau, Asia/Tehran, WET, Europe/Astrakhan, Africa/Juba, America/Campo_Grande, America/Belem, Etc/Greenwich, Asia/Saigon, America/Ensenada, Pacific/Midway, America/Jujuy, Africa/Timbuktu, America/Bahia, America/Goose_Bay, America/Virgin, America/Pangnirtung, Asia/Katmandu, America/Phoenix, Africa/Niamey, America/Whitehorse, Pacific/Noumea, Asia/Tbilisi, America/Montreal, Asia/Makassar, America/Argentina/San_Juan, Hongkong, UCT, Asia/Nicosia, America/Indiana/Winamac, SystemV/MST7MDT, America/Argentina/ComodRivadavia, America/Boa_Vista, America/Grenada, Asia/Atyrau, Australia/Darwin, Asia/Khandyga, Asia/Kuala_Lumpur, Asia/Famagusta, Asia/Thimphu, Asia/Rangoon, Europe/Bratislava, Asia/Calcutta, America/Argentina/Tucuman, Asia/Kabul, Indian/Cocos, Japan, Pacific/Tongatapu, America/New_York, Etc/GMT-12, Etc/GMT-11, Etc/GMT-10, SystemV/YST9YDT, Europe/Ulyanovsk, Etc/GMT-14, Etc/GMT-13, W-SU, America/Merida, EET, America/Rosario, Canada/Saskatchewan, America/St_Kitts, Arctic/Longyearbyen, America/Fort_Nelson, America/Caracas, America/Guadeloupe, Asia/Hebron, Indian/Kerguelen, SystemV/PST8PDT, Africa/Monrovia, Asia/Ust-Nera, Egypt, Asia/Srednekolymsk, America/North_Dakota/New_Salem, Asia/Anadyr, Australia/Melbourne, Asia/Irkutsk, America/Shiprock, America/Winnipeg, Europe/Vatican, Asia/Amman, Etc/UTC, SystemV/AST4ADT, Asia/Tokyo, America/Toronto, Asia/Singapore, Australia/Lindeman, America/Los_Angeles, SystemV/EST5EDT, Pacific/Majuro, America/Argentina/Buenos_Aires, Europe/Nicosia, Pacific/Guadalcanal, Europe/Athens, US/Pacific, Europe/Monaco]", "", "null", "false", "false"
+   "record.es.index.output.field.name", "The field name where index name to store record will be stored", "", "es_index", "false", "false"
+   "record.es.type.output.field.name", "The field name where type name to store record will be stored", "", "es_type", "false", "false"
+   "number.of.future.session.when.event.from.past", "The number of session it will look for when searching session of last events", "", "1", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IncrementalWebSession-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic: 
+
+SetSourceOfTraffic
+------------------
+Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
+including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
+When analysing user experience on a webshop, it is crucial to collect, process, and report the campaign and traffic-source data. 
+To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
+i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
+, the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
+By default the source of traffic information are placed in a flat structure (specified by the **source_of_traffic.prefix** property
+with a default value of source_of_traffic). To work properly the SetSourceOfTraffic processor needs to have access to an 
+Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic
+
+Tags
+____
+session, traffic, source, web, analytics
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "referer.field", "Name of the field containing the referer value in the session", "", "referer", "false", "false"
+   "first.visited.page.field", "Name of the field containing the first visited page in the session", "", "firstVisitedPage", "false", "false"
+   "utm_source.field", "Name of the field containing the utm_source value in the session", "", "utm_source", "false", "false"
+   "utm_medium.field", "Name of the field containing the utm_medium value in the session", "", "utm_medium", "false", "false"
+   "utm_campaign.field", "Name of the field containing the utm_campaign value in the session", "", "utm_campaign", "false", "false"
+   "utm_content.field", "Name of the field containing the utm_content value in the session", "", "utm_content", "false", "false"
+   "utm_term.field", "Name of the field containing the utm_term value in the session", "", "utm_term", "false", "false"
+   "source_of_traffic.prefix", "Prefix for the source of the traffic related fields", "", "source_of_traffic", "false", "false"
+   "source_of_traffic.hierarchical", "Should the additional source of trafic information fields be added under a hierarchical father field or not.", "", "false", "false", "false"
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**cache.service**", "Name of the cache service to use.", "", "null", "false", "false"
+   "cache.validity.timeout", "Timeout validity (in seconds) of an entry in the cache.", "", "0", "false", "false"
+   "debug", "If true, an additional debug field is added. If the source info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the source fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+   "**es.index**", "Name of the ES index containing the list of search engines and social network. ", "", "null", "false", "false"
+   "es.type", "Name of the ES type to use.", "", "default", "false", "false"
+   "es.search_engine.field", "Name of the ES field used to specify that the domain is a search engine.", "", "search_engine", "false", "false"
+   "es.social_network.field", "Name of the ES field used to specify that the domain is a social network.", "", "social_network", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/SetSourceOfTraffic-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
+
+IpToFqdn
+--------
+Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToFqdn
+
+Tags
+____
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "false", "false"
+   "overwrite.fqdn.field", "If the field should be overwritten when it already exists.", "", "false", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 84600 seconds, which corresponds to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "false", "false"
+   "resolution.timeout", "The amount of time, in milliseconds, to wait at most for the resolution to occur. This avoids to block the stream for too much time. Default value is 1000ms. If the delay expires and no resolution could occur before, the FQDN field is not created. A special value of 0 disables the logisland timeout and the resolution request may last for many seconds if the IP cannot be translated into a FQDN by the underlying operating system. In any case, whether the timeout occurs in logisland of in the operating system, the fact that a timeout occurs is kept in the cache system so that a resolution request for the same IP will not occur before the cache entry expires.", "", "1000", "false", "false"
+   "debug", "If true, some additional debug fields are added. If the FQDN field is named X, a debug field named X_os_resolution_time_ms contains the resolution time in ms (using the operating system, not the cache). This field is added whether the resolution occurs or time is out. A debug field named  X_os_resolution_timeout contains a boolean value to indicate if the timeout occurred. Finally, a debug field named X_from_cache contains a boolean value to indicate the origin of the FQDN field. The default value for this property is false (debug is disabled.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToFqdn-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToGeo: 
+
+IpToGeo
+-------
+Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
+
+Module
+______
+com.hurence.logisland:logisland-processor-enrichment:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToGeo
+
+Tags
+____
+geo, enrich, ip
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "false", "false"
+   "**iptogeo.service**", "The reference to the IP to Geo service to use.", "", "null", "false", "false"
+   "geo.fields", "Comma separated list of geo information fields to add to the record. Defaults to '*', which means to include all available fields. If a list of fields is specified and the data is not available, the geo field is not created. The geo fields are dependant on the underlying defined Ip to Geo service. The currently only supported type of Ip to Geo service is the Maxmind Ip to Geo service. This means that the currently supported list of geo fields is the following:**continent**: the identified continent for this IP address. **continent_code**: the identified continent code for this IP address. **city**: the identified city for this IP address. **latitude**: the identified latitude for this IP address. **longitude**: the identified longitude for this IP address. **location**: the identified location for this IP address, defined as Geo-point expressed as a string with the format: 'latitude,longitude'. **accuracy_radius**: the approximate accuracy radius, in kilometers, around the latitude and longitude for the location. **time_zone**: the identified time zone for this IP address. **subdivision_N**: the identified subdivision for this IP address. N is a one-up number at the end of the attribute name, starting with 0. **subdivision_isocode_N**: the iso code matching the identified subdivision_N. **country**: the identified country for this IP address. **country_isocode**: the iso code for the identified country for this IP address. **postalcode**: the identified postal code for this IP address. **lookup_micros**: the number of microseconds that the geo lookup took. The Ip to Geo service must have the lookup_micros property enabled in order to have this field available.", "", "*", "false", "false"
+   "geo.hierarchical", "Should the additional geo information fields be added under a hierarchical father field or not.", "", "true", "false", "false"
+   "geo.hierarchical.suffix", "Suffix to use for the field holding geo information. If geo.hierarchical is true, then use this suffix appended to the IP field name to define the father field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo", "false", "false"
+   "geo.flat.suffix", "Suffix to use for geo information fields when they are flat. If geo.hierarchical is false, then use this suffix appended to the IP field name but before the geo field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo_", "false", "false"
+   "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
+   "debug", "If true, an additional debug field is added. If the geo info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/IpToGeo-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.networkpacket.ParseNetworkPacket: 
+
+ParseNetworkPacket
+------------------
+The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode).  In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records. The fields of packet headers are then extracted and made available in dedicated record fields. See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_ for an example of usage of this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
+
+Tags
+____
+PCap, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug.", "", "false", "false", "false"
+   "**flow.mode**", "Flow Mode. Indicate whether packets are provided in batch mode (via pcap files) or in stream mode (without headers). Allowed values are batch and stream.", "batch, stream", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
+
+BulkAddElasticsearch
+--------------------
+Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**default.index**", "The name of the index to insert into", "", "null", "false", "**true**"
+   "**default.type**", "The type of this document (used by Elasticsearch for indexing and searching)", "", "null", "false", "**true**"
+   "**timebased.index**", "do we add a date suffix", "no (no date added to default index), today (today's date added to default index), yesterday (yesterday's date added to default index)", "no", "false", "false"
+   "es.index.field", "the name of the event field containing es index name => will override index value if set", "", "null", "false", "false"
+   "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/BulkAddElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
+
+FetchHBaseRow
+-------------
+Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.FetchHBaseRow
+
+Tags
+____
+hbase, scan, fetch, get, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "false", "**true**"
+   "**row.identifier.field**", "The field containing the identifier of the row to fetch.", "", "null", "false", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of \"\"<colFamily>:<colQualifier>\"\" pairs to fetch. To return all columns for a given family, leave off the qualifier such as \"\"<colFamily1>,<colFamily2>\"\".", "", "null", "false", "**true**"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "table.name.default", "The table to use if table name field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/FetchHBaseRow-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch: 
+
+MultiGetElasticsearch
+---------------------
+Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.
+Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+
+ - index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.
+ - ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+ - includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+ - excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :
+
+ - index (same field name as the incoming record) : name of the elasticsearch index.
+ - type (same field name as the incoming record) : name of the elasticsearch type.
+ - id (same field name as the incoming record) : retrieved document id.
+ - a list of String fields containing :
+
+   * field name : the retrieved field name
+   * field value : the retrieved field value
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**es.index.field**", "the name of the incoming records field containing es index name to use in multiget query. ", "", "null", "false", "false"
+   "**es.type.field**", "the name of the incoming records field containing es type name to use in multiget query", "", "null", "false", "false"
+   "**es.ids.field**", "the name of the incoming records field containing es document Ids to use in multiget query", "", "null", "false", "false"
+   "**es.includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "false", "false"
+   "**es.excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/MultiGetElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.hbase.PutHBaseCell: 
+
+PutHBaseCell
+------------
+Adds the Contents of a Record to HBase as the value of a single cell
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.PutHBaseCell
+
+Tags
+____
+hadoop, hbase
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "false", "false"
+   "**table.name.field**", "The field containing the name of the HBase Table to put data into", "", "null", "false", "**true**"
+   "row.identifier.field", "Specifies  field containing the Row ID to use when inserting data into HBase", "", "null", "false", "**true**"
+   "row.identifier.encoding.strategy", "Specifies the data type of Row ID used when inserting data into HBase. The default behavior is to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string to the correct byte[] representation. The Binary option should be used if you are using Binary row keys in HBase", "String (Stores the value of row id as a UTF-8 String.), Binary (Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.)", "String", "false", "false"
+   "**column.family.field**", "The field containing the  Column Family to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**column.qualifier.field**", "The field containing the  Column Qualifier to use when inserting data into HBase", "", "null", "false", "**true**"
+   "**batch.size**", "The maximum number of Records to process in a single execution. The Records will be grouped by table, and a single Put per table will be performed.", "", "25", "false", "false"
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), none (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "false", "false"
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "false", "false"
+   "column.family.default", "The column family to use if column family field is not set", "", "null", "false", "false"
+   "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/PutHBaseCell-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.xml.EvaluateXPath: 
+
+EvaluateXPath
+-------------
+Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to new attributes in the records, depending on configuration of the Processor. XPaths are entered by adding user-defined properties; the name of the property maps to the Attribute Name into which the result will be placed. The value of the property must be a valid XPath expression. If the expression matches nothing, no attributes is added. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-xml:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.xml.EvaluateXPath
+
+Tags
+____
+XML, evaluate, XPath
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**source**", "Indicates the attribute containing the xml data to evaluate xpath against.", "", "null", "false", "false"
+   "**validate_dtd**", "Specifies whether or not the XML content should be validated against the DTD.", "true, false", "true", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "An attribute", "An XPath expression", " the attribute is set to the result of the XPath Expression.", "", "null", false
+
+Extra informations
+__________________
+.. include:: ./details/EvaluateXPath-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.ConsolidateSession: 
+
+ConsolidateSession
+------------------
+The ConsolidateSession processor is the Logisland entry point to get and process events from the Web Analytics.As an example here is an incoming event from the Web Analytics:
+
+"fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.ConsolidateSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "false", "false"
+   "session.timeout", "session timeout in sec", "", "1800", "false", "false"
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "false", "false"
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "false", "false"
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "false", "false"
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "false", "false"
+   "fields.to.return", "the list of fields to return", "", "null", "false", "false"
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "false", "false"
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "false", "false"
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "false", "false"
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "false", "false"
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "false", "false"
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "false", "false"
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ConsolidateSession-Detail.rst
+See Also:
+_________
+`com.hurence.logisland.processor.webanalytics.IncrementalWebSession`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.DetectOutliers: 
+
+DetectOutliers
+--------------
+Outlier Analysis: A Hybrid Approach
+
+In order to function at scale, a two-phase approach is taken
+
+For every data point
+
+- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
+- Gather a biased sample (biased by recency)
+- Extremely deterministic in space and cheap in computation
+
+For every outlier candidate
+
+- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
+- Expensive computationally, but run infrequently
+
+This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
+
+Module
+______
+com.hurence.logisland:logisland-processor-outlier-detection:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.DetectOutliers
+
+Tags
+____
+analytic, outlier, record, iot, timeseries
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**value.field**", "the numeric field to get the value", "", "record_value", "false", "false"
+   "**time.field**", "the numeric field to get the value", "", "record_time", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "**rotation.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**rotation.policy.amount**", "...", "", "100", "false", "false"
+   "**rotation.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "**chunking.policy.type**", "...", "by_amount, by_time, never", "by_amount", "false", "false"
+   "**chunking.policy.amount**", "...", "", "100", "false", "false"
+   "**chunking.policy.unit**", "...", "milliseconds, seconds, hours, days, months, years, points", "points", "false", "false"
+   "sketchy.outlier.algorithm", "...", "SKETCHY_MOVING_MAD", "SKETCHY_MOVING_MAD", "false", "false"
+   "batch.outlier.algorithm", "...", "RAD", "RAD", "false", "false"
+   "global.statistics.min", "minimum value", "", "null", "false", "false"
+   "global.statistics.max", "maximum value", "", "null", "false", "false"
+   "global.statistics.mean", "mean value", "", "null", "false", "false"
+   "global.statistics.stddev", "standard deviation value", "", "null", "false", "false"
+   "**zscore.cutoffs.normal**", "zscoreCutoffs level for normal outlier", "", "0.000000000000001", "false", "false"
+   "**zscore.cutoffs.moderate**", "zscoreCutoffs level for moderate outlier", "", "1.5", "false", "false"
+   "**zscore.cutoffs.severe**", "zscoreCutoffs level for severe outlier", "", "10.0", "false", "false"
+   "zscore.cutoffs.notEnoughData", "zscoreCutoffs level for notEnoughData outlier", "", "100", "false", "false"
+   "smooth", "do smoothing ?", "", "false", "false", "false"
+   "decay", "the decay", "", "0.1", "false", "false"
+   "**min.amount.to.predict**", "minAmountToPredict", "", "100", "false", "false"
+   "min_zscore_percentile", "minZscorePercentile", "", "50.0", "false", "false"
+   "reservoir_size", "the size of points reservoir", "", "100", "false", "false"
+   "rpca.force.diff", "No Description Provided.", "", "null", "false", "false"
+   "rpca.lpenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.min.records", "No Description Provided.", "", "null", "false", "false"
+   "rpca.spenalty", "No Description Provided.", "", "null", "false", "false"
+   "rpca.threshold", "No Description Provided.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/DetectOutliers-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch: 
+
+EnrichRecordsElasticsearch
+--------------------------
+Enrich input records with content indexed in elasticsearch using multiget queries.
+Each incoming record must be possibly enriched with information stored in elasticsearch. 
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
+
+Module
+______
+com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "false", "**true**"
+   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "false", "**true**"
+   "es.type", "The name of the ES type to use in multiget query.", "", "default", "false", "**true**"
+   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "false", "**true**"
+   "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/EnrichRecordsElasticsearch-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.excel.ExcelExtract: 
+
+ExcelExtract
+------------
+Consumes a Microsoft Excel document and converts each worksheet's line to a structured record. The processor is assuming to receive raw excel file as input record.
+
+Module
+______
+com.hurence.logisland:logisland-processor-excel:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.excel.ExcelExtract
+
+Tags
+____
+excel, processor, poi
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "sheets", "Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions. Any sheets not specified in this value will be ignored.", "", "", "false", "false"
+   "skip.columns", "Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.", "", "", "false", "false"
+   "field.names", "The comma separated list representing the names of columns of extracted cells. Order matters! You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+   "skip.rows", "The row number of the first row to start processing.Use this to skip over rows of data at the top of your worksheet that are not part of the dataset.Empty rows of data anywhere in the spreadsheet will always be skipped, no matter what this value is set to.", "", "0", "false", "false"
+   "record.type", "Default type of record", "", "excel_record", "false", "false"
+   "field.row.header", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ExcelExtract-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchIP: 
+
+MatchIP
+-------
+IP address Query matching (using `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>)`_
+
+You can use this processor to handle custom events matching IP address (CIDR)
+The record sent from a matching an IP address record is tagged appropriately.
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchIP
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchIP-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.MatchQuery: 
+
+MatchQuery
+----------
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Module
+______
+com.hurence.logisland:logisland-processor-querymatcher:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.MatchQuery
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "false", "false"
+   "output.record.type", "the output type of the record", "", "alert_match", "false", "false"
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "false", "false"
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "false", "false"
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "false", "false"
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","Allowable Values","Default Value","EL"
+   :widths: 20,20,40,40,20,10
+   :escape: \
+
+   "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
+
+Extra informations
+__________________
+.. include:: ./details/MatchQuery-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.bro.ParseBroEvent: 
+
+ParseBroEvent
+-------------
+The ParseBroEvent processor is the Logisland entry point to get and process `Bro <https://www.bro.org>`_ events. The `Bro-Kafka plugin <https://github.com/bro/bro-plugins/tree/master/kafka>`_ should be used and configured in order to have Bro events sent to Kafka. See the `Bro/Logisland tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-bro-events.html>`_ for an example of usage for this processor. The ParseBroEvent processor does some minor pre-processing on incoming Bro events from the Bro-Kafka plugin to adapt them to Logisland.
+
+Basically the events coming from the Bro-Kafka plugin are JSON documents with a first level field indicating the type of the event. The ParseBroEvent processor takes the incoming JSON document, sets the event type in a record_type field and sets the original sub-fields of the JSON event as first level fields in the record. Also any dot in a field name is transformed into an underscore. Thus, for instance, the field id.orig_h becomes id_orig_h. The next processors in the stream can then process the Bro events generated by this ParseBroEvent processor.
+
+As an example here is an incoming event from Bro:
+
+{
+
+   "conn": {
+
+     "id.resp_p": 9092,
+
+     "resp_pkts": 0,
+
+     "resp_ip_bytes": 0,
+
+     "local_orig": true,
+
+     "orig_ip_bytes": 0,
+
+     "orig_pkts": 0,
+
+     "missed_bytes": 0,
+
+     "history": "Cc",
+
+     "tunnel_parents": [],
+
+     "id.orig_p": 56762,
+
+     "local_resp": true,
+
+     "uid": "Ct3Ms01I3Yc6pmMZx7",
+
+     "conn_state": "OTH",
+
+     "id.orig_h": "172.17.0.2",
+
+     "proto": "tcp",
+
+     "id.resp_h": "172.17.0.3",
+
+     "ts": 1487596886.953917
+
+   }
+
+ }
+
+It gets processed and transformed into the following Logisland record by the ParseBroEvent processor:
+
+"@timestamp": "2017-02-20T13:36:32Z"
+
+"record_id": "6361f80a-c5c9-4a16-9045-4bb51736333d"
+
+"record_time": 1487597792782
+
+"record_type": "conn"
+
+"id_resp_p": 9092
+
+"resp_pkts": 0
+
+"resp_ip_bytes": 0
+
+"local_orig": true
+
+"orig_ip_bytes": 0
+
+"orig_pkts": 0
+
+"missed_bytes": 0
+
+"history": "Cc"
+
+"tunnel_parents": []
+
+"id_orig_p": 56762
+
+"local_resp": true
+
+"uid": "Ct3Ms01I3Yc6pmMZx7"
+
+"conn_state": "OTH"
+
+"id_orig_h": "172.17.0.2"
+
+"proto": "tcp"
+
+"id_resp_h": "172.17.0.3"
+
+"ts": 1487596886.953917
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.bro.ParseBroEvent
+
+Tags
+____
+bro, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseBroEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
+
+ParseNetflowEvent
+-----------------
+The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor is the Logisland entry point to  process Netflow (V5) events. NetFlow is a feature introduced on Cisco routers that provides the ability to collect IP network traffic.We can distinguish 2 components:
+
+	- Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one or more flow collectors
+
+	- Flow collector: responsible for reception, storage and pre-processing of flow data received from a flow exporter
+
+The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)
+Netflow are sent to kafka in order to be processed by logisland.
+In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
+
+Module
+______
+com.hurence.logisland:logisland-processor-cyber-security:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.netflow.ParseNetflowEvent
+
+Tags
+____
+netflow, security
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
+   "output.record.type", "the output type of the record", "", "netflowevent", "false", "false"
+   "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/ParseNetflowEvent-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.scripting.python.RunPython: 
+
+RunPython
+---------
+ !!!! WARNING !!!!
+
+The RunPython processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
+
+This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
+
+Module
+______
+com.hurence.logisland:logisland-processor-scripting:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.scripting.python.RunPython
+
+Tags
+____
+scripting, python
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "script.code.imports", "For inline mode only. This is the python code that should hold the import statements if required.", "", "null", "false", "false"
+   "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "false", "false"
+   "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "false", "false"
+   "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "false", "false"
+   "dependencies.path", "The path to the additional dependencies for the user's python code, whether using inline or file mode. This is optional as your code may not have additional dependencies. If you defined **script.path** (so using file mode) and if **dependencies.path** is not defined, Logisland will scan a potential directory named **dependencies** in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "false", "false"
+   "logisland.dependencies.path", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this parameter.", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/RunPython-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URIDecoder: 
+
+URIDecoder
+----------
+Decode one or more field containing an URI with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URIDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLCleaner: 
+
+URLCleaner
+----------
+Remove some or all query parameters from one or more field containing an uri which should be preferably encoded.
+If the uri is not encoded the behaviour is not defined in case the decoded uri contains '#', '?', '=', '&' which were encoded.
+Indeed this processor assumes that the start of query part of the uri start at the first '?' then end at the first '#' or at the end of the uri as
+specified by rfc3986 available at https://tools.ietf.org/html/rfc3986#section-3.4. 
+We assume as well that key value pairs are separed by '=', and are separed by '&': exemple 'param1=value1&param2=value2'.
+The processor can remove also parameters that have only a name and no value. The character used to separate the key and the value '=' is configurable.
+The character used to separate two parameters '&' is also configurable.
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLCleaner
+
+Tags
+____
+record, fields, url, params, param, remove, keep, query, uri, parameter, clean, decoded, raw
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**url.fields**", "List of fields (URL) to decode and optionnaly the output field for the url modified. Syntax should be <name>,<name:newName>,...,<name>. So fields name can not contain ',' nor ':'", "", "null", "false", "false"
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
+   "url.keep.params", "List of param names to keep in the input url (others will be removed). Can not be given at the same time as url.remove.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.params", "List of param names to remove from the input url (others will be kept). Can not be given at the same time as url.keep.params or url.remove.all", "", "null", "false", "false"
+   "url.remove.all", "Remove all params if true.", "", "null", "false", "false"
+   "parameter.separator", "the character to use to separate the parameters in the query part of the uris", "", "&", "false", "false"
+   "key.value.separator", "the character to use to separate the parameter name from the parameter value in the query part of the uris", "", "=", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
+----------
+
+.. _com.hurence.logisland.processor.webanalytics.URLDecoder: 
+
+URLDecoder
+----------
+Decode one or more field containing an URL with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+
+Class
+_____
+com.hurence.logisland.processor.webanalytics.URLDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "false", "false"
+   "charset", "Charset to use to decode the URL", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst

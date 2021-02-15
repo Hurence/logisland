@@ -19,7 +19,6 @@ import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.LogislandConfiguration;
 import com.hurence.logisland.engine.EngineContext;
-import com.hurence.logisland.util.runner.TestRunner;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -54,7 +53,7 @@ public class KafkaConnectTest {
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instantiate engine and all the processor from the config
-            engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
+            engineInstance = ComponentFactory.buildAndSetUpEngineContext(sessionConf.getEngine());
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
 

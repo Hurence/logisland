@@ -21,8 +21,8 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.stream.StreamContext;
-import com.hurence.logisland.validator.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +34,7 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
 
 
     private final List<StreamContext> streamContexts = new ArrayList<>();
-    private final List<ControllerServiceConfiguration> controllerServiceConfigurations = new ArrayList<>();
-    private static Logger logger = LoggerFactory.getLogger(StandardEngineContext.class);
+    private final List<ControllerServiceInitializationContext> controllerServiceContext = new ArrayList<>();
 
     public StandardEngineContext(final ProcessingEngine engine, final String id) {
         super(engine, id);
@@ -81,26 +80,34 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
     }
 
     @Override
-    public boolean isValid() {
-        boolean engineValid = super.isValid();
+    public boolean isValid(boolean strictCheck) {
+        boolean engineValid = super.isValid(strictCheck);
+        if (!engineValid) {
+            getLogger().error("Conf of engine is not valid !");
+        }
         boolean streamsValid = true;
         for (final StreamContext streamContext : streamContexts) {
-            if (!streamContext.isValid()) {
-                logger.info("invalid stream {}", streamContext.getIdentifier());
+            if (!streamContext.isValid(strictCheck)) {
                 streamsValid = false;
             }
         }
-        return engineValid && streamsValid;
+        boolean servicesValid = true;
+        for (final ControllerServiceInitializationContext serviceContext : controllerServiceContext) {
+            if (!serviceContext.isValid(strictCheck)) {
+                servicesValid = false;
+            }
+        }
+        return engineValid && streamsValid && servicesValid;
     }
 
     @Override
-    public Collection<ControllerServiceConfiguration> getControllerServiceConfigurations() {
-        return controllerServiceConfigurations;
+    public Collection<ControllerServiceInitializationContext> getControllerServiceContexts() {
+        return controllerServiceContext;
     }
 
     @Override
-    public void addControllerServiceConfiguration(ControllerServiceConfiguration config) {
-        controllerServiceConfigurations.add(config);
+    public void addControllerServiceContext(ControllerServiceInitializationContext config) {
+        controllerServiceContext.add(config);
     }
 
 }

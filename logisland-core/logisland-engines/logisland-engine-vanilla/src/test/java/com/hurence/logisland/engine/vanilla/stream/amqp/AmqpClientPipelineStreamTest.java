@@ -221,7 +221,7 @@ public class AmqpClientPipelineStreamTest {
     public void testEmptyEngine() {
         EngineConfiguration engineConfiguration = engineConfiguration();
         engineConfiguration.addPipelineConfigurations(emptyStream(defaultPropertySupplier()));
-        EngineContext context = ComponentFactory.getEngineContext(engineConfiguration).get();
+        EngineContext context = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration).get();
         Assert.assertTrue(context.isValid());
         context.getEngine().start(context);
         new Timer().schedule(new TimerTask() {
@@ -252,7 +252,7 @@ public class AmqpClientPipelineStreamTest {
         ));
         streamConfiguration.addProcessorConfiguration(modifyKeyProcessor("i_m_the_new_key"));
         engineConfiguration.addPipelineConfigurations(streamConfiguration);
-        EngineContext context = ComponentFactory.getEngineContext(engineConfiguration).get();
+        EngineContext context = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration).get();
         Assert.assertTrue(context.isValid());
         context.getEngine().start(context);
         vertx.runOnContext(v -> {

@@ -209,7 +209,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
 
     private static final PropertyDescriptor SOURCE_OF_TRAFFIC_PREFIX_FIELD = new PropertyDescriptor.Builder()
             .name(PROP_SOURCE_OF_TRAFFIC_PREFIX)
-            .description("Suffix for the source of the traffic related fields")
+            .description("Prefix for the source of the traffic related fields")
             .required(false)
             .defaultValue(SOURCE_OF_TRAFFIC_SUFFIX_NAME)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)

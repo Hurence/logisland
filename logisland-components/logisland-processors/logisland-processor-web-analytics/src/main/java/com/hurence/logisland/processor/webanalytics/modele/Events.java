@@ -115,6 +115,7 @@ public class Events
 
     public String getOriginalSessionId() {
         Event firstEvent = this.first();
+        if (firstEvent == null) return null;
         return firstEvent.getOriginalSessionId() != null ? firstEvent.getOriginalSessionId() : firstEvent.getSessionId() ;
     }
 

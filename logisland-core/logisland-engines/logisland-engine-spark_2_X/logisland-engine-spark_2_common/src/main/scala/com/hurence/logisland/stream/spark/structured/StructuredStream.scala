@@ -79,10 +79,11 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       //TODO stange way to update streamcontext, should'nt it be broadcasted ?
       // moreover the streamcontext should always be the last updated one in this function for me.
       // If driver wants to change it, it should call setup which would use a broadcast value for example ?
-      // Unfortunately we should not attempt changes before having good unit test so that we do not broke streams
-      // while cleaning streams code... Indeed I am afraid the remote api engines use this strange behaviour here
+      // The remote api engines use this strange behaviour here
       // to change config on the fly when it should use the setup method (maybe using broadcast as well).
       // In this method start, the config should be considered already up to date in my opinion.
+      // So currently this stream is not compatible with remoteApi change conf on the fly...
+      // Anyway modification of a stream should be done at engine level !!!! stopping specific stream then init and restarting it with new StreamContext/ ProcessContext
 //      sparkStreamContext.streamingContext.getProcessContexts.clear()
 //      sparkStreamContext.streamingContext.getProcessContexts.addAll(
 //        PipelineConfigurationBroadcastWrapper.getInstance().get(sparkStreamContext.streamingContext.getIdentifier))

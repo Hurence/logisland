@@ -58,7 +58,7 @@ public class MockProcessingEngine extends AbstractProcessingEngine {
     public void stop(EngineContext engineContext) {
         logger.info("engine reset");
         engineContext.getStreamContexts().clear();
-        engineContext.getControllerServiceConfigurations().clear();
+        engineContext.getControllerServiceContexts().clear();
         logger.info("engine shutdown");
     }
 

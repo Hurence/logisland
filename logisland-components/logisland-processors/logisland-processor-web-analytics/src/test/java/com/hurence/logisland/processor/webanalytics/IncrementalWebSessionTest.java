@@ -85,7 +85,7 @@ public class IncrementalWebSessionTest {
     public static final int EVENT_NUMBER_OF_FIELD_NEW_SESSION = 9;
 
     @Test
-    public void testOneEventOnlyPerSession()
+    public void testValidity()
     {
         IncrementalWebSession proc = new IncrementalWebSession();
         final TestRunner runner = TestRunners.newTestRunner(proc);

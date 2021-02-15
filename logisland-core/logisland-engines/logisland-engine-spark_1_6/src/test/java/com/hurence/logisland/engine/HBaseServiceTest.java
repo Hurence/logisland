@@ -91,7 +91,7 @@ public class HBaseServiceTest {
         if (checkpointDir.isDirectory())
             FileUtils.forceDelete(checkpointDir);*/
 
-        Optional<EngineContext> instance = ComponentFactory.getEngineContext(engineConfiguration);
+        Optional<EngineContext> instance = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration);
         assertTrue(instance.isPresent());
         assertTrue(instance.get().isValid());
         ProcessingEngine engine = instance.get().getEngine();

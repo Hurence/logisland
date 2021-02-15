@@ -57,7 +57,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         lock.lock();
         ValidationResult result =null;
         try {
-            final PropertyDescriptor descriptor = component.getPropertyDescriptor(name);
+            final PropertyDescriptor descriptor = getPropertyDescriptor(name);
             result = descriptor.validate(value);
             if (!result.isValid()) {
                 //throw new IllegalArgumentException(result.toString());
@@ -66,10 +66,8 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
             final String oldValue = properties.put(descriptor, value);
             if (!value.equals(oldValue)) {
-
-
                 try {
-                    component.onPropertyModified(descriptor, oldValue, value);
+                    onPropertyModified(descriptor, oldValue, value);
                 } catch (final Exception e) {
                     // nothing really to do here...
                 }
@@ -100,13 +98,13 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
         lock.lock();
         try {
-            final PropertyDescriptor descriptor = component.getPropertyDescriptor(name);
+            final PropertyDescriptor descriptor = getPropertyDescriptor(name);
             String value = null;
             if (!descriptor.isRequired() && (value = properties.remove(descriptor)) != null) {
 
 
                 try {
-                    component.onPropertyModified(descriptor, value, null);
+                    onPropertyModified(descriptor, value, null);
                 } catch (final Exception e) {
                     // nothing really to do here...
                 }
@@ -125,7 +123,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
     @Override
     public Map<PropertyDescriptor, String> getProperties() {
 
-        final List<PropertyDescriptor> supported = component.getPropertyDescriptors();
+        final List<PropertyDescriptor> supported = getPropertyDescriptors();
         if (supported == null || supported.isEmpty()) {
             return Collections.unmodifiableMap(properties);
         } else {
@@ -170,7 +168,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[id=" + getIdentifier() + "]";
+        return getClass().getSimpleName() + "[id=" + getIdentifier() + ", component=" + component.getClass().getSimpleName() + "]";
     }
 
 
@@ -191,14 +189,21 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     @Override
     public boolean isValid() {
+        return isValid(false);
+    }
+
+    @Override
+    public boolean isValid(boolean strictCheck) {
         final Collection<ValidationResult> validationResults = getValidationErrors();
+        boolean isValid = true;
         for (final ValidationResult result : validationResults) {
+            //TODO tolerate unsupported properties or no depending on strictCheck
             if (!result.isValid()) {
-                getLogger().warn("invalid property {}", new Object[]{result.getExplanation()});
-                return false;
+                getLogger().error("invalid property {}", new Object[]{result.getExplanation()});
+                isValid = false;
             }
         }
-        return true;
+        return isValid;
     }
 
     @Override

@@ -18,6 +18,7 @@ package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.stream.StreamContext;
 
 import java.util.Collection;
@@ -36,24 +37,22 @@ public interface EngineContext extends ComponentContext {
      */
     void addStreamContext(StreamContext streamContext);
 
-
     /**
      * @return the engine
      */
     ProcessingEngine getEngine();
 
-
     /**
      * @return the init context for controllers
      */
-    Collection<ControllerServiceConfiguration> getControllerServiceConfigurations();
+    Collection<ControllerServiceInitializationContext> getControllerServiceContexts();
 
     /**
      * add a ControllerServiceConfiguration
      *
      * @param config to add
      */
-    void addControllerServiceConfiguration(ControllerServiceConfiguration config);
+    void addControllerServiceContext(ControllerServiceInitializationContext config);
 
 
 }

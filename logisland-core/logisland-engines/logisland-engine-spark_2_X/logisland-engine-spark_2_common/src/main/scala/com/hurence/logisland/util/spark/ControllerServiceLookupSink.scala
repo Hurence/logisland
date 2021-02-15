@@ -41,11 +41,9 @@ class ControllerServiceLookupSink(createControllerServiceLookup: () => Controlle
 }
 
 object ControllerServiceLookupSink {
-    def apply(configs: util.Collection[ControllerServiceConfiguration]): ControllerServiceLookupSink = {
+    def apply(configs: util.Collection[ControllerServiceInitializationContext]): ControllerServiceLookupSink = {
         val f = () => {
            new StandardControllerServiceLookup(configs)
-
-
         }
         new ControllerServiceLookupSink(f)
     }

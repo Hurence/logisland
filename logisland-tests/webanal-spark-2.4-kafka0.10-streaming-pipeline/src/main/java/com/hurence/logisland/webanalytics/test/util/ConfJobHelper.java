@@ -40,7 +40,7 @@ public class ConfJobHelper {
     public void initJob() throws InitializationException {
         // instantiate engine and all the processor from the config
         // this init the engine
-        Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(jobConfig.getEngine());
+        Optional<EngineContext> engineInstance = ComponentFactory.buildAndSetUpEngineContext(jobConfig.getEngine());
         if (!engineInstance.isPresent()) {
             throw new IllegalArgumentException("engineInstance could not be instantiated");
         }

@@ -174,8 +174,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             }
         })
 
-        running = true
-
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
             s"batchDuration:$batchDurationMs ")
@@ -234,10 +232,10 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val spark = getCurrentSparkSession()
         logger.info("broadCasting services")
         controllerServiceLookupSink = spark.sparkContext.broadcast(
-            ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
+            ControllerServiceLookupSink(engineContext.getControllerServiceContexts)
         )
         //TODO broadcast ProcessContexts ? Déplacer les broadcast dans init ?
-
+        getLogger.info("Will start streams")
         /**
           * loop over processContext
           */
@@ -266,6 +264,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             logger.error("There is no stream to start ! This should never happen as configuration should be considered" +
             " wrong in this case, therefore code should never reach this code");
         }
+        running = true
     }
 
     protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {

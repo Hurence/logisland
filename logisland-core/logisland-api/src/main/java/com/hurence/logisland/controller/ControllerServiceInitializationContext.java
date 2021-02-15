@@ -19,4 +19,10 @@ package com.hurence.logisland.controller;
 
 import com.hurence.logisland.component.ComponentContext;
 
-public interface ControllerServiceInitializationContext extends ComponentContext { }
+public interface ControllerServiceInitializationContext extends ComponentContext {
+
+    /**
+     * @return the Stream
+     */
+    ControllerService getService();
+}

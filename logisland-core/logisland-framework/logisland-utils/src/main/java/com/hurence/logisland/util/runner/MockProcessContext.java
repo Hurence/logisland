@@ -213,6 +213,11 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
     }
 
     @Override
+    public boolean isValid(boolean strictCheck) {
+        return isValid();
+    }
+
+    @Override
     public Collection<ValidationResult> getValidationErrors() {
         return validate();
     }

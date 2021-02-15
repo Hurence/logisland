@@ -22,10 +22,22 @@
     </properties>
 
     <dependencies>
-<!--        LOGISLAND MODULES        -->
+<!--        LOGISLAND CORE MODULES        -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-scripting-base</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-scripting-mvel</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -47,19 +59,39 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-bootstrap</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-plugin-support</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--            org.scala-lang:scala-library:jar:2.12.9:compile-->
+
+<!--        LOGISLAND ENGINE-->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-engine-spark_2_4</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
+
+<!--        Plugins that should be used as repackage but some object used in tests... -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-web-analytics</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!--  logisland-processor-common in depending on scala 2.12 !!!!-->
+
+        <!--  logisland-processor-common in depending on scala 2.12 !!!!
+        TODO if possible better to use processor common as repackaged but had trouble with dependencies in this case. -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-common</artifactId>
@@ -72,7 +104,34 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-processor-elasticsearch</artifactId>
+            <version>${project.version}</version>
+            <classifier>repackaged</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-inmemory-cache</artifactId>
+            <version>${project.version}</version>
+            <classifier>repackaged</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-elasticsearch_7_x-client</artifactId>
+            <version>${project.version}</version>
+            <classifier>repackaged</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-processor-useragent</artifactId>
+            <version>${project.version}</version>
+            <classifier>repackaged</classifier>
+            <scope>provided</scope>
+        </dependency>
 
         <!--      SPARK   -->
         <dependency>

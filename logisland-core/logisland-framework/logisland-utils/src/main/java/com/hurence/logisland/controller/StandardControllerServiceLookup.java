@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.controller;
 
-import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.config.ControllerServiceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +24,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 
@@ -35,44 +32,29 @@ import java.util.stream.Collectors;
  */
 public class StandardControllerServiceLookup implements ControllerServiceLookup, Serializable {
 
-    private final Map<String, ControllerService> controllerServiceMap = new ConcurrentHashMap<>();
-
-    private final Collection<ControllerServiceConfiguration> configurations;
-
     private static final Logger logger = LoggerFactory.getLogger(StandardControllerServiceLookup.class);
 
-    private static final AtomicLong currentId = new AtomicLong(0);
+    private final Map<String, ControllerService> controllerServiceMap = new ConcurrentHashMap<>();
+    private final Collection<ControllerServiceInitializationContext> serviceContexts;
 
-    public StandardControllerServiceLookup(Collection<ControllerServiceConfiguration> configurations) {
-        this.configurations = configurations;
+    public StandardControllerServiceLookup(Collection<ControllerServiceInitializationContext> serviceContexts) {
+        this.serviceContexts = serviceContexts;
     }
 
     @Override
     public synchronized ControllerService getControllerService(String serviceIdentifier) {
-
         // check if the service has been loaded
         if (!controllerServiceMap.containsKey(serviceIdentifier)) {
-
             // lazy load the controller service
-            configurations.stream()
-                    .filter(conf -> serviceIdentifier.equals(conf.getControllerService()))
-                    .forEach(conf -> {
+            serviceContexts.stream()
+                    .filter(context -> serviceIdentifier.equals(context.getIdentifier()))
+                    .forEach(context -> {
                         try {
-
-
-                            ControllerService service = ComponentFactory.loadComponent(conf.getComponent());
-                            logger.info("loading controller service {}", new Object[]{conf.getComponent()});
-                            ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, conf.getControllerService());
-                            Map<String, String> properties = conf.getConfiguration();
-                            properties.keySet().forEach(name -> context.setProperty(name, properties.get(name)));
-
-                            service.initialize(context);
-                            controllerServiceMap.put(conf.getControllerService(), service);
-                            logger.info("service initialization complete {}", new Object[]{service});
-                        } catch (IllegalArgumentException | ClassNotFoundException e) {
-                            logger.error("unable to load class {} : {} ", new Object[]{conf, e.toString()});
+                            context.getService().initialize(context);
+                            controllerServiceMap.put(context.getIdentifier(), context.getService());
+                            logger.info("service initialization complete {}", new Object[]{context.getService()});
                         } catch (InitializationException e) {
-                            logger.error("unable to initialize class {} : {} ", new Object[]{conf, e.toString()});
+                            logger.error("unable to initialize service {} : {} ", new Object[]{context.getIdentifier(), e.toString()});
                         }
                     });
 

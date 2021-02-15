@@ -17,6 +17,7 @@ package com.hurence.logisland.controller;
 
 
 import com.hurence.logisland.component.*;
+import com.hurence.logisland.processor.Processor;
 
 import java.io.File;
 
@@ -49,4 +50,8 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
         return new StandardPropertyValue(rawValue);
     }
 
+    @Override
+    public ControllerService getService() {
+        return (ControllerService) component;
+    }
 }

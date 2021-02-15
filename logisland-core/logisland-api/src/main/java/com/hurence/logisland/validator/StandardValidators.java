@@ -218,8 +218,11 @@ public class StandardValidators {
             String reason = null;
             try {
                 DateTimeFormatter.ofPattern(value);
-            } catch (final NumberFormatException e) {
+            } /*catch (final NumberFormatException e) {
                 reason = "not a valid " + DateTimeFormatter.class.getCanonicalName();
+            }*/ catch (final Exception e) {
+                reason = "not a valid " + DateTimeFormatter.class.getCanonicalName()
+                + " caused by : " + e.getMessage();
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();

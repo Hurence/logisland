@@ -30,7 +30,6 @@
   */
 package com.hurence.logisland.stream.spark.structured.provider
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
 import java.util.Collections
 
@@ -38,13 +37,11 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.logging.ComponentLog
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
-import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
-import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.{DEFAULT_METRICS_TOPIC, ERROR_TOPICS, INPUT_TOPICS, KAFKA_FAIL_ON_DATA_LOSS, KAFKA_MAX_OFFSETS_PER_TRIGGER, KAFKA_METADATA_BROKER_LIST, KAFKA_SASL_KERBEROS_SERVICE_NAME, KAFKA_SECURITY_PROTOCOL, KAFKA_STARTING_OFFSETS, KAFKA_TOPIC_AUTOCREATE, KAFKA_TOPIC_DEFAULT_PARTITIONS, KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR, KAFKA_ZOOKEEPER_QUORUM, NONE_TOPIC, OUTPUT_TOPICS}
-import com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService.{AVRO_READ_VALUE_SCHEMA, AVRO_WRITE_VALUE_SCHEMA, READ_VALUE_SERIALIZER, WRITE_KEY_SERIALIZER, WRITE_VALUE_SERIALIZER}
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties._
+import com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService._
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
@@ -52,7 +49,7 @@ import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**
   * Compatible with kafka 0.10.0 or higher
@@ -62,14 +59,11 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   with StructuredStreamProviderServiceReader
   with StructuredStreamProviderServiceWriter {
 
-  var appName = ""
   var kafkaSinkParams: Map[String, Object] = _
   var kafkaParams: Map[String, Object] = _
   // Define the Kafka parameters, broker list must be specified
   var inputTopics = Set[String]()
   var outputTopics = Set[String]()
-  var errorTopics = Set[String]()
-  var metricsTopics = Set[String]()
   var topicAutocreate = true
   var topicDefaultPartitions = 3
   var topicDefaultReplicationFactor = 1
@@ -86,9 +80,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   var failOnDataLoss = true
   var maxOffsetsPerTrigger: Option[Long] = None
 
-  var readValueSerializer: RecordSerializer = null
-  var writeValueSerializer: RecordSerializer = null
-  var writeKeySerializer: RecordSerializer = null
+  var readValueSerializer: RecordSerializer = _
+  var writeValueSerializer: RecordSerializer = _
+  var writeKeySerializer: RecordSerializer = _
 
   @OnEnabled
   @throws[InitializationException]
@@ -100,8 +94,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
         // Define the Kafka parameters, broker list must be specified
         inputTopics = context.getPropertyValue(INPUT_TOPICS).asString.split(",").toSet
         outputTopics = context.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
-        errorTopics = context.getPropertyValue(ERROR_TOPICS).asString.split(",").toSet
-        metricsTopics = DEFAULT_METRICS_TOPIC.getValue.split(",").toSet
 
         topicAutocreate = context.getPropertyValue(KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
         topicDefaultPartitions = context.getPropertyValue(KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
@@ -124,8 +116,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
           val zkUtils = ZkUtils.apply(zkQuorum, 10000, 10000, JaasUtils.isZkSecurityEnabled)
           createTopicsIfNeeded(zkUtils, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
           createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-          createTopicsIfNeeded(zkUtils, errorTopics, 3, 1)
-          createTopicsIfNeeded(zkUtils, metricsTopics, 1, 1)
         }
 
         readValueSerializer = SerializerProvider.getSerializer(
@@ -190,7 +180,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     */
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-    descriptors.add(ERROR_TOPICS)
     descriptors.add(INPUT_TOPICS)
     descriptors.add(OUTPUT_TOPICS)
     descriptors.add(KAFKA_TOPIC_AUTOCREATE)
@@ -208,7 +197,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     descriptors.add(WRITE_VALUE_SERIALIZER)
     descriptors.add(AVRO_WRITE_VALUE_SCHEMA)
     descriptors.add(WRITE_KEY_SERIALIZER)
-
     Collections.unmodifiableList(descriptors)
   }
 

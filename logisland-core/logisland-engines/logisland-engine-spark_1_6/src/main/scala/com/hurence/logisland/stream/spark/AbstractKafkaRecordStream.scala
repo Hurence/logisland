@@ -287,7 +287,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams, keyField))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
             controllerServiceLookupSink = ssc.sparkContext.broadcast(
-                ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
+                ControllerServiceLookupSink(engineContext.getControllerServiceContexts)
             )
 
             if (topicAutocreate) {

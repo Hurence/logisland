@@ -50,7 +50,7 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
     @Override
     public void start(EngineContext engineContext) {
         logger.info("Starting");
-        ControllerServiceLookup controllerServiceLookup = new StandardControllerServiceLookup(engineContext.getControllerServiceConfigurations());
+        ControllerServiceLookup controllerServiceLookup = new StandardControllerServiceLookup(engineContext.getControllerServiceContexts());
 
         for (StreamContext streamContext : engineContext.getStreamContexts()) {
             try {
