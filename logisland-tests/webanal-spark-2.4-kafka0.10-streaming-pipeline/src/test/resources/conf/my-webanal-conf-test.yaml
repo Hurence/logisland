@@ -19,7 +19,7 @@ engine:
     - controllerService: kafka_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
       configuration:
-#        otput.mode: "update"
+        output.mode: "update"
         kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_out
         kafka.zookeeper.quorum: ${kafka.zookeeper.quorum}
@@ -128,6 +128,9 @@ engine:
     - stream: kafka_to_console
       component: com.hurence.logisland.stream.spark.structured.StructuredStream
       configuration:
+        groupby: sessionId
+        chunk.size: 1000
+        state.timeout.ms: 50000
         read.stream.service.provider: kafka_service
         write.stream.service.provider: kafka_service
 

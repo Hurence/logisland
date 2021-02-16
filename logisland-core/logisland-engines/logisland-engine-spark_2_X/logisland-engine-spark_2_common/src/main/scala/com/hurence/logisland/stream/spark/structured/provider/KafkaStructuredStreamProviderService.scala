@@ -42,6 +42,7 @@ import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, Seria
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties._
 import com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService._
+import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderServiceWriter.OUTPUT_MODE
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
@@ -83,6 +84,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   var readValueSerializer: RecordSerializer = _
   var writeValueSerializer: RecordSerializer = _
   var writeKeySerializer: RecordSerializer = _
+  var outputMode: String = _
 
   @OnEnabled
   @throws[InitializationException]
@@ -128,6 +130,10 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
 
         writeKeySerializer = SerializerProvider.getSerializer(
           context.getPropertyValue(WRITE_KEY_SERIALIZER).asString, null)
+
+        if (context.getPropertyValue(OUTPUT_MODE).isSet) {
+          outputMode = context.getPropertyValue(OUTPUT_MODE).asString()
+        }
       } catch {
         case e: Exception =>
           throw new InitializationException(e)
@@ -237,7 +243,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
 
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
-    df.mapPartitions(record => record.map(record => SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)))
+    val dataStreamWriter =  df
+      .mapPartitions(record => record.map(record => SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)))
       // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
       .map(r => {
         (r.getField(FieldDictionary.RECORD_KEY).asBytes(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
@@ -245,15 +252,20 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       .as[(Array[Byte], Array[Byte])]
       .toDF("key", "value")
       .writeStream
-      .queryName(getIdentifier + "_sink")//MUST be unique !! so we can not use the same sink several times... TODO move this into stream so he can make a unique identifier
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
       .option("kafka.security.protocol", securityProtocol)
       .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
       .option("topic", outputTopics.mkString(","))
       .option("checkpointLocation", "checkpoints") //Rewind not working because of this ?
-      .start()
 
+    if (outputMode != null) {
+      dataStreamWriter.outputMode(outputMode)
+    }
+
+    dataStreamWriter
+      .queryName(getIdentifier + "_sink")//MUST be unique !! so we can not use the same sink several times... TODO move this into stream so he can make a unique identifier
+      .start()
   }
 }
 
