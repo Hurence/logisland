@@ -72,10 +72,6 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       val controllerServiceLookup = sparkStreamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
       context.setControllerServiceLookup(controllerServiceLookup)
 
-      val readStreamService = context.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
-        .asControllerService()
-        .asInstanceOf[StructuredStreamProviderServiceReader]
-
       //TODO stange way to update streamcontext, should'nt it be broadcasted ?
       // moreover the streamcontext should always be the last updated one in this function for me.
       // If driver wants to change it, it should call setup which would use a broadcast value for example ?
@@ -88,8 +84,12 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 //      sparkStreamContext.streamingContext.getProcessContexts.addAll(
 //        PipelineConfigurationBroadcastWrapper.getInstance().get(sparkStreamContext.streamingContext.getIdentifier))
 
-      val readDF = readStreamService.read(sparkSession)
+      val readDF = context.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
+        .asControllerService()
+        .asInstanceOf[StructuredStreamProviderServiceReader].read(sparkSession)
+
       val transformedInputData: Dataset[Record] = transformInputData(readDF)
+
       val writeStreamService = context.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
         .asControllerService()
         .asInstanceOf[StructuredStreamProviderServiceWriter]

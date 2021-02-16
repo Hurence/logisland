@@ -234,7 +234,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         controllerServiceLookupSink = spark.sparkContext.broadcast(
             ControllerServiceLookupSink(engineContext.getControllerServiceContexts)
         )
-        //TODO broadcast ProcessContexts ? Déplacer les broadcast dans init ?
+        //TODO Déplacer les broadcast dans init ?
         getLogger.info("Will start streams")
         /**
           * loop over processContext

@@ -59,6 +59,8 @@ public class ConfJobHelper {
     public void startJob() {
         String engineName = engineContext.getEngine().getIdentifier();
         try {
+            logger.info("Init engine {}", engineName);
+            engineContext.getEngine().init(engineContext);
             logger.info("Start engine {}", engineName);
             engineContext.getEngine().start(engineContext);
         } catch (Exception e) {

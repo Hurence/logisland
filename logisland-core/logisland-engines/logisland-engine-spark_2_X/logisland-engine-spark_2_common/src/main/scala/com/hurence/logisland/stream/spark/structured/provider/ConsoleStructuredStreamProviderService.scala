@@ -111,7 +111,7 @@ object ConsoleStructuredStreamProviderService {
       .name("rows")
       .description("Number of rows to print every trigger (default: 20 see spark documentation)")
       .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
-      .required(true)
+      .required(false)
       .build
 
     val TRUNCATE_OUTPUT: PropertyDescriptor = new PropertyDescriptor.Builder()

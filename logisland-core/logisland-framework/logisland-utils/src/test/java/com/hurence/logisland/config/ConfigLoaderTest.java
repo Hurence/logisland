@@ -105,13 +105,13 @@ public class ConfigLoaderTest {
         assertEquals(2, stream2.getProcessorConfigurations().size());
         assertEquals(2, engineConf.getControllerServiceConfigurations().size());
 
-        Optional<EngineContext> context = ComponentFactory.buildAndSetUpEngineContext(engineConf);
-
-        assertTrue(context.isPresent());
-
-        assertEquals(2, context.get().getStreamContexts().size());
-
-        assertTrue(context.get().isValid());
+//        Optional<EngineContext> context = ComponentFactory.buildAndSetUpEngineContext(engineConf);
+//
+//        assertTrue(context.isPresent());
+//
+//        assertEquals(2, context.get().getStreamContexts().size());
+//
+//        assertTrue(context.get().isValid());
     }
 
     /**

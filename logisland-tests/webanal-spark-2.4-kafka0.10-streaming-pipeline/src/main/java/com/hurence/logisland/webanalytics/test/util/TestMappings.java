@@ -12,7 +12,7 @@ public class TestMappings {
     public static Event.InternalFields eventsInternalFields = new Event.InternalFields()
             .setSessionIdField("sessionId")
             .setTimestampField("h2kTimestamp")
-            .setVisitedPageField("VISITED_PAGE")
+            .setVisitedPageField("location")
             .setSourceOffTrafficCampaignField(IncrementalWebSession.DEFAULT_SOURCE_OF_TRAFFIC_PREFIX + IncrementalWebSession.SOURCE_OF_TRAFFIC_FIELD_CAMPAIGN)
             .setSourceOffTrafficContentField(IncrementalWebSession.DEFAULT_SOURCE_OF_TRAFFIC_PREFIX + IncrementalWebSession.SOURCE_OF_TRAFFIC_FIELD_CONTENT)
             .setSourceOffTrafficKeyWordField(IncrementalWebSession.DEFAULT_SOURCE_OF_TRAFFIC_PREFIX + IncrementalWebSession.SOURCE_OF_TRAFFIC_FIELD_KEYWORD)
@@ -23,6 +23,7 @@ public class TestMappings {
             .setOriginalSessionIdField("originalSessionId")
             .setTransactionIdField("transactionId")
             .setTransactionIdsField("transactionIds");
+
 
 
     public static WebSession.InternalFields sessionInternalFields = new WebSession.InternalFields()

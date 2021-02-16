@@ -245,6 +245,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       .as[(Array[Byte], Array[Byte])]
       .toDF("key", "value")
       .writeStream
+      .queryName(getIdentifier + "_sink")//MUST be unique !! so we can not use the same sink several times... TODO move this into stream so he can make a unique identifier
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
       .option("kafka.security.protocol", securityProtocol)

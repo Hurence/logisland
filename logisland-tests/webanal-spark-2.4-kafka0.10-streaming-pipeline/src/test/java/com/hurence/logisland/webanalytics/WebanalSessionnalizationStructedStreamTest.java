@@ -2,6 +2,7 @@ package com.hurence.logisland.webanalytics;
 
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties;
 import com.hurence.logisland.webanalytics.test.util.ConfJobHelper;
 import com.hurence.logisland.webanalytics.test.util.EventsGenerator;
@@ -86,7 +87,7 @@ public class WebanalSessionnalizationStructedStreamTest {
     }
 
     @Test
-    public void myWebANalDebugTest() throws IOException, InterruptedException, InitializationException {
+    public void myWebAnalDebugTest() throws IOException, InterruptedException, InitializationException {
         final long padding = 30000L;
         String confFilePath = getClass().getClassLoader().getResource("conf/my-webanal-conf-test.yaml").getFile();
         ConfJobHelper confJob = new ConfJobHelper(confFilePath);
@@ -94,6 +95,9 @@ public class WebanalSessionnalizationStructedStreamTest {
         confKafka.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(), embeddedKafka.getZookeeperConnectionString());
         confKafka.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(), embeddedKafka.getBrokersAsString());
         confJob.modifyControllerServiceConf("kafka_service", confKafka);
+        Map<String, String> confOpenDistro = new HashMap<>();
+        confOpenDistro.put(ElasticsearchClientService.ENABLE_SSL.getName(), "true");
+        confJob.modifyControllerServiceConf("opendistro_service", confOpenDistro);
         confJob.initJob();
         confJob.startJob();
         boolean running = true;

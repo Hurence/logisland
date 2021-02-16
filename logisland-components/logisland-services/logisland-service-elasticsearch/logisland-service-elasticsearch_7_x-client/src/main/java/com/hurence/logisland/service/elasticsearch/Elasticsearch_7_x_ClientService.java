@@ -87,6 +87,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.beans.Transient;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -102,10 +103,10 @@ import java.util.stream.Collectors;
 public class Elasticsearch_7_x_ClientService extends AbstractControllerService implements ElasticsearchClientService {
 
 
-    protected volatile RestHighLevelClient esClient;
+    protected volatile transient RestHighLevelClient esClient;
     private volatile HttpHost[] esHosts;
     private volatile String authToken;
-    protected volatile BulkProcessor bulkProcessor;
+    protected volatile transient BulkProcessor bulkProcessor;
     protected volatile Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
 
     @Override
@@ -138,6 +139,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         super.init(context);
         synchronized(this) {
             try {
+                shutdown();
                 createElasticsearchClient(context);
                 createBulkProcessor(context);
             } catch (Exception e){
@@ -155,10 +157,6 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
      * @throws ProcessException if an error occurs while creating an Elasticsearch client
      */
     protected void createElasticsearchClient(ControllerServiceInitializationContext context) throws ProcessException {
-        if (esClient != null) {
-            return;
-        }
-
         try {
             final String username = context.getPropertyValue(USERNAME).asString();
             final String password = context.getPropertyValue(PASSWORD).asString();
@@ -264,12 +262,6 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     protected void createBulkProcessor(ControllerServiceInitializationContext context)
     {
-        if (bulkProcessor != null) {
-            return;
-        }
-
-        // create the bulk processor
-
        BulkProcessor.Listener listener = new BulkProcessor.Listener() {
             @Override
             public void beforeBulk(long l, BulkRequest bulkRequest) {

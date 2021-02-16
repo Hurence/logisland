@@ -19,11 +19,9 @@ engine:
     - controllerService: kafka_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
       configuration:
-#        [id=kafka_service] 'output.mode' validated against 'update' is invalid because 'output.mode' is not a supported property
-        otput.mode: "update"
+#        otput.mode: "update"
         kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_out
-        kafka.error.topics: logisland_errors
         kafka.zookeeper.quorum: ${kafka.zookeeper.quorum}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 1
@@ -121,6 +119,8 @@ engine:
       configuration:
         hosts: localhost:9200
         batch.size: 2000
+        username: admin
+        password: admin
         flush.interval: 2
 
   streamConfigurations:
