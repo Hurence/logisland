@@ -21,9 +21,10 @@ import java.util.Collections
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.stream.AbstractRecordStream
-import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.structured.StructuredStream._
 import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamProviderServiceReader, StructuredStreamProviderServiceWriter}
 import com.hurence.logisland.stream.spark.{SparkRecordStream, SparkStreamContext}
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.streaming.{GroupStateTimeout, OutputMode}
 import org.apache.spark.sql.{Dataset, SQLContext}
@@ -32,24 +33,35 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
   @transient protected var sparkStreamContext: SparkStreamContext = _
   private var isReady = false
-  private var keys: String = _
+  private var isStatefull = false
+  private var groupByField: String = _
+  private var stateTimeoutMode: String = _
   private var stateTimeoutDuration: Long = _
-  private var chunkSize: Int = _
+  @transient protected var outputMode: OutputMode = _
+
 
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
     descriptors.add(READ_STREAM_SERVICE_PROVIDER)
     descriptors.add(WRITE_STREAM_SERVICE_PROVIDER)
+    descriptors.add(GROUP_BY_FIELDS)
+    descriptors.add(STATE_TIMEOUT_DURATION_MS)
+    descriptors.add(STATE_TIMEOUT_DURATION_MS)
+    descriptors.add(STATEFULL_OUTPUT_MODE)
     Collections.unmodifiableList(descriptors)
   }
 
   override def init(sparkStreamContext: SparkStreamContext) = {
     super.init(sparkStreamContext.logislandStreamContext)
     this.sparkStreamContext = sparkStreamContext
-    if (context.getPropertyValue(GROUPBY).isSet) {
-      keys = context.getPropertyValue(GROUPBY).asString()
-      stateTimeoutDuration = context.getPropertyValue(STATE_TIMEOUT_MS).asLong()
-      chunkSize = context.getPropertyValue(CHUNK_SIZE).asInteger()
+    if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
+      groupByField = context.getPropertyValue(GROUP_BY_FIELDS).asString()
+      stateTimeoutDuration = context.getPropertyValue(STATE_TIMEOUT_DURATION_MS).asLong()
+    }
+    context.getPropertyValue(STATEFULL_OUTPUT_MODE).asString() match {
+      case "append" => outputMode = OutputMode.Append()
+      case "update" => outputMode = OutputMode.Update()
+      case "complete" => outputMode = OutputMode.Complete()
     }
     isReady = true;
   }
@@ -123,22 +135,125 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     }
     this.isReady = false
   }
-
+//    .withWatermark("eventTime", "10 seconds")
+//    .dropDuplicates("guid", "eventTime")
   def transformInputData(readDF: Dataset[Record]): Dataset[Record] = {
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
     val pipelineMethods = new SparkPipeLineMethods(sparkStreamContext)
-    if (context.getPropertyValue(GROUPBY).isSet) {
+    if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
       import readDF.sparkSession.implicits._
       readDF
-        .filter(_.hasField(keys))
-        .groupByKey(_.getField(keys).asString())
-        .flatMapGroupsWithState(outputMode = OutputMode.Append, timeoutConf = GroupStateTimeout.ProcessingTimeTimeout())(
-          pipelineMethods.mappingFunction(chunkSize, stateTimeoutDuration)
-        )
+        .groupByKey(_.getField(groupByField).asString())
+        .flatMapGroups((key, iterator) => {
+          pipelineMethods.executePipeline(key, iterator)
+        })
     } else {
       readDF.mapPartitions(iterator => {
         pipelineMethods.executePipeline(iterator)
       })
     }
+//    if (isStatefull) {
+//      if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
+//        import readDF.sparkSession.implicits._
+//        readDF
+//          .groupByKey(_.getField(groupByField).asString())
+//          .flatMapGroupsWithState[Record, Record](outputMode = outputMode, timeoutConf = GroupStateTimeout.ProcessingTimeTimeout())(
+//            pipelineMethods.mappingFunction2(stateTimeoutDuration)
+//          )
+//      } else {
+//        throw new IllegalStateException("Should not happen. Statefull is not supported without groupBy")
+//      }
+//    } else {
+//      if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
+//        import readDF.sparkSession.implicits._
+//        readDF
+//          .groupByKey(_.getField(groupByField).asString())
+//          .flatMapGroups((key, iterator) => {
+//            pipelineMethods.executePipeline(key, iterator)
+//          })
+//      } else {
+//        readDF.mapPartitions(iterator => {
+//          pipelineMethods.executePipeline(iterator)
+//        })
+//      }
+//    }
   }
+}
+
+object StructuredStream {
+  //  StructuredStream props
+  val READ_STREAM_SERVICE_PROVIDER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("read.stream.service.provider")
+    .description("the controller service that gives connection information")
+    .required(true)
+    .identifiesControllerService(classOf[StructuredStreamProviderServiceReader])
+    .build
+
+  val WRITE_STREAM_SERVICE_PROVIDER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("write.stream.service.provider")
+    .description("the controller service that gives connection information")
+    .required(true)
+    .identifiesControllerService(classOf[StructuredStreamProviderServiceWriter])
+    .build
+
+  val GROUP_BY_FIELDS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("group.by.fields")
+    .description("comma separated list of fields to group the partition by")
+    .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+    .required(false)
+    .build
+
+  val IS_STATE_FULL: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("is.state.full")
+    .description("If the stream should be state full or not")
+    .addValidator(StandardValidators.INTEGER_VALIDATOR)
+    .required(true)
+    .defaultValue("false")
+    .build
+
+  val PROCESSING_STATE_TIMEOUT_TYPE = "processing"
+
+  val STATE_TIMEOUT_TYPE: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("state.timeout.type")
+    .description("the time out strategy to use for evicting cache.")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(PROCESSING_STATE_TIMEOUT_TYPE)
+    .required(false)
+    .defaultValue(PROCESSING_STATE_TIMEOUT_TYPE)
+    .build
+
+  val STATE_TIMEOUT_DURATION_MS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("state.timeout.ms")
+    .description("the time in ms without data for specific key(s) before we invalidate the microbatch state when using "+
+      STATE_TIMEOUT_TYPE + ": " + PROCESSING_STATE_TIMEOUT_TYPE + ". Default to 300000 (5 minutes)")
+    .addValidator(StandardValidators.LONG_VALIDATOR)
+    .required(false)
+    .defaultValue("300000")
+    .build
+
+  val STATEFULL_OUTPUT_MODE: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("output.mode")
+    .description("output mode when using statefull stream. By default will use append")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .required(false)
+    .allowableValues(StructuredStreamProviderServiceWriter.APPEND_MODE, StructuredStreamProviderServiceWriter.COMPLETE_MODE)//TODO
+    .defaultValue(StructuredStreamProviderServiceWriter.APPEND_MODE)
+    .build
+
+  val STATE_WINDOW_FIELD: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("state.window.field")
+    .description("the field to use to calcul records to keep in cache (should be a timestamp field as long)")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .required(false)
+    .build
+
+  val STATE_WINDOW_TIMEOUT_MS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("state.window.timeout.ms")
+    .description("the number of milliseconds for the window. We will save in cache only records in this timerange, " +
+      "the greater timestamp is used as upper bound. All record out of range will not be stored in cache for next batch." +
+      "In statefull mode, we transfer record in the given time range between batches.")
+    .addValidator(StandardValidators.LONG_VALIDATOR)
+    .required(false)
+    .build
+
 }

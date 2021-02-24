@@ -32,6 +32,7 @@ package com.hurence.logisland.record;
  *******************************************************************************/
 
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -40,7 +41,7 @@ import java.util.Date;
  * Everyware Cloud. Refer to the description of each of the fields for more
  * information on the model of EdcPosition.
  */
-public class Position extends StandardRecord {
+public class Position implements Serializable {
     /**
      * Longitude of this position in degrees. This is a mandatory field.
      */
@@ -97,7 +98,6 @@ public class Position extends StandardRecord {
             final Integer status,
             final Double speed,
             final Date timestamp) {
-
         this.altitude = altitude;
         this.heading = heading;
         this.latitude = latitude;
@@ -107,7 +107,6 @@ public class Position extends StandardRecord {
         this.speed = speed;
         this.timestamp = timestamp;
         this.status = status;
-
     }
 
     private static final Position EMPTY = new Position(null, null, null, null, null, null, null, null, null);

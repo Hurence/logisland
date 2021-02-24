@@ -52,20 +52,7 @@ import com.hurence.logisland.validator.{StandardValidators, ValidationResult, Va
  * limitations under the License.
  */
 object StreamProperties {
-  //  StructuredStream props
-  val READ_STREAM_SERVICE_PROVIDER: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("read.stream.service.provider")
-    .description("the controller service that gives connection information")
-    .required(true)
-    .identifiesControllerService(classOf[StructuredStreamProviderServiceReader])
-    .build
 
-  val WRITE_STREAM_SERVICE_PROVIDER: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("write.stream.service.provider")
-    .description("the controller service that gives connection information")
-    .required(true)
-    .identifiesControllerService(classOf[StructuredStreamProviderServiceWriter])
-    .build
   //  General props
   val AVRO_INPUT_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("avro.input.schema")
@@ -113,29 +100,6 @@ object StreamProperties {
     .description("sliding interval of the window (i.e., the interval after which  the new DStream will generate RDDs); must be a multiple of batching interval")
     .addValidator(StandardValidators.LONG_VALIDATOR)
     .required(false)
-    .build
-
-  val GROUPBY: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("groupby")
-    .description("comma separated list of fields to group the partition by")
-    .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-    .required(false)
-    .build
-
-  val STATE_TIMEOUT_MS: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("state.timeout.ms")
-    .description("the time in ms before we invalidate the microbatch state")
-    .addValidator(StandardValidators.LONG_VALIDATOR)
-    .required(false)
-    .defaultValue("2000")
-    .build
-
-  val CHUNK_SIZE: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("chunk.size")
-    .description("the number of records to group into chunks")
-    .addValidator(StandardValidators.INTEGER_VALIDATOR)
-    .required(false)
-    .defaultValue("100")
     .build
 
   //////////////////////////////////////

@@ -23,8 +23,8 @@ import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.Record
-import com.hurence.logisland.stream.StreamProperties.OUTPUT_MODE
 import com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService.{NUM_ROWS_TO_SHOW, TRUNCATE_OUTPUT}
+import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderServiceWriter.OUTPUT_MODE
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast

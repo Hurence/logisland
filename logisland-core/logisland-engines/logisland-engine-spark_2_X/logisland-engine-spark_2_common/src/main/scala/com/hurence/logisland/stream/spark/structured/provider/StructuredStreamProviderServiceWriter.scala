@@ -19,7 +19,6 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.controller.ControllerService
 import com.hurence.logisland.record._
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
-import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.streaming._
@@ -36,10 +35,15 @@ trait StructuredStreamProviderServiceWriter extends ControllerService {
 }
 
 object StructuredStreamProviderServiceWriter {
+  val APPEND_MODE = "append"
+  val COMPLETE_MODE = "complete"
+  val UPDATE_MODE = "update"
+
   val OUTPUT_MODE: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("output.mode")
     .description("output mode for the streaming sink. By default will use output mode by default of the sink (see sink doc)")
-    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)//TODO outputmode validator
+    .defaultValue(UPDATE_MODE)
+    .allowableValues(APPEND_MODE, COMPLETE_MODE, UPDATE_MODE)
     .required(false)
     .build
 }

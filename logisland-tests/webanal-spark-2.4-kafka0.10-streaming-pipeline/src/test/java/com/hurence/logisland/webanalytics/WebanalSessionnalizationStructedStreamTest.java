@@ -87,8 +87,8 @@ public class WebanalSessionnalizationStructedStreamTest {
     }
 
     @Test
+    @Ignore
     public void myWebAnalDebugTest() throws IOException, InterruptedException, InitializationException {
-        final long padding = 30000L;
         String confFilePath = getClass().getClassLoader().getResource("conf/my-webanal-conf-test.yaml").getFile();
         ConfJobHelper confJob = new ConfJobHelper(confFilePath);
         Map<String, String> confKafka = new HashMap<>();
@@ -100,6 +100,7 @@ public class WebanalSessionnalizationStructedStreamTest {
         confJob.modifyControllerServiceConf("opendistro_service", confOpenDistro);
         confJob.initJob();
         confJob.startJob();
+        final long padding = 30000L;
         boolean running = true;
         long ts = 0L;
         while (running) {

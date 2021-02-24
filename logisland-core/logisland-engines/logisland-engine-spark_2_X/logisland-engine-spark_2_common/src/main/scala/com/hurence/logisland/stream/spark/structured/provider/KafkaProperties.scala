@@ -25,8 +25,6 @@ object KafkaProperties {
     .description("Sets the output Kafka topic name")
     .required(true)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-    .defaultValue(DEFAULT_RECORDS_TOPIC.getValue)
-    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .build
 
   val ERROR_TOPICS: PropertyDescriptor = new PropertyDescriptor.Builder()

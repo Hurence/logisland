@@ -161,6 +161,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       .option("failOnDataLoss", failOnDataLoss)
       .option("subscribe", inputTopics.mkString(","))
 
+
+
     if (maxOffsetsPerTrigger.isDefined) {
       df = df.option("maxOffsetsPerTrigger", maxOffsetsPerTrigger.get)
     }
@@ -203,6 +205,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     descriptors.add(WRITE_VALUE_SERIALIZER)
     descriptors.add(AVRO_WRITE_VALUE_SCHEMA)
     descriptors.add(WRITE_KEY_SERIALIZER)
+    descriptors.add(OUTPUT_MODE)
     Collections.unmodifiableList(descriptors)
   }
 
@@ -257,7 +260,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       .option("kafka.security.protocol", securityProtocol)
       .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
       .option("topic", outputTopics.mkString(","))
-      .option("checkpointLocation", "checkpoints") //Rewind not working because of this ?
+      .option("checkpointLocation", "checkpoints") //Rewind not working because of this ? TODO make this configurable check where to put it, source ? writer ? both ?
 
     if (outputMode != null) {
       dataStreamWriter.outputMode(outputMode)

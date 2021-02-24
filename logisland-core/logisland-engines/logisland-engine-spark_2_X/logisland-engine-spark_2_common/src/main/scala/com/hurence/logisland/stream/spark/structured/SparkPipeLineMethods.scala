@@ -27,15 +27,18 @@ class SparkPipeLineMethods(val streamContext: StreamContext,
     SparkPipeLineMethods.executePipeline(controllerServiceLookupSink, streamContext, iterator)
   }
 
-  def mappingFunction(chunkSize: Int,
-                              timeOutDuration: Long)
-                             (key: String,
-                              value: Iterator[Record],
-                              state: GroupState[Record]): Iterator[Record] = {
+  def executePipeline(key: String, iterator: Iterator[Record]) = {
+    SparkPipeLineMethods.executePipeline(controllerServiceLookupSink, streamContext, iterator)
+  }
+
+
+  def mappingFunction2(timeOutDuration: Long)
+                      (key: String,
+                       value: Iterator[Record],
+                       state: GroupState[Record]): Iterator[Record] = {
     SparkPipeLineMethods
       .mappingFunction(controllerServiceLookupSink,
         streamContext,
-        chunkSize,
         timeOutDuration)(key, value, state)
   }
 
@@ -52,7 +55,7 @@ object SparkPipeLineMethods {
     // convert to logisland records
     var processingRecords: util.Collection[Record] = iterator.toList
 
-    if (processingRecords.size() >0) {
+    if (processingRecords.size() > 0) {
       val pipelineMetricPrefix = streamContext.getIdentifier + "."
       // loop over processor chain
       streamContext.getProcessContexts.foreach(processorContext => {
@@ -92,74 +95,90 @@ object SparkPipeLineMethods {
     processingRecords.asScala.iterator
   }
 
-  private val ALL_RECORDS = "all_records"
-  private val CHUNK_CREATION_TS = "chunk_creation_ts"
+  //1 bourrin
+  //process current records (enrichment)
+  // concatenates with old already processed
+  // => apply sessionization output all records
 
-  private def mappingFunction(controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink],
-                              streamContext: StreamContext,
-                              chunkSize: Int,
-                              timeOutDuration: Long)
-                             (key: String,
-                              value: Iterator[Record],
-                              state: GroupState[Record]): Iterator[Record] = {
+  //2 statefull intelligent
+  // If no state exist => init state with Es GroupSate<WebSessions> (BESOIN UNIQUEMENT POUR REWIND car restart checkpoint devrait le sauvegarder ? => à tester)
+  // process current records then apply sessionization and save sessionization state in GroupSate<WebSessions>
+  // WebSessions doit stoquer toutes les sous sessions accosiciés à un divolteId. Ainsi il peut mettre à jour la session correspondante aux évènements arrivants.
+  //
+  // on output tous les évènements qui ont été modifiés ainsi que toutes les sessions qui ont été modifiés.
+  private def sessionization(controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink],
+                               streamContext: StreamContext,
+                               timeOutDuration: Long)
+                              (key: String,
+                               value: Iterator[Record],
+                               state: GroupState[Record]): Iterator[Record] = {
 
     val currentTimestamp = new Date().getTime
     val inputRecords = value.toList
     val allRecords = if (state.exists) state.get.getField(ALL_RECORDS).getRawValue.asInstanceOf[List[Record]] ++ inputRecords else inputRecords
-    val recordChunks = allRecords.grouped(chunkSize).toList
-
+    //    val recordChunks = allRecords.grouped(chunkSize).toList
 
     if (state.hasTimedOut || (state.exists && (currentTimestamp - state.get.getField(CHUNK_CREATION_TS).asLong()) >= timeOutDuration)) {
       state.remove()
-      //  logger.debug("TIMEOUT key " + key + ", flushing " + allRecords.size + " records in " + recordChunks.size + "chunks")
-      recordChunks
-        .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
-        .iterator
-    }
-    else if (recordChunks.last.size == chunkSize) {
-      state.remove()
-      //logger.debug("REMOVE key " + key + ", flushing " + allRecords.size + " records in " + recordChunks.size + "chunks")
-      recordChunks
-        .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
-        .iterator
+      streamContext.getLogger.debug("TIMEOUT session " + key + ", flushing " + allRecords.size + " events.")
+      executePipeline(controllerServiceLookupSink, streamContext, allRecords.iterator)
     }
     else if (!state.exists) {
-
       val newChunk = new StandardRecord("chunk_record") //Chunk(key, recordChunks.last)
-      newChunk.setObjectField(ALL_RECORDS, recordChunks.last)
+      newChunk.setObjectField(ALL_RECORDS, allRecords)
       newChunk.setStringField(FieldDictionary.RECORD_KEY, key)
       newChunk.setLongField(CHUNK_CREATION_TS, new Date().getTime)
-      // logger.debug("CREATE key " + key + " new chunk with " + allRecords.size + " records")
-
+      streamContext.getLogger.debug("CREATE session " + key + " new session with " + allRecords.size + " events")
       state.update(newChunk)
       state.setTimeoutDuration(timeOutDuration)
-
-      recordChunks
-        .slice(0, recordChunks.length - 1)
-        .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
-        .iterator
+      executePipeline(controllerServiceLookupSink, streamContext, allRecords.iterator)
     }
-
-
     else {
-      val currentChunk = state.get
-      if (recordChunks.size == 1) {
-        currentChunk.setObjectField(ALL_RECORDS, allRecords)
-        state.update(currentChunk)
-        // logger.debug("UPDATE key " + key + ", allRecords " + allRecords.size + ", recordChunks " + recordChunks.size)
-        Iterator.empty
-      } else {
-        currentChunk.setObjectField(ALL_RECORDS, recordChunks.last)
-        //logger.debug("UPDATE key " + key + ", allRecords " + allRecords.size + ", recordChunks " + recordChunks.size)
-
-        state.update(currentChunk)
-        state.setTimeoutDuration(timeOutDuration)
-
-        recordChunks
-          .slice(0, recordChunks.length - 1)
-          .flatMap(subset => executePipeline(controllerServiceLookupSink, streamContext, subset.iterator))
-          .iterator
-      }
+      val passedEvents = state.get
+      passedEvents.setObjectField(ALL_RECORDS, allRecords)
+      state.update(passedEvents)
+      state.setTimeoutDuration(timeOutDuration)
+      executePipeline(controllerServiceLookupSink, streamContext, allRecords.iterator)
     }
   }
+
+  private val ALL_RECORDS = "all_records"
+  private val CHUNK_CREATION_TS = "chunk_creation_ts"
+
+
+  private def mappingFunction(controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink],
+                               streamContext: StreamContext,
+                               timeOutDuration: Long)
+                              (key: String,
+                               value: Iterator[Record],
+                               state: GroupState[Record]): Iterator[Record] = {
+
+    val currentTimestamp = new Date().getTime
+    val inputRecords = value.toList
+    val allRecords = if (state.exists) state.get.getField(ALL_RECORDS).getRawValue.asInstanceOf[List[Record]] ++ inputRecords else inputRecords
+
+    if (state.hasTimedOut || (state.exists && (currentTimestamp - state.get.getField(CHUNK_CREATION_TS).asLong()) >= timeOutDuration)) {
+      state.remove()
+      streamContext.getLogger.debug("TIMEOUT session " + key + ", flushing " + allRecords.size + " events.")
+      executePipeline(controllerServiceLookupSink, streamContext, allRecords.iterator)
+    }
+    else if (!state.exists) {
+      val newChunk = new StandardRecord("chunk_record") //Chunk(key, recordChunks.last)
+      newChunk.setObjectField(ALL_RECORDS, allRecords)
+      newChunk.setStringField(FieldDictionary.RECORD_KEY, key)
+      newChunk.setLongField(CHUNK_CREATION_TS, new Date().getTime)
+      streamContext.getLogger.debug("CREATE session " + key + " new session with " + allRecords.size + " events")
+      state.update(newChunk)
+      state.setTimeoutDuration(timeOutDuration)
+      executePipeline(controllerServiceLookupSink, streamContext, allRecords.iterator)
+    }
+    else {
+      val passedEvents = state.get
+      passedEvents.setObjectField(ALL_RECORDS, allRecords)
+      state.update(passedEvents)
+      state.setTimeoutDuration(timeOutDuration)
+      executePipeline(controllerServiceLookupSink, streamContext, allRecords.iterator)
+    }
+  }
+
 }

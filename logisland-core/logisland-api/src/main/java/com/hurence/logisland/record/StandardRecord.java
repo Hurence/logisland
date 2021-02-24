@@ -109,14 +109,14 @@ public class StandardRecord implements Record {
     @Override
     public Position getPosition() {
         if (hasPosition())
-            return (Position) getField(FieldDictionary.RECORD_POSITION).asRecord();
+            return (Position) getField(FieldDictionary.RECORD_POSITION).getRawValue();
         else return null;
     }
 
     @Override
     public Record setPosition(Position position) {
         if (position != null)
-            setRecordField(FieldDictionary.RECORD_POSITION, position);
+            setObjectField(FieldDictionary.RECORD_POSITION, position);
         return this;
     }
 

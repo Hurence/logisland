@@ -131,6 +131,7 @@ engine:
         groupby: sessionId
         chunk.size: 1000
         state.timeout.ms: 50000
+        output.mode: "update"
         read.stream.service.provider: kafka_service
         write.stream.service.provider: kafka_service
 
