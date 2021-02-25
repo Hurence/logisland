@@ -1,0 +1,526 @@
+#########################################################################################################
+# Logisland Rubix Web Analytics
+# Receive web events from eventhubs, treat them then push events and sessions into opendistro cluster
+#########################################################################################################
+
+version: 1.4.0
+documentation: Logisland Rubix Webanalytics
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Receive web events from kafka, treat them and push events and sessions on opendsitro/es cluster
+  configuration:
+    spark.app.name: LogislandWebanalytics
+    spark.master: local[3]
+    spark.streaming.batchDuration: 5000
+    spark.streaming.blockInterval: 350
+    spark.streaming.kafka.maxRatePerPartition: 5000
+
+  controllerServiceConfigurations:
+    # Kafka sink configuration
+    - controllerService: kafka_service
+      component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
+      configuration:
+        #earliest or latest
+        kafka.startingOffsets: "latest"
+        output.mode: "update"
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_out
+        kafka.zookeeper.quorum: ${kafka.zookeeper.quorum}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 1
+        kafka.topic.default.replicationFactor: 1
+        read.value.serializer: com.hurence.logisland.serializer.ExtendedJsonSerializer
+        write.value.serializer: com.hurence.logisland.serializer.ExtendedJsonSerializer
+        write.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        read.value.schema: >
+          { "version": 1,
+            "name": "io.divolte.examples.record",
+            "type": "record",
+            "fields": [
+              { "name": "h2kTimestamp",            "type": "long" },
+              { "name": "remoteHost",              "type": "string"},
+              { "name": "record_type",             "type": ["null", "string"], "default": null },
+              { "name": "record_id",               "type": ["null", "string"], "default": null },
+              { "name": "location",                "type": ["null", "string"], "default": null },
+              { "name": "hitType",                 "type": ["null", "string"], "default": null },
+              { "name": "eventCategory",           "type": ["null", "string"], "default": null },
+              { "name": "eventAction",             "type": ["null", "string"], "default": null },
+              { "name": "eventLabel",              "type": ["null", "string"], "default": null },
+              { "name": "localPath",               "type": ["null", "string"], "default": null },
+              { "name": "q",                       "type": ["null", "string"], "default": null },
+              { "name": "n",                       "type": ["null", "int"],    "default": null },
+              { "name": "referer",                 "type": ["null", "string"], "default": null},
+              { "name": "viewportPixelWidth",      "type": ["null", "int"],    "default": null},
+              { "name": "viewportPixelHeight",     "type": ["null", "int"],    "default": null},
+              { "name": "screenPixelWidth",        "type": ["null", "int"],    "default": null},
+              { "name": "screenPixelHeight",       "type": ["null", "int"],    "default": null},
+              { "name": "partyId",                 "type": ["null", "string"], "default": null},
+              { "name": "sessionId",               "type": ["null", "string"], "default": null},
+              { "name": "pageViewId",              "type": ["null", "string"], "default": null},
+              { "name": "is_newSession",           "type": ["null", "boolean"], "default": null},
+              { "name": "userAgentString",         "type": ["null", "string"], "default": null},
+              { "name": "pageType",                "type": ["null", "string"], "default": null},
+              { "name": "Userid",                  "type": ["null", "string"], "default": null},
+              { "name": "B2BUnit",                 "type": ["null", "string"], "default": null},
+              { "name": "pointOfService",          "type": ["null", "string"], "default": null},
+              { "name": "companyID",               "type": ["null", "string"], "default": null},
+              { "name": "GroupCode",               "type": ["null", "string"], "default": null},
+              { "name": "userRoles",               "type": ["null", "string"], "default": null},
+              { "name": "is_PunchOut",             "type": ["null", "string"], "default": null},
+              { "name": "codeProduct",             "type": ["null", "string"], "default": null},
+              { "name": "categoryProductId",       "type": ["null", "string"], "default": null},
+              { "name": "categoryName",            "type": ["null", "string"], "default": null},
+              { "name": "categoryCode",            "type": ["null", "string"], "default": null},
+              { "name": "categoryNiv5",            "type": ["null", "string"], "default": null},
+              { "name": "categoryNiv4",            "type": ["null", "string"], "default": null},
+              { "name": "categoryNiv3",            "type": ["null", "string"], "default": null},
+              { "name": "categoryNiv2",            "type": ["null", "string"], "default": null},
+              { "name": "categoryNiv1",            "type": ["null", "string"], "default": null},
+              { "name": "countryCode",             "type": ["null", "string"], "default": null},
+              { "name": "Company",                 "type": ["null", "string"], "default": null},
+              { "name": "is_Link",                 "type": ["null", "boolean"], "default": null},
+              { "name": "clickText",               "type": ["null", "string"], "default": null},
+              { "name": "clickURL",                "type": ["null", "string"], "default": null},
+              { "name": "newCustomerWebOnly",      "type": ["null", "int"], "default": null},
+              { "name": "newCustomerWebOrAgency",  "type": ["null", "int"], "default": null},
+              { "name": "productPrice",            "type": ["null", "float"], "default": null},
+              { "name": "searchedProductIndex",    "type": ["null", "int"], "default": null},
+              { "name": "searchedProductPage",     "type": ["null", "int"], "default": null},
+              { "name": "stockInfo",               "type": ["null", "string"], "default": null},
+              { "name": "transactionId",           "type": ["null", "string"], "default": null},
+              { "name": "transactionTotal",        "type": ["null", "float"], "default": null},
+              { "name": "transactionCurrency",     "type": ["null", "string"], "default": null},
+              { "name": "productQuantity",         "type": ["null", "int"], "default": null},
+              { "name": "Alt",                     "type": ["null", "string"], "default": null},
+              { "name": "erpLocaleCode",           "type": ["null", "string"], "default": null},
+              { "name": "salesOrg",                "type": ["null", "string"], "default": null},
+              { "name": "country",                 "type": ["null", "string"], "default": null},
+              { "name": "currency",                "type": ["null", "string"], "default": null},
+              { "name": "currentCart",             "type": ["null", {"type": "array", "items":{
+                  "name": "Product", "type": "record", "fields":[
+                    {"name": "price", "type": "double"},
+                    {"name": "quantity", "type": "int"},
+                    {"name": "sku", "type": "string"}
+                  ]}
+                }],
+                "default": null
+              }
+            ]
+          }
+
+    - controllerService: lru_cache_service_domain
+      component: com.hurence.logisland.service.cache.LRUKeyValueCacheService
+      type: service
+      documentation: Cache service for Ip to Geo service to keep resolved addresses geo information
+      configuration:
+        cache.size: 100000
+
+    - controllerService: lru_cache_service_sessions
+      component: com.hurence.logisland.service.cache.LRUKeyValueCacheService
+      type: service
+      documentation: Cache service for saving web session in cache
+      configuration:
+        cache.size: 100000
+
+    - controllerService: opendistro_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+      type: service
+      documentation: OpenDistro Service
+      configuration:
+        hosts: localhost:9200
+        batch.size: 2000
+        username: admin
+        password: admin
+        flush.interval: 2
+
+  streamConfigurations:
+
+    - stream: sessionalization
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        group.by.fields: sessionId
+        read.stream.service.provider: kafka_service
+        write.stream.service.provider: kafka_service
+
+      processorConfigurations:
+
+        # Tag ALL events with default values
+        - processor: add_default_fields
+          component: com.hurence.logisland.processor.AddFields
+          type: processor
+          documentation: a processor that add default values for tagOrigin, sourceOrigin, spamCandidate if not present yet
+          configuration:
+            tagOrigin: prod
+            sourceOrigin: external_traffic
+            spamOrigin: ghost_spam
+            decodedLocation: ${location}
+            codeProduct_rev: ${if(codeProduct == null || codeProduct.length == 0) return 'undefined'; return codeProduct;}
+
+        # Extract the company name from the URL (location field)
+        - processor: regexp proc
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts company name and country code from location URL
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            location: googletranslate,webshop,tagOrigin,countryCode:(https\:\/\/translate\.google.*\.com/.+)?https\:\/\/([^\/\.\-]+[\.\-](preprod)?[^\/]+)\/?(\w+)?\/?.*
+
+        - processor: Update countryCode using country field if available
+          component: com.hurence.logisland.processor.AddFields
+          type: processor
+          documentation: a processor that compute countryCode using country if available or the location value
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            countryCode: ${if(country!=null && country != '') return country.toLowerCase(); return countryCode;}
+            webshopId: ${erpLocaleCode + '-' + salesOrg}
+
+        - processor: Build_Company
+          component: com.hurence.logisland.processor.AddFields
+          type: processor
+          documentation: Build Company from first CompanyFromERP if exists otherwise from CompanyFromLocation
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            Company: ${if(CompanyFromERP!=null && CompanyFromERP != '') return CompanyFromERP; return CompanyFromLocation;}
+
+        # Tag event as a not spam
+        - processor: Tag internal traffic
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that tags event from internal traffic
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            alert_match_name: spamOrigin:(not_spam).*
+
+        # Extract the hostname from the referer
+        - processor: Extract hostname from referer
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts hostname from referer
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            referer: referer_hostname:https?\:\/\/([^\/]+)\/?.*
+
+        # If it is crawler spam, then mark the event as such
+        - processor: Tag crawler referer traffic
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that tags event from internal traffic
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            alert_match_name: spamOrigin:(crawler_spam).*
+
+        # Tag an event that belongs to internal traffic (i-e IPH, Hurence, Altimis)
+        - processor: Tag internal traffic
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that tags event from internal traffic
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            alert_match_name: sourceOrigin:(internal_traffic).*
+
+        # Decode special chars (if any) from productSearchKeywords
+        - processor: Decode special chars from productSearchkeywords
+          component: com.hurence.logisland.processor.webanalytics.URLDecoder
+          type: processor
+          documentation: a processor that decode urls
+          configuration:
+            decode.fields: decodedLocation
+            charset: UTF-8
+
+        # Extract the list of keywords from a product search
+        - processor: Extract keywords from product search
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation:
+          configuration:
+            decodedLocation: productSearchKeywords:https\:\/\/[^\/]+\/\w+\/search(?:\/)?.*[\?|\&](?:text|q)=([^\&\?\|]+)\&?.*
+
+        # Build an array of keywords as well as count the number of items
+        - processor: Split search keywords and count number of keywords
+          component: com.hurence.logisland.processor.SplitField
+          type: processor
+          documentation: a processor that splits a string and return an array of values
+          configuration:
+            split.counter.enable: true
+            split.counter.suffix: Counter
+            productSearchKeywords: productSearchKeywordsArray:\s+
+
+        # Enrich the events that have a product id with info from PIM
+        - processor: Enrich_events_with_product_coverage
+          component: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+          type: processor
+          documentation: a processor that enriches input records with info from ES records
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            record.key: ${codeProduct_rev}
+            es.index: pim_listsku
+            es.type: details
+            es.includes.field: ${'coverage:coverage_'+countryCode+',brandName,Class,brandRef'}
+
+        # Univers produit
+        - processor: Decompose product class level 1
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts the 1 categories any product belongs to.
+          configuration:
+            Class: categoryNiv1:^(\d+)$
+
+        # Univers produit
+        - processor: Decompose product class level 2
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts the 2 categories any product belongs to.
+          configuration:
+            Class: categoryNiv2,categoryNiv1:^((\d+)\-\d+)$
+
+        # Univers produit
+        - processor: Decompose product class level 3
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts the 3 categories any product belongs to.
+          configuration:
+            Class: categoryNiv3,categoryNiv2,categoryNiv1:^(((\d+)\-\d+)\-\d+)$
+
+        # Univers produit
+        - processor: Decompose product class level 4
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts the 4 categories any product belongs to.
+          configuration:
+            Class: categoryNiv4,categoryNiv3,categoryNiv2,categoryNiv1:^((((\d+)\-\d+)\-\d+)\-\d+)$
+
+        # Univers produit
+        - processor: Decompose product class level 5
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts the 5 categories any product belongs to.
+          configuration:
+            Class: categoryNiv5,categoryNiv4,categoryNiv3,categoryNiv2,categoryNiv1:(((((\d+)\-\d+)\-\d+)\-\d+)\-\d+)
+
+        # Grab the synopsis of each category the product belongs to (in the right language)
+        - processor: Enrich_events_with_synopsis_of_categoryNiv5
+          component: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+          type: processor
+          documentation: a processor that enriches input records with Workit info from ES records
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            record.key: ${categoryNiv5}
+            es.index: pim_categories
+            es.type: details
+            es.includes.field: "categoryLabel5:en"
+        #            es.includes.field: ${'categoryLabel5:'+countryCode}
+
+        - processor: Enrich_events_with_synopsis_of_categoryNiv4
+          component: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+          type: processor
+          documentation: a processor that enriches input records with Workit info from ES records
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            record.key: ${categoryNiv4}
+            es.index: pim_categories
+            es.type: details
+            es.includes.field: "categoryLabel4:en"
+        #            es.includes.field: ${'categoryLabel4:'+countryCode}
+
+        - processor: Enrich_events_with_synopsis_of_categoryNiv3
+          component: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+          type: processor
+          documentation: a processor that enriches input records with Workit info from ES records
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            record.key: ${categoryNiv3}
+            es.index: pim_categories
+            es.type: details
+            es.includes.field: "categoryLabel3:en"
+        #            es.includes.field: ${'categoryLabel3:'+countryCode}
+
+        - processor: Enrich_events_with_synopsis_of_categoryNiv2
+          component: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+          type: processor
+          documentation: a processor that enriches input records with Workit info from ES records
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            record.key: ${categoryNiv2}
+            es.index: pim_categories
+            es.type: details
+            es.includes.field: "categoryLabel2:en"
+        #            es.includes.field: ${'categoryLabel2:'+countryCode}
+
+        - processor: Enrich_events_with_synopsis_of_categoryNiv1
+          component: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+          type: processor
+          documentation: a processor that enriches input records with Workit info from ES records
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            record.key: ${categoryNiv1}
+            es.index: pim_categories
+            es.type: details
+            es.includes.field: "categoryLabel1:en"
+        #            es.includes.field: ${'categoryLabel1:'+countryCode}
+
+        # Enrich the events that have a product id with info from workit
+        - processor: Enrich_events_with_workit
+          component: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+          type: processor
+          documentation: a processor that enriches input records with Workit info from ES records
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            record.key: ${codeProduct_rev}
+            es.index: ${'workit_'+Company}
+            es.includes.field: Position,UnitPrice*
+
+        - processor: Cleanup record
+          component: com.hurence.logisland.processor.RemoveFields
+          type: processor
+          documentation:
+          configuration:
+            fields.to.remove: codeProduct_rev
+
+        # Enrich the events that have a Userid
+        - processor: Enrich_events_with_users_info
+          component: com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+          type: processor
+          documentation: a processor that enriches input records with info from ES records
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            record.key: ${Userid}
+            es.type: details
+            es.index: ${'openanalytics_users.'+Company}
+            es.includes.field: "*"
+            es.excludes.field: Userid, Date_Creation,Date_LastLogin,Company
+
+        # Add User Agent fields
+        - processor: User_Agent
+          component: com.hurence.logisland.processor.useragent.ParseUserAgent
+          type: processor
+          documentation: a processor that adds user agent fields to an event
+          configuration:
+            useragent.field: userAgentString
+            fields: DeviceClass,DeviceName,OperatingSystemClass,OperatingSystemName,OperatingSystemVersion,OperatingSystemNameVersion,LayoutEngineClass,LayoutEngineName,LayoutEngineVersion,LayoutEngineVersionMajor,LayoutEngineNameVersion,LayoutEngineNameVersionMajor,LayoutEngineBuild,AgentClass,AgentName,AgentVersion,AgentVersionMajor,AgentNameVersion,AgentNameVersionMajor,IECompatibilityVersion,IECompatibilityVersionMajor,IECompatibilityNameVersion,IECompatibilityNameVersionMajor,WebviewAppName,WebviewAppNameVersionMajor,WebviewAppVersion,WebviewAppVersionMajor
+
+        # Extract the utm_source
+        - processor: Extract utm_source from location
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts info from location URL
+          configuration:
+            location: utm_source:.*[\&\?]utm_source=\s*([^\&\?]+)\&?.*
+
+        # Extract the utm_medium
+        - processor: Extract utm_medium from location
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts info from location URL
+          configuration:
+            location: utm_medium:.*[\&\?]utm_medium=\s*([^\&\?]+)\&?.*
+
+        # Extract the utm_campaign
+        - processor: Extract utm_campaign from location
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts info from location URL
+          configuration:
+            location: utm_campaign:.*[\&\?]utm_campaign=\s*([^\&\?]+)\&?.*
+
+        # Extract the utm_term
+        - processor: Extract utm_term from location
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts info from location URL
+          configuration:
+            location: utm_term:.*[\&\?]utm_term=\s*([^\&\?]+)\&?.*
+
+        # Extract the utm_content
+        - processor: Extract utm_content from location
+          component: com.hurence.logisland.processor.ApplyRegexp
+          type: processor
+          documentation: a processor that extracts info from location URL
+          configuration:
+            location: utm_content:.*[\&\?]utm_content=\s*([^\&\?]+)\&?.*
+
+        # Integrated customers : all other customers
+        - processor: Setup_empty_string
+          component: com.hurence.logisland.processor.AddFields
+          type: processor
+          documentation: a processor that set empty string for ImportanceCode, B2BUnit, and libelle_zone fields if they do not exist in the record
+          configuration:
+            conflict.resolution.policy: keep_only_old_field
+            ImportanceCode: ""
+            B2BUnit: ""
+            libelle_zone: ""
+            Userid: ""
+
+        - processor: detect_internal_b2bunit
+          component: com.hurence.logisland.processor.AddFields
+          type: processor
+          documentation: a processor that detect internal B2BUnit
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            alert_match_name: ${if (B2BUnit == 'SL899999' || B2BUnit == 'SL8999998') return 'internalB2BUnit'; return alert_match_name;}
+            sourceOrigin: ${if (B2BUnit == 'SL899999' || B2BUnit == 'SL8999998') return 'internal_traffic'; return sourceOrigin;}
+
+        - processor: categorize_customers
+          component: com.hurence.logisland.processor.AddFields
+          type: processor
+          documentation: a processor that categorize the customers (affiliates, marketplace, subsidiaries,integrated)
+          configuration:
+            customer_category: ${if( ImportanceCode == '9003' || ImportanceCode == '9004') return 'affiliates'; if ( B2BUnit contains '*_*' ) return 'marketplace'; if ( libelle_zone != 'EST' && libelle_zone != 'OUEST' && libelle_zone != 'NORD' ) return 'subsidiaries'; else return 'integrated';}
+
+        # Figure out the source of traffic for this websession
+        - processor: Source Of Traffic
+          component: com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic
+          type: processor
+          documentation: a processor that figure out the source of traffic for the websession
+          configuration:
+            referer.field: referer
+            first.visited.page.field: location
+            elasticsearch.client.service: opendistro_service
+            es.index: openanalytics_search_engines_and_social_networks
+            es.search_engine.field: search_engine
+            es.social_network.field: social_network
+            source_of_traffic.prefix: source_of_traffic
+            source_of_traffic.hierarchical: false
+            cache.service: lru_cache_service_domain
+            cache.validity.timeout: 3600
+            debug: false
+
+        - processor: Websession_index_name
+          component: com.hurence.logisland.processor.AddFields
+          type: processor
+          documentation: a processor that specifies the name of the websession elasticsearch index into a field used by the BulkAdd processor afterward.
+          configuration:
+            websessionIndex: ${'openanalytics_websessions-' + new java.text.SimpleDateFormat('yyyy.MM').format(new java.util.Date(h2kTimestamp));}
+
+        # Create or update web session based on web events
+        - processor: consolidate_session
+          component: com.hurence.logisland.processor.webanalytics.IncrementalWebSession
+          type: processor
+          documentation: compute session duration as well as other informations
+          configuration:
+            elasticsearch.client.service: opendistro_service
+            cache.service: lru_cache_service_sessions
+            es.session.index.prefix: openanalytics_websessions-
+            es.session.index.suffix.date: yyyy.MM
+            es.session.type.name: sessions
+            es.event.index.prefix: openanalytics_webevents.
+            es.event.index.suffix.date: yyyy.MM.dd
+            es.event.type.name: event
+            session.timeout: 1800
+            userid.field: Userid
+            fields.to.return: partyId,Company,remoteHost,tagOrigin,sourceOrigin,spamOrigin,referer,userAgentString,utm_source,utm_campaign,utm_medium,utm_content,utm_term,alert_match_name,alert_match_query,referer_hostname,DeviceClass,AgentName,ImportanceCode,B2BUnit,libelle_zone,Userid,customer_category,source_of_traffic_source,source_of_traffic_medium,source_of_traffic_keyword,source_of_traffic_campaign,source_of_traffic_organic_search,source_of_traffic_content,source_of_traffic_referral_path
+#            debug: true
+
+        # put to opendistro
+        - processor: opendistro_es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that stores the web sessions
+          configuration:
+            #            es.index.field: websessionIndex
+            elasticsearch.client.service: opendistro_service
+            default.index: openanalytics_default
+            default.type: default
+            es.index.field: es_index
+            es.type.field: es_type
