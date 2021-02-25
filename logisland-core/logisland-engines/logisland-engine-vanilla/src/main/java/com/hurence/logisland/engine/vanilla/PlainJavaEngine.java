@@ -16,6 +16,8 @@
 package com.hurence.logisland.engine.vanilla;
 
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.config.ControllerServiceConfiguration;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.controller.StandardControllerServiceLookup;
 import com.hurence.logisland.engine.AbstractProcessingEngine;
@@ -25,6 +27,7 @@ import com.hurence.logisland.stream.AbstractRecordStream;
 import com.hurence.logisland.stream.StreamContext;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -50,7 +53,7 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
     @Override
     public void start(EngineContext engineContext) {
         logger.info("Starting");
-        ControllerServiceLookup controllerServiceLookup = new StandardControllerServiceLookup(engineContext.getControllerServiceContexts());
+        ControllerServiceLookup controllerServiceLookup = new StandardControllerServiceLookup(engineContext.getControllerServiceConfigurations());
 
         for (StreamContext streamContext : engineContext.getStreamContexts()) {
             try {

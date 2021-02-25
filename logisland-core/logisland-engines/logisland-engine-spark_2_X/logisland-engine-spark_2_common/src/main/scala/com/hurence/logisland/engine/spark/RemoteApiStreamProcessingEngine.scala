@@ -134,6 +134,7 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
         super.softStop(engineContext)
         engineContext.getStreamContexts.clear()
         engineContext.getControllerServiceContexts.clear()
+        engineContext.getControllerServiceConfigurations.clear()
     }
 
 

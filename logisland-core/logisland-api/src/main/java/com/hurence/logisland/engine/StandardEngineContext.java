@@ -34,6 +34,7 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
 
 
     private final List<StreamContext> streamContexts = new ArrayList<>();
+    private final List<ControllerServiceConfiguration> controllerServiceConfigurations = new ArrayList<>();
     private final List<ControllerServiceInitializationContext> controllerServiceContext = new ArrayList<>();
 
     public StandardEngineContext(final ProcessingEngine engine, final String id) {
@@ -54,6 +55,16 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
     @Override
     public ProcessingEngine getEngine() {
         return (ProcessingEngine) component;
+    }
+
+    @Override
+    public Collection<ControllerServiceConfiguration> getControllerServiceConfigurations() {
+        return controllerServiceConfigurations;
+    }
+
+    @Override
+    public void addControllerServiceConfiguration(ControllerServiceConfiguration config) {
+        controllerServiceConfigurations.add(config);
     }
 
     @Override

@@ -103,6 +103,22 @@ public class RemoteApiComponentFactory {
     }
 
     /**
+     * Constructs controller services.
+     *
+     * @param service the service bean.
+     * @return optionally the constructed service configuration or nothing in case of error.
+     */
+    private ControllerServiceConfiguration buildControllerServiceConfiguration(Service service) {
+        ControllerServiceConfiguration configuration = new ControllerServiceConfiguration();
+        configuration.setControllerService(service.getName());
+        configuration.setComponent(service.getComponent());
+        configuration.setDocumentation(service.getDocumentation());
+        configuration.setType("service");
+        configuration.setConfiguration(propsAsMap(service.getConfig()));
+        return configuration;
+    }
+
+    /**
      * Updates the state of the engine if needed.
      *
      * @param sparkContext  the spark context
@@ -117,6 +133,10 @@ public class RemoteApiComponentFactory {
             logger.info("Configuring dataflow. Last change at {} is {}", dataflow.getLastModified(), dataflow.getModificationReason());
             List<ControllerServiceInitializationContext> serviceContexts = dataflow.getServices().stream()
                     .map(this::buildAndSetUpControllerServiceContext)
+                    .collect(Collectors.toList());
+
+            List<ControllerServiceConfiguration> serviceConfigurations = dataflow.getServices().stream()
+                    .map(this::buildControllerServiceConfiguration)
                     .collect(Collectors.toList());
 
             List<StreamContext> streamContexts = dataflow.getStreams().stream()
@@ -137,6 +157,8 @@ public class RemoteApiComponentFactory {
             logger.info("Restarting engine");
             engineContext.getEngine().softStop(engineContext);
             serviceContexts.forEach(engineContext::addControllerServiceContext);
+            serviceConfigurations.forEach(engineContext::addControllerServiceConfiguration);
+
             streamContexts.forEach(engineContext::addStreamContext);
 
 

@@ -42,6 +42,16 @@ public interface EngineContext extends ComponentContext {
      */
     ProcessingEngine getEngine();
 
+
+    Collection<ControllerServiceConfiguration> getControllerServiceConfigurations();
+
+    /**
+     * add a ControllerServiceConfiguration
+     *
+     * @param config to add
+     */
+    void addControllerServiceConfiguration(ControllerServiceConfiguration config);
+
     /**
      * @return the init context for controllers
      */

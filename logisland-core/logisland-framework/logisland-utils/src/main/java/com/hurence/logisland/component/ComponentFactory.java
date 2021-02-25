@@ -65,6 +65,7 @@ public final class ComponentFactory {
             engineConfig.getControllerServiceConfigurations().forEach(controllerServiceConfiguration -> {
                 ControllerServiceInitializationContext serviceContext = buildAndSetUpServiceContext(controllerServiceConfiguration);
                 engineContext.addControllerServiceContext(serviceContext);
+                engineContext.addControllerServiceConfiguration(controllerServiceConfiguration);
             });
 
             engineConfig.getConfiguration()

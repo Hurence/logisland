@@ -232,7 +232,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val spark = getCurrentSparkSession()
         logger.info("broadCasting services")
         controllerServiceLookupSink = spark.sparkContext.broadcast(
-            ControllerServiceLookupSink(engineContext.getControllerServiceContexts)
+            ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
         )
         //TODO Déplacer les broadcast dans init ?
         getLogger.info("Will start streams")
