@@ -176,7 +176,7 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService
       *
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): StreamingQuery = {
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) = {
 
         implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
@@ -194,8 +194,6 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService
             .option("connectionTimeout", connectionTimeout)
             .option("keepAlive", keepAlive)
             .option("mqttVersion", mqttVersion)
-            .start()
-
     }
 }
 object MQTTStructuredStreamProviderService {

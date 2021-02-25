@@ -113,12 +113,10 @@ public class StreamProcessingRunner {
 
             // Get checkpoint location if any
             boolean chkploc = line.hasOption("chkploc");
-
             if (databricksMode && !chkploc) {
                 logger.error("Databricks mode requires checkpoint location to be set");
                 System.exit(-1);
             }
-
             GlobalOptions.checkpointLocation = line.getOptionValue("chkploc");
             logger.info("Using checkpoint location: " + GlobalOptions.checkpointLocation);
 

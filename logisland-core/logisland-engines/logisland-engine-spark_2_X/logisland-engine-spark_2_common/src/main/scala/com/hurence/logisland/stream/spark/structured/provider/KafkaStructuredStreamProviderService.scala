@@ -320,15 +320,11 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       .option("kafka.security.protocol", securityProtocol)
       .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
       .option("topic", outputTopics.mkString(","))
-      .option("checkpointLocation", "checkpoints") //Rewind not working because of this ? TODO make this configurable check where to put it, source ? writer ? both ?
-
     if (outputMode != null) {
       dataStreamWriter.outputMode(outputMode)
     }
 
     dataStreamWriter
-      .queryName(getIdentifier + "_sink")//MUST be unique !! so we can not use the same sink several times... TODO move this into stream so he can make a unique identifier
-      .start()
   }
 
 

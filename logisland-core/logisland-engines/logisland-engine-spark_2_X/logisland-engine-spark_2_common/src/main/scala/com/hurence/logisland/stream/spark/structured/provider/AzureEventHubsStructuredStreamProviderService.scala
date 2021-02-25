@@ -368,16 +368,10 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     val eventHubsConf = EventHubsConf(connectionString)
     applyConfig(eventHubsConf, false)
 
-    var checkpointLocation : String = "checkpoints"
-    if (GlobalOptions.checkpointLocation != null) {
-      checkpointLocation = GlobalOptions.checkpointLocation
-      getLogger.info(s"Checkpoint azure writer using checkpointLocation: $checkpointLocation")
-    }
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
     getLogger.info(s"Starting azure event hubs structured stream to event hub $writeEventHub in " +
-      s"$namespace namespace with checkpointLocation $checkpointLocation")
-
-    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+      s"$namespace namespace")
 
     // Write key-value data from a DataFrame to a specific event hub specified in an option
     df.mapPartitions(record => record.map(record => SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)))
@@ -389,8 +383,6 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     .writeStream
     .format("eventhubs")
     .options(eventHubsConf.toMap)
-    .option("checkpointLocation", checkpointLocation)
-    .start()
   }
 
 }

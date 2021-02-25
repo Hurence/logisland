@@ -31,7 +31,7 @@ trait StructuredStreamProviderServiceWriter extends ControllerService {
     *
     * @return DataFrame currently loaded
     */
-  def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): StreamingQuery
+  def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): DataStreamWriter[_]
 }
 
 object StructuredStreamProviderServiceWriter {

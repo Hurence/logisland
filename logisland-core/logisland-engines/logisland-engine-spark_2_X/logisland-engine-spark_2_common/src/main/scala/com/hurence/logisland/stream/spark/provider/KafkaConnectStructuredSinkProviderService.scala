@@ -91,7 +91,7 @@ class KafkaConnectStructuredSinkProviderService extends KafkaConnectBaseProvider
     *
     * @return DataFrame currently loaded
     */
-  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): StreamingQuery = {
+  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) = {
     implicit val encoder = Encoders.tuple(Encoders.BINARY, Encoders.BINARY)
 
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
@@ -125,13 +125,11 @@ class KafkaConnectStructuredSinkProviderService extends KafkaConnectBaseProvider
           writer().openPartition(partitionId.intValue())
         }
       })
-      .start()
   }
 
 
   def createWriter(sqlContext: SQLContext, topic: String): KafkaConnectStreamSink =
     synchronized {
-
       if (writer == null) {
         val keyConverterInstance = Utils.createConverter(keyConverter, keyConverterProperties, true)
         val valueConverterInstance = Utils.createConverter(valueConverter, valueConverterProperties, false)

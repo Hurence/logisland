@@ -86,7 +86,7 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService
       *
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): StreamingQuery = {
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) = {
         val dataStreamWriter = df
           .map(_.toString())(Encoders.STRING)
           .writeStream
@@ -101,8 +101,6 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService
             dataStreamWriter.outputMode(outputMode.get)
         }
         dataStreamWriter
-          .queryName(getIdentifier)
-          .start()
     }
 }
 

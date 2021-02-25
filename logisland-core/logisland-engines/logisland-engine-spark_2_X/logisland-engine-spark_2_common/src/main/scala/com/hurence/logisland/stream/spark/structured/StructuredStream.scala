@@ -21,6 +21,7 @@ import java.util.Collections
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.record.Record
+import com.hurence.logisland.runner.GlobalOptions
 import com.hurence.logisland.stream.AbstractRecordStream
 import com.hurence.logisland.stream.spark.structured.StructuredStream._
 import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamProviderServiceReader, StructuredStreamProviderServiceWriter}
@@ -99,10 +100,23 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
       val transformedInputData: Dataset[Record] = transformInputData(readDF)
 
-      val writeStreamService = context.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
+      val writerService = context.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
         .asControllerService()
         .asInstanceOf[StructuredStreamProviderServiceWriter]
+      val dataStreamWriter = writerService
         .write(transformedInputData, sparkStreamContext.broadCastedControllerServiceLookupSink)
+
+      var checkpointLocation : String = "checkpoints"
+      if (GlobalOptions.checkpointLocation != null) {
+        checkpointLocation = GlobalOptions.checkpointLocation
+        getLogger.info(s"Checkpoint using checkpointLocation: $checkpointLocation")
+      }
+
+      getLogger.info(s"Starting structured stream sink ${writerService.getIdentifier} depuis le stream ${identifier} avec checkpointLocation: $checkpointLocation")
+      dataStreamWriter
+        .option("checkpointLocation", checkpointLocation + "/" + identifier + "/" + writerService.getIdentifier)
+        .queryName(identifier + "#" + writerService.getIdentifier)
+        .start()
 
       pipelineTimerContext.stop()
     }

@@ -104,7 +104,7 @@ class KafkaConnectBaseProviderService extends AbstractControllerService
       *
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): StreamingQuery = {
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]): DataStreamWriter[_] = {
         throw new UnsupportedOperationException("Operation not supported. Please be sure to use the right component")
     }
 
