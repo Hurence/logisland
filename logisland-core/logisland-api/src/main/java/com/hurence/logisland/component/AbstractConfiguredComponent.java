@@ -203,6 +203,16 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
                 isValid = false;
             }
         }
+        if (!isValid) {
+            if (component instanceof AbstractConfigurableComponent) {
+                AbstractConfigurableComponent abstractComp = (AbstractConfigurableComponent) component;
+                List<PropertyDescriptor> descriptors = abstractComp.getSupportedPropertyDescriptors();
+                getLogger().info("Here the supported properties for this component:");
+                descriptors.forEach(desc -> {
+                    getLogger().info("{}", new Object[]{desc});
+                });
+            }
+        }
         return isValid;
     }
 

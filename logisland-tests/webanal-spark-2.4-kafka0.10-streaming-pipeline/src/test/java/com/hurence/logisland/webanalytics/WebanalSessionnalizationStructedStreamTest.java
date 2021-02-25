@@ -44,6 +44,9 @@ public class WebanalSessionnalizationStructedStreamTest {
         confKafka.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(), embeddedKafka.getZookeeperConnectionString());
         confKafka.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(), embeddedKafka.getBrokersAsString());
         confJob.modifyControllerServiceConf("kafka_service", confKafka);
+        Map<String, String> confOpenDistro = new HashMap<>();
+        confOpenDistro.put(ElasticsearchClientService.ENABLE_SSL.getName(), "true");
+        confJob.modifyControllerServiceConf("opendistro_service", confOpenDistro);
         confJob.initJob();
         confJob.startJob();
         boolean running = true;
@@ -70,6 +73,9 @@ public class WebanalSessionnalizationStructedStreamTest {
         confKafka.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(), embeddedKafka.getZookeeperConnectionString());
         confKafka.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(), embeddedKafka.getBrokersAsString());
         confJob.modifyControllerServiceConf("kafka_service", confKafka);
+        Map<String, String> confOpenDistro = new HashMap<>();
+        confOpenDistro.put(ElasticsearchClientService.ENABLE_SSL.getName(), "true");
+        confJob.modifyControllerServiceConf("opendistro_service", confOpenDistro);
         confJob.initJob();
         confJob.startJob();
         boolean running = true;

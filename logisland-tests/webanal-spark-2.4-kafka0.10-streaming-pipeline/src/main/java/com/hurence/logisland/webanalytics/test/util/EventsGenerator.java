@@ -8,9 +8,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+/**
+ * No thread safe
+ */
 public class EventsGenerator {
 
     final String sessionId;
+
+    private long eventId = 0;
 
     public EventsGenerator(String sessionId) {
         this.sessionId = sessionId;
@@ -18,6 +23,7 @@ public class EventsGenerator {
 
     public Record generateEvent(long timestamp, String url) {
         Record record = new StandardRecord("generated");
+        record.setId(sessionId + String.valueOf(eventId++));
         record.setStringField(TestMappings.eventsInternalFields.getSessionIdField(), sessionId);
         record.setLongField(TestMappings.eventsInternalFields.getTimestampField(), timestamp);
         record.setStringField(TestMappings.eventsInternalFields.getVisitedPageField(), url);
@@ -25,7 +31,6 @@ public class EventsGenerator {
         record.setStringField("Company", "orexad");
         record.setStringField("codeProduct_rev", "fake_product");
         record.setStringField("categoryNiv4", "fakeniv4");
-
         return record;
 
 //    { "version": 1,

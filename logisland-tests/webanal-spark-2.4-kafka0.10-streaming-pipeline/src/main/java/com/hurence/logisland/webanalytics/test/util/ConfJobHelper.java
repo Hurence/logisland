@@ -56,6 +56,10 @@ public class ConfJobHelper {
         engineContext.getEngine().stop(engineContext);
     }
 
+    public void softStop() {
+        engineContext.getEngine().softStop(engineContext);
+    }
+
     public void startJob() {
         String engineName = engineContext.getEngine().getIdentifier();
         try {

@@ -14,9 +14,15 @@ object KafkaProperties {
 
   val INPUT_TOPICS: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("kafka.input.topics")
-    .description("Sets the input Kafka topic name")
-    .required(true)
-    .defaultValue(DEFAULT_RAW_TOPIC.getValue)
+    .description("A comma-separated list of topics. The topic list to subscribe.")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val INPUT_TOPIC_PATTERN: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.input.topics.pattern")
+    .description("Java regex string. The pattern used to subscribe to topic(s).")
+    .required(false)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .build
 

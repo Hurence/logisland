@@ -63,7 +63,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     private var running = false
     protected var batchDurationMs: Int = 1000
     protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
-
+    private var sparkStreamingTimeout: Int = _
 
     /**
       * Provides subclasses the ability to perform initialization logic
@@ -74,7 +74,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val sparkMaster = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_MASTER).asString
         val appName = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_APP_NAME).asString
         batchDurationMs = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
-
+        sparkStreamingTimeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().toInt
         /**
           * job configuration
           */
@@ -217,7 +217,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MESOS_CORE_MAX)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_TOTAL_EXECUTOR_CORES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_SUPERVISE)
-
         Collections.unmodifiableList(descriptors)
     }
 
@@ -234,7 +233,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         controllerServiceLookupSink = spark.sparkContext.broadcast(
             ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
         )
-        //TODO Déplacer les broadcast dans init ?
         getLogger.info("Will start streams")
         /**
           * loop over processContext
@@ -343,18 +341,16 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
       *
       */
     override def awaitTermination(engineContext: EngineContext): Unit = {
-        var timeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT)
-            .asInteger().toInt
         val sc = getCurrentSparkContext()
 
         while (!sc.isStopped) {
             try {
-                if (timeout < 0) {
+                if (sparkStreamingTimeout < 0) {
                     Thread.sleep(200)
                 } else {
-                    val toSleep = Math.min(200, timeout);
+                    val toSleep = Math.min(200, sparkStreamingTimeout);
                     Thread.sleep(toSleep)
-                    timeout -= toSleep
+                    sparkStreamingTimeout -= toSleep
                 }
             } catch {
                 case e: InterruptedException => return

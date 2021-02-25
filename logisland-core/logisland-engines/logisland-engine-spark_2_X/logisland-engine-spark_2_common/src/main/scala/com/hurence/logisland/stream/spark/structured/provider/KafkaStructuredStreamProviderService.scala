@@ -31,7 +31,7 @@
 package com.hurence.logisland.stream.spark.structured.provider
 
 import java.util
-import java.util.Collections
+import java.util.{ArrayList, Collections, List}
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
@@ -45,7 +45,7 @@ import com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStr
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderServiceWriter.OUTPUT_MODE
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
-import com.hurence.logisland.validator.StandardValidators
+import com.hurence.logisland.validator.{Configuration, StandardValidators, ValidationResult}
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.kafka.common.security.JaasUtils
@@ -64,6 +64,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   var kafkaParams: Map[String, Object] = _
   // Define the Kafka parameters, broker list must be specified
   var inputTopics = Set[String]()
+  var inputTopicsPattern: String = ""
   var outputTopics = Set[String]()
   var topicAutocreate = true
   var topicDefaultPartitions = 3
@@ -85,6 +86,50 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   var writeValueSerializer: RecordSerializer = _
   var writeKeySerializer: RecordSerializer = _
   var outputMode: String = _
+  var subscribMod: String = _
+
+  /**
+    * Allows subclasses to perform their own validation on the already set
+    * properties. Since each property is validated as it is set this allows
+    * validation of groups of properties together. Default return is an empty
+    * set.
+    * <p>
+    * This method will be called only when it has been determined that all
+    * property getAllFields are valid according to their corresponding
+    * PropertyDescriptor's validators.
+    *
+    * @return Collection of ValidationResult objects that will be added to any
+    *         other validation findings - may be null
+    */
+  override protected def customValidate(context: Configuration): util.Collection[ValidationResult] = {
+    val validationResults = new util.ArrayList[ValidationResult](super.customValidate(context))
+    /**
+      * Only one of both properties may be set.
+      */
+    // Be sure not both are defined
+    if (context.getPropertyValue(INPUT_TOPICS).isSet &&
+      context.getPropertyValue(INPUT_TOPIC_PATTERN).isSet) {
+      validationResults.add(
+        new ValidationResult.Builder()
+          .explanation(INPUT_TOPICS.getName + " and " + INPUT_TOPIC_PATTERN.getName + " " +
+            "properties are mutually exclusive.")
+          .valid(false)
+          .build
+      )
+    }
+    // Be sure at least one is defined
+    if (!context.getPropertyValue(INPUT_TOPICS).isSet &&
+      !context.getPropertyValue(INPUT_TOPIC_PATTERN).isSet) {
+      validationResults.add(
+        new ValidationResult.Builder()
+          .explanation("at least one of " +INPUT_TOPICS.getName + " and " + INPUT_TOPIC_PATTERN.getName +
+            " must be set.")
+          .valid(false)
+          .build
+      )
+    }
+    return validationResults
+  }
 
   @OnEnabled
   @throws[InitializationException]
@@ -94,7 +139,17 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       try {
 
         // Define the Kafka parameters, broker list must be specified
-        inputTopics = context.getPropertyValue(INPUT_TOPICS).asString.split(",").toSet
+
+        if (context.getPropertyValue(INPUT_TOPICS).isSet) {
+          subscribMod = "subscribe"
+          inputTopics = context.getPropertyValue(INPUT_TOPICS).asString.split(",").toSet
+        }
+
+        if (context.getPropertyValue(INPUT_TOPIC_PATTERN).isSet) {
+          subscribMod = "subscribePattern"
+          inputTopicsPattern = context.getPropertyValue(INPUT_TOPIC_PATTERN).asString
+        }
+
         outputTopics = context.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
 
         topicAutocreate = context.getPropertyValue(KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
@@ -159,9 +214,13 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
       .option("startingOffsets", startingOffsets)
       .option("failOnDataLoss", failOnDataLoss)
-      .option("subscribe", inputTopics.mkString(","))
 
-
+    subscribMod match {
+      case "subscribe" => df = df.option("subscribe", inputTopics.mkString(","))
+      case "subscribePattern" => df = df.option("subscribePattern", inputTopicsPattern)
+//TODO not supported yet      case "assign" => df = df.option("assign", inputTopics.mkString(","))
+      //    assign 	json string {"topicA":[0,1],"topicB":[2,4]} 	Specific TopicPartitions to consume. Only one of "assign", "subscribe" or "subscribePattern" options can be specified for Kafka source.
+    }
 
     if (maxOffsetsPerTrigger.isDefined) {
       df = df.option("maxOffsetsPerTrigger", maxOffsetsPerTrigger.get)
@@ -189,6 +248,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
     descriptors.add(INPUT_TOPICS)
+    descriptors.add(INPUT_TOPIC_PATTERN)
     descriptors.add(OUTPUT_TOPICS)
     descriptors.add(KAFKA_TOPIC_AUTOCREATE)
     descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
@@ -270,6 +330,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
       .queryName(getIdentifier + "_sink")//MUST be unique !! so we can not use the same sink several times... TODO move this into stream so he can make a unique identifier
       .start()
   }
+
+
 }
 
 object KafkaStructuredStreamProviderService {

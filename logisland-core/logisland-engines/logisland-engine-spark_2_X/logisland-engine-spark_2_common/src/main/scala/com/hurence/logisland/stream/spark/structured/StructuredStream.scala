@@ -19,6 +19,7 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
+import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.stream.AbstractRecordStream
 import com.hurence.logisland.stream.spark.structured.StructuredStream._
@@ -33,10 +34,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
   @transient protected var sparkStreamContext: SparkStreamContext = _
   private var isReady = false
-  private var isStatefull = false
   private var groupByField: String = _
-  private var stateTimeoutMode: String = _
-  private var stateTimeoutDuration: Long = _
   @transient protected var outputMode: OutputMode = _
 
 
@@ -45,9 +43,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     descriptors.add(READ_STREAM_SERVICE_PROVIDER)
     descriptors.add(WRITE_STREAM_SERVICE_PROVIDER)
     descriptors.add(GROUP_BY_FIELDS)
-    descriptors.add(STATE_TIMEOUT_DURATION_MS)
-    descriptors.add(STATE_TIMEOUT_DURATION_MS)
-    descriptors.add(STATEFULL_OUTPUT_MODE)
+//    descriptors.add(STATE_TIMEOUT_DURATION_MS)
+//    descriptors.add(STATE_TIMEOUT_DURATION_MS)
+//    descriptors.add(STATEFULL_OUTPUT_MODE)
     Collections.unmodifiableList(descriptors)
   }
 
@@ -56,13 +54,12 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     this.sparkStreamContext = sparkStreamContext
     if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
       groupByField = context.getPropertyValue(GROUP_BY_FIELDS).asString()
-      stateTimeoutDuration = context.getPropertyValue(STATE_TIMEOUT_DURATION_MS).asLong()
     }
-    context.getPropertyValue(STATEFULL_OUTPUT_MODE).asString() match {
-      case "append" => outputMode = OutputMode.Append()
-      case "update" => outputMode = OutputMode.Update()
-      case "complete" => outputMode = OutputMode.Complete()
-    }
+//    context.getPropertyValue(STATEFULL_OUTPUT_MODE).asString() match {
+//      case "append" => outputMode = OutputMode.Append()
+//      case "update" => outputMode = OutputMode.Update()
+//      case "complete" => outputMode = OutputMode.Complete()
+//    }
     isReady = true;
   }
 
@@ -92,9 +89,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       // In this method start, the config should be considered already up to date in my opinion.
       // So currently this stream is not compatible with remoteApi change conf on the fly...
       // Anyway modification of a stream should be done at engine level !!!! stopping specific stream then init and restarting it with new StreamContext/ ProcessContext
-//      sparkStreamContext.streamingContext.getProcessContexts.clear()
-//      sparkStreamContext.streamingContext.getProcessContexts.addAll(
-//        PipelineConfigurationBroadcastWrapper.getInstance().get(sparkStreamContext.streamingContext.getIdentifier))
+      sparkStreamContext.logislandStreamContext.getProcessContexts.clear()
+      sparkStreamContext.logislandStreamContext.getProcessContexts.addAll(
+        PipelineConfigurationBroadcastWrapper.getInstance().get(sparkStreamContext.logislandStreamContext.getIdentifier))
 
       val readDF = context.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
         .asControllerService()
@@ -135,8 +132,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     }
     this.isReady = false
   }
-//    .withWatermark("eventTime", "10 seconds")
-//    .dropDuplicates("guid", "eventTime")
+
   def transformInputData(readDF: Dataset[Record]): Dataset[Record] = {
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
     val pipelineMethods = new SparkPipeLineMethods(sparkStreamContext)
@@ -152,31 +148,6 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
         pipelineMethods.executePipeline(iterator)
       })
     }
-//    if (isStatefull) {
-//      if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
-//        import readDF.sparkSession.implicits._
-//        readDF
-//          .groupByKey(_.getField(groupByField).asString())
-//          .flatMapGroupsWithState[Record, Record](outputMode = outputMode, timeoutConf = GroupStateTimeout.ProcessingTimeTimeout())(
-//            pipelineMethods.mappingFunction2(stateTimeoutDuration)
-//          )
-//      } else {
-//        throw new IllegalStateException("Should not happen. Statefull is not supported without groupBy")
-//      }
-//    } else {
-//      if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
-//        import readDF.sparkSession.implicits._
-//        readDF
-//          .groupByKey(_.getField(groupByField).asString())
-//          .flatMapGroups((key, iterator) => {
-//            pipelineMethods.executePipeline(key, iterator)
-//          })
-//      } else {
-//        readDF.mapPartitions(iterator => {
-//          pipelineMethods.executePipeline(iterator)
-//        })
-//      }
-//    }
   }
 }
 
