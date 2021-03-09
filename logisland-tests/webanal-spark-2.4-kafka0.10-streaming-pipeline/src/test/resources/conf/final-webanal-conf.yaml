@@ -486,13 +486,6 @@ engine:
             cache.validity.timeout: 3600
             debug: false
 
-        - processor: Websession_index_name
-          component: com.hurence.logisland.processor.AddFields
-          type: processor
-          documentation: a processor that specifies the name of the websession elasticsearch index into a field used by the BulkAdd processor afterward.
-          configuration:
-            websessionIndex: ${'openanalytics_websessions-' + new java.text.SimpleDateFormat('yyyy.MM').format(new java.util.Date(h2kTimestamp));}
-
         # Create or update web session based on web events
         - processor: consolidate_session
           component: com.hurence.logisland.processor.webanalytics.IncrementalWebSession
