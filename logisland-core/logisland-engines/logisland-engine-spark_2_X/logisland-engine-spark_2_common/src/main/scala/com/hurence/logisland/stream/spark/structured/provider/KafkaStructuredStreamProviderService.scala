@@ -250,6 +250,16 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     descriptors.add(INPUT_TOPICS)
     descriptors.add(INPUT_TOPIC_PATTERN)
     descriptors.add(OUTPUT_TOPICS)
+	 origin/feature/schema_registry_confluent//
+    descriptors.add(AVRO_INPUT_SCHEMA)
+    descriptors.add(AVRO_SCHEMA_NAME)
+    descriptors.add(AVRO_SCHEMA_URL)
+    descriptors.add(AVRO_SCHEMA_VERSION)
+    descriptors.add(AVRO_OUTPUT_SCHEMA)
+    descriptors.add(INPUT_SERIALIZER)
+    descriptors.add(OUTPUT_SERIALIZER)
+    descriptors.add(ERROR_SERIALIZER)
+	// origin/feature/schema_registry_confluent
     descriptors.add(KAFKA_TOPIC_AUTOCREATE)
     descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
     descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)

@@ -33,6 +33,7 @@ import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark._
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
+import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.TopicPartition
@@ -68,6 +69,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
     descriptors.add(INPUT_TOPICS)
     descriptors.add(OUTPUT_TOPICS)
     descriptors.add(AVRO_INPUT_SCHEMA)
+    descriptors.add(AVRO_SCHEMA_NAME)
+    descriptors.add(AVRO_SCHEMA_URL)
+    descriptors.add(AVRO_SCHEMA_VERSION)
     descriptors.add(AVRO_OUTPUT_SCHEMA)
     descriptors.add(INPUT_SERIALIZER)
     descriptors.add(OUTPUT_SERIALIZER)
@@ -299,7 +303,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
         val bais = new ByteArrayInputStream(rawEvent.value())
         val deserialized = serializer.deserialize(bais)
         bais.close()
-
         Some(deserialized)
       } catch {
         case t: Throwable =>

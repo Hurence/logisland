@@ -17,7 +17,6 @@ package com.hurence.logisland.stream.spark
 
 import java.util
 import java.util.Collections
-
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
 import com.hurence.logisland.stream.StreamProperties._
@@ -71,14 +70,25 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val pipelineMetricPrefix = sparkStreamContext.logislandStreamContext.getIdentifier + "." +
                             "partition" + partitionId + "."
                         val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms" ).time()
+                        var inputSchema = ""
 
+                        if (!sparkStreamContext.logislandStreamContext.getProperty(AVRO_SCHEMA_NAME).isEmpty
+                          && !sparkStreamContext.logislandStreamContext.getProperty(AVRO_SCHEMA_VERSION).isEmpty
+                            && !sparkStreamContext.logislandStreamContext.getProperty(AVRO_SCHEMA_URL).isEmpty){
 
+                          val schemaUrl = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_URL).asString
+                          val schemaName = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_NAME).asString
+                          val schemaVersion = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_VERSION).asInteger
+                          inputSchema = "{\"schemaName\":\"" + schemaName + "\"," + "\"schemaUrl\":\"" + schemaUrl + "\"," + "\"schemaVersion\":" +schemaVersion+ "}"
+                          logger.info("Using schema json " + inputSchema)
+
+                      }else {inputSchema = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString}
                         /**
                           * create serializers
                           */
                         val deserializer = getSerializer(
                             sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                            sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                            inputSchema)
                         val serializer = getSerializer(
                             sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
                             sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)

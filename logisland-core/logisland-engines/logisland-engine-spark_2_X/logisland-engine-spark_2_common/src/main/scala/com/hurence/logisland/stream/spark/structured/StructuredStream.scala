@@ -47,6 +47,19 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 //    descriptors.add(STATE_TIMEOUT_DURATION_MS)
 //    descriptors.add(STATE_TIMEOUT_DURATION_MS)
 //    descriptors.add(STATEFULL_OUTPUT_MODE)
+// =======
+    descriptors.add(WRITE_TOPICS_SERIALIZER)
+    descriptors.add(WRITE_TOPICS_KEY_SERIALIZER)
+    descriptors.add(GROUPBY)
+    descriptors.add(STATE_TIMEOUT_MS)
+    descriptors.add(CHUNK_SIZE)
+    descriptors.add(AVRO_INPUT_SCHEMA)
+    descriptors.add(AVRO_SCHEMA_NAME)
+    descriptors.add(AVRO_SCHEMA_URL)
+    descriptors.add(AVRO_SCHEMA_VERSION)
+    descriptors.add(AVRO_OUTPUT_SCHEMA)
+
+// >>>>>>> origin/feature/schema_registry_confluent
     Collections.unmodifiableList(descriptors)
   }
 
