@@ -51,6 +51,7 @@ import kafka.utils.ZkUtils
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.{Dataset, SparkSession}
+import org.slf4j.LoggerFactory
 
 /**
   * Compatible with kafka 0.10.0 or higher
@@ -59,6 +60,8 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 class KafkaStructuredStreamProviderService() extends AbstractControllerService
   with StructuredStreamProviderServiceReader
   with StructuredStreamProviderServiceWriter {
+
+  val logger = LoggerFactory.getLogger(this.getClass)
 
   var kafkaSinkParams: Map[String, Object] = _
   var kafkaParams: Map[String, Object] = _
@@ -175,9 +178,26 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
           createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
         }
 
+        var inputSchema = ""
+        if (context.getPropertyValue(AVRO_SCHEMA_NAME).isSet
+            && context.getPropertyValue(AVRO_SCHEMA_URL).isSet) {
+
+          val schemaUrl = context.getPropertyValue(AVRO_SCHEMA_URL).asString
+          val schemaName = context.getPropertyValue(AVRO_SCHEMA_NAME).asString
+
+          if (context.getPropertyValue(AVRO_SCHEMA_VERSION).isSet) {
+            val schemaVersion = context.getPropertyValue(AVRO_SCHEMA_VERSION).asInteger
+            inputSchema = "{\"schemaName\":\"" + schemaName + "\"," + "\"schemaUrl\":\"" + schemaUrl + "\"," + "\"schemaVersion\":" +schemaVersion+ "}"
+          } else { 
+            inputSchema = "{\"schemaName\":\"" + schemaName + "\"," + "\"schemaUrl\":\"" + schemaUrl + "\"}"
+          }
+          logger.info("Using schema json " + inputSchema)
+          
+        } else { inputSchema = context.getPropertyValue(AVRO_READ_VALUE_SCHEMA).asString}
+        
         readValueSerializer = SerializerProvider.getSerializer(
           context.getPropertyValue(READ_VALUE_SERIALIZER).asString,
-          context.getPropertyValue(AVRO_READ_VALUE_SCHEMA).asString)
+          inputSchema)
 
         writeValueSerializer = SerializerProvider.getSerializer(
           context.getPropertyValue(WRITE_VALUE_SERIALIZER).asString,
@@ -250,16 +270,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     descriptors.add(INPUT_TOPICS)
     descriptors.add(INPUT_TOPIC_PATTERN)
     descriptors.add(OUTPUT_TOPICS)
-	 origin/feature/schema_registry_confluent//
-    descriptors.add(AVRO_INPUT_SCHEMA)
     descriptors.add(AVRO_SCHEMA_NAME)
     descriptors.add(AVRO_SCHEMA_URL)
     descriptors.add(AVRO_SCHEMA_VERSION)
-    descriptors.add(AVRO_OUTPUT_SCHEMA)
-    descriptors.add(INPUT_SERIALIZER)
-    descriptors.add(OUTPUT_SERIALIZER)
-    descriptors.add(ERROR_SERIALIZER)
-	// origin/feature/schema_registry_confluent
     descriptors.add(KAFKA_TOPIC_AUTOCREATE)
     descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
     descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
@@ -346,7 +359,7 @@ object KafkaStructuredStreamProviderService {
     .description("the serializer to use to deserialize value of topic messages as record")
     .required(true)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER, CONFLUENT_SERIALIZER)
     .defaultValue(NO_SERIALIZER.getValue)
     .build
 

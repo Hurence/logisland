@@ -254,4 +254,28 @@ object KafkaProperties {
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .defaultValue("kafka")
     .build
+
+  //////////////////////////////////////
+  // Schema registry (Avro)
+  //////////////////////////////////////
+  val AVRO_SCHEMA_NAME: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("avro.schema.name")
+    .description("The avro schema name to get in the schema registry")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val AVRO_SCHEMA_URL: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("avro.schema.url")
+    .description("The avro schema url for the schema registry")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val AVRO_SCHEMA_VERSION: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("avro.schema.version")
+    .description("The avro schema version to use for the schema registry")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
 }

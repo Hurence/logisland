@@ -70,6 +70,8 @@ object StreamProperties {
 
   val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName,
     "avro serialization", "serialize events as avro blocs")
+  val CONFLUENT_SERIALIZER = new AllowableValue(classOf[ConfluentSerializer].getName,
+    "confluent avro serialization", "serialize events as avro blocs with the confluent ID from a schema registry")
   val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName,
     "json serialization", "serialize events as json blocs")
   val EXTENDED_JSON_SERIALIZER = new AllowableValue(classOf[ExtendedJsonSerializer].getName,

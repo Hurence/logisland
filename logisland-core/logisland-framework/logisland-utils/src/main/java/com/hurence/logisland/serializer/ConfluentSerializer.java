@@ -66,9 +66,15 @@ public class ConfluentSerializer implements RecordSerializer {
             JSONObject obj = new JSONObject(schemaInfo);
             String schemaName = obj.getString("schemaName");
             String schemaUrl = obj.getString("schemaUrl");
-            Integer schemaVersion = obj.getInt("schemaVersion");
+            Integer schemaVersion = null;
 
             CachedSchemaRegistryClient schemaRegistryClient  = new CachedSchemaRegistryClient(schemaUrl, 10);
+
+            if (obj.has("schemaVersion")) {
+              schemaVersion = obj.getInt("schemaVersion");
+            } else {
+              schemaVersion = schemaRegistryClient.getLatestSchemaMetadata(schemaName).getVersion();
+            }
 
             deserializer = new KafkaAvroDeserializer(schemaRegistryClient);
             serializer = new KafkaAvroSerializer(schemaRegistryClient);
