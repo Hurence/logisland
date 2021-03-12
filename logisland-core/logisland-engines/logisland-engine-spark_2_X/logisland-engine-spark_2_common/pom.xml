@@ -400,19 +400,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>io.confluent</groupId>
-            <artifactId>kafka-schema-registry-client</artifactId>
-            <version>5.3.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.typesafe.play</groupId>
-            <artifactId>play-json_2.12</artifactId>
-            <version>2.9.1</version>
-        </dependency>
-
     </dependencies>
 
     <build>
