@@ -258,16 +258,16 @@ object KafkaProperties {
   //////////////////////////////////////
   // Schema registry (Avro)
   //////////////////////////////////////
-  val AVRO_SCHEMA_NAME: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("avro.schema.name")
-    .description("The avro schema name to get in the schema registry")
+  val AVRO_SCHEMA_URL: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("avro.schema.url")
+    .description("The avro schema url for the schema registry")
     .required(false)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .build
 
-  val AVRO_SCHEMA_URL: PropertyDescriptor = new PropertyDescriptor.Builder()
-    .name("avro.schema.url")
-    .description("The avro schema url for the schema registry")
+  val AVRO_SCHEMA_NAME: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("avro.schema.name")
+    .description("The avro schema name to get in the schema registry")
     .required(false)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .build

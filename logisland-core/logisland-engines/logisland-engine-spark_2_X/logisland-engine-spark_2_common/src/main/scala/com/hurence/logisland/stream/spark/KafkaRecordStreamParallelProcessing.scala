@@ -20,7 +20,7 @@ import java.util.Collections
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
 import com.hurence.logisland.stream.StreamProperties._
-import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.{ERROR_SERIALIZER, ERROR_TOPICS, INPUT_SERIALIZER, INPUT_TOPICS, KAFKA_METADATA_BROKER_LIST, OUTPUT_SERIALIZER, OUTPUT_TOPICS,AVRO_SCHEMA_URL,AVRO_SCHEMA_NAME,AVRO_SCHEMA_VERSION}
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.{ERROR_SERIALIZER, ERROR_TOPICS, INPUT_SERIALIZER, INPUT_TOPICS, KAFKA_METADATA_BROKER_LIST, OUTPUT_SERIALIZER, OUTPUT_TOPICS,AVRO_SCHEMA_URL}
 import com.hurence.logisland.util.record.RecordSchemaUtil
 import com.hurence.logisland.util.spark.ProcessorMetrics
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -70,23 +70,16 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val pipelineMetricPrefix = sparkStreamContext.logislandStreamContext.getIdentifier + "." +
                             "partition" + partitionId + "."
                         val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms" ).time()
+
                         var inputSchema = ""
-
-                        if (sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_NAME).isSet
-                            && sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_URL).isSet) {
-
-                          val schemaUrl = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_URL).asString
-                          val schemaName = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_NAME).asString
-
-                          if (sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_VERSION).isSet) {
-                            val schemaVersion = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_VERSION).asInteger
-                            inputSchema = "{\"schemaName\":\"" + schemaName + "\"," + "\"schemaUrl\":\"" + schemaUrl + "\"," + "\"schemaVersion\":" +schemaVersion+ "}"
-                          } else { 
-                            inputSchema = "{\"schemaName\":\"" + schemaName + "\"," + "\"schemaUrl\":\"" + schemaUrl + "\"}"
-                          }
+                        if (sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_URL).isSet) {
+                          val registryUrl = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_SCHEMA_URL).asString
+                          inputSchema = "{\"registryUrl\":\"" + registryUrl + "\"}"
                           logger.info("Using schema json " + inputSchema)
-                          
-                        } else { inputSchema = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString}
+                        } else { 
+                          inputSchema = sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString
+                        }
+
                         /**
                           * create serializers
                           */

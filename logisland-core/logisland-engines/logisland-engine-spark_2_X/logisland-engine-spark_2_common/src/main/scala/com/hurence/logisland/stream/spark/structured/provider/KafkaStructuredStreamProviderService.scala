@@ -179,21 +179,13 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
         }
 
         var inputSchema = ""
-        if (context.getPropertyValue(AVRO_SCHEMA_NAME).isSet
-            && context.getPropertyValue(AVRO_SCHEMA_URL).isSet) {
-
-          val schemaUrl = context.getPropertyValue(AVRO_SCHEMA_URL).asString
-          val schemaName = context.getPropertyValue(AVRO_SCHEMA_NAME).asString
-
-          if (context.getPropertyValue(AVRO_SCHEMA_VERSION).isSet) {
-            val schemaVersion = context.getPropertyValue(AVRO_SCHEMA_VERSION).asInteger
-            inputSchema = "{\"schemaName\":\"" + schemaName + "\"," + "\"schemaUrl\":\"" + schemaUrl + "\"," + "\"schemaVersion\":" +schemaVersion+ "}"
-          } else { 
-            inputSchema = "{\"schemaName\":\"" + schemaName + "\"," + "\"schemaUrl\":\"" + schemaUrl + "\"}"
-          }
+        if (context.getPropertyValue(AVRO_SCHEMA_URL).isSet) {
+          val registryUrl = context.getPropertyValue(AVRO_SCHEMA_URL).asString
+          inputSchema = "{\"registryUrl\":\"" + registryUrl + "\"}"
           logger.info("Using schema json " + inputSchema)
-          
-        } else { inputSchema = context.getPropertyValue(AVRO_READ_VALUE_SCHEMA).asString}
+        } else { 
+          inputSchema = context.getPropertyValue(AVRO_READ_VALUE_SCHEMA).asString
+        }
         
         readValueSerializer = SerializerProvider.getSerializer(
           context.getPropertyValue(READ_VALUE_SERIALIZER).asString,
@@ -270,9 +262,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     descriptors.add(INPUT_TOPICS)
     descriptors.add(INPUT_TOPIC_PATTERN)
     descriptors.add(OUTPUT_TOPICS)
-    descriptors.add(AVRO_SCHEMA_NAME)
     descriptors.add(AVRO_SCHEMA_URL)
-    descriptors.add(AVRO_SCHEMA_VERSION)
     descriptors.add(KAFKA_TOPIC_AUTOCREATE)
     descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
     descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)

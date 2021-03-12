@@ -42,9 +42,8 @@ public class ConfluentSerializerTest {
 
 	@Test
 	public void avroSerde() throws IOException {
-		 MockSchemaRegistryClient mockSchemaRegistryClient = new MockSchemaRegistryClient();
-		final ConfluentSerializer serializer =
-                new ConfluentSerializer(mockSchemaRegistryClient,ConfluentSerializerTest.class.getResourceAsStream("/schemas/event.avsc"));
+		MockSchemaRegistryClient mockSchemaRegistryClient = new MockSchemaRegistryClient();
+		final ConfluentSerializer serializer = new ConfluentSerializer(mockSchemaRegistryClient, ConfluentSerializerTest.class.getResourceAsStream("/schemas/event.avsc"));
 
 		Record record = new StandardRecord("cisco");
 		record.setId("firewall_record1");
@@ -59,6 +58,7 @@ public class ConfluentSerializerTest {
 		record.setField("response_size", FieldType.INT, 452);
 		record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
 		record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
+    record.setField("topic", FieldType.STRING, "logisland_events");
 		record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
