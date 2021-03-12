@@ -112,7 +112,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
         getLogger.info(s"Checkpoint using checkpointLocation: $checkpointLocation")
       }
 
-      getLogger.info(s"Starting structured stream sink ${writerService.getIdentifier} depuis le stream ${identifier} avec checkpointLocation: $checkpointLocation")
+      getLogger.info(s"Starting structured stream sink ${writerService.getIdentifier} from stream ${identifier} with checkpointLocation: $checkpointLocation")
       dataStreamWriter
         .option("checkpointLocation", checkpointLocation + "/" + identifier + "/" + writerService.getIdentifier)
         .queryName(identifier + "#" + writerService.getIdentifier)
