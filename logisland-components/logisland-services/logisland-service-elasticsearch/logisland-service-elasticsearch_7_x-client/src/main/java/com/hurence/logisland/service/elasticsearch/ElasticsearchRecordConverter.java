@@ -41,6 +41,7 @@ class ElasticsearchRecordConverter {
      * @return the json converted record
      */
     static String convertToString(Record record) {
+        logger.trace(record.toString());
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -115,14 +116,14 @@ class ElasticsearchRecordConverter {
             });
 
 
-            if((geolocation[0] != 0) && (geolocation[1] != 0)){
-                GeoPoint point = new GeoPoint(geolocation[0], geolocation[1]);
-                document.latlon("location", geolocation[0], geolocation[1]);
+            if((geolocation[0] != 0) && (geolocation[1] != 0)) {
+                document.latlon("geolocation", geolocation[0], geolocation[1]);
             }
 
 
             String result = Strings.toString(document.endObject());
             document.flush();
+            logger.trace(result);
             return result;
         } catch (Throwable ex) {
             logger.error("unable to convert record : {}, {}", record, ex.toString());
