@@ -84,7 +84,7 @@ object KafkaStreamProcessingEngine {
           "local(\\[([0-9]+|\\*)(,[0-9]+)?\\])?|" +
           "spark:\\/\\/[a-z0-9\\.\\-]+(:[0-9]+)?(,[a-z0-9\\.\\-]+(:[0-9]+)?)*|" +
           "mesos:\\/\\/((zk:\\/\\/[a-z0-9\\.\\-]+:[0-9]+(,[a-z0-9\\.\\-]+:[0-9]+)*\\/mesos)|(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+|[a-z][a-z0-9\\.\\-]+)(:[0-9]+)?))|" +
-          "k8s://.+)$")))
+          "k8s:\\/\\/.+)$")))
         .defaultValue("local[2]")
         .build
 
@@ -445,9 +445,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val sparkContext = getCurrentSparkContext()
 
         UserMetricsSystem.initialize(sparkContext, "LogislandMetrics")
-
-
-
 
         /**
           * shutdown context gracefully
