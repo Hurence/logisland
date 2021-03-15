@@ -208,7 +208,6 @@ public interface ElasticsearchClientService extends DatastoreClientService {
             .name("geolocation.output.field.name")
             .description("Label used to name the output record field for geolocation properties")
             .required(false)
-            .sensitive(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
