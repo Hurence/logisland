@@ -205,7 +205,7 @@ public interface ElasticsearchClientService extends DatastoreClientService {
             .build();
 
     PropertyDescriptor GEOLOCATION_FIELD_LABEL = new PropertyDescriptor.Builder()
-            .name("geolocation.output.field.label")
+            .name("geolocation.output.field.name")
             .description("Label used to name the output record field for geolocation properties")
             .required(false)
             .sensitive(true)
