@@ -41,7 +41,7 @@ class ElasticsearchRecordConverter {
      * @return the json converted record
      */
     static String convertToString(Record record) {
-      return convertToString(record, new String("location"));
+      return convertToString(record, "location");
     }
     
     /**
