@@ -17,6 +17,7 @@ package com.hurence.logisland.controller;
 
 
 import com.hurence.logisland.component.*;
+import com.hurence.logisland.processor.Processor;
 
 import java.io.File;
 
@@ -25,8 +26,6 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
     public StandardControllerServiceContext(final ControllerService controllerService, final String identifier) {
         super(controllerService, identifier);
     }
-
-
 
     @Override
     public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {
@@ -43,7 +42,7 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
         final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return PropertyValueFactory.getInstance(descriptor, propValue, getControllerServiceLookup());
+        return PropertyValueFactory.getInstance(descriptor, propValue, null);
     }
 
     @Override
@@ -52,28 +51,7 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
     }
 
     @Override
-    public void verifyModifiable() throws IllegalStateException {
-
-    }
-
-    @Override
-    public ControllerServiceLookup getControllerServiceLookup() {
-        return null;
-    }
-
-
-    @Override
-    public String getKerberosServicePrincipal() {
-        return null;
-    }
-
-    @Override
-    public File getKerberosServiceKeytab() {
-        return null;
-    }
-
-    @Override
-    public File getKerberosConfigurationFile() {
-        return null;
+    public ControllerService getService() {
+        return (ControllerService) component;
     }
 }

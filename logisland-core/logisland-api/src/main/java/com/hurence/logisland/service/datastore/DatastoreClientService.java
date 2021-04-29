@@ -18,10 +18,11 @@ package com.hurence.logisland.service.datastore;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.*;
@@ -61,6 +62,18 @@ public interface DatastoreClientService extends ControllerService {
      * ********************************************************************/
 
     /**
+     * Wait until specified collection is ready to be used.
+     */
+    void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException;
+
+    /**
+     * Wait until specified collection is ready to be used.
+     */
+    default void waitUntilCollectionReady(String name) throws DatastoreClientServiceException {
+        waitUntilCollectionReady(name, 10000L);
+    }
+
+    /**
      * Create the specified collection or index or table or bucket.
      * Specify namespace as dotted notation like in `global.users`
      */
@@ -86,6 +99,15 @@ public interface DatastoreClientService extends ControllerService {
      * Wait until the specified collection has integrated all previously-saved data.
      */
     void refreshCollection(String name) throws DatastoreClientServiceException;
+
+    /**
+     * Wait until the specified collection has integrated all previously-saved data.
+     */
+    default void refreshCollections(String[] names) throws DatastoreClientServiceException {
+        for (String name : names) {
+            refreshCollection(name);
+        }
+    }
 
 
     /**

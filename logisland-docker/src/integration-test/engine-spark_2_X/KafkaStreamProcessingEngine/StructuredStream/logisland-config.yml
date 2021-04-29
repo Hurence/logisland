@@ -35,7 +35,7 @@ engine:
   controllerServiceConfigurations:
 
     # Our source service
-    - controllerService: kc_source_service
+    - controllerService: kafka_source_service
       component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       documentation: A kafka source connector provider reading from its own source and providing structured streaming to the underlying layer
       configuration:
@@ -62,7 +62,7 @@ engine:
         kc.connector.offset.backing.store: memory
 
     # Kafka sink configuration
-    - controllerService: kafka_out_service
+    - controllerService: kafka_sink_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
       configuration:
         kafka.output.topics: logisland_raw
@@ -111,10 +111,10 @@ engine:
       configuration:
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
-        read.stream.service.provider: kc_source_service
+        read.stream.service.provider: kafka_source_service
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
-        write.stream.service.provider: kafka_out_service
+        write.stream.service.provider: kafka_sink_service
       processorConfigurations:
         - processor: flatten
           component: com.hurence.logisland.processor.FlatMap

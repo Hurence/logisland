@@ -29,7 +29,7 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
 
@@ -172,9 +172,9 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
     }
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
-        final boolean isAvroSerializer = validationContext.getPropertyValue(RECORD_SERIALIZER).asString().toLowerCase().contains("avro");
-        final boolean isAvroSchemaSet = validationContext.getPropertyValue(RECORD_SCHEMA).isSet();
+    protected Collection<ValidationResult> customValidate(Configuration configuration) {
+        final boolean isAvroSerializer = configuration.getPropertyValue(RECORD_SERIALIZER).asString().toLowerCase().contains("avro");
+        final boolean isAvroSchemaSet = configuration.getPropertyValue(RECORD_SCHEMA).isSet();
 
         final List<ValidationResult> problems = new ArrayList<>();
 

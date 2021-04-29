@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.stream.spark.structured.provider
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.time.{Duration, Instant}
 import java.util
 import java.util.Collections
@@ -25,9 +26,12 @@ import com.hurence.logisland.component.{InitializationException, PropertyDescrip
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.runner.GlobalOptions
-import com.hurence.logisland.stream.StreamContext
+import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.structured.provider.AzureEventHubProperties.{EVENTHUBS_MAX_EVENTS_PER_TRIGGER, EVENTHUBS_NAMESPACE, EVENTHUBS_OPERATION_TIMEOUT, EVENTHUBS_READ_CONSUMER_GROUP, EVENTHUBS_READ_EVENT_HUB, EVENTHUBS_READ_POSITION, EVENTHUBS_READ_POSITION_END_OF_STREAM, EVENTHUBS_READ_POSITION_INSTANT_NOW, EVENTHUBS_READ_POSITION_START_OF_STREAM, EVENTHUBS_READ_POSITION_TYPE, EVENTHUBS_READ_POSITION_TYPE_EPOCH_MILLIS, EVENTHUBS_READ_POSITION_TYPE_OFFSET, EVENTHUBS_READ_POSITION_TYPE_SEQUENCE_NUMBER, EVENTHUBS_READ_PREFETCH_COUNT, EVENTHUBS_READ_RECEIVER_TIMEOUT, EVENTHUBS_READ_SAS_KEY, EVENTHUBS_READ_SAS_KEY_NAME, EVENTHUBS_THREAD_POOL_SIZE, EVENTHUBS_WRITE_EVENT_HUB, EVENTHUBS_WRITE_SAS_KEY, EVENTHUBS_WRITE_SAS_KEY_NAME}
+import com.hurence.logisland.stream.spark.structured.provider.AzureEventHubsStructuredStreamProviderService._
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.eventhubs.{ConnectionStringBuilder, EventHubsConf, EventPosition}
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -38,7 +42,9 @@ import org.apache.spark.sql.{Dataset, SparkSession}
   * https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/structured-streaming-eventhubs-integration.md
   */
 @CapabilityDescription("Provides a ways to use azure event hubs as input or output in StructuredStream streams")
-class AzureEventHubsStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
+class AzureEventHubsStructuredStreamProviderService extends AbstractControllerService
+  with StructuredStreamProviderServiceReader
+  with StructuredStreamProviderServiceWriter {
 
   var namespace : String = null
   var readPositionString: String = null
@@ -54,6 +60,11 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
   var writeSasKey : String = null
 
   var properties : Map[String, Any] = Map[String, Any]()
+
+  var readValueSerializer: RecordSerializer = null
+  var writeValueSerializer: RecordSerializer = null
+  var writeKeySerializer: RecordSerializer = null
+
 
   @OnEnabled
   @throws[InitializationException]
@@ -172,7 +183,16 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
           }
           writeSasKey = context.getPropertyValue(EVENTHUBS_WRITE_SAS_KEY).asString()
         }
+        readValueSerializer = SerializerProvider.getSerializer(
+          context.getPropertyValue(READ_VALUE_SERIALIZER).asString,
+          context.getPropertyValue(AVRO_READ_VALUE_SCHEMA).asString)
 
+        writeValueSerializer = SerializerProvider.getSerializer(
+          context.getPropertyValue(WRITE_VALUE_SERIALIZER).asString,
+          context.getPropertyValue(AVRO_WRITE_VALUE_SCHEMA).asString)
+
+        writeKeySerializer = SerializerProvider.getSerializer(
+          context.getPropertyValue(WRITE_KEY_SERIALIZER).asString, null)
       } catch {
         case e: Exception =>
           throw new InitializationException(e)
@@ -203,6 +223,11 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     descriptors.add(EVENTHUBS_WRITE_EVENT_HUB)
     descriptors.add(EVENTHUBS_WRITE_SAS_KEY_NAME)
     descriptors.add(EVENTHUBS_WRITE_SAS_KEY)
+    descriptors.add(READ_VALUE_SERIALIZER)
+    descriptors.add(AVRO_READ_VALUE_SCHEMA)
+    descriptors.add(WRITE_VALUE_SERIALIZER)
+    descriptors.add(AVRO_WRITE_VALUE_SCHEMA)
+    descriptors.add(WRITE_KEY_SERIALIZER)
     Collections.unmodifiableList(descriptors)
   }
 
@@ -286,10 +311,9 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     * create a streaming DataFrame that represents data received
     *
     * @param spark
-    * @param streamContext
     * @return DataFrame currently loaded
     */
-  override def read(spark: SparkSession, streamContext: StreamContext) = {
+  override def read(spark: SparkSession) = {
     import spark.implicits._
 
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
@@ -307,29 +331,30 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     val options = eventHubsConf.toMap
     val optionsString = options.toString()
 
-    logger.info(s"Starting azure event hubs structured stream on event hub $readEventHub in $namespace namespace with configuration:\n$optionsString")
+    getLogger.info(s"Starting azure event hubs structured stream on event hub $readEventHub in $namespace namespace with configuration:\n$optionsString")
     val df = spark.readStream
       .format("eventhubs")
       .options(options)
       .load()
       .selectExpr("CAST(offset AS STRING)", "CAST(body AS BINARY)")
       .as[(String, Array[Byte])]
-      .map(r => {
-        new StandardRecord(readEventHub)
-          .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
-          .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
+      .flatMap(r => {
+        readValueSerializer match {
+          case sr: NoopSerializer => Some(new StandardRecord(readEventHub)
+            .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
+            .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2))
+          case _ => SerializingTool.deserializeRecords(readValueSerializer, r._2)
+        }
       })
-
     df
   }
 
   /**
     * create a streaming DataFrame that represents data received
     *
-    * @param streamContext
     * @return DataFrame currently loaded
     */
-  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext) = {
+  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) = {
 
     import df.sparkSession.implicits._
 
@@ -343,23 +368,64 @@ class AzureEventHubsStructuredStreamProviderService extends AbstractControllerSe
     val eventHubsConf = EventHubsConf(connectionString)
     applyConfig(eventHubsConf, false)
 
-    var checkpointLocation : String = "checkpoints"
-    if (GlobalOptions.checkpointLocation != null) {
-      checkpointLocation = GlobalOptions.checkpointLocation
-    }
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
-    logger.info(s"Starting azure event hubs structured stream to event hub $writeEventHub in " +
-      s"$namespace namespace with checkpointLocation $checkpointLocation")
+    getLogger.info(s"Starting azure event hubs structured stream to event hub $writeEventHub in " +
+      s"$namespace namespace")
 
     // Write key-value data from a DataFrame to a specific event hub specified in an option
-    df.map(r => {
-      (r.getField(FieldDictionary.RECORD_KEY).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
+    df.mapPartitions(record => record.map(record => SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)))
+      .map(r => {
+          (r.getField(FieldDictionary.RECORD_KEY).asString(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
     })
-      .as[(String, Array[Byte])]
-      .toDF("partitionKey", "body")
-      .writeStream
-      .format("eventhubs")
-      .options(eventHubsConf.toMap)
-      .option("checkpointLocation", checkpointLocation)
+    .as[(String, Array[Byte])]
+    .toDF("partitionKey", "body")
+    .writeStream
+    .format("eventhubs")
+    .options(eventHubsConf.toMap)
   }
+
+}
+
+object AzureEventHubsStructuredStreamProviderService {
+  val READ_VALUE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("read.value.serializer")
+    .description("the serializer to use to deserialize value of topic messages as record")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+    .defaultValue(NO_SERIALIZER.getValue)
+    .build
+
+  val AVRO_READ_VALUE_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("read.value.schema")
+    .description("the avro schema definition")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val WRITE_VALUE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("write.value.serializer")
+    .description("the serializer to use to serialize records into value topic messages")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+    .defaultValue(NO_SERIALIZER.getValue)
+    .build
+
+  val AVRO_WRITE_VALUE_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("write.value.schema")
+    .description("the avro schema definition")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val WRITE_KEY_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("write.key.serializer")
+    .description("The key serializer to use")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+    .defaultValue(NO_SERIALIZER.getValue)
+    .build
 }

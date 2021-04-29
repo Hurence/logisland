@@ -81,7 +81,7 @@ public class LogislandRepackagerMojo extends AbstractMojo {
                             .map(File::getName)
                             .toArray(a -> new String[a]),
                     exportedBaseClasses);
-            project.getArtifact().setFile(file);
+//            project.getArtifact().setFile(file);
         } catch (Exception e) {
             throw new MojoFailureException("Logisland repackager failed", e);
         }
@@ -90,7 +90,7 @@ public class LogislandRepackagerMojo extends AbstractMojo {
     }
 
     private File getTargetFile() {
-        return new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + "."
+        return new File(project.getBuild().getDirectory(), project.getBuild().getFinalName()  + "-repackaged" + "."
                 + this.project.getArtifact().getArtifactHandler().getExtension());
     }
 }

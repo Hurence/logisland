@@ -28,7 +28,6 @@ import java.util.List;
 public class StandardStreamContext extends AbstractConfiguredComponent implements StreamContext {
 
     private final List<ProcessContext> processContexts = new ArrayList<>();
-    private final Instant creationDate = Instant.now();
 
     public StandardStreamContext(final RecordStream recordStream, final String id) {
         super(recordStream, id);
@@ -86,9 +85,18 @@ public class StandardStreamContext extends AbstractConfiguredComponent implement
     }
 
     @Override
-    public void verifyModifiable() throws IllegalStateException {
-
+    public boolean isValid(boolean strictCheck) {
+        boolean streamValid = super.isValid(strictCheck);
+        if (!streamValid) {
+            getLogger().error("conf of stream is not valid !");
+        }
+        boolean processorsValid = true;
+        for (final ProcessContext processContext : processContexts) {
+            if (!processContext.isValid(strictCheck)) {
+                processorsValid = false;
+            }
+        }
+        return streamValid && processorsValid;
     }
-
 
 }

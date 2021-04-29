@@ -26,8 +26,8 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -521,6 +521,13 @@ abstract public class SolrClientService extends AbstractControllerService implem
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
+    }
+
+
+
+    @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        throw new UnsupportedOperationException("not yet supported for SolrClientService");
     }
 
     @Override

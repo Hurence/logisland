@@ -106,6 +106,16 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+        <dependency>
+             <groupId>io.confluent</groupId>
+             <artifactId>kafka-schema-registry-client</artifactId>
+            <version>5.3.0</version>
+        </dependency>
         <!-- Needed for test tools -->
         <dependency>
             <groupId>junit</groupId>
@@ -113,6 +123,7 @@
             <version>4.12</version>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -172,6 +183,7 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
+<!--
                             <relocations>
                                 <relocation>
                                     <pattern>org.apache.avro</pattern>
@@ -179,6 +191,7 @@
                                 </relocation>
 
                             </relocations>
+-->
 
                         </configuration>
                     </execution>

@@ -25,6 +25,7 @@ public class SerializerProvider {
 
     private static ComponentLog logger = new StandardComponentLogger("serializerProvider", SerializerProvider.class);
     private static String AVRO_SERIALIZER = AvroSerializer.class.getName();
+    private static String CONFLUENT_SERIALIZER = ConfluentSerializer.class.getName();
     private static String JSON_SERIALIZER = JsonSerializer.class.getName();
     private static String EXTENDED_JSON_SERIALIZER = ExtendedJsonSerializer.class.getName();
 
@@ -50,6 +51,8 @@ public class SerializerProvider {
                 Schema.Parser parser = new Schema.Parser();
                 Schema schema = parser.parse(schemaContent);
                 return new AvroSerializer(schema);
+            } else if (inSerializerClass.equals(CONFLUENT_SERIALIZER)) {
+                return new ConfluentSerializer(schemaContent);
             } else if (inSerializerClass.equals(JSON_SERIALIZER)) {
                 return new JsonSerializer();
             } else if (inSerializerClass.equals(EXTENDED_JSON_SERIALIZER)) {

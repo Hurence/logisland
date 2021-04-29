@@ -31,6 +31,7 @@
 package com.hurence.logisland.stream.spark.structured.provider
 
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.sql.Timestamp
 import java.util
 import java.util.Collections
@@ -40,16 +41,20 @@ import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
-import com.hurence.logisland.stream.StreamContext
+import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService.{AVRO_READ_VALUE_SCHEMA, AVRO_WRITE_VALUE_SCHEMA, READ_VALUE_SERIALIZER, WRITE_KEY_SERIALIZER, WRITE_VALUE_SERIALIZER}
+import com.hurence.logisland.stream.spark.structured.provider.MqttProperties.{MQTT_BROKER_URL, MQTT_CLEAN_SESSION, MQTT_CLIENTID, MQTT_CONNECTION_TIMEOUT, MQTT_KEEP_ALIVE, MQTT_PASSWORD, MQTT_PERSISTENCE, MQTT_QOS, MQTT_TOPIC, MQTT_USERNAME, MQTT_VERSION}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.streaming.DataStreamWriter
+import org.apache.spark.sql.streaming.StreamingQuery
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 @CapabilityDescription("Provide a ways to use Mqtt a input or output in StructuredStream streams")
-class MQTTStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
-
+class MQTTStructuredStreamProviderService extends AbstractControllerService
+  with StructuredStreamProviderServiceReader
+  with StructuredStreamProviderServiceWriter {
 
     var brokerUrl = ""
     var persistence = ""
@@ -62,6 +67,10 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
     var keepAlive = 30000
     var mqttVersion = "3.1.1"
     var topic = ""
+
+    var readValueSerializer: RecordSerializer = null
+    var writeValueSerializer: RecordSerializer = null
+    var writeKeySerializer: RecordSerializer = null
 
     @OnEnabled
     @throws[InitializationException]
@@ -82,6 +91,16 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
                 keepAlive = context.getPropertyValue(MQTT_KEEP_ALIVE).asInteger().intValue()
                 mqttVersion = context.getPropertyValue(MQTT_VERSION).asString
                 topic = context.getPropertyValue(MQTT_TOPIC).asString
+                readValueSerializer = SerializerProvider.getSerializer(
+                    context.getPropertyValue(READ_VALUE_SERIALIZER).asString,
+                    context.getPropertyValue(AVRO_READ_VALUE_SCHEMA).asString)
+
+                writeValueSerializer = SerializerProvider.getSerializer(
+                    context.getPropertyValue(WRITE_VALUE_SERIALIZER).asString,
+                    context.getPropertyValue(AVRO_WRITE_VALUE_SCHEMA).asString)
+
+                writeKeySerializer = SerializerProvider.getSerializer(
+                    context.getPropertyValue(WRITE_KEY_SERIALIZER).asString, null)
             } catch {
                 case e: Exception =>
                     throw new InitializationException(e)
@@ -108,6 +127,11 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
         descriptors.add(MQTT_USERNAME)
         descriptors.add(MQTT_QOS)
         descriptors.add(MQTT_TOPIC)
+        descriptors.add(READ_VALUE_SERIALIZER)
+        descriptors.add(AVRO_READ_VALUE_SCHEMA)
+        descriptors.add(WRITE_VALUE_SERIALIZER)
+        descriptors.add(AVRO_WRITE_VALUE_SCHEMA)
+        descriptors.add(WRITE_KEY_SERIALIZER)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -115,10 +139,9 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
       * create a streaming DataFrame that represents data received
       *
       * @param spark
-      * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def read(spark: SparkSession, streamContext: StreamContext) = {
+    override def read(spark: SparkSession) = {
         import spark.implicits._
         implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
@@ -137,27 +160,29 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
             .option("mqttVersion", mqttVersion)
             .load(brokerUrl)
             .as[(String, Array[Byte], Timestamp)]
-            .map(r => {
-                new StandardRecord("kura_metric")
-                    .setTime(r._3)
+          .flatMap(r => {
+              readValueSerializer match {
+                  case sr: NoopSerializer => Some(new StandardRecord("kura_metric")
+                    .setField(FieldDictionary.RECORD_KEY, FieldType.STRING, r._1)
                     .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
-                    .setField(FieldDictionary.RECORD_NAME, FieldType.STRING, r._1)
-            })
-
+                    .setTime(r._3))
+                  case _ => SerializingTool.deserializeRecords(readValueSerializer, r._2)
+              }
+          })
     }
-
 
     /**
       * create a streaming DataFrame that represents data received
       *
-      * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) = {
 
+        implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
+        df.mapPartitions(record => record.map(record => SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)))
         // Create DataFrame representing the stream of input lines from connection to mqtt server
-        df.writeStream
+            .writeStream
             .format("org.apache.bahir.sql.streaming.mqtt.MQTTStreamSourceProvider")
             .option("topic", topic)
             .option("persistence", persistence)
@@ -169,6 +194,47 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
             .option("connectionTimeout", connectionTimeout)
             .option("keepAlive", keepAlive)
             .option("mqttVersion", mqttVersion)
-
     }
+}
+object MQTTStructuredStreamProviderService {
+    val READ_VALUE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+      .name("read.value.serializer")
+      .description("the serializer to use to deserialize value of topic messages as record")
+      .required(true)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+      .defaultValue(NO_SERIALIZER.getValue)
+      .build
+
+    val AVRO_READ_VALUE_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
+      .name("read.value.schema")
+      .description("the avro schema definition")
+      .required(false)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .build
+
+    val WRITE_VALUE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+      .name("write.value.serializer")
+      .description("the serializer to use to serialize records into value topic messages")
+      .required(true)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+      .defaultValue(NO_SERIALIZER.getValue)
+      .build
+
+    val AVRO_WRITE_VALUE_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
+      .name("write.value.schema")
+      .description("the avro schema definition")
+      .required(false)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .build
+
+    val WRITE_KEY_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+      .name("write.key.serializer")
+      .description("The key serializer to use")
+      .required(true)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+      .defaultValue(NO_SERIALIZER.getValue)
+      .build
 }

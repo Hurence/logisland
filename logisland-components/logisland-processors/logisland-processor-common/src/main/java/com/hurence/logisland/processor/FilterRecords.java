@@ -23,7 +23,7 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +87,7 @@ public class FilterRecords extends AbstractProcessor {
     private final Set<PropertyDescriptor> dynamicMethodProperties = new HashSet<>();
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
         if (context.getPropertyValue(FIELD_NAME).isSet() && !context.getPropertyValue(FIELD_VALUE).isSet()) {
             validationResults.add(
@@ -213,7 +213,7 @@ public class FilterRecords extends AbstractProcessor {
     }
 
 
-    private boolean noDynamicProps(ValidationContext context) {
+    private boolean noDynamicProps(Configuration context) {
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
                 continue;

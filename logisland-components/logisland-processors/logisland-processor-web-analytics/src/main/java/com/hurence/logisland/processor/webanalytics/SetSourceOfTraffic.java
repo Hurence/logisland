@@ -25,10 +25,10 @@ import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecordBuilder;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.exception.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.collections.map.HashedMap;
@@ -49,7 +49,7 @@ import static com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic.*;
         "To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available\n" +
         "i-e: **" + PROP_UTM_SOURCE + "**, **" + PROP_UTM_MEDIUM + "**, **" + PROP_UTM_CAMPAIGN + "**, **" + PROP_UTM_CONTENT + "**, **" + PROP_UTM_TERM + "**)\n" +
         ", the referer (**" + PROP_REFERER + "** property) and the first visited page of the session (**" + PROP_FIRST_VISITED_PAGE + "** property).\n" +
-        "By default the source of traffic information are placed in a flat structure (specified by the **" + PROP_SOURCE_OF_TRAFFIC_SUFFIX + "** property\n" +
+        "By default the source of traffic information are placed in a flat structure (specified by the **" + PROP_SOURCE_OF_TRAFFIC_PREFIX + "** property\n" +
         "with a default value of " + SOURCE_OF_TRAFFIC_SUFFIX_NAME + "). To work properly the SetSourceOfTraffic processor needs to have access to an \n" +
         "Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **" + PROP_ES_INDEX + "** property) " +
         "should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field " +
@@ -72,7 +72,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
     protected static final String PROP_UTM_TERM = "utm_term.field";
     protected static final String PROP_REFERER = "referer.field";
     protected static final String PROP_FIRST_VISITED_PAGE = "first.visited.page.field";
-    protected static final String PROP_SOURCE_OF_TRAFFIC_SUFFIX = "source_of_traffic.suffix";
+    protected static final String PROP_SOURCE_OF_TRAFFIC_PREFIX = "source_of_traffic.prefix";
     protected static final String PROP_DEBUG = "debug";
     protected static final String DEFAULT_CACHE_VALIDITY_PERIOD = "0";
     protected static final String SOURCE_OF_TRAFFIC_SUFFIX_NAME = "source_of_traffic";
@@ -207,9 +207,9 @@ public class SetSourceOfTraffic extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    private static final PropertyDescriptor SOURCE_OF_TRAFFIC_SUFFIX_FIELD = new PropertyDescriptor.Builder()
-            .name(PROP_SOURCE_OF_TRAFFIC_SUFFIX)
-            .description("Suffix for the source of the traffic related fields")
+    private static final PropertyDescriptor SOURCE_OF_TRAFFIC_PREFIX_FIELD = new PropertyDescriptor.Builder()
+            .name(PROP_SOURCE_OF_TRAFFIC_PREFIX)
+            .description("Prefix for the source of the traffic related fields")
             .required(false)
             .defaultValue(SOURCE_OF_TRAFFIC_SUFFIX_NAME)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -279,7 +279,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
         descriptors.add(UTM_CAMPAIGN_FIELD);
         descriptors.add(UTM_CONTENT_FIELD);
         descriptors.add(UTM_TERM_FIELD);
-        descriptors.add(SOURCE_OF_TRAFFIC_SUFFIX_FIELD);
+        descriptors.add(SOURCE_OF_TRAFFIC_PREFIX_FIELD);
         descriptors.add(HIERARCHICAL);
         descriptors.add(ELASTICSEARCH_CLIENT_SERVICE);
         descriptors.add(CONFIG_CACHE_SERVICE);
@@ -367,7 +367,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
         final String utm_content_field = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
         final String utm_term_field = context.getPropertyValue(UTM_TERM_FIELD).asString();
         final String first_visited_page_field = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
-        final String SOURCE_OF_TRAFFIC_SUFFIX = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
+        final String SOURCE_OF_TRAFFIC_PREFIX = context.getPropertyValue(SOURCE_OF_TRAFFIC_PREFIX_FIELD).asString();
         final String FLAT_SEPARATOR = "_";
         final String referer_field = context.getPropertyValue(REFERER_FIELD).asString();
         final boolean hierarchical = context.getPropertyValue(HIERARCHICAL).asBoolean();
@@ -464,11 +464,11 @@ public class SetSourceOfTraffic extends AbstractProcessor {
             sourceOfTraffic.setCampaign(DIRECT_TRAFFIC);
         }
         if (hierarchical) {
-            record.setField(SOURCE_OF_TRAFFIC_SUFFIX, FieldType.MAP, sourceOfTraffic.getSourceOfTrafficMap());
+            record.setField(SOURCE_OF_TRAFFIC_PREFIX, FieldType.MAP, sourceOfTraffic.getSourceOfTrafficMap());
         } else {
             Map<String, Object> sot = sourceOfTraffic.getSourceOfTrafficMap();
             sot.forEach((k, v) -> {
-                record.setField(SOURCE_OF_TRAFFIC_SUFFIX + FLAT_SEPARATOR + k, supportedSourceOfTrafficFieldNames.get(k), v);
+                record.setField(SOURCE_OF_TRAFFIC_PREFIX + FLAT_SEPARATOR + k, supportedSourceOfTrafficFieldNames.get(k), v);
             });
         }
     }
@@ -534,7 +534,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
     }
 
     private boolean has_domain_flag(String domain, String flag, ProcessContext context, Record record) {
-        final String source_of_traffic_suffix = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
+        final String source_of_traffic_prefix = context.getPropertyValue(SOURCE_OF_TRAFFIC_PREFIX_FIELD).asString();
         final long cacheValidityPeriodSec = context.getPropertyValue(CONFIG_CACHE_VALIDITY_TIMEOUT).asLong();
         boolean has_flag = false;
         /**
@@ -630,7 +630,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
 
         if (debug) {
             // Add some debug fields
-            record.setField(source_of_traffic_suffix + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
+            record.setField(source_of_traffic_prefix + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
         }
         return has_flag;
     }

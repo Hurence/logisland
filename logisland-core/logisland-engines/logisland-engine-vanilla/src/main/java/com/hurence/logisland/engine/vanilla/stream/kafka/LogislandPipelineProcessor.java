@@ -72,6 +72,7 @@ public class LogislandPipelineProcessor extends AbstractProcessor<byte[], byte[]
                     processContext.setControllerServiceLookup(controllerServiceLookup);
                 }
                 processContext.getProcessor().init(processContext);
+                processContext.getProcessor().start();
             }
             //now init serializers
             if (streamContext.getPropertyValue(StreamProperties.READ_TOPICS_SERIALIZER).asString().equals(StreamProperties.NO_SERIALIZER.getValue())) {

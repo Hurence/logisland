@@ -1,0 +1,30 @@
+
+@startuml
+participant session_processor as P1
+participant es_service as ES_S
+database ES as ES_D
+
+P1 -> ES_S: get all last sub-sessions id for each sessions processed
+ES_S -> ES_D: multiGet to mapping indice
+ES_D --> ES_S: response
+ES_S --> P1: response
+
+P1 -> ES_S: get all concerned sub-sessions
+ES_S -> ES_D: multiGet to sessions indices
+ES_D --> ES_S: response
+ES_S --> P1: response
+
+P1 -> P1: Applique tous les évènements a leur session correspondante. Ce qui peut modifier et créer de nouvelle sessions
+
+P1 -> ES_S: save all input events (sessionId potentially modified)
+ES_S -> ES_D: bulkput et bulkFlush of events
+ES_D --> ES_S: response
+ES_S --> P1: response
+
+
+P1 -> bulkPut_processor: give the sessions
+bulkPut_processor -> ES_S: bulkput et bulkFlush of sessions
+ES_S -> ES_D: bulkput et bulkFlush of sessions
+ES_D --> ES_S: response
+ES_S --> bulkPut_processor: response
+@enduml

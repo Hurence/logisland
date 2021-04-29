@@ -55,7 +55,7 @@ public class RecordStreamProcessingDebuggerTest {
         try {
 
             // instanciate engine and all the processor from the config
-            Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(engineConf);
+            Optional<EngineContext> engineInstance = ComponentFactory.buildAndSetUpEngineContext(engineConf);
 
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();

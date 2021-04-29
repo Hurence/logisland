@@ -34,39 +34,25 @@ import com.hurence.logisland.service.hbase.scan.ResultHandler;
 import com.hurence.logisland.service.hbase.security.KerberosProperties;
 import com.hurence.logisland.service.hbase.security.KerberosTicketRenewer;
 import com.hurence.logisland.service.hbase.security.SecurityUtil;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Admin;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.ParseFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.security.UserGroupInformation;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Category(ComponentCategory.DATASTORE)
@@ -102,7 +88,7 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
     public void init(ControllerServiceInitializationContext context) throws InitializationException  {
         super.init(context);
         try {
-            kerberosConfigFile = context.getKerberosConfigurationFile();
+            kerberosConfigFile = getKerberosConfigurationFile();
             kerberosProperties = getKerberosProperties(kerberosConfigFile);
 
             this.connection = createConnection(context);
@@ -123,6 +109,12 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
         }catch (Exception e){
             throw new InitializationException(e);
         }
+    }
+
+
+    private File getKerberosConfigurationFile() {
+        //TODO to support kerberos
+        return null;
     }
 
     protected KerberosProperties getKerberosProperties(File kerberosConfigFile) {
@@ -153,12 +145,12 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
     }
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
-        boolean confFileProvided = validationContext.getPropertyValue(HADOOP_CONF_FILES).isSet();
-        boolean zkQuorumProvided = validationContext.getPropertyValue(ZOOKEEPER_QUORUM).isSet();
-        boolean zkPortProvided = validationContext.getPropertyValue(ZOOKEEPER_CLIENT_PORT).isSet();
-        boolean znodeParentProvided = validationContext.getPropertyValue(ZOOKEEPER_ZNODE_PARENT).isSet();
-        boolean retriesProvided = validationContext.getPropertyValue(HBASE_CLIENT_RETRIES).isSet();
+    protected Collection<ValidationResult> customValidate(Configuration configuration) {
+        boolean confFileProvided = configuration.getPropertyValue(HADOOP_CONF_FILES).isSet();
+        boolean zkQuorumProvided = configuration.getPropertyValue(ZOOKEEPER_QUORUM).isSet();
+        boolean zkPortProvided = configuration.getPropertyValue(ZOOKEEPER_CLIENT_PORT).isSet();
+        boolean znodeParentProvided = configuration.getPropertyValue(ZOOKEEPER_ZNODE_PARENT).isSet();
+        boolean retriesProvided = configuration.getPropertyValue(HBASE_CLIENT_RETRIES).isSet();
 
         final List<ValidationResult> problems = new ArrayList<>();
 
@@ -172,7 +164,7 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
         }
 
         if (confFileProvided) {
-            final String configFiles = validationContext.getPropertyValue(HADOOP_CONF_FILES).asString();
+            final String configFiles = configuration.getPropertyValue(HADOOP_CONF_FILES).asString();
             ValidationResources resources = validationResourceHolder.get();
 
             // if no resources in the holder, or if the holder has different resources loaded,
@@ -183,9 +175,9 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
                 validationResourceHolder.set(resources);
             }
 
-            final Configuration hbaseConfig = resources.getConfiguration();
-            final String principal = validationContext.getPropertyValue(kerberosProperties.getKerberosPrincipal()).asString();
-            final String keytab = validationContext.getPropertyValue(kerberosProperties.getKerberosKeytab()).asString();
+            final org.apache.hadoop.conf.Configuration hbaseConfig = resources.getConfiguration();
+            final String principal = configuration.getPropertyValue(kerberosProperties.getKerberosPrincipal()).asString();
+            final String keytab = configuration.getPropertyValue(kerberosProperties.getKerberosKeytab()).asString();
 
             problems.addAll(KerberosProperties.validatePrincipalAndKeytab(
                     this.getClass().getSimpleName(), hbaseConfig, principal, keytab, getLogger()));
@@ -197,7 +189,7 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
 
     protected Connection createConnection(final ControllerServiceInitializationContext context) throws IOException, InterruptedException {
         final String configFiles = context.getPropertyValue(HADOOP_CONF_FILES).asString();
-        final Configuration hbaseConfig = getConfigurationFromFiles(configFiles);
+        final org.apache.hadoop.conf.Configuration hbaseConfig = getConfigurationFromFiles(configFiles);
 
         // override with any properties that are provided
         if (context.getPropertyValue(ZOOKEEPER_QUORUM).isSet()) {
@@ -243,8 +235,8 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
 
     }
 
-    protected Configuration getConfigurationFromFiles(final String configFiles) {
-        final Configuration hbaseConfig = HBaseConfiguration.create();
+    protected org.apache.hadoop.conf.Configuration getConfigurationFromFiles(final String configFiles) {
+        final org.apache.hadoop.conf.Configuration hbaseConfig = HBaseConfiguration.create();
         if (StringUtils.isNotBlank(configFiles)) {
             for (final String configFile : configFiles.split(",")) {
                 hbaseConfig.addResource(new Path(configFile.trim()));
@@ -447,9 +439,9 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
 
     static protected class ValidationResources {
         private final String configResources;
-        private final Configuration configuration;
+        private final org.apache.hadoop.conf.Configuration configuration;
 
-        public ValidationResources(String configResources, Configuration configuration) {
+        public ValidationResources(String configResources, org.apache.hadoop.conf.Configuration configuration) {
             this.configResources = configResources;
             this.configuration = configuration;
         }
@@ -458,7 +450,7 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
             return configResources;
         }
 
-        public Configuration getConfiguration() {
+        public org.apache.hadoop.conf.Configuration getConfiguration() {
             return configuration;
         }
     }

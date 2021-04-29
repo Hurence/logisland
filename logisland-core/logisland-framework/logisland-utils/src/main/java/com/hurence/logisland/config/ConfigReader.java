@@ -30,7 +30,7 @@ import java.nio.file.Paths;
 public class ConfigReader {
 
 
-    static String readFile(String path, Charset encoding)
+    private static String readFile(String path, Charset encoding)
             throws IOException {
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         return new String(encoded, encoding);
@@ -43,7 +43,7 @@ public class ConfigReader {
      * @return a LogislandSessionConfiguration
      * @throws Exception
      */
-    public static LogislandConfiguration loadConfig(String configFilePath) throws Exception {
+    public static LogislandConfiguration loadConfig(String configFilePath) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory()
                 .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION));

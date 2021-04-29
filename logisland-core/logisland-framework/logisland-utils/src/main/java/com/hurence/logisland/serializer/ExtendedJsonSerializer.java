@@ -163,7 +163,6 @@ public class ExtendedJsonSerializer implements RecordSerializer {
         } catch (IOException e) {
             logger.warn(e.toString());
         }
-
     }
 
     protected Map<String, Object> createJsonObject(Record record) {

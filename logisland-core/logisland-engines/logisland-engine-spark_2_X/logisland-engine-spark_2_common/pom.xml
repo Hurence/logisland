@@ -49,6 +49,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <scope>compile</scope>
             </dependency>
 
+
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka_${scala.binary.version}</artifactId>
@@ -91,6 +92,16 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
+                <exclusions>
+<!--                    Conflicting with kafka 0.10 and spark 2.4 which use
+                   <groupId>org.lz4</groupId>
+                    <artifactId>lz4-java</artifactId>
+                    -->
+                    <exclusion>
+                        <groupId>net.jpountz.lz4</groupId>
+                        <artifactId>lz4</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -112,6 +123,16 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <version>${kafka.version}</version>
                 <classifier>test</classifier>
                 <scope>test</scope>
+                <exclusions>
+                    <!--                    Conflicting with kafka 0.10 and spark 2.4 which use
+                                       <groupId>org.lz4</groupId>
+                                        <artifactId>lz4-java</artifactId>
+                                        -->
+                    <exclusion>
+                        <groupId>net.jpountz.lz4</groupId>
+                        <artifactId>lz4</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.scalatest</groupId>
@@ -176,7 +197,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming_${scala.binary.version}</artifactId>
             <scope>provided</scope>
-
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -380,7 +400,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
     <build>

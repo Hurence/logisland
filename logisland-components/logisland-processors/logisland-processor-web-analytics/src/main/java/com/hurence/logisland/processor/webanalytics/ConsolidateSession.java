@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.webanalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
+import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -88,6 +89,8 @@ import java.util.stream.Collectors;
                 + " - visitedpage.field:        Property name containing the page visited by the customer (default: location)."
                 + " - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)"
 )
+@Deprecated()
+@SeeAlso(IncrementalWebSession.class)
 @ExtraDetailFile("./details/ConsolidateSession-Detail.rst")
 public class ConsolidateSession extends AbstractProcessor {
 

@@ -16,6 +16,7 @@
 package com.hurence.logisland.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -37,7 +38,7 @@ public class StreamConfiguration extends AbstractComponentConfiguration {
     }
 
     public List<ProcessorConfiguration> getProcessorConfigurations() {
-        return processorConfigurations;
+        return processorConfigurations == null ? Collections.emptyList() : processorConfigurations;
     }
 
     public void addProcessorConfiguration(ProcessorConfiguration processorConfiguration) {

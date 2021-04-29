@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 
@@ -35,20 +34,13 @@ import java.util.stream.Collectors;
  */
 public class StandardControllerServiceLookup implements ControllerServiceLookup, Serializable {
 
-    private final Map<String, ControllerService> controllerServiceMap = new ConcurrentHashMap<>();
-
-    private final Collection<ControllerServiceConfiguration> configurations;
-
     private static final Logger logger = LoggerFactory.getLogger(StandardControllerServiceLookup.class);
 
-
-    private static final AtomicLong currentId = new AtomicLong(0);
+    private final Map<String, ControllerService> controllerServiceMap = new ConcurrentHashMap<>();
+    private final Collection<ControllerServiceConfiguration> configurations;
 
     public StandardControllerServiceLookup(Collection<ControllerServiceConfiguration> configurations) {
-
         this.configurations = configurations;
-
-
     }
 
     @Override
@@ -62,8 +54,6 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
                     .filter(conf -> serviceIdentifier.equals(conf.getControllerService()))
                     .forEach(conf -> {
                         try {
-
-
                             ControllerService service = ComponentFactory.loadComponent(conf.getComponent());
                             logger.info("loading controller service {}", new Object[]{conf.getComponent()});
                             ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, conf.getControllerService());

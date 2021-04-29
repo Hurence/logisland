@@ -21,7 +21,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.InvalidJsonException;
@@ -92,7 +92,7 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
     private transient final ConcurrentMap<String, JsonPath> cachedJsonPathMap = new ConcurrentHashMap<>();
 
     @Override
-    protected Collection<ValidationResult> customValidate(final ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(final Configuration context) {
         final List<ValidationResult> results = new ArrayList<>(super.customValidate(context));
 
         int jsonPathCount = 0;

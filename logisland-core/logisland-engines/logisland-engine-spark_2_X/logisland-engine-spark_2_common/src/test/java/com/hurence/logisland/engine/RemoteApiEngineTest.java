@@ -18,18 +18,12 @@ package com.hurence.logisland.engine;
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.LogislandConfiguration;
-import com.hurence.logisland.util.spark.SparkUtils;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 public class RemoteApiEngineTest {
@@ -52,7 +46,7 @@ public class RemoteApiEngineTest {
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
+            engineInstance = ComponentFactory.buildAndSetUpEngineContext(sessionConf.getEngine());
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
 

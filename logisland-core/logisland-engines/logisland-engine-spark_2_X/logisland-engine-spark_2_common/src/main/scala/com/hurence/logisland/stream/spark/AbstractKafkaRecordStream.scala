@@ -13,21 +13,6 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-/**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
 
 package com.hurence.logisland.stream.spark
 
@@ -35,29 +20,34 @@ import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
 
-import com.hurence.logisland.component.PropertyDescriptor
+import com.hurence.logisland.component.{ComponentContext, PropertyDescriptor}
 import com.hurence.logisland.engine.EngineContext
+import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.{DEFAULT_METRICS_TOPIC, ERROR_SERIALIZER, ERROR_TOPICS, INPUT_SERIALIZER, INPUT_TOPICS, KAFKA_ACKS, KAFKA_BATCH_SIZE, KAFKA_LINGER_MS, KAFKA_MANUAL_OFFSET_RESET, KAFKA_METADATA_BROKER_LIST, KAFKA_SASL_KERBEROS_SERVICE_NAME, KAFKA_SECURITY_PROTOCOL, KAFKA_TOPIC_AUTOCREATE, KAFKA_TOPIC_DEFAULT_PARTITIONS, KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR, KAFKA_ZOOKEEPER_QUORUM, OUTPUT_SERIALIZER, OUTPUT_TOPICS,AVRO_SCHEMA_URL,AVRO_SCHEMA_NAME,AVRO_SCHEMA_VERSION}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark._
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
+import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
+import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
 import org.apache.spark.streaming.kafka010.{CanCommitOffsets, KafkaUtils, OffsetRange}
-import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.streaming.{Milliseconds, Seconds, StreamingContext}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -65,18 +55,13 @@ import scala.collection.JavaConversions._
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with SparkRecordStream {
 
-
-  val NONE_TOPIC: String = "none"
   private val logger = LoggerFactory.getLogger(this.getClass)
-  protected var kafkaSink: Broadcast[KafkaSink] = null
-  protected var appName: String = ""
-  @transient protected var ssc: StreamingContext = null
-  protected var streamContext: StreamContext = null
-  protected var engineContext: EngineContext = null
-  protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
+  val NONE_TOPIC: String = "none"
+
+  protected var kafkaSink: Broadcast[KafkaSink] = _
+  protected var sparkStreamContext: SparkStreamContext = _
   protected var needMetricsReset = false
-  protected var securityProtocol = ""
-  protected var saslKbServiceName = ""
+  protected var batchDurationMs: Int = _
 
   override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -84,6 +69,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
     descriptors.add(INPUT_TOPICS)
     descriptors.add(OUTPUT_TOPICS)
     descriptors.add(AVRO_INPUT_SCHEMA)
+    descriptors.add(AVRO_SCHEMA_URL)
     descriptors.add(AVRO_OUTPUT_SCHEMA)
     descriptors.add(INPUT_SERIALIZER)
     descriptors.add(OUTPUT_SERIALIZER)
@@ -105,46 +91,62 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
   }
 
 
-  override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
-    this.appName = appName
-    this.ssc = ssc
-    this.streamContext = streamContext
-    this.engineContext = engineContext
+  override def init(sparkStreamContext: SparkStreamContext) = {
+    super.init(sparkStreamContext.logislandStreamContext)
+    this.sparkStreamContext = sparkStreamContext
+    if (sparkStreamContext.logislandStreamContext
+      .getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).isSet) {
+      this.batchDurationMs = sparkStreamContext.logislandStreamContext
+        .getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger()
+    } else {
+      this.batchDurationMs = sparkStreamContext.defaultBatchDurationMs
+    }
 
   }
 
-  override def getStreamContext(): StreamingContext = this.ssc
+  protected def getCurrentSparkStreamingContext(): StreamingContext = {
+    StreamingContext.getActiveOrCreate(() =>
+      return new StreamingContext(spark.sparkContext, Milliseconds(batchDurationMs))
+    )
+  }
 
+  protected def spark = sparkStreamContext.spark
+
+  protected def sparkContext = sparkStreamContext.spark.sparkContext
+
+  protected def sqlContext = sparkStreamContext.spark.sqlContext
+
+  protected def appName = sparkContext.appName
 
   override def start() = {
-    if (ssc == null)
+    if (spark == null)
       throw new IllegalStateException("stream not initialized")
 
     try {
 
       // Define the Kafka parameters, broker list must be specified
-      val inputTopics = streamContext.getPropertyValue(INPUT_TOPICS).asString.split(",").toSet
-      val outputTopics = streamContext.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
-      val errorTopics = streamContext.getPropertyValue(ERROR_TOPICS).asString.split(",").toSet
+      val inputTopics = sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_TOPICS).asString.split(",").toSet
+      val outputTopics = sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
+      val errorTopics = sparkStreamContext.logislandStreamContext.getPropertyValue(ERROR_TOPICS).asString.split(",").toSet
       val metricsTopics = DEFAULT_METRICS_TOPIC.getValue.split(",").toSet
 
-      val topicAutocreate = streamContext.getPropertyValue(KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
-      val topicDefaultPartitions = streamContext.getPropertyValue(KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
-      val topicDefaultReplicationFactor = streamContext.getPropertyValue(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
-      val brokerList = streamContext.getPropertyValue(KAFKA_METADATA_BROKER_LIST).asString
-      val zkQuorum = streamContext.getPropertyValue(KAFKA_ZOOKEEPER_QUORUM).asString
+      val topicAutocreate = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
+      val topicDefaultPartitions = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
+      val topicDefaultReplicationFactor = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
+      val brokerList = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_METADATA_BROKER_LIST).asString
+      val zkQuorum = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_ZOOKEEPER_QUORUM).asString
 
-      val kafkaBatchSize = streamContext.getPropertyValue(KAFKA_BATCH_SIZE).asString
-      val kafkaLingerMs = streamContext.getPropertyValue(KAFKA_LINGER_MS).asString
-      val kafkaAcks = streamContext.getPropertyValue(KAFKA_ACKS).asString
-      val kafkaOffset = streamContext.getPropertyValue(KAFKA_MANUAL_OFFSET_RESET).asString
+      val kafkaBatchSize = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_BATCH_SIZE).asString
+      val kafkaLingerMs = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_LINGER_MS).asString
+      val kafkaAcks = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_ACKS).asString
+      val kafkaOffset = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_MANUAL_OFFSET_RESET).asString
 
-      securityProtocol = streamContext.getPropertyValue(KAFKA_SECURITY_PROTOCOL).asString
-      saslKbServiceName = streamContext.getPropertyValue(KAFKA_SASL_KERBEROS_SERVICE_NAME).asString()
+      val securityProtocol = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_SECURITY_PROTOCOL).asString
+      val saslKbServiceName = sparkStreamContext.logislandStreamContext.getPropertyValue(KAFKA_SASL_KERBEROS_SERVICE_NAME).asString()
 
       val kafkaSinkParams = Map(
         ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
-        ProducerConfig.CLIENT_ID_CONFIG -> appName,
+        ProducerConfig.CLIENT_ID_CONFIG -> appName,//TODO should be the app name or stream name ?
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getCanonicalName,
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getName,
         "security.protocol" -> securityProtocol,
@@ -156,10 +158,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
         ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
         ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
-      kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
-      controllerServiceLookupSink = ssc.sparkContext.broadcast(
-        ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
-      )
+      kafkaSink = spark.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
 
       // TODO deprecate topic creation here (must be done through the agent)
       if (topicAutocreate) {
@@ -177,7 +176,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
         ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[ByteArrayDeserializer],
         "security.protocol" -> securityProtocol,
         "sasl.kerberos.service.name" -> saslKbServiceName,
-        ConsumerConfig.GROUP_ID_CONFIG -> appName,
+        ConsumerConfig.GROUP_ID_CONFIG -> appName,//TODO should be the app name or stream name ?
         ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "50",
         ConsumerConfig.RETRY_BACKOFF_MS_CONFIG -> "100",
         ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> kafkaOffset,
@@ -187,24 +186,23 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
         ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"*/
       )
 
-
       logger.info(s"starting Kafka direct stream on topics $inputTopics from $kafkaOffset offsets")
       @transient val kafkaStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
-        ssc,
+        getCurrentSparkStreamingContext(),
         PreferConsistent,
         Subscribe[Array[Byte], Array[Byte]](inputTopics, kafkaParams)
       )
 
       // do the parallel processing
 
-      val stream = if (streamContext.getPropertyValue(WINDOW_DURATION).isSet) {
-        if (streamContext.getPropertyValue(SLIDE_DURATION).isSet)
+      val stream = if (sparkStreamContext.logislandStreamContext.getPropertyValue(WINDOW_DURATION).isSet) {
+        if (sparkStreamContext.logislandStreamContext.getPropertyValue(SLIDE_DURATION).isSet)
           kafkaStream.window(
-            Seconds(streamContext.getPropertyValue(WINDOW_DURATION).asLong()),
-            Seconds(streamContext.getPropertyValue(SLIDE_DURATION).asLong())
+            Seconds(sparkStreamContext.logislandStreamContext.getPropertyValue(WINDOW_DURATION).asLong()),
+            Seconds(sparkStreamContext.logislandStreamContext.getPropertyValue(SLIDE_DURATION).asLong())
           )
         else
-          kafkaStream.window(Seconds(streamContext.getPropertyValue(WINDOW_DURATION).asLong()))
+          kafkaStream.window(Seconds(sparkStreamContext.logislandStreamContext.getPropertyValue(WINDOW_DURATION).asLong()))
 
       } else kafkaStream
 
@@ -212,9 +210,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
       stream
         .foreachRDD(rdd => {
 
-          this.streamContext.getProcessContexts().clear();
-          this.streamContext.getProcessContexts().addAll(
-            PipelineConfigurationBroadcastWrapper.getInstance().get(this.streamContext.getIdentifier))
+          this.sparkStreamContext.logislandStreamContext.getProcessContexts().clear();
+          this.sparkStreamContext.logislandStreamContext.getProcessContexts().addAll(
+            PipelineConfigurationBroadcastWrapper.getInstance().get(this.sparkStreamContext.logislandStreamContext.getIdentifier))
 
           if (!rdd.isEmpty()) {
 
@@ -240,11 +238,11 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
               try {
 
                 for (partitionId <- 0 to rdd.getNumPartitions) {
-                  val pipelineMetricPrefix = streamContext.getIdentifier + "." +
+                  val pipelineMetricPrefix = sparkStreamContext.logislandStreamContext.getIdentifier + "." +
                     "partition" + partitionId + "."
                   val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-                  streamContext.getProcessContexts.foreach(processorContext => {
+                  sparkStreamContext.logislandStreamContext.getProcessContexts.foreach(processorContext => {
                     UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getIdentifier + ".processing_time_ms")
                       .time()
                       .stop()
@@ -303,7 +301,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
         val bais = new ByteArrayInputStream(rawEvent.value())
         val deserialized = serializer.deserialize(bais)
         bais.close()
-
         Some(deserialized)
       } catch {
         case t: Throwable =>

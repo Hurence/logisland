@@ -30,6 +30,10 @@
     <name>Web Analytics Processor Plugin</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <test.containers>1.12.2</test.containers>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -75,6 +79,33 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-elasticsearch_7_x-client</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-inmemory-cache</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--Docker-->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${test.containers}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-processor-elasticsearch</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -82,20 +113,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
                 <configuration>
                     <apiArtifacts>
                         <apiArtifact>

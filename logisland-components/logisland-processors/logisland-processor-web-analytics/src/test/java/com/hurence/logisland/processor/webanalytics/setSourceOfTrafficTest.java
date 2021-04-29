@@ -310,7 +310,7 @@ public class setSourceOfTrafficTest {
 
     private TestRunner getTestRunner() throws InitializationException {
 
-        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.webAnalytics.SetSourceOfTraffic");
+        final TestRunner runner = TestRunners.newTestRunner(new SetSourceOfTraffic());
 
         // create the controller service and link it to the test processor
         final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();

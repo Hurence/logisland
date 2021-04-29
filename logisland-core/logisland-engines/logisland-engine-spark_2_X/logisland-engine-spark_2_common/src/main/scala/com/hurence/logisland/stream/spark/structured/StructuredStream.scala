@@ -19,137 +19,226 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
-import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
-import com.hurence.logisland.stream.StreamProperties._
-import com.hurence.logisland.stream.spark.SparkRecordStream
-import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
-import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark._
-import org.apache.spark.broadcast.Broadcast
+import com.hurence.logisland.record.Record
+import com.hurence.logisland.runner.GlobalOptions
+import com.hurence.logisland.stream.AbstractRecordStream
+import com.hurence.logisland.stream.spark.structured.StructuredStream._
+import com.hurence.logisland.stream.spark.structured.provider.{StructuredStreamProviderServiceReader, StructuredStreamProviderServiceWriter}
+import com.hurence.logisland.stream.spark.{SparkRecordStream, SparkStreamContext}
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.{Dataset, SQLContext, SparkSession}
-import org.apache.spark.streaming.StreamingContext
-import org.slf4j.LoggerFactory
+import org.apache.spark.sql.streaming.{GroupStateTimeout, OutputMode}
+import org.apache.spark.sql.{Dataset, SQLContext}
 
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
+  @transient protected var sparkStreamContext: SparkStreamContext = _
+  private var isReady = false
+  private var groupByField: String = _
+  @transient protected var outputMode: OutputMode = _
 
-  protected var provider: StructuredStreamProviderService = _
-
-
-  protected var appName: String = ""
-  @transient protected var ssc: StreamingContext = _
-  @transient protected var streamContext: StreamContext = _
-  protected var engineContext: EngineContext = _
-  protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = _
-  protected var needMetricsReset = false
-
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
 
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-
     descriptors.add(READ_STREAM_SERVICE_PROVIDER)
-    descriptors.add(READ_TOPICS_SERIALIZER)
-    descriptors.add(READ_TOPICS_KEY_SERIALIZER)
     descriptors.add(WRITE_STREAM_SERVICE_PROVIDER)
-    descriptors.add(WRITE_TOPICS_SERIALIZER)
-    descriptors.add(WRITE_TOPICS_KEY_SERIALIZER)
-    descriptors.add(GROUPBY)
-    descriptors.add(STATE_TIMEOUT_MS)
-    descriptors.add(CHUNK_SIZE)
-    descriptors.add(AVRO_INPUT_SCHEMA)
-    descriptors.add(AVRO_OUTPUT_SCHEMA)
-
+    descriptors.add(GROUP_BY_FIELDS)
+//    descriptors.add(STATE_TIMEOUT_DURATION_MS)
+//    descriptors.add(STATE_TIMEOUT_DURATION_MS)
+//    descriptors.add(STATEFULL_OUTPUT_MODE)
     Collections.unmodifiableList(descriptors)
   }
 
-  override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
-    this.appName = appName
-    this.ssc = ssc
-    this.streamContext = streamContext
-    this.engineContext = engineContext
+  override def init(sparkStreamContext: SparkStreamContext) = {
+    super.init(sparkStreamContext.logislandStreamContext)
+    this.sparkStreamContext = sparkStreamContext
+    if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
+      groupByField = context.getPropertyValue(GROUP_BY_FIELDS).asString()
+    }
+//    context.getPropertyValue(STATEFULL_OUTPUT_MODE).asString() match {
+//      case "append" => outputMode = OutputMode.Append()
+//      case "update" => outputMode = OutputMode.Update()
+//      case "complete" => outputMode = OutputMode.Complete()
+//    }
+    isReady = true;
   }
 
-  override def getStreamContext(): StreamingContext = this.ssc
+  private def context = sparkStreamContext.logislandStreamContext
+
+  private def sparkSession = sparkStreamContext.spark
 
   override def start() = {
-    if (ssc == null)
+    if (!isReady)
       throw new IllegalStateException("stream not initialized")
-
     try {
 
-      val pipelineMetricPrefix = streamContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
+      val pipelineMetricPrefix = context.getIdentifier /*+ ".partition" + partitionId*/ + "."
       val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-      controllerServiceLookupSink = ssc.sparkContext.broadcast(
-        ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
-      )
-      val spark = SparkSession.builder()
-        .config(this.ssc.sparkContext.getConf)
-        .getOrCreate()
+      sparkSession.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
 
-      spark.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
-
-
-      val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
-      streamContext.setControllerServiceLookup(controllerServiceLookup)
-
-
-      val readStreamService = streamContext.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
-        .asControllerService()
-        .asInstanceOf[StructuredStreamProviderService]
+      //TODO Je pense que ces deux ligne ne servent a rien
+      val controllerServiceLookup = sparkStreamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
+      context.setControllerServiceLookup(controllerServiceLookup)
 
       //TODO stange way to update streamcontext, should'nt it be broadcasted ?
       // moreover the streamcontext should always be the last updated one in this function for me.
       // If driver wants to change it, it should call setup which would use a broadcast value for example ?
-      // Unfortunately we should not attempt changes before having good unit test so that we do not broke streams
-      // while cleaning streams code... Indeed I am afraid the remote api engines use this strange behaviour here
+      // The remote api engines use this strange behaviour here
       // to change config on the fly when it should use the setup method (maybe using broadcast as well).
       // In this method start, the config should be considered already up to date in my opinion.
-      streamContext.getProcessContexts.clear()
-      streamContext.getProcessContexts.addAll(
-        PipelineConfigurationBroadcastWrapper.getInstance().get(streamContext.getIdentifier))
+      // So currently this stream is not compatible with remoteApi change conf on the fly...
+      // Anyway modification of a stream should be done at engine level !!!! stopping specific stream then init and restarting it with new StreamContext/ ProcessContext
+      sparkStreamContext.logislandStreamContext.getProcessContexts.clear()
+      sparkStreamContext.logislandStreamContext.getProcessContexts.addAll(
+        PipelineConfigurationBroadcastWrapper.getInstance().get(sparkStreamContext.logislandStreamContext.getIdentifier))
 
-      val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)
-
-      val writeStreamService = streamContext.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
+      val readDF = context.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
         .asControllerService()
-        .asInstanceOf[StructuredStreamProviderService]
+        .asInstanceOf[StructuredStreamProviderServiceReader].read(sparkSession)
 
-      // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-      val ds = writeStreamService.save(readDF, controllerServiceLookupSink, streamContext)
+      val transformedInputData: Dataset[Record] = transformInputData(readDF)
+
+      val writerService = context.getPropertyValue(WRITE_STREAM_SERVICE_PROVIDER)
+        .asControllerService()
+        .asInstanceOf[StructuredStreamProviderServiceWriter]
+      val dataStreamWriter = writerService
+        .write(transformedInputData, sparkStreamContext.broadCastedControllerServiceLookupSink)
+
+      var checkpointLocation : String = "checkpoints"
+      if (GlobalOptions.checkpointLocation != null) {
+        checkpointLocation = GlobalOptions.checkpointLocation
+        getLogger.info(s"Checkpoint using checkpointLocation: $checkpointLocation")
+      }
+
+      getLogger.info(s"Starting structured stream sink ${writerService.getIdentifier} from stream ${identifier} with checkpointLocation: $checkpointLocation")
+      dataStreamWriter
+        .option("checkpointLocation", checkpointLocation + "/" + identifier + "/" + writerService.getIdentifier)
+        .queryName(identifier + "#" + writerService.getIdentifier)
+        .start()
+
       pipelineTimerContext.stop()
-
     }
     catch {
       case ex: Throwable =>
-        logger.error("Error while processing the streaming query. ", ex)
+        getLogger.error("Error while processing the streaming query. ", ex)
         throw new IllegalStateException("Error while processing the streaming query", ex)
     }
   }
 
-  override def stop(): Unit
-
-  = {
+  override def stop(): Unit = {
     super.stop()
     //stop the source
-    val thisStream = SQLContext.getOrCreate(getStreamContext().sparkContext).streams.active.find(stream => streamContext.getIdentifier.equals(stream.name));
+
+    val thisStream = SQLContext.getOrCreate(sparkSession.sparkContext).streams.active.find(stream => context.getIdentifier.equals(stream.name));
     if (thisStream.isDefined) {
-      if (!getStreamContext().sparkContext.isStopped && thisStream.get.isActive) {
+      if (!sparkSession.sparkContext.isStopped && thisStream.get.isActive) {
         try {
           thisStream.get.stop()
           thisStream.get.awaitTermination()
         } catch {
-          case ex: Throwable => logger.warn(s"Stream ${streamContext.getIdentifier} may not have been correctly stopped")
+          case ex: Throwable => getLogger.warn(s"Stream ${context.getIdentifier} may not have been correctly stopped")
         }
       }
     } else {
-      logger.warn(s"Unable to find an active streaming query for stream ${streamContext.getIdentifier}")
+      getLogger.warn(s"Unable to find an active streaming query for stream ${context.getIdentifier}")
+    }
+    this.isReady = false
+  }
+
+  def transformInputData(readDF: Dataset[Record]): Dataset[Record] = {
+    implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+    val pipelineMethods = new SparkPipeLineMethods(sparkStreamContext)
+    if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
+      import readDF.sparkSession.implicits._
+      readDF
+        .groupByKey(_.getField(groupByField).asString())
+        .flatMapGroups((key, iterator) => {
+          pipelineMethods.executePipeline(key, iterator)
+        })
+    } else {
+      readDF.mapPartitions(iterator => {
+        pipelineMethods.executePipeline(iterator)
+      })
     }
   }
 }
 
+object StructuredStream {
+  //  StructuredStream props
+  val READ_STREAM_SERVICE_PROVIDER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("read.stream.service.provider")
+    .description("the controller service that gives connection information")
+    .required(true)
+    .identifiesControllerService(classOf[StructuredStreamProviderServiceReader])
+    .build
 
+  val WRITE_STREAM_SERVICE_PROVIDER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("write.stream.service.provider")
+    .description("the controller service that gives connection information")
+    .required(true)
+    .identifiesControllerService(classOf[StructuredStreamProviderServiceWriter])
+    .build
+
+  val GROUP_BY_FIELDS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("group.by.fields")
+    .description("comma separated list of fields to group the partition by")
+    .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+    .required(false)
+    .build
+
+  val IS_STATE_FULL: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("is.state.full")
+    .description("If the stream should be state full or not")
+    .addValidator(StandardValidators.INTEGER_VALIDATOR)
+    .required(true)
+    .defaultValue("false")
+    .build
+
+  val PROCESSING_STATE_TIMEOUT_TYPE = "processing"
+
+  val STATE_TIMEOUT_TYPE: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("state.timeout.type")
+    .description("the time out strategy to use for evicting cache.")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(PROCESSING_STATE_TIMEOUT_TYPE)
+    .required(false)
+    .defaultValue(PROCESSING_STATE_TIMEOUT_TYPE)
+    .build
+
+  val STATE_TIMEOUT_DURATION_MS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("state.timeout.ms")
+    .description("the time in ms without data for specific key(s) before we invalidate the microbatch state when using "+
+      STATE_TIMEOUT_TYPE + ": " + PROCESSING_STATE_TIMEOUT_TYPE + ". Default to 300000 (5 minutes)")
+    .addValidator(StandardValidators.LONG_VALIDATOR)
+    .required(false)
+    .defaultValue("300000")
+    .build
+
+  val STATEFULL_OUTPUT_MODE: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("output.mode")
+    .description("output mode when using statefull stream. By default will use append")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .required(false)
+    .allowableValues(StructuredStreamProviderServiceWriter.APPEND_MODE, StructuredStreamProviderServiceWriter.COMPLETE_MODE)//TODO
+    .defaultValue(StructuredStreamProviderServiceWriter.APPEND_MODE)
+    .build
+
+  val STATE_WINDOW_FIELD: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("state.window.field")
+    .description("the field to use to calcul records to keep in cache (should be a timestamp field as long)")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .required(false)
+    .build
+
+  val STATE_WINDOW_TIMEOUT_MS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("state.window.timeout.ms")
+    .description("the number of milliseconds for the window. We will save in cache only records in this timerange, " +
+      "the greater timestamp is used as upper bound. All record out of range will not be stored in cache for next batch." +
+      "In statefull mode, we transfer record in the given time range between batches.")
+    .addValidator(StandardValidators.LONG_VALIDATOR)
+    .required(false)
+    .build
+
+}

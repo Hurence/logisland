@@ -31,7 +31,7 @@ import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
@@ -545,7 +545,7 @@ public class DetectOutliers extends AbstractProcessor {
 
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
 
         final Collection<ValidationResult> results = new ArrayList<>();
 

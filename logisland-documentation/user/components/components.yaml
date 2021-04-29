@@ -16,6 +16,33 @@ extensions:
     module: com.hurence.logisland:logisland-processor-useragent:1.4.0
     class: com.hurence.logisland.processor.useragent.ParseUserAgent
     tags: [User-Agent, clickstream, DMP]
+  - name: CalculWebSession
+    description:  >
+      This processor creates web-sessions based on incoming web-events.
+       Firstly, web-events are grouped by their session identifier and processed in chronological order.
+       The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, the web session is updated by the remaining web-events.
+       Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+       Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:
+      
+      	the duration between the web session and the web event must not exceed the specified time-out,
+      	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+      	source of traffic (campaign, ...) must be the same on the web session and the web event.
+      
+       When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+       Finally when all web events were applied, all web events -potentially modified with a new session identifier- And web sessions are passed to the next processor.
+      
+      WebSession information are:
+      - first and last visited page
+      - first and last timestamp of processed event 
+      - total number of processed events
+      - the userId
+      - a boolean denoting if the web-session is still active or not
+      - an integer denoting the duration of the web-sessions
+      - optional fields that may be retrieved from the processed events
+    category: analytics
+    module: com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+    class: com.hurence.logisland.processor.webanalytics.CalculWebSession
+    tags: [analytics, web, session]
   - name: IncrementalWebSession
     description:  >
       This processor creates and updates web-sessions based on incoming web-events. Note that both web-sessions and web-events are stored in elasticsearch.
@@ -43,7 +70,7 @@ extensions:
       - optional fields that may be retrieved from the processed events
     category: analytics
     module: com.hurence.logisland:logisland-processor-web-analytics:1.4.0
-    class: com.hurence.logisland.processor.webAnalytics.IncrementalWebSession
+    class: com.hurence.logisland.processor.webanalytics.IncrementalWebSession
     tags: [analytics, web, session]
   - name: SetSourceOfTraffic
     description:  >
@@ -53,12 +80,12 @@ extensions:
       To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
       i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
       , the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
-      By default the source of traffic information are placed in a flat structure (specified by the **source_of_traffic.suffix** property
+      By default the source of traffic information are placed in a flat structure (specified by the **source_of_traffic.prefix** property
       with a default value of source_of_traffic). To work properly the SetSourceOfTraffic processor needs to have access to an 
       Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
     category: analytics
     module: com.hurence.logisland:logisland-processor-web-analytics:1.4.0
-    class: com.hurence.logisland.processor.webAnalytics.SetSourceOfTraffic
+    class: com.hurence.logisland.processor.webanalytics.SetSourceOfTraffic
     tags: [session, traffic, source, web, analytics]
   - name: IpToFqdn
     description: Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
@@ -133,7 +160,7 @@ extensions:
       "fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
     category: misc
     module: com.hurence.logisland:logisland-processor-web-analytics:1.4.0
-    class: com.hurence.logisland.processor.webAnalytics.ConsolidateSession
+    class: com.hurence.logisland.processor.webanalytics.ConsolidateSession
     tags: [analytics, web, session]
   - name: DetectOutliers
     description:  >
@@ -345,13 +372,34 @@ extensions:
     module: com.hurence.logisland:logisland-processor-scripting:1.4.0
     class: com.hurence.logisland.processor.scripting.python.RunPython
     tags: [scripting, python]
+  - name: URIDecoder
+    description:  >
+      Decode one or more field containing an URI with possibly special chars encoded
+      ...
+    category: misc
+    module: com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+    class: com.hurence.logisland.processor.webanalytics.URIDecoder
+    tags: [record, fields, Decode]
+  - name: URLCleaner
+    description:  >
+      Remove some or all query parameters from one or more field containing an uri which should be preferably encoded.
+      If the uri is not encoded the behaviour is not defined in case the decoded uri contains '#', '?', '=', '&' which were encoded.
+      Indeed this processor assumes that the start of query part of the uri start at the first '?' then end at the first '#' or at the end of the uri as
+      specified by rfc3986 available at https://tools.ietf.org/html/rfc3986#section-3.4. 
+      We assume as well that key value pairs are separed by '=', and are separed by '&': exemple 'param1=value1&param2=value2'.
+      The processor can remove also parameters that have only a name and no value. The character used to separate the key and the value '=' is configurable.
+      The character used to separate two parameters '&' is also configurable.
+    category: misc
+    module: com.hurence.logisland:logisland-processor-web-analytics:1.4.0
+    class: com.hurence.logisland.processor.webanalytics.URLCleaner
+    tags: [record, fields, url, params, param, remove, keep, query, uri, parameter, clean, decoded, raw]
   - name: URLDecoder
     description:  >
       Decode one or more field containing an URL with possibly special chars encoded
       ...
     category: misc
     module: com.hurence.logisland:logisland-processor-web-analytics:1.4.0
-    class: com.hurence.logisland.processor.webAnalytics.URLDecoder
+    class: com.hurence.logisland.processor.webanalytics.URLDecoder
     tags: [record, fields, Decode]
   - name: MaxmindIpToGeoService
     description: Implementation of the IP 2 GEO Service using maxmind lite db file

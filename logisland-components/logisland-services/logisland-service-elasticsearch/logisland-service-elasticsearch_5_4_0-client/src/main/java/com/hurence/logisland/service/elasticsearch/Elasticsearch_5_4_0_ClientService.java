@@ -27,12 +27,13 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.*;
+import com.hurence.logisland.service.datastore.model.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.ActionRequestValidationException;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -42,6 +43,7 @@ import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRespon
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.*;
+import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
@@ -49,6 +51,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.Priority;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.ByteSizeUnit;
@@ -370,6 +373,67 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
+    public void bulkDelete(String docIndex, String docType, String id) {
+        DeleteRequestBuilder builder = esClient
+                .prepareDelete(docIndex, docType, id);
+        bulkProcessor.add(builder.request());
+    }
+
+    @Override
+    public void deleteByQuery(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
+    @Override
+    public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
+    @Override
+    public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
+    /**
+     * Wait until specified collection is ready to be used.
+     */
+    @Override
+    public void waitUntilCollectionReady(String collection, long timeoutMilli) throws DatastoreClientServiceException {
+        getIndexHealth(new String[]{collection}, timeoutMilli);
+    }
+
+    @Override
+    public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String[] indices, long timeoutMilli) throws DatastoreClientServiceException {
+        ClusterHealthResponse rsp = getIndexHealth(indices, timeoutMilli);
+        if (rsp.isTimedOut()) {
+            getLogger().error("indices {} is not ready !", new Object[]{indices});
+        } else {
+            if (rsp.getNumberOfPendingTasks() != 0) {
+                this.refreshCollections(indices);
+            }
+        }
+    }
+
+    @Override
+    public void refreshCollections(String[] indices) throws DatastoreClientServiceException {
+        try {
+            esClient.admin().indices().prepareRefresh(indices).execute().get();
+        } catch (Exception e){
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    private ClusterHealthResponse getIndexHealth(String[] indices, long timeoutMilli) {
+        ClusterHealthRequest request = new ClusterHealthRequest(indices)
+                .timeout(TimeValue.timeValueMillis(timeoutMilli))
+                .waitForGreenStatus()
+                .waitForEvents(Priority.LOW);
+        ClusterHealthResponse response = esClient.admin().cluster().health(request).actionGet();
+        getLogger().trace("health response for index {} is {}", new Object[]{indices, response});
+        return response;
+    }
+
+    @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
 
         List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
@@ -458,6 +522,9 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         }
         return rsp.getHits().getTotalHits();
     }
+
+
+
 
     @Override
     public void createCollection(String indexName, int numShards, int numReplicas) throws DatastoreClientServiceException {

@@ -28,7 +28,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.junit.Assert;
 
 import java.io.*;
 import java.net.URI;
@@ -160,8 +159,8 @@ public abstract class BaseSyslogTest {
 		return createTestRunner(processorConfiguration);
 	}
 
-	protected TestRunner createTestRunner(ProcessorConfiguration processorsConfiguration) throws Exception {
-		ProcessContext processContext = ComponentFactory.getProcessContext(processorsConfiguration).get();
+	protected TestRunner createTestRunner(ProcessorConfiguration processorsConfiguration) {
+		ProcessContext processContext = ComponentFactory.buildAndSetUpProcessContext(processorsConfiguration);
 		return TestRunners.newTestRunner(processContext);
 	}
 

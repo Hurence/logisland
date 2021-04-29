@@ -306,7 +306,7 @@ public class ParseUserAgent extends AbstractProcessor {
 
             Field uaField = record.getField(userAgentField);
             if (uaField == null) {
-                getLogger().info("Skipping record. Field '" + userAgentField + "' does not exists in record");
+                getLogger().debug("Skipping record. Field '" + userAgentField + "' does not exists in record");
                 continue;
             }
 

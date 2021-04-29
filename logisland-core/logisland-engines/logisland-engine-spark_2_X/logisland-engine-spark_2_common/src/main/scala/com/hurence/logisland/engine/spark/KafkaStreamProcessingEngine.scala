@@ -35,15 +35,19 @@ package com.hurence.logisland.engine.spark
 import java.util
 import java.util.concurrent.Executors
 import java.util.regex.Pattern
+import java.util.stream.Collectors
 import java.util.{Collections, UUID}
 
-import com.hurence.logisland.component.{AllowableValue, ComponentContext, PropertyDescriptor}
+import com.hurence.logisland.component.{AllowableValue, ComponentContext, InitializationException, PropertyDescriptor}
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
-import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream}
+import com.hurence.logisland.stream.StreamContext
+import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream, SparkStreamContext}
+import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.sql.streaming.StreamingQueryListener
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
@@ -72,7 +76,7 @@ object KafkaStreamProcessingEngine {
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
         .description("The url to Spark Master")
-        .required(true)
+        .required(false)
         // The regex allows "local[K]" with K as an integer,  "local[*]", "yarn", "yarn-client", "yarn-cluster" and "spark://HOST[:PORT]"
         // there is NO support for "mesos://HOST:PORT"
         .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile(
@@ -87,7 +91,7 @@ object KafkaStreamProcessingEngine {
     val SPARK_APP_NAME = new PropertyDescriptor.Builder()
         .name("spark.app.name")
         .description("Tha application name")
-        .required(true)
+        .required(false)
         .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^[a-zA-z0-9-_\\.]+$")))
         .defaultValue("logisland")
         .build
@@ -373,30 +377,28 @@ object KafkaStreamProcessingEngine {
       .build
 }
 
-
 class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
     private val logger = LoggerFactory.getLogger(classOf[KafkaStreamProcessingEngine])
     private val conf = new SparkConf()
     private var running = false
     protected var batchDurationMs: Int = 1000
-
+    protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
+    private var sparkStreamingTimeout: Int = _
 
     /**
       * Provides subclasses the ability to perform initialization logic
       */
-    override def init(context: ComponentContext): Unit = {
+    override def init(context: EngineContext): Unit  = {
         super.init(context)
         val engineContext = context.asInstanceOf[EngineContext]
         val sparkMaster = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_MASTER).asString
         val appName = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_APP_NAME).asString
         batchDurationMs = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
-
+        sparkStreamingTimeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().toInt
         /**
           * job configuration
           */
-
-
         conf.setAppName(appName)
         conf.setMaster(sparkMaster)
 
@@ -440,7 +442,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         }
 
-        @transient val sparkContext = getCurrentSparkContext()
+        val sparkContext = getCurrentSparkContext()
 
         UserMetricsSystem.initialize(sparkContext, "LogislandMetrics")
 
@@ -452,7 +454,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         sys.ShutdownHookThread {
             logger.info("Gracefully stopping Spark Streaming Application")
-            shutdown(engineContext)
+            stop(engineContext)
             logger.info("Application stopped")
         }
 
@@ -486,14 +488,12 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
                     executor.submit(new Runnable {
                         override def run(): Unit = {
                             Thread.sleep(1000);
-                            engineContext.getEngine.reset(engineContext)
+                            engineContext.getEngine.stop(engineContext)
                         }
                     })
                 }
             }
         })
-
-        running = true
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
@@ -538,7 +538,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MESOS_CORE_MAX)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_TOTAL_EXECUTOR_CORES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_SUPERVISE)
-
         Collections.unmodifiableList(descriptors)
     }
 
@@ -550,60 +549,73 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
       */
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
-        val streamingContext = createStreamingContext(engineContext)
-        if (!engineContext.getStreamContexts.map(p => p.getStream).filter(p => p.isInstanceOf[AbstractKafkaRecordStream]).isEmpty) {
-            streamingContext.start()
-        }
-
-    }
-
-    protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {
-        return StreamingContext.getActiveOrCreate(() =>
-            return new StreamingContext(sparkContext, Milliseconds(batchDurationMs))
+        val spark = getCurrentSparkSession()
+        logger.info("broadCasting services")
+        controllerServiceLookupSink = spark.sparkContext.broadcast(
+            ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
         )
-    }
-
-    protected def getCurrentSparkContext(): SparkContext = {
-        return SparkContext.getOrCreate(conf)
-    }
-
-
-    def createStreamingContext(engineContext: EngineContext): StreamingContext = {
-
-
-        @transient val sc = getCurrentSparkContext()
-        @transient val ssc = getCurrentSparkStreamingContext(sc)
-        val appName = sc.appName;
-
-
+        getLogger.info("Will start streams")
         /**
           * loop over processContext
           */
-        engineContext.getStreamContexts.foreach(streamingContext => {
+        engineContext.getStreamContexts.foreach(logislandStreamContext => {
             try {
-                val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
-
-                kafkaStream.setup(appName, ssc, streamingContext, engineContext)
+                val kafkaStream = logislandStreamContext.getStream.asInstanceOf[SparkRecordStream]
+                val sparkStreamContext = new SparkStreamContext(
+                    logislandStreamContext,
+                    batchDurationMs,
+                    spark,
+                    controllerServiceLookupSink
+                )
+                kafkaStream.init(sparkStreamContext)
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>
                     throw new IllegalStateException("something bad happened, please check Kafka or cluster health", ex)
             }
-
         })
-        ssc
-    }
 
-
-    override def shutdown(engineContext: EngineContext) = {
-        if (running) {
-            running = false
-            logger.info(s"shutting down Spark engine")
-            stop(engineContext, true)
+        if (!engineContext.getStreamContexts.isEmpty) {
+            val streamsIds = engineContext.getStreamContexts
+              .map(a => a.getIdentifier).toList;
+            logger.info("started all following streams : {}", streamsIds)
+        } else {
+            logger.error("There is no stream to start ! This should never happen as configuration should be considered" +
+            " wrong in this case, therefore code should never reach this code");
         }
+        running = true
     }
 
-    def stop(engineContext: EngineContext, doStopSparkContext: Boolean) = {
+    protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {
+        StreamingContext.getActiveOrCreate(() =>
+            return new StreamingContext(getCurrentSparkContext(), Milliseconds(batchDurationMs))
+        )
+    }
+
+    protected def getCurrentSparkContext(): SparkContext = {
+        getCurrentSparkSession().sparkContext
+    }
+
+    protected def getCurrentSparkSession(): SparkSession = {
+        SparkSession.builder()
+          .config(conf)
+          .getOrCreate()
+    }
+
+
+    override def stop(engineContext: EngineContext) = {
+        running = false
+        logger.info(s"stopping Spark engine")
+        doStop(engineContext, true)
+    }
+
+    override def softStop(engineContext: EngineContext): Unit = {
+        running = false
+        logger.info(s"stopping Spark engine")
+        doStop(engineContext, false)
+    }
+
+    protected def doStop(engineContext: EngineContext, doStopSparkContext: Boolean) = {
         synchronized {
             val sc = getCurrentSparkContext();
             if (!sc.isStopped) {
@@ -650,18 +662,16 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
       *
       */
     override def awaitTermination(engineContext: EngineContext): Unit = {
-        var timeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT)
-            .asInteger().toInt
         val sc = getCurrentSparkContext()
 
         while (!sc.isStopped) {
             try {
-                if (timeout < 0) {
+                if (sparkStreamingTimeout < 0) {
                     Thread.sleep(200)
                 } else {
-                    val toSleep = Math.min(200, timeout);
+                    val toSleep = Math.min(200, sparkStreamingTimeout);
                     Thread.sleep(toSleep)
-                    timeout -= toSleep
+                    sparkStreamingTimeout -= toSleep
                 }
             } catch {
                 case e: InterruptedException => return
@@ -669,14 +679,4 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             }
         }
     }
-
-
-    /**
-      * Reset the engine by stopping the streaming context.
-      */
-    override def reset(engineContext: EngineContext): Unit = {
-        shutdown(engineContext)
-    }
-
-
 }

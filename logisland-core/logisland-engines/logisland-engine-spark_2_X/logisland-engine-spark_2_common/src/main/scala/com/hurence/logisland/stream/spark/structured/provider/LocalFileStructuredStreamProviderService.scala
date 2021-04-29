@@ -30,6 +30,7 @@
   */
 package com.hurence.logisland.stream.spark.structured.provider
 
+import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
 
@@ -38,20 +39,19 @@ import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
-import com.hurence.logisland.stream.StreamContext
-import com.hurence.logisland.util.spark.ControllerServiceLookupSink
+import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
+import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService.{AVRO_READ_LINE_SCHEMA, READ_LINE_SERIALIZER}
 import com.hurence.logisland.validator.StandardValidators
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.streaming.DataStreamWriter
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.SparkSession
 
 /**
   *  You can look at spark documentation for detail on some options :
   * @author bailett
   */
 @CapabilityDescription("Provide a way to read a local file as input in StructuredStream streams")
-class LocalFileStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
-
+class LocalFileStructuredStreamProviderService extends AbstractControllerService
+  with StructuredStreamProviderServiceReader {
 
   val LOCAL_INPUT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("local.input.path")
@@ -87,6 +87,7 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
   var maxFilesPerTrigger: Option[Long] = _
   var latestFirst: Option[Boolean] = _
   var fileNameOnly: Option[Boolean] = _
+  var readValueSerializer: RecordSerializer = null
 
   @OnEnabled
   @throws[InitializationException]
@@ -108,6 +109,9 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     } else {
       fileNameOnly = None
     }
+    readValueSerializer = SerializerProvider.getSerializer(
+      context.getPropertyValue(READ_LINE_SERIALIZER).asString,
+      context.getPropertyValue(AVRO_READ_LINE_SCHEMA).asString)
   }
 
   /**
@@ -122,6 +126,8 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     descriptors.add(MAX_FILES_PER_TRIGGER)
     descriptors.add(LATEST_FIRST)
     descriptors.add(FILENAME_ONLY)
+    descriptors.add(READ_LINE_SERIALIZER)
+    descriptors.add(AVRO_READ_LINE_SCHEMA)
     Collections.unmodifiableList(descriptors)
   }
 
@@ -129,10 +135,9 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     * create a streaming DataFrame that represents data received
     *
     * @param spark
-    * @param streamContext
     * @return DataFrame currently loaded
     */
-  override def read(spark: SparkSession, streamContext: StreamContext) = {
+  override def read(spark: SparkSession) = {
     import spark.implicits._
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
@@ -149,19 +154,30 @@ class LocalFileStructuredStreamProviderService extends AbstractControllerService
     }
     dataStreamReader.load(path)
       .as[String]
-      .map(r => {
-        new StandardRecord("line")
-          .setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, r)
+      .flatMap(line => {
+        readValueSerializer match {
+          case sr: NoopSerializer => Some(new StandardRecord("line")
+            .setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, line))
+          case _ => SerializingTool.deserializeRecords(readValueSerializer, line.getBytes())
+        }
       })
   }
+}
+object LocalFileStructuredStreamProviderService {
+  val READ_LINE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("line.serializer")
+    .description("the serializer to use to deserialize lines of files as record")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+    .defaultValue(NO_SERIALIZER.getValue)
+    .build
 
-  /**
-    * create a streaming DataFrame that represents data received
-    *
-    * @param streamContext
-    * @return DataFrame currently loaded
-    */
-  override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
-    throw new IllegalArgumentException("LocalFileStructuredStreamProviderService class does not support write operation yet")
-  }
+  val AVRO_READ_LINE_SCHEMA: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("read.value.schema")
+    .description("the avro schema definition")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
 }

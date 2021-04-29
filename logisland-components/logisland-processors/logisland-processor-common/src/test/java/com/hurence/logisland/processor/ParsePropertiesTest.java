@@ -19,6 +19,7 @@ import com.hurence.logisland.processor.util.BaseSyslogTest;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
@@ -66,19 +67,20 @@ public class ParsePropertiesTest extends BaseSyslogTest {
 		testRunner.run();
 		testRunner.assertAllInputRecordsProcessed();
 		testRunner.assertOutputRecordsCount(1);
+		MockRecord out1 = testRunner.getOutputRecords().get(0);
 
-		assertEquals(10, record1.getAllFields().size());
-		assertEquals("value1", record1.getField("string1").getRawValue());
-		assertEquals(FieldType.STRING, record1.getField("string1").getType());
-		assertEquals("value2", record1.getField("string2").getRawValue());
-		assertEquals(FieldType.STRING, record1.getField("string2").getType());
-		assertEquals(1, record1.getField("long1").getRawValue());
-		assertEquals(FieldType.LONG, record1.getField("long1").getType());
-		assertEquals(2, record1.getField("long2").getRawValue());
-		assertEquals(FieldType.LONG, record1.getField("long2").getType());
-		assertEquals("1", record1.getField("a").getRawValue());
-		assertEquals("2", record1.getField("b").getRawValue());
-		assertEquals("3", record1.getField("c").getRawValue());
+		assertEquals(10, out1.getAllFields().size());
+		assertEquals("value1", out1.getField("string1").getRawValue());
+		assertEquals(FieldType.STRING, out1.getField("string1").getType());
+		assertEquals("value2", out1.getField("string2").getRawValue());
+		assertEquals(FieldType.STRING, out1.getField("string2").getType());
+		assertEquals(1, out1.getField("long1").getRawValue());
+		assertEquals(FieldType.LONG, out1.getField("long1").getType());
+		assertEquals(2, out1.getField("long2").getRawValue());
+		assertEquals(FieldType.LONG, out1.getField("long2").getType());
+		assertEquals("1", out1.getField("a").getRawValue());
+		assertEquals("2", out1.getField("b").getRawValue());
+		assertEquals("3", out1.getField("c").getRawValue());
 	}
 
 	@Test
@@ -93,15 +95,16 @@ public class ParsePropertiesTest extends BaseSyslogTest {
 		testRunner.run();
 		testRunner.assertAllInputRecordsProcessed();
 		testRunner.assertOutputRecordsCount(1);
+		MockRecord out1 = testRunner.getOutputRecords().get(0);
 
-		assertEquals(10, record1.getAllFields().size());
-		assertField(record1, "string1", "value1", FieldType.STRING);
-		assertField(record1, "string2", "value2", FieldType.STRING);
-		assertField(record1, "long1", 1, FieldType.LONG);
-		assertField(record1, "long2", 2, FieldType.LONG);
-		assertField(record1, "a", "1", FieldType.STRING);
-		assertField(record1, "b", "2", FieldType.STRING);
-		assertField(record1, "c", "3", FieldType.STRING);
+		assertEquals(10, out1.getAllFields().size());
+		assertField(out1, "string1", "value1", FieldType.STRING);
+		assertField(out1, "string2", "value2", FieldType.STRING);
+		assertField(out1, "long1", 1, FieldType.LONG);
+		assertField(out1, "long2", 2, FieldType.LONG);
+		assertField(out1, "a", "1", FieldType.STRING);
+		assertField(out1, "b", "2", FieldType.STRING);
+		assertField(out1, "c", "3", FieldType.STRING);
 	}
 
 	private void assertField(Record record, String key, Object value, FieldType type) {
