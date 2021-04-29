@@ -108,6 +108,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     private volatile String authToken;
     protected volatile transient BulkProcessor bulkProcessor;
     protected volatile Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
+    private String geolocationFieldLabel;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -129,6 +130,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         props.add(HOSTS);
         props.add(PROP_SSL_CONTEXT_SERVICE);
         props.add(CHARSET);
+        props.add(GEOLOCATION_FIELD_LABEL);
 
         return Collections.unmodifiableList(props);
     }
@@ -162,6 +164,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             final String password = context.getPropertyValue(PASSWORD).asString();
             final String hosts = context.getPropertyValue(HOSTS).asString();
             final boolean enableSsl = context.getPropertyValue(ENABLE_SSL).asBoolean();
+            geolocationFieldLabel = context.getPropertyValue(GEOLOCATION_FIELD_LABEL).asString();
 
             esHosts = getEsHosts(hosts, enableSsl);
 
@@ -799,7 +802,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
         }
 
-        bulkPut(indexName, null, ElasticsearchRecordConverter.convertToString(record), Optional.of(record.getId()));
+        bulkPut(indexName, null, convertRecordToString(record), Optional.of(record.getId()));
     }
 
     @Override
@@ -829,6 +832,9 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public String convertRecordToString(Record record) {
+        if (geolocationFieldLabel != null) {
+          return ElasticsearchRecordConverter.convertToString(record, geolocationFieldLabel);
+        }
         return ElasticsearchRecordConverter.convertToString(record);
     }
 

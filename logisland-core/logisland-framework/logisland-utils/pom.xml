@@ -156,6 +156,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>org.apache.avro:avro</include>
+                                    <include>io.confluent</include>
                                 </includes>
                             </artifactSet>
                             <filters>
@@ -183,16 +184,6 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
-<!--
-                            <relocations>
-                                <relocation>
-                                    <pattern>org.apache.avro</pattern>
-                                    <shadedPattern>logisland.repackaged.org.apache.avro</shadedPattern>
-                                </relocation>
-
-                            </relocations>
--->
-
                         </configuration>
                     </execution>
                 </executions>

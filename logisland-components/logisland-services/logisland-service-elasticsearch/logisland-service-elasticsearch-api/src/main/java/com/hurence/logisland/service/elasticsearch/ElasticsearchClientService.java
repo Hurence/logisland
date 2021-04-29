@@ -204,7 +204,12 @@ public interface ElasticsearchClientService extends DatastoreClientService {
             .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
             .build();
 
-
+    PropertyDescriptor GEOLOCATION_FIELD_LABEL = new PropertyDescriptor.Builder()
+            .name("geolocation.output.field.name")
+            .description("Label used to name the output record field for geolocation properties")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
 
     /**
      * Put a given document in elasticsearch bulk processor.

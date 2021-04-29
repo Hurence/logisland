@@ -84,7 +84,7 @@ object KafkaStreamProcessingEngine {
           "local(\\[([0-9]+|\\*)(,[0-9]+)?\\])?|" +
           "spark:\\/\\/[a-z0-9\\.\\-]+(:[0-9]+)?(,[a-z0-9\\.\\-]+(:[0-9]+)?)*|" +
           "mesos:\\/\\/((zk:\\/\\/[a-z0-9\\.\\-]+:[0-9]+(,[a-z0-9\\.\\-]+:[0-9]+)*\\/mesos)|(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+|[a-z][a-z0-9\\.\\-]+)(:[0-9]+)?))|" +
-          "k8s://.+)$")))
+          "k8s:\\/\\/.+)$")))
         .defaultValue("local[2]")
         .build
 
@@ -375,6 +375,19 @@ object KafkaStreamProcessingEngine {
       .required(false)
       .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
       .build
+
+    val OVERWRITE_EXISTING = new AllowableValue("overwrite_existing", "overwrite existing field", "if field already exist")
+
+    val KEEP_OLD_FIELD = new AllowableValue("keep_old_field", "keep only old field value", "keep only old field")
+
+    val SPARK_CONF_POLICY = new PropertyDescriptor.Builder()
+            .name("spark.conf.properties.policy")
+            .description("What to do when a field with the same name already exists ?")
+            .required(false)
+            .defaultValue(OVERWRITE_EXISTING.getValue())
+            .allowableValues(OVERWRITE_EXISTING, KEEP_OLD_FIELD)
+            .build();
+
 }
 
 class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
@@ -392,23 +405,26 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     override def init(context: EngineContext): Unit  = {
         super.init(context)
         val engineContext = context.asInstanceOf[EngineContext]
-        val sparkMaster = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_MASTER).asString
-        val appName = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_APP_NAME).asString
         batchDurationMs = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
         sparkStreamingTimeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().toInt
-        /**
-          * job configuration
-          */
-        conf.setAppName(appName)
-        conf.setMaster(sparkMaster)
+        val conflictPolicy = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_CONF_POLICY).asString
 
         def setConfProperty(conf: SparkConf, engineContext: EngineContext, propertyDescriptor: PropertyDescriptor) = {
-
             // Need to check if the properties are set because those properties are not "requires"
             if (engineContext.getPropertyValue(propertyDescriptor).isSet) {
-                conf.set(propertyDescriptor.getName, engineContext.getPropertyValue(propertyDescriptor).asString)
+                if (conf.contains(propertyDescriptor.getName)) {
+                    logger.warn("Property " + propertyDescriptor.getName + " already present in the sparkConfiguration with value " + conf.get(propertyDescriptor.getName))
+                }
+
+                if (conflictPolicy.equals(KafkaStreamProcessingEngine.OVERWRITE_EXISTING.getValue)) {
+                    conf.set(propertyDescriptor.getName, engineContext.getPropertyValue(propertyDescriptor).asString)
+                    logger.info("Property " + propertyDescriptor.getName + " set in the sparkConfiguration with value " + conf.get(propertyDescriptor.getName))
+                }
             }
         }
+
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_APP_NAME)
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_MASTER)
 
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
@@ -436,18 +452,18 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
         conf.set("spark.kryo.registrator", "com.hurence.logisland.util.spark.ProtoBufRegistrator")
 
-        if (sparkMaster startsWith "yarn") {
+        if (conf.get(KafkaStreamProcessingEngine.SPARK_MASTER.getName) startsWith "yarn") {
             // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
             // That's why we do not need to propagate it here
             setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         }
 
+        logger.info("Configuration from logisland main")
+        logger.info(conf.toDebugString)
+        
         val sparkContext = getCurrentSparkContext()
 
         UserMetricsSystem.initialize(sparkContext, "LogislandMetrics")
-
-
-
 
         /**
           * shutdown context gracefully
@@ -495,6 +511,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             }
         })
 
+        val sparkMaster = conf.get(KafkaStreamProcessingEngine.SPARK_MASTER.getName)
+        val appName = conf.get(KafkaStreamProcessingEngine.SPARK_APP_NAME.getName)
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
             s"batchDuration:$batchDurationMs ")
@@ -538,6 +556,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MESOS_CORE_MAX)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_TOTAL_EXECUTOR_CORES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_SUPERVISE)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_CONF_POLICY)
         Collections.unmodifiableList(descriptors)
     }
 

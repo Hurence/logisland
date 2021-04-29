@@ -41,6 +41,18 @@ class ElasticsearchRecordConverter {
      * @return the json converted record
      */
     static String convertToString(Record record) {
+      return convertToString(record, "location");
+    }
+    
+    /**
+     * Converts an Event into an Elasticsearch document
+     * to be indexed later
+     *e
+     * @param record to convert
+     * @param geolocationFieldLabel is the label for the geolocation field
+     * @return the json converted record
+     */
+    static String convertToString(Record record, String geolocationFieldLabel) {
         logger.trace(record.toString());
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -117,7 +129,7 @@ class ElasticsearchRecordConverter {
 
 
             if((geolocation[0] != 0) && (geolocation[1] != 0)) {
-                document.latlon("geolocation", geolocation[0], geolocation[1]);
+                document.latlon(geolocationFieldLabel, geolocation[0], geolocation[1]);
             }
 
 
