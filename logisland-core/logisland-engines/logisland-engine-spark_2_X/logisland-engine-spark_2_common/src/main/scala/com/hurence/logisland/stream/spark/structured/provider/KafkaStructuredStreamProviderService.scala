@@ -32,7 +32,6 @@ package com.hurence.logisland.stream.spark.structured.provider
 
 import java.util
 import java.util.{ArrayList, Collections, List}
-
 import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
@@ -41,7 +40,7 @@ import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, Standar
 import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties._
-import com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService._
+import com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService.{OUTPUT_TOPICS, _}
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderServiceWriter.OUTPUT_MODE
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
@@ -69,6 +68,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   var inputTopics = Set[String]()
   var inputTopicsPattern: String = ""
   var outputTopics = Set[String]()
+  var outputTopicsField: String = null
   var topicAutocreate = true
   var topicDefaultPartitions = 3
   var topicDefaultReplicationFactor = 1
@@ -106,32 +106,74 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     */
   override protected def customValidate(context: Configuration): util.Collection[ValidationResult] = {
     val validationResults = new util.ArrayList[ValidationResult](super.customValidate(context))
+    verifyPropsAreNotBothSetButAtLeastOne(context, validationResults, INPUT_TOPICS, INPUT_TOPIC_PATTERN)
+    verifyPropsAreNotBothSetButAtLeastOne(context, validationResults, OUTPUT_TOPICS, OUTPUT_TOPICS_FIELD)
+    return validationResults
+  }
+
+  private def verifyPropsAreNotBothSetButAtLeastOne(
+                                                     context: Configuration,
+                                                     validationResults: util.ArrayList[ValidationResult],
+                                                     prop1: PropertyDescriptor,
+                                                     prop2: PropertyDescriptor
+                                                   ) = {
     /**
       * Only one of both properties may be set.
       */
     // Be sure not both are defined
-    if (context.getPropertyValue(INPUT_TOPICS).isSet &&
-      context.getPropertyValue(INPUT_TOPIC_PATTERN).isSet) {
+    if (context.getPropertyValue(prop1).isSet &&
+      context.getPropertyValue(prop2).isSet) {
       validationResults.add(
         new ValidationResult.Builder()
-          .explanation(INPUT_TOPICS.getName + " and " + INPUT_TOPIC_PATTERN.getName + " " +
+          .explanation(prop1.getName + " and " + prop2.getName + " " +
             "properties are mutually exclusive.")
           .valid(false)
           .build
       )
     }
     // Be sure at least one is defined
-    if (!context.getPropertyValue(INPUT_TOPICS).isSet &&
-      !context.getPropertyValue(INPUT_TOPIC_PATTERN).isSet) {
+    if (!context.getPropertyValue(prop1).isSet &&
+      !context.getPropertyValue(prop2).isSet) {
       validationResults.add(
         new ValidationResult.Builder()
-          .explanation("at least one of " +INPUT_TOPICS.getName + " and " + INPUT_TOPIC_PATTERN.getName +
+          .explanation("at least one of " + prop1.getName + " and " + prop2.getName +
             " must be set.")
           .valid(false)
           .build
       )
     }
-    return validationResults
+  }
+
+  /**
+    * Allows subclasses to register which property descriptor objects are
+    * supported.
+    *
+    * @return PropertyDescriptor objects this processor currently supports
+    */
+  override def getSupportedPropertyDescriptors() = {
+    val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
+    descriptors.add(INPUT_TOPICS)
+    descriptors.add(INPUT_TOPIC_PATTERN)
+    descriptors.add(OUTPUT_TOPICS)
+    descriptors.add(OUTPUT_TOPICS_FIELD)
+    descriptors.add(AVRO_SCHEMA_URL)
+    descriptors.add(KAFKA_TOPIC_AUTOCREATE)
+    descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
+    descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
+    descriptors.add(KAFKA_METADATA_BROKER_LIST)
+    descriptors.add(KAFKA_ZOOKEEPER_QUORUM)
+    descriptors.add(KAFKA_STARTING_OFFSETS)
+    descriptors.add(KAFKA_FAIL_ON_DATA_LOSS)
+    descriptors.add(KAFKA_MAX_OFFSETS_PER_TRIGGER)
+    descriptors.add(KAFKA_SECURITY_PROTOCOL)
+    descriptors.add(KAFKA_SASL_KERBEROS_SERVICE_NAME)
+    descriptors.add(READ_VALUE_SERIALIZER)
+    descriptors.add(AVRO_READ_VALUE_SCHEMA)
+    descriptors.add(WRITE_VALUE_SERIALIZER)
+    descriptors.add(AVRO_WRITE_VALUE_SCHEMA)
+    descriptors.add(WRITE_KEY_SERIALIZER)
+    descriptors.add(OUTPUT_MODE)
+    Collections.unmodifiableList(descriptors)
   }
 
   @OnEnabled
@@ -153,7 +195,14 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
           inputTopicsPattern = context.getPropertyValue(INPUT_TOPIC_PATTERN).asString
         }
 
-        outputTopics = context.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
+        if (context.getPropertyValue(OUTPUT_TOPICS).isSet) {
+          outputTopics = context.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
+        }
+
+        if (context.getPropertyValue(OUTPUT_TOPICS_FIELD).isSet) {
+          outputTopicsField = context.getPropertyValue(OUTPUT_TOPICS_FIELD).asString
+        }
+
 
         topicAutocreate = context.getPropertyValue(KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
         topicDefaultPartitions = context.getPropertyValue(KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
@@ -252,37 +301,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   }
 
   /**
-    * Allows subclasses to register which property descriptor objects are
-    * supported.
-    *
-    * @return PropertyDescriptor objects this processor currently supports
-    */
-  override def getSupportedPropertyDescriptors() = {
-    val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-    descriptors.add(INPUT_TOPICS)
-    descriptors.add(INPUT_TOPIC_PATTERN)
-    descriptors.add(OUTPUT_TOPICS)
-    descriptors.add(AVRO_SCHEMA_URL)
-    descriptors.add(KAFKA_TOPIC_AUTOCREATE)
-    descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
-    descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
-    descriptors.add(KAFKA_METADATA_BROKER_LIST)
-    descriptors.add(KAFKA_ZOOKEEPER_QUORUM)
-    descriptors.add(KAFKA_STARTING_OFFSETS)
-    descriptors.add(KAFKA_FAIL_ON_DATA_LOSS)
-    descriptors.add(KAFKA_MAX_OFFSETS_PER_TRIGGER)
-    descriptors.add(KAFKA_SECURITY_PROTOCOL)
-    descriptors.add(KAFKA_SASL_KERBEROS_SERVICE_NAME)
-    descriptors.add(READ_VALUE_SERIALIZER)
-    descriptors.add(AVRO_READ_VALUE_SCHEMA)
-    descriptors.add(WRITE_VALUE_SERIALIZER)
-    descriptors.add(AVRO_WRITE_VALUE_SCHEMA)
-    descriptors.add(WRITE_KEY_SERIALIZER)
-    descriptors.add(OUTPUT_MODE)
-    Collections.unmodifiableList(descriptors)
-  }
-
-  /**
     * Topic creation
     *
     * @param zkUtils
@@ -318,24 +336,41 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     import df.sparkSession.implicits._
 
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-
-    val dataStreamWriter =  df
-      .mapPartitions(record => record.map(record => SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)))
-      // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-      .map(r => {
-        (r.getField(FieldDictionary.RECORD_KEY).asBytes(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
-      })
-      .as[(Array[Byte], Array[Byte])]
-      .toDF("key", "value")
-      .writeStream
+    val dataStreamWriter =  if (outputTopicsField != null) {
+      df
+        .mapPartitions(records =>  {
+          records.map(record => {
+            val serializedRecord: Record = SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)
+            serializedRecord.setStringField("topic", record.getField(outputTopicsField).asString())
+            serializedRecord
+          })
+        })
+        // Write key-value data from a DataFrame to a specific Kafka topic dynamically in topic column
+        .map(r => {
+          (r.getField(FieldDictionary.RECORD_KEY).asBytes(),
+            r.getField(FieldDictionary.RECORD_VALUE).asBytes(),
+            r.getField("topic").asString())
+        })
+        .as[(Array[Byte], Array[Byte], String)]
+        .toDF("key", "value", "topic")
+        .writeStream
+    } else {
+      df
+        .mapPartitions(record => record.map(record => SerializingTool.serializeRecords(writeValueSerializer, writeKeySerializer, record)))
+        // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
+        .map(r => {
+          (r.getField(FieldDictionary.RECORD_KEY).asBytes(), r.getField(FieldDictionary.RECORD_VALUE).asBytes())
+        })
+        .as[(Array[Byte], Array[Byte])]
+        .toDF("key", "value")
+        .writeStream
+        .option("topic", outputTopics.mkString(","))
+    }
+    dataStreamWriter
       .format("kafka")
       .option("kafka.bootstrap.servers", brokerList)
       .option("kafka.security.protocol", securityProtocol)
       .option("kafka.sasl.kerberos.service.name", saslKbServiceName)
-      .option("topic", outputTopics.mkString(","))
-    if (outputMode != null) {
-      dataStreamWriter.outputMode(outputMode)
-    }
 
     dataStreamWriter
   }
@@ -344,6 +379,22 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
 }
 
 object KafkaStructuredStreamProviderService {
+
+  val OUTPUT_TOPICS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.output.topics")
+    .description("Sets the output Kafka topic name")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val OUTPUT_TOPICS_FIELD: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.output.topics.field")
+    .description("Field name of records to use for sending in corresponding topic. " +
+      "Every Record must contain this field and it must be a valid topic name !")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
   val READ_VALUE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("read.value.serializer")
     .description("the serializer to use to deserialize value of topic messages as record")
