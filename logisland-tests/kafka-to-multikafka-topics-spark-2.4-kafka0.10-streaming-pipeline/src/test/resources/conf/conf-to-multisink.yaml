@@ -1,0 +1,65 @@
+#########################################################################################################
+# Logisland Rubix Web Analytics
+# Receive web events from eventhubs, treat them then push events and sessions into opendistro cluster
+#########################################################################################################
+
+version: 1.4.0
+documentation: Logisland Rubix Webanalytics
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: job to test dynamic output topic and multisource topic !
+  configuration:
+    spark.app.name: dynamicOutputTopicApp
+    spark.master: local[3]
+    spark.streaming.batchDuration: 5000
+    spark.streaming.blockInterval: 350
+    spark.streaming.kafka.maxRatePerPartition: 5000
+
+  controllerServiceConfigurations:
+    # Kafka sink configuration
+    - controllerService: all_topics
+      component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
+      configuration:
+        #earliest or latest
+        kafka.startingOffsets: "latest"
+        output.mode: "update"
+#        kafka.input.topics.pattern: "my_topics*"
+        kafka.input.topics: "my_topics_1,my_topics_2"
+        kafka.output.topics.field: "topic"
+        kafka.zookeeper.quorum: ${kafka.zookeeper.quorum}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 1
+        kafka.topic.default.replicationFactor: 1
+        read.value.serializer: com.hurence.logisland.serializer.ExtendedJsonSerializer
+        write.value.serializer: com.hurence.logisland.serializer.ExtendedJsonSerializer
+        write.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        read.value.schema: >
+          { "version": 1,
+            "name": "io.divolte.examples.record",
+            "type": "record",
+            "fields": [
+              { "name": "timestamp",            "type": "long" },
+              { "name": "record_type",             "type": ["null", "string"], "default": null },
+              { "name": "record_id",               "type": ["null", "string"], "default": null },
+              { "name": "topic",             "type": ["null", "string"], "default": null },
+              { "name": "sessionId",             "type": ["null", "string"], "default": null }
+            ]
+          }
+
+  streamConfigurations:
+
+    - stream: dynamicOutputTopic
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        group.by.fields: sessionId
+        read.stream.service.provider: all_topics
+        write.stream.service.provider: all_topics
+
+      processorConfigurations:
+        # Tag ALL events with default values
+        - processor: debug
+          component: com.hurence.logisland.processor.DebugStream
+          type: processor
+          documentation: debug

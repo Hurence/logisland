@@ -30,8 +30,6 @@
   */
 package com.hurence.logisland.stream.spark.structured.provider
 
-import java.util
-import java.util.{ArrayList, Collections, List}
 import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
@@ -51,6 +49,9 @@ import org.apache.kafka.common.security.JaasUtils
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
+
+import java.util
+import java.util.Collections
 
 /**
   * Compatible with kafka 0.10.0 or higher
