@@ -155,6 +155,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
     descriptors.add(INPUT_TOPICS)
     descriptors.add(INPUT_TOPIC_PATTERN)
+    descriptors.add(INPUT_TOPICS_IGNORED)
     descriptors.add(OUTPUT_TOPICS)
     descriptors.add(OUTPUT_TOPICS_FIELD)
     descriptors.add(AVRO_SCHEMA_URL)
@@ -188,16 +189,41 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
 
         if (context.getPropertyValue(INPUT_TOPICS).isSet) {
           subscribMod = "subscribe"
-          inputTopics = context.getPropertyValue(INPUT_TOPICS).asString.split(",").toSet
+          if (context.getPropertyValue(INPUT_TOPICS_IGNORED).isSet) {
+            val ignoredTopics: Set[String] = context.getPropertyValue(INPUT_TOPICS_IGNORED)
+              .asString().split(",").toSet
+              .map(_.trim)
+            val inputTopicsTmp =  context.getPropertyValue(INPUT_TOPICS)
+              .asString.split(",").toSet
+              .map(_.trim)
+            inputTopics = inputTopicsTmp.diff(ignoredTopics)
+          } else {
+            inputTopics = context.getPropertyValue(INPUT_TOPICS)
+              .asString.split(",").toSet
+              .map(_.trim)
+          }
+          getLogger.info(s"final inputTopics conf is '${inputTopics}'")
         }
 
         if (context.getPropertyValue(INPUT_TOPIC_PATTERN).isSet) {
           subscribMod = "subscribePattern"
-          inputTopicsPattern = context.getPropertyValue(INPUT_TOPIC_PATTERN).asString
+          if (context.getPropertyValue(INPUT_TOPICS_IGNORED).isSet) {
+            val ignoredTopicsPattern: String = context.getPropertyValue(INPUT_TOPICS_IGNORED)
+              .asString().split(",").toSet
+              .map(_.trim)
+              .mkString("(", "|", ")")
+            val topicPattern = context.getPropertyValue(INPUT_TOPIC_PATTERN).asString
+            inputTopicsPattern = s"^((?!${ignoredTopicsPattern}$$)${topicPattern})*$$"
+          } else {
+            inputTopicsPattern = context.getPropertyValue(INPUT_TOPIC_PATTERN).asString
+          }
+          getLogger.info(s"final inputTopicsPattern conf is '${inputTopicsPattern}'")
         }
 
         if (context.getPropertyValue(OUTPUT_TOPICS).isSet) {
-          outputTopics = context.getPropertyValue(OUTPUT_TOPICS).asString.split(",").toSet
+          outputTopics = context.getPropertyValue(OUTPUT_TOPICS)
+            .asString.split(",").toSet
+            .map(_.trim)
         }
 
         if (context.getPropertyValue(OUTPUT_TOPICS_FIELD).isSet) {
@@ -233,10 +259,10 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
           val registryUrl = context.getPropertyValue(AVRO_SCHEMA_URL).asString
           inputSchema = "{\"registryUrl\":\"" + registryUrl + "\"}"
           logger.info("Using schema json " + inputSchema)
-        } else { 
+        } else {
           inputSchema = context.getPropertyValue(AVRO_READ_VALUE_SCHEMA).asString
         }
-        
+
         readValueSerializer = SerializerProvider.getSerializer(
           context.getPropertyValue(READ_VALUE_SERIALIZER).asString,
           inputSchema)
@@ -251,6 +277,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
         if (context.getPropertyValue(OUTPUT_MODE).isSet) {
           outputMode = context.getPropertyValue(OUTPUT_MODE).asString()
         }
+
       } catch {
         case e: Exception =>
           throw new InitializationException(e)
@@ -265,7 +292,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     * @return DataFrame currently loaded
     */
   override def read(spark: SparkSession) = {
-    import spark.implicits._
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
     getLogger.info(s"starting Kafka direct stream on topics $inputTopics from $startingOffsets offsets, and maxOffsetsPerTrigger :$maxOffsetsPerTrigger")
@@ -334,8 +360,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
   override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) = {
     val sender = df.sparkSession.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
 
-    import df.sparkSession.implicits._
-
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
     val dataStreamWriter =  if (outputTopicsField != null) {
       df
@@ -383,9 +407,10 @@ object KafkaStructuredStreamProviderService {
 
   val OUTPUT_TOPICS: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("kafka.output.topics")
-    .description("Sets the output Kafka topic name")
+    .description("Sets the output Kafka topic name (Comma separated list).")
     .required(false)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
     .build
 
   val OUTPUT_TOPICS_FIELD: PropertyDescriptor = new PropertyDescriptor.Builder()
@@ -394,6 +419,15 @@ object KafkaStructuredStreamProviderService {
       "Every Record must contain this field and it must be a valid topic name !")
     .required(false)
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val INPUT_TOPICS_IGNORED: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("kafka.input.topics.ignored")
+    .description("Sets the input Kafka topic name to ignore (Comma separated list). " +
+      "Those topics will not be subscribed")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
     .build
 
   val READ_VALUE_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
