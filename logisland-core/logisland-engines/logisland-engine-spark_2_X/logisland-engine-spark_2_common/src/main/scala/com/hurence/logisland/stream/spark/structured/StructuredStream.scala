@@ -17,7 +17,6 @@ package com.hurence.logisland.stream.spark.structured
 
 import java.util
 import java.util.Collections
-
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.record.Record
@@ -94,9 +93,14 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       sparkStreamContext.logislandStreamContext.getProcessContexts.addAll(
         PipelineConfigurationBroadcastWrapper.getInstance().get(sparkStreamContext.logislandStreamContext.getIdentifier))
 
+      //Here we support multi source by making an union of each output dataset
       val readDF = context.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
-        .asControllerService()
-        .asInstanceOf[StructuredStreamProviderServiceReader].read(sparkSession)
+        .asString().split(",").toSet
+        .map(_.trim)
+        .map(serviceId => controllerServiceLookup.getControllerService(serviceId))
+        .map(_.asInstanceOf[StructuredStreamProviderServiceReader])
+        .map(_.read(sparkSession))
+        .reduce((source1, source2) => source1.union(source2))
 
       val transformedInputData: Dataset[Record] = transformInputData(readDF)
 
@@ -169,14 +173,17 @@ object StructuredStream {
   //  StructuredStream props
   val READ_STREAM_SERVICE_PROVIDER: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("read.stream.service.provider")
-    .description("the controller service that gives connection information")
+    .description("the controller service that gives connection information. " +
+      "(can be a comma separeted list for multisource)")
     .required(true)
     .identifiesControllerService(classOf[StructuredStreamProviderServiceReader])
+    .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
     .build
 
   val WRITE_STREAM_SERVICE_PROVIDER: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("write.stream.service.provider")
-    .description("the controller service that gives connection information")
+    .description("the controller service that gives connection information " +
+      "(multi sink not supported yet)")
     .required(true)
     .identifiesControllerService(classOf[StructuredStreamProviderServiceWriter])
     .build
