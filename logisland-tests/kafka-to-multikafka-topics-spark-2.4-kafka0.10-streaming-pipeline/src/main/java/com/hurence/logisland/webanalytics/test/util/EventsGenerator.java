@@ -16,6 +16,8 @@ public class EventsGenerator {
     public final static String SESSION_ID = "sessionId";
     public final static String TOPIC_COLUMN = "topic";
     public final static String TIMESTAMP = "timestamp";
+    public final static String FROM_TOPIC = "fromTopic";
+
     final String sessionId;
 
     private long eventId = 0;
@@ -24,12 +26,18 @@ public class EventsGenerator {
         this.sessionId = sessionId;
     }
 
-    public Record generateEvent(long timestamp, String topic) {
+    public Record generateEvent(long timestamp, String outputTopic) {
+        return generateEvent(timestamp, outputTopic, "unknown");
+    }
+
+
+    public Record generateEvent(long timestamp, String outputTopic, String fromTopic) {
         Record record = new StandardRecord("generated");
         record.setId(sessionId + String.valueOf(eventId++));
         record.setStringField(SESSION_ID, sessionId);
-        record.setStringField(TOPIC_COLUMN, topic);
+        record.setStringField(TOPIC_COLUMN, outputTopic);
         record.setLongField(TIMESTAMP, timestamp);
+        record.setStringField(FROM_TOPIC, fromTopic);
         return record;
     }
 

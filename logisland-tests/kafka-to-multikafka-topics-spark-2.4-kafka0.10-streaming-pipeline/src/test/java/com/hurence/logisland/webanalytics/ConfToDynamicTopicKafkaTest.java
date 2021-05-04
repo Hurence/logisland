@@ -59,7 +59,6 @@ public class ConfToDynamicTopicKafkaTest {
         confJob.startJob();
         Thread.sleep(5000L);//wait logisland to be ready
         final long padding = 500L;
-        boolean running = true;
         long ts = 10000L;
         int counter = 0;
         while (counter < 10) {
