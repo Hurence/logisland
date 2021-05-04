@@ -95,7 +95,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
       //Here we support multi source by making an union of each output dataset
       val readDF = context.getPropertyValue(READ_STREAM_SERVICE_PROVIDER)
-        .asString().split(",").toSet
+        .asString().split(",").toSet[String]
         .map(_.trim)
         .map(serviceId => controllerServiceLookup.getControllerService(serviceId))
         .map(_.asInstanceOf[StructuredStreamProviderServiceReader])

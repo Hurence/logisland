@@ -191,15 +191,15 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
           subscribMod = "subscribe"
           if (context.getPropertyValue(INPUT_TOPICS_IGNORED).isSet) {
             val ignoredTopics: Set[String] = context.getPropertyValue(INPUT_TOPICS_IGNORED)
-              .asString().split(",").toSet
+              .asString().split(",").toSet[String]
               .map(_.trim)
             val inputTopicsTmp =  context.getPropertyValue(INPUT_TOPICS)
-              .asString.split(",").toSet
+              .asString.split(",").toSet[String]
               .map(_.trim)
             inputTopics = inputTopicsTmp.diff(ignoredTopics)
           } else {
             inputTopics = context.getPropertyValue(INPUT_TOPICS)
-              .asString.split(",").toSet
+              .asString.split(",").toSet[String]
               .map(_.trim)
           }
           getLogger.info(s"final inputTopics conf is '${inputTopics}'")
@@ -209,7 +209,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
           subscribMod = "subscribePattern"
           if (context.getPropertyValue(INPUT_TOPICS_IGNORED).isSet) {
             val ignoredTopicsPattern: String = context.getPropertyValue(INPUT_TOPICS_IGNORED)
-              .asString().split(",").toSet
+              .asString().split(",").toSet[String]
               .map(_.trim)
               .mkString("(", "|", ")")
             val topicPattern = context.getPropertyValue(INPUT_TOPIC_PATTERN).asString
@@ -222,7 +222,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
 
         if (context.getPropertyValue(OUTPUT_TOPICS).isSet) {
           outputTopics = context.getPropertyValue(OUTPUT_TOPICS)
-            .asString.split(",").toSet
+            .asString.split(",").toSet[String]
             .map(_.trim)
         }
 
@@ -293,6 +293,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     */
   override def read(spark: SparkSession) = {
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+    import spark.implicits._
 
     getLogger.info(s"starting Kafka direct stream on topics $inputTopics from $startingOffsets offsets, and maxOffsetsPerTrigger :$maxOffsetsPerTrigger")
     var df = spark.readStream
@@ -359,8 +360,9 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService
     */
   override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink]) = {
     val sender = df.sparkSession.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
-
+    import df.sparkSession.implicits._
     implicit val recordEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+
     val dataStreamWriter =  if (outputTopicsField != null) {
       df
         .mapPartitions(records =>  {
