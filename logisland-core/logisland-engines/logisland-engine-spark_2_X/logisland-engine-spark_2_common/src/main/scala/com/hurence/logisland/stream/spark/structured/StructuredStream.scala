@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package com.hurence.logisland.stream.spark.structured
+  package com.hurence.logisland.stream.spark.structured
 
 import java.util
 import java.util.Collections
@@ -35,14 +35,15 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
   @transient protected var sparkStreamContext: SparkStreamContext = _
   private var isReady = false
   private var groupByField: String = _
+  private var checkpointBasePath: String = _
   @transient protected var outputMode: OutputMode = _
-
 
   override def getSupportedPropertyDescriptors() = {
     val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
     descriptors.add(READ_STREAM_SERVICE_PROVIDER)
     descriptors.add(WRITE_STREAM_SERVICE_PROVIDER)
     descriptors.add(GROUP_BY_FIELDS)
+    descriptors.add(SPARK_BASE_CHECKPOINT_PATH)
 //    descriptors.add(STATE_TIMEOUT_DURATION_MS)
 //    descriptors.add(STATE_TIMEOUT_DURATION_MS)
 //    descriptors.add(STATEFULL_OUTPUT_MODE)
@@ -54,6 +55,18 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     this.sparkStreamContext = sparkStreamContext
     if (context.getPropertyValue(GROUP_BY_FIELDS).isSet) {
       groupByField = context.getPropertyValue(GROUP_BY_FIELDS).asString()
+    }
+    if (context.getPropertyValue(SPARK_BASE_CHECKPOINT_PATH).isSet) {
+      if (GlobalOptions.checkpointLocation != null && GlobalOptions.checkpointLocation.nonEmpty) {
+        getLogger.warn("ignoring conf '{}' set to '{}' as " +
+          "checkpoint location has been specified to '{}' in command line",
+          Array[Object](SPARK_BASE_CHECKPOINT_PATH.getName,
+            context.getPropertyValue(SPARK_BASE_CHECKPOINT_PATH).asString(),
+            GlobalOptions.checkpointLocation))
+        this.checkpointBasePath =  GlobalOptions.checkpointLocation
+      } else {
+        this.checkpointBasePath =  context.getPropertyValue(SPARK_BASE_CHECKPOINT_PATH).asString()
+      }
     }
 //    context.getPropertyValue(STATEFULL_OUTPUT_MODE).asString() match {
 //      case "append" => outputMode = OutputMode.Append()
@@ -110,15 +123,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       val dataStreamWriter = writerService
         .write(transformedInputData, sparkStreamContext.broadCastedControllerServiceLookupSink)
 
-      var checkpointLocation : String = "checkpoints"
-      if (GlobalOptions.checkpointLocation != null) {
-        checkpointLocation = GlobalOptions.checkpointLocation
-        getLogger.info(s"Checkpoint using checkpointLocation: $checkpointLocation")
-      }
-
-      getLogger.info(s"Starting structured stream sink ${writerService.getIdentifier} from stream ${identifier} with checkpointLocation: $checkpointLocation")
+      getLogger.info(s"Starting structured stream sink ${writerService.getIdentifier} from stream ${identifier} with checkpointLocation: $checkpointBasePath")
       dataStreamWriter
-        .option("checkpointLocation", checkpointLocation + "/" + identifier + "/" + writerService.getIdentifier)
+        .option("checkpointLocation", checkpointBasePath + "/" + identifier + "/" + writerService.getIdentifier)
         .queryName(identifier + "#" + writerService.getIdentifier)
         .start()
 
@@ -247,5 +254,14 @@ object StructuredStream {
     .addValidator(StandardValidators.LONG_VALIDATOR)
     .required(false)
     .build
+
+  val SPARK_BASE_CHECKPOINT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("spark.base.checkpoint.path")
+    .description("Path to store all checkpoint for all sink, they will b stored in" +
+      " ${spark.base.checkpoint.path}/${stream_id}/${service_id}")
+    .required(false)
+    .defaultValue("checkpoints")
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build;
 
 }
