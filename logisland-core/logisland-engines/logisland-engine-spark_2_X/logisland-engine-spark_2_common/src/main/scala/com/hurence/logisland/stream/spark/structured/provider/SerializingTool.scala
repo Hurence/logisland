@@ -31,7 +31,7 @@ object SerializingTool {
       Some(deserialized)
     } catch {
       case t: Throwable =>
-        logger.error(s"exception while deserializing events ${t.getMessage} ! This means the event will be ignored !")
+        logger.error(s"exception while deserializing events ${t.getMessage} ! This means the event will be ignored !", t)
         None
     }
   }

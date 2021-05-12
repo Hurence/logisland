@@ -26,7 +26,9 @@
     </parent>
     <artifactId>logisland-utils</artifactId>
     <packaging>jar</packaging>
-
+    <properties>
+        <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+    </properties>
     <dependencies>
         <!--Versions are set in root pom <dependencyManagement> so that all core library use the same -->
         <dependency>
@@ -139,11 +141,10 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${maven-shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -151,14 +152,19 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.apache.avro</pattern>
+                                    <shadedPattern>org.apache.avro.shaded.logisland</shadedPattern>
+                                </relocation>
+                            </relocations>
                             <artifactSet>
                                 <includes>
                                     <include>org.apache.avro:avro</include>
                                     <include>io.confluent</include>
                                 </includes>
                             </artifactSet>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
