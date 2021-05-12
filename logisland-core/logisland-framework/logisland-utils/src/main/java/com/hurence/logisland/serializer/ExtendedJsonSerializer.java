@@ -24,9 +24,7 @@ import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -48,16 +46,25 @@ public class ExtendedJsonSerializer implements RecordSerializer {
 
     private static Logger logger = LoggerFactory.getLogger(ExtendedJsonSerializer.class);
 
-    private final Schema schema;
-
+    protected final String schemaStr;
+    //    Schema seems to not be Serializable sometimes...
+    protected transient Schema schema;
     private transient volatile ObjectMapper mapper;
 
-    public ExtendedJsonSerializer(Schema schema) {
-        this.schema = schema;
+    public ExtendedJsonSerializer(final String strSchema) {
+        this.schemaStr = strSchema;
     }
 
-    public ExtendedJsonSerializer() {
-        this.schema = null;
+    private Schema getSchema() {
+        if (schema == null && schemaStr != null) {
+            final Schema.Parser parser = new Schema.Parser();
+            try {
+                schema = parser.parse(schemaStr);
+            } catch (Exception e) {
+                throw new RecordSerializationException("unable to create serializer", e);
+            }
+        }
+        return schema;
     }
 
     public void doFilter(Map<String, Object> map, String name, Object value, Schema schema) {
@@ -134,27 +141,15 @@ public class ExtendedJsonSerializer implements RecordSerializer {
 
     public Map<String, Object> filterWithSchema(Map<String, Object> in) {
         Map<String, Object> ret = in;
-        if (schema != null) {
+        if (getSchema() != null) {
             ret = new LinkedHashMap<>();
-            doFilter(ret, null, in, schema);
+            doFilter(ret, null, in, getSchema());
             ret = (Map<String, Object>) ret.getOrDefault(null, Collections.<String, Object>emptyMap());
         }
 
         return ret;
     }
 
-    public ExtendedJsonSerializer(String schemaString) {
-        if (schemaString != null) {
-            final Schema.Parser parser = new Schema.Parser().setValidate(false);
-            try {
-                schema = parser.parse(schemaString);
-            } catch (Exception e) {
-                throw new RecordSerializationException("unable to create serializer", e);
-            }
-        } else {
-            schema = null;
-        }
-    }
 
     @Override
     public void serialize(OutputStream out, Record record) throws RecordSerializationException {

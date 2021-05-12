@@ -75,7 +75,7 @@ public class AvroSerializer implements RecordSerializer {
     protected static final byte MAGIC_BYTE = 0x0;
     protected static final int idSize = 4;
 
-    public Schema getSchema() {
+    private Schema getSchema() {
         if (schema == null) {
             final Schema.Parser parser = new Schema.Parser();
             try {
