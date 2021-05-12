@@ -18,7 +18,6 @@ package com.hurence.logisland.serializer;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.LogLevel;
 import com.hurence.logisland.logging.StandardComponentLogger;
-import org.apache.avro.Schema;
 
 public class SerializerProvider {
 
@@ -48,9 +47,7 @@ public class SerializerProvider {
 
         try {
             if (inSerializerClass.equals(AVRO_SERIALIZER)) {
-                Schema.Parser parser = new Schema.Parser();
-                Schema schema = parser.parse(schemaContent);
-                return new AvroSerializer(schema);
+                return new AvroSerializer(schemaContent);
             } else if (inSerializerClass.equals(CONFLUENT_SERIALIZER)) {
                 return new ConfluentSerializer(schemaContent);
             } else if (inSerializerClass.equals(JSON_SERIALIZER)) {

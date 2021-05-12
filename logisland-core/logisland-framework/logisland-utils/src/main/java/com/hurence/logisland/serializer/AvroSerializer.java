@@ -42,43 +42,50 @@ import org.apache.avro.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class AvroSerializer implements RecordSerializer {
 
-    private final Schema schema;
+    protected final String schemaStr;
+//    Schema seems to not be Serializable sometimes...
+    protected transient Schema schema;
     private Logger logger = LoggerFactory.getLogger(AvroSerializer.class);
 
-    public AvroSerializer(final Schema schema) {
-        this.schema = schema;
-    }
-
     public AvroSerializer(final String strSchema) {
-        final Schema.Parser parser = new Schema.Parser();
-        try {
-            schema = parser.parse(strSchema);
-        } catch (Exception e) {
-            throw new RecordSerializationException("unable to create serializer", e);
-        }
+        this.schemaStr = strSchema;
     }
 
-    public AvroSerializer(final InputStream inputStream) {
-        assert inputStream != null;
-        final Schema.Parser parser = new Schema.Parser();
-        try {
-             schema = parser.parse(inputStream);
-        } catch (IOException e) {
-            throw new RecordSerializationException("unable to create serializer", e);
+    public AvroSerializer(final InputStream schema) throws IOException {
+        InputStreamReader isReader = new InputStreamReader(schema);
+        //Creating a BufferedReader object
+        BufferedReader reader = new BufferedReader(isReader);
+        StringBuffer sb = new StringBuffer();
+        String str;
+        while((str = reader.readLine())!= null){
+            sb.append(str);
         }
+        this.schemaStr = sb.toString();
     }
+
+
 
     protected static final byte MAGIC_BYTE = 0x0;
     protected static final int idSize = 4;
+
+    public Schema getSchema() {
+        if (schema == null) {
+            final Schema.Parser parser = new Schema.Parser();
+            try {
+                schema = parser.parse(schemaStr);
+            } catch (Exception e) {
+                throw new RecordSerializationException("unable to create serializer", e);
+            }
+        }
+        return schema;
+    }
 
     @Override
     public void serialize(final OutputStream out, final Record record) throws RecordSerializationException {
@@ -87,7 +94,7 @@ public class AvroSerializer implements RecordSerializer {
             /**
              * convert the logIsland Event to an Avro GenericRecord
              */
-            GenericRecord eventRecord = new GenericData.Record(schema);
+            GenericRecord eventRecord = new GenericData.Record(getSchema());
             for (Map.Entry<String, Field> entry : record.getFieldsEntrySet()) {
                 // retrieve event field
                 String key = entry.getKey();
@@ -101,7 +108,7 @@ public class AvroSerializer implements RecordSerializer {
             /**
              *
              */
-            DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
+            DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(getSchema());
             Encoder encoder = EncoderFactory.get().binaryEncoder(out, null);
             datumWriter.write(eventRecord, encoder);
             encoder.flush();
@@ -129,7 +136,7 @@ public class AvroSerializer implements RecordSerializer {
     public Record deserialize(final InputStream in) throws RecordSerializationException {
         try {
             Decoder decoder = DecoderFactory.get().binaryDecoder(in, null);
-            DatumReader<GenericRecord> datumReader = new GenericDatumReader<>(schema);
+            DatumReader<GenericRecord> datumReader = new GenericDatumReader<>(getSchema());
             GenericRecord genericRecord = datumReader.read(null, decoder);
 
             Record record = new StandardRecord(genericRecord.get(FieldDictionary.RECORD_TYPE).toString());
