@@ -51,6 +51,10 @@ public class ExtendedJsonSerializer implements RecordSerializer {
     protected transient Schema schema;
     private transient volatile ObjectMapper mapper;
 
+    public ExtendedJsonSerializer() {
+        schemaStr = null;
+    }
+
     public ExtendedJsonSerializer(final String strSchema) {
         this.schemaStr = strSchema;
     }
