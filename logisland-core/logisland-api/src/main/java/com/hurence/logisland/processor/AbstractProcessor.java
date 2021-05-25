@@ -28,6 +28,10 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
         return isInitialized;
     }
 
+    protected void setIsInitialized(boolean isInitialized) {
+        this.isInitialized = isInitialized;
+    }
+
     @Override
     public void init(final ProcessContext context) throws InitializationException {
         super.init(context);

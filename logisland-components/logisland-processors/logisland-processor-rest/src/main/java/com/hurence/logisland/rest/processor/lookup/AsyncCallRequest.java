@@ -56,6 +56,7 @@ public class AsyncCallRequest extends AbstractCallRequest
     public void stop() {
         if (vertx != null) {
             vertx.close();
+            setIsInitialized(false);
         }
     }
 
@@ -105,7 +106,6 @@ public class AsyncCallRequest extends AbstractCallRequest
                             });
                 }).collect(Collectors.toList());
         Maybe.<Optional<Record>, Integer>zip(responses, (opts) -> { return 0; }).blockingGet();//wait until all request are done
-        stop();
         return records;
     }
 }

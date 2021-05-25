@@ -58,6 +58,7 @@ public class AsyncCallRequestBulkPostJson extends AbstractCallRequest
     public void stop() {
         if (vertx != null) {
             vertx.close();
+            setIsInitialized(false);
         }
     }
 
@@ -117,7 +118,6 @@ public class AsyncCallRequestBulkPostJson extends AbstractCallRequest
             }
         }
         getLogger().debug("Bulk ended " );
-        stop();
         return records;
     }
 }

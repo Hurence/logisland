@@ -230,7 +230,6 @@ public class MatchQuery extends AbstractProcessor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
         try {
             return internalProcess(context, records);
         } finally {
@@ -327,5 +326,6 @@ public class MatchQuery extends AbstractProcessor {
         if (stopAnalyzer != null) {
             stopAnalyzer.close();
         }
+        setIsInitialized(false);
     }
 }
