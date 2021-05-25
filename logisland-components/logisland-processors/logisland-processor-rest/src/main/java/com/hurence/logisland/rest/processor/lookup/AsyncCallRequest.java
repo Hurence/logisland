@@ -56,6 +56,7 @@ public class AsyncCallRequest extends AbstractCallRequest
     public void stop() {
         if (vertx != null) {
             vertx.close();
+            vertx = null;
             setIsInitialized(false);
         }
     }
