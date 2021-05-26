@@ -60,8 +60,13 @@ object SparkPipeLineMethods {
       // loop over processor chain
       streamContext.getProcessContexts.foreach(processorContext => {
         val startTime = System.currentTimeMillis()
-        val processor = processorContext.getProcessor//Does this cause problem ? same instance used in concurrence ?
-
+        val processor = processorContext.getProcessor
+        /*
+          Does this cause problem ? same instance used in concurrence ?
+          I tested to serialize an object into a mapPArtition transformation
+          and could not find any bug related to concurrence. It seems for each partition we got a new instance
+          of the processor.
+        */
         val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
           processorContext.getIdentifier + ".processing_time_ms").time()
 
