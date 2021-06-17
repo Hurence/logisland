@@ -113,6 +113,13 @@
             <version>2.11.1</version>
         </dependency>
 
+        <!--log dependencies-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

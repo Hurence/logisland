@@ -24,8 +24,8 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
+import java.lang.reflect.Array;
+import java.util.*;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -43,7 +43,8 @@ class ElasticsearchRecordConverter {
     static String convertToString(Record record) {
       return convertToString(record, "location");
     }
-    
+
+
     /**
      * Converts an Event into an Elasticsearch document
      * to be indexed later
@@ -55,11 +56,7 @@ class ElasticsearchRecordConverter {
     static String convertToString(Record record, String geolocationFieldLabel) {
         logger.trace(record.toString());
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-            XContentBuilder document = jsonBuilder().startObject();
-            final float[] geolocation = new float[2];
-
+            final XContentBuilder document = jsonBuilder().startObject();
             // convert event_time as ISO for ES
             if (record.hasField(FieldDictionary.RECORD_TIME)) {
                 try {
@@ -70,6 +67,7 @@ class ElasticsearchRecordConverter {
                 }
             }
 
+            final float[] geolocation = new float[2];
             // add all other records
             record.getAllFieldsSorted().forEach(field -> {
 
@@ -82,13 +80,11 @@ class ElasticsearchRecordConverter {
                     return;
                 }
 
+
                 try {
                     // cleanup invalid es fields characters like '.'
-                    String fieldName = field.getName().replaceAll("\\.", "_");
-
-
+                    final String fieldName = field.getName().replaceAll("\\.", "_");
                     switch (field.getType()) {
-
                         case STRING:
                             document.field(fieldName, field.asString());
                             break;
@@ -112,18 +108,47 @@ class ElasticsearchRecordConverter {
                                 geolocation[0] = field.asFloat();
                             if( fieldName.equals("long") || fieldName.equals("longitude"))
                                 geolocation[1] = field.asFloat();
-
                             break;
                         case BOOLEAN:
                             document.field(fieldName, field.asBoolean().booleanValue());
+                            break;
+                        case RECORD:
+                            Map<String, Object> map =  toMap(field.asRecord(), true);
+                            document.field(fieldName, map);
+                            break;
+                        case ARRAY:
+                            Collection collection;
+                            Object value = field.getRawValue();
+                            if (value == null) {
+                                break;
+                            } else if (value.getClass().isArray()) {
+                                collection = new ArrayList<>();
+                                for (int i = 0; i < Array.getLength(value); i++) {
+                                    collection.add(Array.get(value, i));
+                                }
+                            } else if (value instanceof Collection) {
+                                collection = (Collection) value;
+                            } else {
+                                logger.error("unable to process field '{}' in record : {}, {}", fieldName, record, "the value of field is not an array or collection");
+                                break;
+                            }
+
+                            final List list = new ArrayList(collection.size());
+                            for (final Object item : collection) {
+                                if (item instanceof Record) {
+                                    list.add(toMap((Record) item, true));
+                                } else {
+                                    list.add(item);
+                                }
+                            }
+                            document.field(fieldName, list);
                             break;
                         default:
                             document.field(fieldName, field.getRawValue());
                             break;
                     }
-
                 } catch (Throwable ex) {
-                    logger.error("unable to process a field in record : {}, {}", record, ex.toString());
+                    logger.error("unable to process field '{}' in record : {}, {}", fieldName, record, ex.toString());
                 }
             });
 
@@ -141,6 +166,75 @@ class ElasticsearchRecordConverter {
             logger.error("unable to convert record : {}, {}", record, ex.toString());
         }
         return null;
+    }
+
+    /**
+     * Returns the conversion of a record to a map where all {@code null} values were removed.
+     *
+     * @param record the record to convert.
+     *
+     * @return the conversion of a record to a map where all {@code null} values were removed.
+     */
+    private static Map<String, Object> toMap(final Record record) {
+        return toMap(record, false);
+    }
+
+    /**
+     * Returns the conversion of a record to a map where all {@code null} values were removed.
+     *
+     * @param record the record to convert.
+     * @param filterInnerRecord if {@code true} special dictionnary fields are ignored; included otherwise.
+     *
+     * @return the conversion of a record to a map where all {@code null} values were removed.
+     */
+    private static Map<String, Object> toMap(final Record record,
+                                             final boolean filterInnerRecord) {
+        try {
+            final Map<String, Object> result = new HashMap<>();
+
+            record.getFieldsEntrySet()
+                    .stream()
+                    .forEach(entry ->
+                    {
+                        if (!filterInnerRecord || (filterInnerRecord && !FieldDictionary.contains(entry.getKey()))) {
+                            Object value = entry.getValue().getRawValue();
+                            if (value != null) {
+                                switch (entry.getValue().getType()) {
+                                    case RECORD:
+                                        value = toMap((Record) value, true);
+                                        break;
+                                    case ARRAY:
+                                        Collection collection;
+                                        if (value.getClass().isArray()) {
+                                            collection = new ArrayList<>();
+                                            for (int i = 0; i < Array.getLength(value); i++) {
+                                                collection.add(Array.get(value, i));
+                                            }
+                                        } else if (value instanceof Collection) {
+                                            collection = (Collection) value;
+                                        } else {
+                                            collection = Arrays.asList(value);
+                                        }
+                                        final List list = new ArrayList(collection.size());
+                                        for (final Object item : collection) {
+                                            if (item instanceof Record) {
+                                                list.add(toMap((Record) item, true));
+                                            } else {
+                                                list.add(item);
+                                            }
+                                        }
+                                        value = list;
+                                        break;
+                                    default:
+                                }
+                                result.put(entry.getKey(), value);
+                            }
+                        }
+                    });
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
