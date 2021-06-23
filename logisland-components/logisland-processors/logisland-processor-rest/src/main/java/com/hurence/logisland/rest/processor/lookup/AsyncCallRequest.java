@@ -78,6 +78,7 @@ public class AsyncCallRequest extends AbstractCallRequest
          * loop over events to add them to bulk
          */
         List<Maybe<Optional<Record>>> responses = records.stream()
+                .filter(record -> triggerRestCall(record, context))
                 .map(record -> {
                     StandardRecord coordinates = new StandardRecord(record);
                     calculVerb(record, context).ifPresent(verb -> coordinates.setStringField(restClientService.getMethodKey(), verb));

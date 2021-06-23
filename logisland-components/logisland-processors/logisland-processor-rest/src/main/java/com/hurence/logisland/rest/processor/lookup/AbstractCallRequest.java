@@ -238,7 +238,7 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
         return Optional.empty();
     }
 
-    ArrayList<Optional<String>> concatBody(Collection<Record> records, ProcessContext context) {
+    ArrayList<Optional<String>> concatBodyLegacy(Collection<Record> records, ProcessContext context) {
         ArrayList<Optional<String>> result = new ArrayList<>();
         if (records != null && !records.isEmpty()) {
             int partition_size = (context.getPropertyValue(RECORDS_THRESHOLD).isSet()) ? context.getPropertyValue(RECORDS_THRESHOLD).asInteger() : 1000;
@@ -292,6 +292,31 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
             }
         }
         return  result;
+    }
+
+    ArrayList<Optional<String>> concatBody(Collection<Record> records, ProcessContext context) {
+        ArrayList<Optional<String>> result = new ArrayList<>();
+        if (records != null && !records.isEmpty()) {
+            int partition_size = (context.getPropertyValue(RECORDS_THRESHOLD).isSet()) ? context.getPropertyValue(RECORDS_THRESHOLD).asInteger() : 1000;
+            ArrayList<Record> records_list = new ArrayList<>(records);
+            for (List<Record> partition : Lists.partition(records_list, partition_size)) {
+
+                StringBuffer buffer = new StringBuffer();
+                for (Record record : partition  ) {
+                    if (triggerRestCall(record, context)) {
+                        Optional<String> bodyOptional = calculBody(record,context);
+                        if (bodyOptional.isPresent()) {
+                            buffer.append((String) bodyOptional.get());
+                        }
+                    }
+                }
+                if (buffer.length() > 0) {
+                    buffer.setLength(buffer.length() - 1);
+                    result.add(Optional.ofNullable("[ " + buffer + " ]"));
+                }
+            }
+        }
+        return result;
     }
 
     Optional<String> calculMimTyp(Record record, ProcessContext context) {
