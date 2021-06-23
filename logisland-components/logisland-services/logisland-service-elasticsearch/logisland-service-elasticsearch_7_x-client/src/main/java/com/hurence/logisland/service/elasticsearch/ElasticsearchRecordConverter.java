@@ -80,10 +80,9 @@ class ElasticsearchRecordConverter {
                     return;
                 }
 
-
+                final String fieldName = field.getName().replaceAll("\\.", "_");
                 try {
                     // cleanup invalid es fields characters like '.'
-                    final String fieldName = field.getName().replaceAll("\\.", "_");
                     switch (field.getType()) {
                         case STRING:
                             document.field(fieldName, field.asString());

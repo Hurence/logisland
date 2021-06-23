@@ -180,7 +180,7 @@ public class RestLookupService extends AbstractControllerService implements Rest
 
     private volatile ProxyConfigurationService proxyConfigurationService;
     private volatile RecordSerializer deserializer;
-    private volatile OkHttpClient client;
+    private volatile transient OkHttpClient client;
     private volatile Map<String, String> headers;
     private volatile String urlTemplate;
     private volatile String basicUser;
@@ -234,9 +234,21 @@ public class RestLookupService extends AbstractControllerService implements Rest
         }
     }
 
+
+    @Override
+    public void start() {
+        super.start();
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+//        this.urlTemplate = null;
+    }
+
     @OnDisabled
     public void onDisable() {
-        this.urlTemplate = null;
+        stop();
     }
 
     private void buildHeaders(ControllerServiceInitializationContext context) {
@@ -490,4 +502,5 @@ public class RestLookupService extends AbstractControllerService implements Rest
     public String getResponseBodyKey() {
         return RESPONSE_BODY_FIELD;
     }
+
 }

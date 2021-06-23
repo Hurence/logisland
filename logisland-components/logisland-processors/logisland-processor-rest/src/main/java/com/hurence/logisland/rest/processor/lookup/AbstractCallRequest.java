@@ -338,7 +338,7 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
             if the record contains one of the tag of the property with one of the value for this tag it will return true
      */
     Boolean triggerRestCall(Record record, ProcessContext context) {
-         AtomicBoolean result = new AtomicBoolean(false);
+        AtomicBoolean result = new AtomicBoolean(false);
         if (context.getPropertyValue(TAG_KEY_VALUE).isSet()) {
            String tag_list = context.getPropertyValue(TAG_KEY_VALUE).asString();
             String [] keyValuePairs = tag_list.split(";");
