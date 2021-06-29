@@ -428,4 +428,92 @@ public class AddFieldsTest extends BaseSyslogTest {
         out.assertFieldTypeEquals("_value1_", FieldType.STRING);
         out.assertRecordSizeEquals(sizeBeforeProcessing + 1);//should only have 3 more fields
     }
+
+    @Test
+    public void testWithEexpressionLanguageUsingOutputFieldForCalculatingValue() {
+        Record record1 = new StandardRecord();
+        record1.setField("is_PunchOut", FieldType.STRING, null);
+        record1.setField("is_PunchOut2", FieldType.STRING, "off");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
+        testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
+        testRunner.setProperty("is_PunchOut",
+                "${if ( is_PunchOut != null) return is_PunchOut; else return 'was null';}");
+        testRunner.setProperty("is_PunchOut2",
+                "${if ( is_PunchOut2 != null) return is_PunchOut2; else return 'was null';}");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("is_PunchOut", "was null");
+        out.assertFieldEquals("is_PunchOut2", "off");
+    }
+
+//    @Test
+//    public void testExpressionLanguageToConvertEs2_4_bollInto_ES_7_X_Bool() {
+//        /*
+//            false value in ES 2.4 :  false, "false", "off", "no", "0", "" (empty string), 0, 0.0
+//            Others are true
+//
+//            In Es 7_X
+//             False values: false, "false", "" (empty string)
+//             True values: true, "true"
+//         */
+//        Record record1 = new StandardRecord();
+//        record1.setField("is_PunchOut", FieldType.STRING, null);
+//        record1.setField("is_PunchOut2", FieldType.STRING, "");
+//        record1.setField("is_PunchOut3", FieldType.STRING, "undefined");
+//        record1.setField("is_PunchOut4", FieldType.STRING, "true");
+//        record1.setField("is_PunchOut5", FieldType.STRING, "false");
+//        record1.setField("is_PunchOut6", FieldType.STRING, "0");
+//        record1.setField("is_PunchOut7", FieldType.STRING, "1");
+//        record1.setField("is_PunchOut8", FieldType.STRING, "off");
+//        record1.setField("is_PunchOut9", FieldType.STRING, "no");
+//        record1.setField("is_PunchOut10", FieldType.STRING, 0);
+//        record1.setField("is_PunchOut11", FieldType.STRING, 0.0);
+//
+//
+//        TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
+//        testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
+//        testRunner.setProperty("is_PunchOut", buildExpressionForField("is_PunchOut1"));
+//        testRunner.setProperty("is_PunchOut2", buildExpressionForField("is_PunchOut2"));
+//        testRunner.setProperty("is_PunchOut3", buildExpressionForField("is_PunchOut3"));
+//        testRunner.setProperty("is_PunchOut4", buildExpressionForField("is_PunchOut4"));
+//        testRunner.setProperty("is_PunchOut5", buildExpressionForField("is_PunchOut5"));
+//        testRunner.setProperty("is_PunchOut6", buildExpressionForField("is_PunchOut6"));
+//        testRunner.setProperty("is_PunchOut7", buildExpressionForField("is_PunchOut7"));
+//        testRunner.setProperty("is_PunchOut8", buildExpressionForField("is_PunchOut8"));
+//        testRunner.setProperty("is_PunchOut9", buildExpressionForField("is_PunchOut9"));
+//        testRunner.setProperty("is_PunchOut10", buildExpressionForField("is_PunchOut10"));
+//        testRunner.setProperty("is_PunchOut11", buildExpressionForField("is_PunchOut11"));
+//        testRunner.setProperty("is_PunchOut12",  buildExpressionForField("is_PunchOut12"));
+//        testRunner.assertValid();
+//        testRunner.enqueue(record1);
+//        testRunner.run();
+//        testRunner.assertAllInputRecordsProcessed();
+//        testRunner.assertOutputRecordsCount(1);
+//
+//        MockRecord out = testRunner.getOutputRecords().get(0);
+//        out.assertFieldEquals("is_PunchOut", null);
+//        out.assertFieldEquals("is_PunchOut2", "false");
+//        out.assertFieldEquals("is_PunchOut3", "false");
+//        out.assertFieldEquals("is_PunchOut4", "true");
+//        out.assertFieldEquals("is_PunchOut5", "false");
+//        out.assertFieldEquals("is_PunchOut6", "false");
+//        out.assertFieldEquals("is_PunchOut7", "true");
+//        out.assertFieldEquals("is_PunchOut8", "false");
+//        out.assertFieldEquals("is_PunchOut9", "false");
+//        out.assertFieldEquals("is_PunchOut10", "S");
+//        out.assertFieldEquals("is_PunchOut11", "S");
+//        out.assertFieldEquals("is_PunchOut12", "S");
+//
+//    }
+//
+//    private String buildExpressionForField(String fieldName) {
+//        return "${if ( " + fieldName + " == null ) return " + fieldName + "; \n " +
+//                "if ( " + fieldName + " == '' ) return false; else return true}";
+//    }
 }
