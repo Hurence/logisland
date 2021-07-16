@@ -124,13 +124,6 @@
         <shade-plugin.version>2.4.3</shade-plugin.version>
     </properties>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </pluginRepository>
-    </pluginRepositories>
     <repositories>
 
         <repository>
@@ -200,17 +193,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-
-
-            <repository>
-                <id>scala-tools.org</id>
-                <name>Scala-tools Maven2 Repository</name>
-                <url>http://scala-tools.org/repo-releases</url>
-            </repository>
-
-
     </repositories>
-
 
     <dependencyManagement>
         <dependencies>
