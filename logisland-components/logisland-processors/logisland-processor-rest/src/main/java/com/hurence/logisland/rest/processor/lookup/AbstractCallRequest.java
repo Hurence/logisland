@@ -306,12 +306,15 @@ public abstract class AbstractCallRequest extends AbstractHttpProcessor
                     if (triggerRestCall(record, context)) {
                         Optional<String> bodyOptional = calculBody(record,context);
                         if (bodyOptional.isPresent()) {
+                            if (buffer.length() > 0) {
+                              buffer.append(",");
+                            }
                             buffer.append((String) bodyOptional.get());
                         }
                     }
                 }
                 if (buffer.length() > 0) {
-                    buffer.setLength(buffer.length() - 1);
+                    //buffer.setLength(buffer.length() - 1);
                     result.add(Optional.ofNullable("[ " + buffer + " ]"));
                 }
             }
