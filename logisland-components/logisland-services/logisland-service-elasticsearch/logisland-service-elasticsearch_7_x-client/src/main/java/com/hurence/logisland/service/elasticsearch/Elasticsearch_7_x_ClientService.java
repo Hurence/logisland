@@ -36,6 +36,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -107,7 +108,6 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     private volatile HttpHost[] esHosts;
     private volatile String authToken;
     protected volatile transient BulkProcessor bulkProcessor;
-    protected volatile Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
     private String geolocationFieldLabel;
 
     @Override
@@ -275,12 +275,24 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
                 getLogger().debug("Executed bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
                 if (bulkResponse.hasFailures()) {
-                    getLogger().warn("There was failures while executing bulk [id:{}]," +
+                    getLogger().error("There was failures while executing bulk [id:{}]," +
                                     " done bulk request in {} ms with failure = {}",
                             new Object[]{l, bulkResponse.getTook().getMillis(), bulkResponse.buildFailureMessage()});
+                    // For each failed doc retrieve the doc we tried to send and display original content
+                    // with error returned by the bulkResponse
+                    List<DocWriteRequest<?>> requests = bulkRequest.requests();
                     for (BulkItemResponse item : bulkResponse.getItems()) {
                         if (item.isFailed()) {
-                            errors.put(item.getId(), item.getFailureMessage());
+                            String itemId = item.getId();
+                            String failureMessage = item.getFailureMessage();
+                            for (DocWriteRequest<?> dwr : requests) {
+                                if (dwr.id().equals(itemId)) {
+                                    getLogger().error("\nBULK ID: " + l +
+                                            "\nDOCUMENT ID: " + itemId +
+                                            "\nERROR: " + failureMessage +
+                                            "\nORIGINAL DOCUMENT:" + dwr.toString() + "\n");
+                                }
+                            }
                         }
                     }
                 }
