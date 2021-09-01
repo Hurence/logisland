@@ -31,18 +31,15 @@
 
 package com.hurence.logisland.engine.spark
 
-
 import java.util
 import java.util.concurrent.Executors
 import java.util.regex.Pattern
-import java.util.stream.Collectors
-import java.util.{Collections, UUID}
-
-import com.hurence.logisland.component.{AllowableValue, ComponentContext, InitializationException, PropertyDescriptor}
+import java.util.{Collections, Map, UUID}
+import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
+import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine.SPARK_CUSTOM_CONFIG_PREFIX
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
-import com.hurence.logisland.stream.StreamContext
-import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream, SparkStreamContext}
+import com.hurence.logisland.stream.spark.{SparkRecordStream, SparkStreamContext}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
@@ -50,14 +47,13 @@ import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.sql.streaming.StreamingQueryListener
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
 
 object KafkaStreamProcessingEngine {
-
 
     val SPARK_PROPERTIES_FILE_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()//Not used in code but in logisland.sh script. Si it must be present !
       .name("spark.properties.file.path")
@@ -272,7 +268,6 @@ object KafkaStreamProcessingEngine {
         .defaultValue("4")
         .build
 
-
     val SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL = new PropertyDescriptor.Builder()
         .name("spark.yarn.am.attemptFailuresValidityInterval")
         .description("If the application runs for days or weeks without restart " +
@@ -388,6 +383,7 @@ object KafkaStreamProcessingEngine {
             .allowableValues(OVERWRITE_EXISTING, KEEP_OLD_FIELD)
             .build();
 
+    val SPARK_CUSTOM_CONFIG_PREFIX = "spark.custom.config."
 }
 
 class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
@@ -458,6 +454,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         }
 
+        handleDynamicProperties(context.getProperties)
+
         logger.info("Configuration from logisland main")
         logger.info(conf.toDebugString)
         
@@ -474,9 +472,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             logger.info("Application stopped")
         }
 
-
         PipelineConfigurationBroadcastWrapper.getInstance().refresh(engineContext, sparkContext)
-
 
         SQLContext.getOrCreate(getCurrentSparkContext()).streams.addListener(new StreamingQueryListener {
 
@@ -519,6 +515,24 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         logger.info(s"conf : ${conf.toDebugString}")
     }
 
+    protected def handleDynamicProperties(properties : Map[PropertyDescriptor, String]) = {
+
+      properties.foreach(propertyAndValue => {
+
+        val propertyDescriptor: PropertyDescriptor = propertyAndValue._1
+        val propertyName: String = propertyDescriptor.getName
+        // Handle any dynamic property of the form 'spark.custom.config.XXX: someValue' properties
+        // which will be passed to spark configuration as property 'XXX=someValue'
+        if (propertyDescriptor.isDynamic && propertyName.startsWith(SPARK_CUSTOM_CONFIG_PREFIX)) {
+          val customSparkConfigKey: String = propertyName.substring(SPARK_CUSTOM_CONFIG_PREFIX.length)
+          if (customSparkConfigKey.length > 0) { // Ignore silly 'spark.custom.config.: missing_custom_key' property
+            val customSparkConfigValue: String = propertyAndValue._2
+            conf.set(customSparkConfigKey, customSparkConfigValue)
+          }
+        }
+      })
+    }
+
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.add(KafkaStreamProcessingEngine.SPARK_APP_NAME)
@@ -557,7 +571,24 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_TOTAL_EXECUTOR_CORES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_SUPERVISE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_CONF_POLICY)
+
         Collections.unmodifiableList(descriptors)
+    }
+
+    override def getSupportedDynamicPropertyDescriptor(propertyDescriptorName: String): PropertyDescriptor = {
+
+      // Support any custom spark configuration.
+      // The property name must start with SPARK_CUSTOM_CONFIG_PREFIX, the rest
+      // of the key will be the real key used to pass to spark configuration
+      if (propertyDescriptorName.startsWith(SPARK_CUSTOM_CONFIG_PREFIX)) {
+        return new PropertyDescriptor.Builder()
+          .name(propertyDescriptorName)
+          .expressionLanguageSupported(false)
+          .required(false)
+          .dynamic(true)
+          .build
+      }
+      return null
     }
 
 

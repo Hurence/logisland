@@ -44,6 +44,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     descriptors.add(WRITE_STREAM_SERVICE_PROVIDER)
     descriptors.add(GROUP_BY_FIELDS)
     descriptors.add(SPARK_BASE_CHECKPOINT_PATH)
+    descriptors.add(SPARK_SQL_SHUFFLE_PARTITIONS)
 //    descriptors.add(STATE_TIMEOUT_DURATION_MS)
 //    descriptors.add(STATE_TIMEOUT_DURATION_MS)
 //    descriptors.add(STATEFULL_OUTPUT_MODE)
@@ -88,7 +89,8 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       val pipelineMetricPrefix = context.getIdentifier /*+ ".partition" + partitionId*/ + "."
       val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-      sparkSession.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
+      sparkSession.sqlContext.setConf("spark.sql.shuffle.partitions",
+        context.getPropertyValue(SPARK_SQL_SHUFFLE_PARTITIONS).asString())
 
       //TODO Je pense que ces deux ligne ne servent a rien
       val controllerServiceLookup = sparkStreamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
@@ -257,11 +259,22 @@ object StructuredStream {
 
   val SPARK_BASE_CHECKPOINT_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()
     .name("spark.base.checkpoint.path")
-    .description("Path to store all checkpoint for all sink, they will b stored in" +
-      " ${spark.base.checkpoint.path}/${stream_id}/${service_id}")
+    .description("Path to store all checkpoint for all sink, they will be stored in" +
+      " ${spark.base.checkpoint.path}/${stream_id}/${service_id}. If using for instance azure filesystem to" +
+      " checkpoint, then use KafkaStreamProcessingEngine spark.custom.config.xxx property like to set filesystem" +
+      " credentials. Suppose you set something like `spark.base.checkpoint.path: wasbs://<myContainer>@<myStorageAccount>.blob.core.windows.net/spark-checkpointing`" +
+      " in StructuredStream configuration, then you can set the matching SAS key under the root KafkaStreamProcessingEngine configuration" +
+      " with something like `spark.custom.config.fs.azure.account.key.<myStorageAccount>.blob.core.windows.net: +H5IuOtsebY7fO6QyyntmlRLe3G8Rv0jcye6kzE2Wz4NrU3IdB4Q8ocJY2ScY9cQrJNXxUg2WbYJPndMuQWUCQ==`")
     .required(false)
     .defaultValue("checkpoints")
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
     .build;
 
+  val SPARK_SQL_SHUFFLE_PARTITIONS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("spark.sql.shuffle.partitions")
+    .description("Regular spark.sql.shuffle.partitions. Defaults to 200")
+    .required(false)
+    .defaultValue("200")
+    .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+    .build;
 }
