@@ -411,6 +411,16 @@ public class IncrementalWebSession
                     .defaultValue("1")
                     .build();
 
+    public static final PropertyDescriptor FAST_MODE =
+            new PropertyDescriptor.Builder()
+                    .name("fast.mode")
+                    .description("If fastMode is true the processor will not do refresh on es indices which will improve performance but\n" +
+                            "The result may be not exact as we are not sure to query the events up to date.")
+                    .required(false)
+                    .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+                    .defaultValue("true")
+                    .build();
+
     /**
      * A singleton for valid check.
      */
@@ -442,6 +452,12 @@ public class IncrementalWebSession
     private String outputFieldNameForEsIndex;
     private String outputFieldNameForEsType;
     private int numberOfFuturSessionToFetchWhenReceivingPastEvents;
+
+    /**
+     * If fastMode is true the processor will not do refresh on es indices which will improve performance but
+     * The result may be unexact as we are not sure to query the event up to date.
+     */
+    private boolean fastMode = true;
     /**
      * If {@code true} prints additional logs.
      */
@@ -489,7 +505,8 @@ public class IncrementalWebSession
                 ZONEID_CONF,
                 OUTPUT_FIELD_NAME_FOR_ES_INDEX,
                 OUTPUT_FIELD_NAME_FOR_ES_TYPE,
-                NUMBER_OF_FUTURE_SESSION
+                NUMBER_OF_FUTURE_SESSION,
+                FAST_MODE
         ));
     }
 
@@ -610,6 +627,7 @@ public class IncrementalWebSession
         if (context.getPropertyValue(ZONEID_CONF).isSet()) {
             this.zoneIdToUse = ZoneId.of(context.getPropertyValue(ZONEID_CONF).asString());
         }
+        this.fastMode = context.getPropertyValue(FAST_MODE).asBoolean();
         this.checkers = Arrays.asList(
                 // Day overlap
                 (session, event) ->
@@ -790,12 +808,15 @@ public class IncrementalWebSession
         //get all events but only for events containing elements from the past
         final Collection<Events> allEvents = splittedEvents.getAllEventsThatContainsEventsFromPast().collect(Collectors.toList());
         final Set<String> divoltSessionIds = allEvents.stream().map(Events::getOriginalSessionId).collect(Collectors.toSet());
-        try {//TODO find another solution
-            Thread.sleep(600L);//Unfortunately without this some test randomly fails. It seems that session indices are not properly refreshed..
-        } catch (InterruptedException e) {
-            getLogger().error("error while waiting 200ms", e);
+        if (!fastMode) {
+            try {//TODO find another solution
+                getLogger().trace("waiting 600ms");
+                Thread.sleep(600L);//Unfortunately without this some test randomly fails. It seems that session indices are not properly refreshed..
+            } catch (InterruptedException e) {
+                getLogger().error("error while waiting 600ms", e);
+            }
+            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
         }
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
         final Map<String/*divolteSession*/, Optional<WebSession>> sessionsOfFirstEvents = requestCurrentSessionsToEs(allEvents);
         divoltSessionIds.forEach(divoltSessionId -> {
             if (!sessionsOfFirstEvents.containsKey(divoltSessionId)) {
@@ -1028,7 +1049,9 @@ public class IncrementalWebSession
                     return  info.indicesToQuery.stream();
                 })
                 .toArray(String[]::new);
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
+        if (!fastMode) {
+            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
+        }
         return elasticsearchClientService.multiQueryGet(multiQuery);
     }
 
@@ -1383,7 +1406,9 @@ public class IncrementalWebSession
             }
         });
         if (sessionsRequests.isEmpty()) return mappingToReturn;
-        this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
+        if (!fastMode) {
+            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
+        }
         MultiQueryResponseRecord multiQueryResponses = this.elasticsearchClientService.multiQueryGet(
                 new MultiQueryRecord(sessionsRequests)
         );
