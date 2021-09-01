@@ -44,6 +44,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     descriptors.add(WRITE_STREAM_SERVICE_PROVIDER)
     descriptors.add(GROUP_BY_FIELDS)
     descriptors.add(SPARK_BASE_CHECKPOINT_PATH)
+    descriptors.add(SPARK_SQL_SHUFFLE_PARTITIONS)
 //    descriptors.add(STATE_TIMEOUT_DURATION_MS)
 //    descriptors.add(STATE_TIMEOUT_DURATION_MS)
 //    descriptors.add(STATEFULL_OUTPUT_MODE)
@@ -88,7 +89,8 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       val pipelineMetricPrefix = context.getIdentifier /*+ ".partition" + partitionId*/ + "."
       val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-      sparkSession.sqlContext.setConf("spark.sql.shuffle.partitions", "4")//TODO make this configurable
+      sparkSession.sqlContext.setConf("spark.sql.shuffle.partitions",
+        context.getPropertyValue(SPARK_SQL_SHUFFLE_PARTITIONS).asString())
 
       //TODO Je pense que ces deux ligne ne servent a rien
       val controllerServiceLookup = sparkStreamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
@@ -266,5 +268,13 @@ object StructuredStream {
     .required(false)
     .defaultValue("checkpoints")
     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build;
+
+  val SPARK_SQL_SHUFFLE_PARTITIONS: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("spark.sql.shuffle.partitions")
+    .description("Regular spark.sql.shuffle.partitions. Defaults to 200")
+    .required(false)
+    .defaultValue("200")
+    .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
     .build;
 }
