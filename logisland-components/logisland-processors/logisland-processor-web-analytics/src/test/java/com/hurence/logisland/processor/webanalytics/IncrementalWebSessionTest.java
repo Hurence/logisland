@@ -137,6 +137,21 @@ public class IncrementalWebSessionTest {
         runner.assertValid();
         runner.setProperty(IncrementalWebSession.ZONEID_CONF, "Japan");
         runner.assertValid();
+        runner.setProperty(PROCESSING_MODE, ProcessingMode.FAST.getName());
+        runner.assertValid();
+        runner.setProperty(PROCESSING_MODE, "FAST");
+        runner.assertValid();
+        runner.setProperty(PROCESSING_MODE, "MODERATE");
+        runner.assertValid();
+        runner.setProperty(PROCESSING_MODE, "SLOW");
+        runner.assertValid();
+        runner.setProperty(PROCESSING_MODE, "SLOW2");
+        runner.assertNotValid();
+        runner.setProperty(PROCESSING_MODE, "SLOW");
+        runner.setProperty(ES_REFRESH_TIMEOUT, "100");
+        runner.assertValid();
+        runner.setProperty(ES_REFRESH_TIMEOUT, "-1");
+        runner.assertNotValid();
     }
 
 

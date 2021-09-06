@@ -25,6 +25,7 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.webanalytics.modele.*;
 import com.hurence.logisland.processor.webanalytics.util.SessionsCalculator;
 import com.hurence.logisland.processor.webanalytics.util.Utils;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.model.*;
@@ -411,15 +412,48 @@ public class IncrementalWebSession
                     .defaultValue("1")
                     .build();
 
-    public static final PropertyDescriptor FAST_MODE =
+    public static final PropertyDescriptor PROCESSING_MODE =
             new PropertyDescriptor.Builder()
-                    .name("fast.mode")
+                    .name("processing.mode")
                     .description("If fastMode is true the processor will not do refresh on es indices which will improve performance but\n" +
                             "The result may be not exact as we are not sure to query the events up to date.")
-                    .required(false)
-                    .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-                    .defaultValue("true")
+                    .expressionLanguageSupported(false)
+                    .required(true)
+                    .addValidator(new StandardValidators.EnumValidator(ProcessingMode.class))
+                    .allowableValues(ProcessingMode.values())
+                    .defaultValue(ProcessingMode.FAST.getName())
                     .build();
+
+    public static final PropertyDescriptor ES_REFRESH_TIMEOUT =
+            new PropertyDescriptor.Builder()
+                    .name("es.refresh.wait.time.ms")
+                    .description("If fastMode is true the processor will not do refresh on es indices which will improve performance but\n" +
+                            "The result may be not exact as we are not sure to query the events up to date.")
+                    .expressionLanguageSupported(false)
+                    .required(false)
+                    .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+                    .defaultValue("100000")
+                    .build();
+
+    public enum ProcessingMode {
+
+        FAST,
+        MODERATE,
+        SLOW;
+
+        public String toString() {
+            return name;
+        }
+        private String name;
+
+        ProcessingMode() {
+            this.name = this.name();
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
 
     /**
      * A singleton for valid check.
@@ -457,7 +491,8 @@ public class IncrementalWebSession
      * If fastMode is true the processor will not do refresh on es indices which will improve performance but
      * The result may be unexact as we are not sure to query the event up to date.
      */
-    private boolean fastMode = true;
+    private ProcessingMode processingMode;
+    private long refreshTimeoutMs = 0L;
     /**
      * If {@code true} prints additional logs.
      */
@@ -506,7 +541,8 @@ public class IncrementalWebSession
                 OUTPUT_FIELD_NAME_FOR_ES_INDEX,
                 OUTPUT_FIELD_NAME_FOR_ES_TYPE,
                 NUMBER_OF_FUTURE_SESSION,
-                FAST_MODE
+                PROCESSING_MODE,
+                ES_REFRESH_TIMEOUT
         ));
     }
 
@@ -627,7 +663,8 @@ public class IncrementalWebSession
         if (context.getPropertyValue(ZONEID_CONF).isSet()) {
             this.zoneIdToUse = ZoneId.of(context.getPropertyValue(ZONEID_CONF).asString());
         }
-        this.fastMode = context.getPropertyValue(FAST_MODE).asBoolean();
+        this.processingMode = ProcessingMode.valueOf(context.getPropertyValue(PROCESSING_MODE).asString());
+        this.refreshTimeoutMs = context.getPropertyValue(ES_REFRESH_TIMEOUT).asLong();
         this.checkers = Arrays.asList(
                 // Day overlap
                 (session, event) ->
@@ -808,14 +845,18 @@ public class IncrementalWebSession
         //get all events but only for events containing elements from the past
         final Collection<Events> allEvents = splittedEvents.getAllEventsThatContainsEventsFromPast().collect(Collectors.toList());
         final Set<String> divoltSessionIds = allEvents.stream().map(Events::getOriginalSessionId).collect(Collectors.toSet());
-        if (!fastMode) {
-            try {//TODO find another solution
-                getLogger().trace("waiting 600ms");
-                Thread.sleep(600L);//Unfortunately without this some test randomly fails. It seems that session indices are not properly refreshed..
-            } catch (InterruptedException e) {
-                getLogger().error("error while waiting 600ms", e);
-            }
-            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
+        switch (processingMode) {
+            case FAST:
+                break;
+            case SLOW:
+                try {//TODO find another solution
+                    getLogger().trace("waiting 600ms");
+                    Thread.sleep(600L);//Unfortunately without this some test randomly fails. It seems that session indices are not properly refreshed..
+                } catch (InterruptedException e) {
+                    getLogger().error("error while waiting 600ms", e);
+                }
+            case MODERATE:
+                this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", refreshTimeoutMs);
         }
         final Map<String/*divolteSession*/, Optional<WebSession>> sessionsOfFirstEvents = requestCurrentSessionsToEs(allEvents);
         divoltSessionIds.forEach(divoltSessionId -> {
@@ -1049,8 +1090,12 @@ public class IncrementalWebSession
                     return  info.indicesToQuery.stream();
                 })
                 .toArray(String[]::new);
-        if (!fastMode) {
-            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, 100000L);
+        switch (processingMode) {
+            case FAST:
+                break;
+            case SLOW:
+            case MODERATE:
+                this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(indicesToWaitFor, refreshTimeoutMs);
         }
         return elasticsearchClientService.multiQueryGet(multiQuery);
     }
@@ -1406,8 +1451,12 @@ public class IncrementalWebSession
             }
         });
         if (sessionsRequests.isEmpty()) return mappingToReturn;
-        if (!fastMode) {
-            this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", 100000L);
+        switch (processingMode) {
+            case FAST:
+                break;
+            case SLOW:
+            case MODERATE:
+                this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", refreshTimeoutMs);
         }
         MultiQueryResponseRecord multiQueryResponses = this.elasticsearchClientService.multiQueryGet(
                 new MultiQueryRecord(sessionsRequests)
