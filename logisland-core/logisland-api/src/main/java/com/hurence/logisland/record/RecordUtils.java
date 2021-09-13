@@ -15,9 +15,10 @@
  */
 package com.hurence.logisland.record;
 
+import java.lang.reflect.Array;
+import java.util.*;
 
 public final class RecordUtils {
-
 
     public static Record getKeyValueRecord(String key, String value) {
         final Record record = new StandardRecord("kv_record");
@@ -40,5 +41,63 @@ public final class RecordUtils {
             record.setField(kvs[i], FieldType.STRING, kvs[i+1]);
         }
         return record;
+    }
+
+    /**
+     * Returns the conversion of a record to a map where all {@code null} values were removed.
+     *
+     * @param record the record to convert.
+     * @param filterInnerRecord if {@code true} special dictionnary fields are ignored; included otherwise.
+     *
+     * @return the conversion of a record to a map where all {@code null} values were removed.
+     */
+    public static Map<String, Object> toMap(final Record record,
+                                            final boolean filterInnerRecord) {
+        try {
+            final Map<String, Object> result = new HashMap<>();
+
+            record.getFieldsEntrySet()
+                    .stream()
+                    .forEach(entry ->
+                    {
+                        if (!filterInnerRecord || (filterInnerRecord && !FieldDictionary.contains(entry.getKey()))) {
+                            Object value = entry.getValue().getRawValue();
+                            if (value != null) {
+                                switch (entry.getValue().getType()) {
+                                    case RECORD:
+                                        value = toMap((Record) value, true);
+                                        break;
+                                    case ARRAY:
+                                        Collection collection;
+                                        if (value.getClass().isArray()) {
+                                            collection = new ArrayList<>();
+                                            for (int i = 0; i < Array.getLength(value); i++) {
+                                                collection.add(Array.get(value, i));
+                                            }
+                                        } else if (value instanceof Collection) {
+                                            collection = (Collection) value;
+                                        } else {
+                                            collection = Arrays.asList(value);
+                                        }
+                                        final List list = new ArrayList(collection.size());
+                                        for (final Object item : collection) {
+                                            if (item instanceof Record) {
+                                                list.add(toMap((Record) item, true));
+                                            } else {
+                                                list.add(item);
+                                            }
+                                        }
+                                        value = list;
+                                        break;
+                                    default:
+                                }
+                                result.put(entry.getKey(), value);
+                            }
+                        }
+                    });
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
