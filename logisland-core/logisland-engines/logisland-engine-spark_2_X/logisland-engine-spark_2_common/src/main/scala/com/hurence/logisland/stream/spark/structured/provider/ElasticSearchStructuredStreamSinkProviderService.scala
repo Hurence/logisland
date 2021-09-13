@@ -23,7 +23,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.record.{Field, Record}
 import com.hurence.logisland.stream.spark.structured.provider.ElasticSearchStructuredStreamSinkProviderService._
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderServiceWriter.{APPEND_MODE, COMPLETE_MODE, UPDATE_MODE}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
@@ -154,7 +154,14 @@ class ElasticSearchStructuredStreamSinkProviderService extends AbstractControlle
     // schema
     var rowDs : Dataset[Row] = ds.map( (record:Record) => {
       val values = outputSchema.map( (structField : StructField) => {
-        record.getField(structField.name).getRawValue
+        val field : Field = record.getField(structField.name)
+        var value : Object = null
+        if (field != null) {
+          value = field.getRawValue
+        } else {
+          // Field si absent from , set null value
+        }
+        value
       })
 
       RowFactory.create(values:_*)
