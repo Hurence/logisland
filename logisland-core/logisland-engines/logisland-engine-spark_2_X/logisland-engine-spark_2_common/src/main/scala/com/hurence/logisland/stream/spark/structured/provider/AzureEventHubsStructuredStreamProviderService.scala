@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.stream.spark.structured.provider
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.time.{Duration, Instant}
 import java.util
 import java.util.Collections
@@ -25,7 +24,6 @@ import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
-import com.hurence.logisland.runner.GlobalOptions
 import com.hurence.logisland.serializer.{NoopSerializer, RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.stream.spark.structured.provider.AzureEventHubProperties.{EVENTHUBS_MAX_EVENTS_PER_TRIGGER, EVENTHUBS_NAMESPACE, EVENTHUBS_OPERATION_TIMEOUT, EVENTHUBS_READ_CONSUMER_GROUP, EVENTHUBS_READ_EVENT_HUB, EVENTHUBS_READ_POSITION, EVENTHUBS_READ_POSITION_END_OF_STREAM, EVENTHUBS_READ_POSITION_INSTANT_NOW, EVENTHUBS_READ_POSITION_START_OF_STREAM, EVENTHUBS_READ_POSITION_TYPE, EVENTHUBS_READ_POSITION_TYPE_EPOCH_MILLIS, EVENTHUBS_READ_POSITION_TYPE_OFFSET, EVENTHUBS_READ_POSITION_TYPE_SEQUENCE_NUMBER, EVENTHUBS_READ_PREFETCH_COUNT, EVENTHUBS_READ_RECEIVER_TIMEOUT, EVENTHUBS_READ_SAS_KEY, EVENTHUBS_READ_SAS_KEY_NAME, EVENTHUBS_THREAD_POOL_SIZE, EVENTHUBS_WRITE_EVENT_HUB, EVENTHUBS_WRITE_SAS_KEY, EVENTHUBS_WRITE_SAS_KEY_NAME}

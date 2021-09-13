@@ -17,6 +17,7 @@ package com.hurence.logisland.service.elasticsearch;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.RecordUtils;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.joda.time.format.DateTimeFormatter;
@@ -112,7 +113,7 @@ class ElasticsearchRecordConverter {
                             document.field(fieldName, field.asBoolean().booleanValue());
                             break;
                         case RECORD:
-                            Map<String, Object> map =  toMap(field.asRecord(), true);
+                            Map<String, Object> map =  RecordUtils.toMap(field.asRecord(), true);
                             document.field(fieldName, map);
                             break;
                         case ARRAY:
@@ -135,7 +136,7 @@ class ElasticsearchRecordConverter {
                             final List list = new ArrayList(collection.size());
                             for (final Object item : collection) {
                                 if (item instanceof Record) {
-                                    list.add(toMap((Record) item, true));
+                                    list.add(RecordUtils.toMap((Record) item, true));
                                 } else {
                                     list.add(item);
                                 }
@@ -175,65 +176,6 @@ class ElasticsearchRecordConverter {
      * @return the conversion of a record to a map where all {@code null} values were removed.
      */
     private static Map<String, Object> toMap(final Record record) {
-        return toMap(record, false);
+        return RecordUtils.toMap(record, false);
     }
-
-    /**
-     * Returns the conversion of a record to a map where all {@code null} values were removed.
-     *
-     * @param record the record to convert.
-     * @param filterInnerRecord if {@code true} special dictionnary fields are ignored; included otherwise.
-     *
-     * @return the conversion of a record to a map where all {@code null} values were removed.
-     */
-    private static Map<String, Object> toMap(final Record record,
-                                             final boolean filterInnerRecord) {
-        try {
-            final Map<String, Object> result = new HashMap<>();
-
-            record.getFieldsEntrySet()
-                    .stream()
-                    .forEach(entry ->
-                    {
-                        if (!filterInnerRecord || (filterInnerRecord && !FieldDictionary.contains(entry.getKey()))) {
-                            Object value = entry.getValue().getRawValue();
-                            if (value != null) {
-                                switch (entry.getValue().getType()) {
-                                    case RECORD:
-                                        value = toMap((Record) value, true);
-                                        break;
-                                    case ARRAY:
-                                        Collection collection;
-                                        if (value.getClass().isArray()) {
-                                            collection = new ArrayList<>();
-                                            for (int i = 0; i < Array.getLength(value); i++) {
-                                                collection.add(Array.get(value, i));
-                                            }
-                                        } else if (value instanceof Collection) {
-                                            collection = (Collection) value;
-                                        } else {
-                                            collection = Arrays.asList(value);
-                                        }
-                                        final List list = new ArrayList(collection.size());
-                                        for (final Object item : collection) {
-                                            if (item instanceof Record) {
-                                                list.add(toMap((Record) item, true));
-                                            } else {
-                                                list.add(item);
-                                            }
-                                        }
-                                        value = list;
-                                        break;
-                                    default:
-                                }
-                                result.put(entry.getKey(), value);
-                            }
-                        }
-                    });
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

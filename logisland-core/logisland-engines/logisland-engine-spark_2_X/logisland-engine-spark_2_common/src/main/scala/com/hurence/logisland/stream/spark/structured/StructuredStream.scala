@@ -96,7 +96,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
       val controllerServiceLookup = sparkStreamContext.broadCastedControllerServiceLookupSink.value.getControllerServiceLookup()
       context.setControllerServiceLookup(controllerServiceLookup)
 
-      //TODO stange way to update streamcontext, should'nt it be broadcasted ?
+      //TODO strange way to update streamcontext, should'nt it be broadcasted ?
       // moreover the streamcontext should always be the last updated one in this function for me.
       // If driver wants to change it, it should call setup which would use a broadcast value for example ?
       // The remote api engines use this strange behaviour here

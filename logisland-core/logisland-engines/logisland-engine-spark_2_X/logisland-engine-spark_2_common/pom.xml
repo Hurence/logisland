@@ -26,8 +26,9 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <eventhubs.version>2.3.14.1</eventhubs.version>
         <hadoop-azure.version>2.7.0</hadoop-azure.version>
         <hadoop-common.version>2.7.0</hadoop-common.version>
+        <elasticsearch.version>7.14.1</elasticsearch.version>
+        <spark-avro.version>4.0.0</spark-avro.version>
     </properties>
-
 
     <dependencyManagement>
         <dependencies>
@@ -43,7 +44,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <version>${scala.version}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
@@ -51,14 +51,12 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <scope>compile</scope>
             </dependency>
 
-
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka_${scala.binary.version}</artifactId>
                 <version>${kafka.version}</version>
                 <scope>compile</scope>
             </dependency>
-
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -111,6 +109,35 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <version>${spark.version}</version>
             </dependency>
 
+            <dependency> <!-- Embed elasticsearch structured stream sink dependencies -->
+                <groupId>org.elasticsearch</groupId>
+                <artifactId>elasticsearch-spark-20_${scala.binary.version}</artifactId>
+                <version>${elasticsearch.version}</version>
+                <exclusions> <!-- IMPORTANT : exclude spark dependencies to not collision with the version we use -->
+                    <exclusion>
+                        <groupId>org.apache.spark</groupId>
+                        <artifactId>spark-sql_${scala.binary.version}</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.spark</groupId>
+                        <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.spark</groupId>
+                        <artifactId>spark-catalyst_${scala.binary.version}</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.spark</groupId>
+                        <artifactId>spark-yarn_${scala.binary.version}</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.databricks</groupId><!-- If upgrading spark version, this module has newer versions in org.apache.spark group-->
+                <artifactId>spark-avro_${scala.binary.version}</artifactId>
+                <version>${spark-avro.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.kafka</groupId>
@@ -146,7 +173,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
@@ -164,14 +190,12 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-plugin-support</artifactId>
             <version>${project.version}</version>
-
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
             <version>2.1.2</version>
-
         </dependency>
 
 
@@ -179,7 +203,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>com.groupon.dse</groupId>
             <artifactId>spark-metrics</artifactId>
             <version>2.0.0</version>
-
         </dependency>
 
         <!-- spark dependencies -->
@@ -187,13 +210,11 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
             <scope>provided</scope>
-
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
             <scope>provided</scope>
-
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -203,12 +224,40 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
-
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
+        </dependency>
 
+        <dependency> <!-- Embed elasticsearch structured stream sink dependencies -->
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch-spark-20_${scala.binary.version}</artifactId>
+            <version>${elasticsearch.version}</version>
+            <exclusions> <!-- IMPORTANT : exclude spark dependencies to not collision with the version we use -->
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-sql_${scala.binary.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-catalyst_${scala.binary.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-yarn_${scala.binary.version}</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.databricks</groupId> <!-- If upgrading spark version, this module has newer versions in org.apache.spark group-->
+            <artifactId>spark-avro_${scala.binary.version}</artifactId>
+            <version>${spark-avro.version}</version>
         </dependency>
 
         <dependency>
@@ -221,7 +270,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
             <version>${kafka.version}</version>
-
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -253,7 +301,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
             <scope>provided</scope>
-
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -266,25 +313,21 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <scope>provided</scope>
-
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
             <version>${jackson.version}</version>
-
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
             <version>${jackson.version}</version>
-
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
-
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -295,7 +338,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>5.1.3.Final</version>
-
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.glassfish/javax.el -->
@@ -303,7 +345,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
             <version>3.0.0</version>
-
         </dependency>
 
 
@@ -312,7 +353,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
             <scope>provided</scope>
-
         </dependency>
 
 
@@ -333,7 +373,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.11</artifactId>
-
         </dependency>
 
 
@@ -343,7 +382,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <classifier>test</classifier>
             <scope>test</scope>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -356,7 +394,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>io.swagger</groupId>
             <artifactId>swagger-core</artifactId>
             <version>${swagger-core-version}</version>
-
         </dependency>
 
         <dependency>
@@ -372,7 +409,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp-urlconnection</artifactId>
             <version>3.10.0</version>
-
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver -->
