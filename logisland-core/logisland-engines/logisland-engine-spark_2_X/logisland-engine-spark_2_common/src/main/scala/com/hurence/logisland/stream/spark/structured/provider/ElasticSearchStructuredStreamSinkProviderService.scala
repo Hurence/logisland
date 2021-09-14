@@ -23,14 +23,14 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.record.{Field, Record}
+import com.hurence.logisland.record.{Field, FieldType, Record}
 import com.hurence.logisland.stream.spark.structured.provider.ElasticSearchStructuredStreamSinkProviderService._
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderServiceWriter.{APPEND_MODE, COMPLETE_MODE, UPDATE_MODE}
 import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.{BooleanType, DataType, StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, Row, RowFactory}
 
 import scala.collection.JavaConversions._
@@ -48,6 +48,7 @@ class ElasticSearchStructuredStreamSinkProviderService extends AbstractControlle
   var esOptions : Map[String, String] = Map[String, String]()
   var outputSchema : StructType = _
   var outputMode: String = _
+  var debug: Boolean = false
 
   @OnEnabled
   @throws[InitializationException]
@@ -75,6 +76,8 @@ class ElasticSearchStructuredStreamSinkProviderService extends AbstractControlle
 
         // Output mode
         outputMode = context.getPropertyValue(OUTPUT_MODE).asString()
+
+        debug = context.getPropertyValue(DEBUG).asBoolean()
 
         handleEsDynamicProperties(context.getProperties)
       } catch {
@@ -122,6 +125,7 @@ class ElasticSearchStructuredStreamSinkProviderService extends AbstractControlle
     descriptors.add(ES_RESOURCE)
     descriptors.add(OUTPUT_SCHEMA)
     descriptors.add(OUTPUT_MODE)
+    descriptors.add(DEBUG)
     Collections.unmodifiableList(descriptors)
   }
 
@@ -158,6 +162,11 @@ class ElasticSearchStructuredStreamSinkProviderService extends AbstractControlle
         var value : Object = null
         if (field != null) {
           value = field.getRawValue
+          // If debug mode, perform some checking on type matching to help finding
+          // wrong avro schema definition in output.schema
+          if (debug) {
+            checkTypes(structField.name, field.getType, value, structField.dataType)
+          }
         } else {
           // Field si absent from , set null value
         }
@@ -172,6 +181,29 @@ class ElasticSearchStructuredStreamSinkProviderService extends AbstractControlle
       .outputMode(outputMode)
       // Apply all es.* dynamic options
       .options(esOptions)
+  }
+
+  /**
+   * Check record field type vs avro schema
+   * @param value
+   */
+  private def checkTypes(fieldName : String, fieldType: FieldType, value : Object, dataType: DataType) = {
+
+    fieldType match {
+      case FieldType.STRING => {
+        if (!dataType.isInstanceOf[StringType]) {
+          getLogger.error("Record field " + fieldName + " is of type " + FieldType.STRING +
+            " but output schema expects " + dataType + ": " + value)
+        }
+      }
+      case FieldType.BOOLEAN => {
+        if (!dataType.isInstanceOf[BooleanType]) {
+          getLogger.error("Record field " + fieldName + " is of type " + FieldType.BOOLEAN +
+            " but output schema expects " + dataType + ": " + value)
+        }
+      }
+      case _ => // No check
+    }
   }
 
   // Any es.* property described at https://www.elastic.co/guide/en/elasticsearch/hadoop/current/configuration.html
@@ -231,5 +263,13 @@ object ElasticSearchStructuredStreamSinkProviderService {
     .defaultValue(APPEND_MODE)
     .allowableValues(APPEND_MODE, COMPLETE_MODE, UPDATE_MODE)
     .required(false)
+    .build
+
+  val DEBUG: PropertyDescriptor = new PropertyDescriptor.Builder()
+    .name("debug")
+    .description("Whether to enable debug logs or not")
+    .required(false)
+    .defaultValue("false")
+    .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
     .build
 }
