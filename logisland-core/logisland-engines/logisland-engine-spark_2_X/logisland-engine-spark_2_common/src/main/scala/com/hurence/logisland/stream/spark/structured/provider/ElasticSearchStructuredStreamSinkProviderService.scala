@@ -161,7 +161,10 @@ class ElasticSearchStructuredStreamSinkProviderService extends AbstractControlle
         val field : Field = record.getField(structField.name)
         var value : Object = null
         if (field != null) {
-          value = field.getRawValue
+          field.getType match {
+            case FieldType.MAP => value = convertMapFieldToRow(field, outputSchema)
+            case _ => value = field.getRawValue
+          }
           // If debug mode, perform some checking on type matching to help finding
           // wrong avro schema definition in output.schema
           if (debug) {
@@ -181,6 +184,23 @@ class ElasticSearchStructuredStreamSinkProviderService extends AbstractControlle
       .outputMode(outputMode)
       // Apply all es.* dynamic options
       .options(esOptions)
+  }
+  /**
+   * Converts a record Map field to a Row matching the declared schema for the
+   * Map field
+   */
+  private def convertMapFieldToRow(mapField : Field, outputSchema : StructType) : Row = {
+    val row : Row = null
+    // Extract map schema from output schema
+    val mapFieldName : String = mapField.getName
+    val mapSchema : StructType = outputSchema.fields(outputSchema.fieldIndex(mapFieldName)).dataType.asInstanceOf[StructType]
+    val mapFields = mapField.getRawValue.asInstanceOf[util.HashMap[String, Object]]
+    // Iterate through schema map (record) fields to construct the expected row
+    val values = mapSchema.map( (structField : StructField) => {
+      val fieldName = structField.name
+      mapFields.get(fieldName)
+    })
+    RowFactory.create(values:_*)
   }
 
   /**

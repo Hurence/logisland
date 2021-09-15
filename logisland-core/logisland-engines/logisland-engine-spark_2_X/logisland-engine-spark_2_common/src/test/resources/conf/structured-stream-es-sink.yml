@@ -1,0 +1,145 @@
+version: 1.4.0
+documentation: Test job
+# Manual test for ES structured stream sink. Read some records from files on the
+# local filesystem and inject them in a local ES (docker/system install...)
+#
+# To run the test, run the test method in
+# ElasticSearchStructuredStreamSinkProviderServiceTest class
+#
+# WARNING: Do not forget to delete checkpoint dir content when restarting the
+# test for the record files to be taken into account!!!
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: "Test job for ES structured stream sink: read records from local files and push them in local docker ES"
+  configuration:
+    spark.app.name: TestESSink
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 1G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.task.maxFailures: 8
+    spark.streaming.batchDuration: 2000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 10000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4040
+
+  controllerServiceConfigurations:
+
+    - controllerService: local_file_service
+      component: com.hurence.logisland.stream.spark.structured.provider.LocalFileStructuredStreamProviderService
+      configuration:
+        local.input.path: src/test/resources/input/structured-stream-es-sink
+        line.serializer: com.hurence.logisland.serializer.ExtendedJsonSerializer
+        # Current ExtendedJsonSerializer implementation does not support Avro
+        # Union type which prevents to declare input schema remoteHost_geo
+        # record sub fields like:
+        #       { "name": "city", "type": ["null", "string"], "default": null }
+        # but instead, one must use:
+        #       { "name": "city", "type": "string" }
+        # We must however let null values as possible in ES sink schema otherwise
+        # a missing field ends up with null value witch is not conform to the
+        # output schema
+        read.value.schema: >
+          {
+            "namespace": "logisland.test",
+            "type": "record",
+            "name": "WebEvent",
+            "fields": [
+              { "name": "AgentName",                 "type": ["null", "string"], "default": null },
+              { "name": "record_id",                 "type": ["null", "string"], "default": null },
+              { "name": "record_time",               "type": "long" },
+              { "name": "remoteHost",                "type": ["null", "string"], "default": null },
+              { "name": "remoteHost_domain",         "type": ["null", "string"], "default": null },
+              { "name": "remoteHost_geo",            "type":  {"name": "remoteHost_geo", "type": "record", "fields":[
+                { "name": "accuracy_radius",       "type": "long" },
+                { "name": "city",                  "type": "string" },
+                { "name": "continent",             "type": "string" },
+                { "name": "continent_code",        "type": "string" },
+                { "name": "country",               "type": "string" },
+                { "name": "country_isocode",       "type": "string" },
+                { "name": "latitude",              "type": "float" },
+                { "name": "location",              "type": "string" },
+                { "name": "longitude",             "type": "float" },
+                { "name": "postalcode",            "type": "string" },
+                { "name": "subdivision_0",         "type": "string" },
+                { "name": "subdivision_1",         "type": "string" },
+                { "name": "subdivision_isocode_0", "type": "string" },
+                { "name": "subdivision_isocode_1", "type": "string" },
+                { "name": "time_zone",             "type": "string" }
+              ]}
+              },
+              { "name": "is_something",              "type": "boolean" },
+              { "name": "url",                       "type": ["null", "string"], "default": null }
+            ]
+          }
+
+    - controllerService: elasticsearch_service_sink
+      component: com.hurence.logisland.stream.spark.structured.provider.ElasticSearchStructuredStreamSinkProviderService
+      configuration:
+        es.nodes: localhost:9200
+        es.resource: webevents
+        es.mapping.id: record_id
+        debug: true
+        output.schema: >
+          {
+            "namespace": "logisland.test",
+            "type": "record",
+            "name": "WebEvent",
+            "fields": [
+              { "name": "AgentName",                 "type": ["null", "string"], "default": null },
+              { "name": "record_id",                 "type": ["null", "string"], "default": null },
+              { "name": "record_time",               "type": ["null", "long"], "default": null },
+              { "name": "remoteHost",                "type": ["null", "string"], "default": null },
+              { "name": "remoteHost_domain",         "type": ["null", "string"], "default": null },
+              { "name": "remoteHost_geo",            "type":  {"name": "remoteHost_geo", "type": "record", "fields":[
+                  { "name": "accuracy_radius",       "type": ["null", "long"], "default": null },
+                  { "name": "city",                  "type": ["null", "string"], "default": null },
+                  { "name": "continent",             "type": ["null", "string"], "default": null },
+                  { "name": "continent_code",        "type": ["null", "string"], "default": null },
+                  { "name": "country",               "type": ["null", "string"], "default": null },
+                  { "name": "country_isocode",       "type": ["null", "string"], "default": null },
+                  { "name": "latitude",              "type": ["null", "float"], "default": null },
+                  { "name": "location",              "type": ["null", "string"], "default": null },
+                  { "name": "longitude",             "type": ["null", "float"], "default": null },
+                  { "name": "postalcode",            "type": ["null", "string"], "default": null },
+                  { "name": "subdivision_0",         "type": ["null", "string"], "default": null },
+                  { "name": "subdivision_1",         "type": ["null", "string"], "default": null },
+                  { "name": "subdivision_isocode_0", "type": ["null", "string"], "default": null },
+                  { "name": "subdivision_isocode_1", "type": ["null", "string"], "default": null },
+                  { "name": "time_zone",             "type": ["null", "string"], "default": null }
+                ]}
+              },
+              { "name": "is_something",              "type": ["null", "boolean"], "default": null },
+              { "name": "url",                       "type": ["null", "string"], "default": null }
+            ]
+          }
+
+    - controllerService: console_service
+      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+
+  streamConfigurations:
+
+    # Indexing stream
+    - stream: elasticsearch_sink_test
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.stream.service.provider: local_file_service
+        write.stream.service.provider: elasticsearch_service_sink
+        #write.stream.service.provider: console_service
+        spark.base.checkpoint.path: /tmp/elasticsearch_service_sink_test
+
+      processorConfigurations:
+        - processor: debug
+          component: com.hurence.logisland.processor.DebugStream
+          type: parser
+          documentation: dump records to stdout
