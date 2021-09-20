@@ -129,11 +129,6 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         }
 
         cacheService = PluginProxy.rewrap(context.getPropertyValue(CACHE_SERVICE).asControllerService());
-        if (cacheService != null) {
-            getLogger().info("No cache service used");
-        } else {
-            getLogger().info("Using cache service");
-        }
     }
 
     /**
