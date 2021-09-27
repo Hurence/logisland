@@ -332,7 +332,7 @@ public class SessionsCalculator {
             sessionInternalRecord.getFieldsEntrySet().forEach(entry ->
             {
                 final Field f = entry.getValue();
-                logger.debug("INVALID field type={}, class={}", f.getType(), f.getRawValue().getClass());
+                logger.debug("INVALID field {} type={}, class={}", f.getName(), f.getType(), f.getRawValue().getClass());
             });
         }
     }

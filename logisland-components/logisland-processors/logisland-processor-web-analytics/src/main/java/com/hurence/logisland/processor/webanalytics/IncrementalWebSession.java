@@ -427,7 +427,6 @@ public class IncrementalWebSession
     public final static SessionCheckResult SESSION_TIMEDOUT = new InvalidSessionCheckResult("Session timed-out");
     public final static SessionCheckResult SOURCE_OF_TRAFFIC = new InvalidSessionCheckResult("Source of traffic differed");
 
-
     //services
     private ElasticsearchClientService elasticsearchClientService;
     private CacheService<String/*sessionId*/, WebSession> cacheService;
@@ -513,6 +512,7 @@ public class IncrementalWebSession
     public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
+        this._DEBUG = context.getPropertyValue(DEBUG_CONF).asBoolean();
         this.elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE_CONF)
                 .asControllerService());
         if (elasticsearchClientService == null)
@@ -637,7 +637,10 @@ public class IncrementalWebSession
                             && lastEvent.getYear() == timestamp.getYear();
 
                     if (_DEBUG && !isValid) {
-                        debug("'Day overlap' isValid=" + isValid + " session-id=" + session.getSessionId());
+                        debug("Invalid Session Check: 'Day overlap' isValid=" + isValid + " session-id=" + session.getSessionId() +
+                                " firstEvent=" + firstEvent.format(DateTimeFormatter.ISO_ORDINAL_DATE) + 
+                                " event=" + timestamp.format(DateTimeFormatter.ISO_ORDINAL_DATE) +
+                                " lastEvent=" + lastEvent.format(DateTimeFormatter.ISO_ORDINAL_DATE));
                     }
 
                     return isValid ? ValidSessionCheckResult.getInstance() : DAY_OVERLAP;
@@ -651,7 +654,7 @@ public class IncrementalWebSession
                     boolean isValid = durationInSeconds <= this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS;
 
                     if (_DEBUG && !isValid) {
-                        debug("'Timeout exceeded' isValid=" + isValid + " seconds=" + durationInSeconds +
+                        debug("Invalid Session Check: 'Timeout exceeded' isValid=" + isValid + " seconds=" + durationInSeconds +
                                 " timeout=" + this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS + " session-id=" + session.getSessionId());
                     }
 
@@ -666,7 +669,7 @@ public class IncrementalWebSession
                             Objects.deepEquals(session.getSourceOfTraffic(), event.getSourceOfTraffic());
 
                     if (_DEBUG && !isValid) {
-                        debug("'Fields of traffic' isValid=" + isValid + " session-id=" + session.getSessionId());
+                        debug("Invalid Session Check: 'Fields of traffic' isValid=" + isValid + " session-id=" + session.getSessionId());
                     }
 
                     return isValid ? ValidSessionCheckResult.getInstance() : SOURCE_OF_TRAFFIC;
@@ -1452,19 +1455,15 @@ public class IncrementalWebSession
      * @param format the format of the String.
      * @param args the arguments.
      */
-    private void debug(final String format, final Object... args)
-    {
-        if ( _DEBUG )
-        {
-            if ( args.length == 0 )
-            {
-                getLogger().debug(format);
-            }
-            else
-            {
-                getLogger().debug(String.format(format + "\n", args));
-            }
+    private void debug(final String format, final Object... args) {
+      if (_DEBUG) {
+        if (args.length == 0) {
+          getLogger().debug(format);
+        } else {
+          String newLineFormat = format + "\n";
+          getLogger().debug(String.format(newLineFormat, args));
         }
+      }
     }
 
 }

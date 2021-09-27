@@ -381,30 +381,33 @@ public class SetSourceOfTraffic extends AbstractProcessor {
         final Field referenceField = record.getField(referer_field);
         final String referer = referenceField!=null ? referenceField.asString() : null;
 
+        debug("Input record: %s", record);
+
         if (adwords(location, sourceOfTraffic) || adwords(referer, sourceOfTraffic)) {
             // Already processed.
         }
         // Check if this is a custom campaign
-        else if (record.getField(utm_source_field) != null) {
+        else if (record.checkFieldIsSet(utm_source_field)) {
             String utm_source = decode_UTF8(record.getField(utm_source_field).asString());
             sourceOfTraffic.setSource(utm_source);
-            if (record.getField(utm_campaign_field) != null) {
+            if (record.checkFieldIsSet(utm_campaign_field)) {
                 String utm_campaign = decode_UTF8(record.getField(utm_campaign_field).asString());
                 sourceOfTraffic.setCampaign(utm_campaign);
             }
-            if (record.getField(utm_medium_field) != null) {
+            if (record.checkFieldIsSet(utm_medium_field)) {
                 String utm_medium = decode_UTF8(record.getField(utm_medium_field).asString());
                 sourceOfTraffic.setMedium(utm_medium);
             }
-            if (record.getField(utm_content_field) != null) {
+            if (record.checkFieldIsSet(utm_content_field)) {
                 String utm_content = decode_UTF8(record.getField(utm_content_field).asString());
                 sourceOfTraffic.setContent(utm_content);
             }
-            if (record.getField(utm_term_field) != null) {
+            if (record.checkFieldIsSet(utm_term_field)) {
                 String utm_term = decode_UTF8(record.getField(utm_term_field).asString());
                 sourceOfTraffic.setKeyword(utm_term);
             }
         } else if (referer != null) {
+            debug("%s", referer);
             String hostname;
             try {
                 hostname = new URL(referer).getHost();
@@ -430,8 +433,10 @@ public class SetSourceOfTraffic extends AbstractProcessor {
             } else {
                 return;
             }
+            debug("%s", domain);
             // Is referer under the webshop domain ?
             if (is_refer_under_site_domain(domain, context, record)) {
+                debug("This is a direct access");
                 // This is a direct access
                 sourceOfTraffic.setSource(DIRECT_TRAFFIC);
                 sourceOfTraffic.setMedium("");
@@ -440,11 +445,13 @@ public class SetSourceOfTraffic extends AbstractProcessor {
             } else {
                 // Is the referer a known search engine ?
                 if (is_search_engine(domain, context, record)) {
+                    debug("This is an organic search engine");
                     // This is an organic search engine
                     sourceOfTraffic.setSource(domain);
                     sourceOfTraffic.setMedium(SEARCH_ENGINE_SITE);
                     sourceOfTraffic.setOrganic_searches(Boolean.TRUE);
                 } else if (is_social_network(domain, context, record)) {
+                    debug("This is social network");
                     // This is social network
                     sourceOfTraffic.setSource(domain);
                     sourceOfTraffic.setMedium(SOCIAL_NETWORK_SITE);
@@ -458,6 +465,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
                 }
             }
         } else {
+            debug("This is a direct access");
             // Direct access
             sourceOfTraffic.setSource(DIRECT_TRAFFIC);
             sourceOfTraffic.setMedium("");
@@ -471,6 +479,7 @@ public class SetSourceOfTraffic extends AbstractProcessor {
                 record.setField(SOURCE_OF_TRAFFIC_PREFIX + FLAT_SEPARATOR + k, supportedSourceOfTrafficFieldNames.get(k), v);
             });
         }
+        debug("Output record: %s", record);
     }
 
     private boolean is_refer_under_site_domain(String domain, ProcessContext context, Record record) {
@@ -730,5 +739,21 @@ public class SetSourceOfTraffic extends AbstractProcessor {
         return decodedValue;
     }
 
+    /**
+     * Facility to log debug.
+     *
+     * @param format the format of the String.
+     * @param args the arguments.
+     */
+    private void debug(final String format, final Object... args) {
+      if (debug) {
+        if (args.length == 0) {
+          getLogger().debug(format);
+        } else {
+          String newLineFormat = format + "\n";
+          getLogger().debug(String.format(newLineFormat, args));
+        }
+      }
+    }
 }
 

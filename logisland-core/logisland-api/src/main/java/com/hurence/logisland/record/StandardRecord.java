@@ -508,4 +508,12 @@ public class StandardRecord implements Record {
     public Collection<String> getErrors() {
         return new ArrayList<>(errors);
     }
+
+    @Override
+    public boolean checkFieldIsSet(String fieldName) {
+      if (this.hasField(fieldName)) {
+        return this.getField(fieldName).getRawValue() != null;
+      }
+      return false;
+    }
 }
