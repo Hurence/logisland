@@ -361,7 +361,7 @@ run_spark_local_mode() {
   SPARK_LOCAL_OPTIONS="--master ${SPARK_MASTER} --conf spark.metrics.namespace=\"${APP_NAME}\""
 
   EXTRA_DRIVER_JAVA_OPTIONS="spark.driver.extraJavaOptions=${LOG4J_SETTINGS} ${KB_SETTINGS}"
-  EXTRA_PROCESSOR_JAVA_OPTIONS="spark.executor.extraJavaOptions=${LOG4J_SETTINGS} ${KB_SETTINGS}"
+  EXTRA_EXECUTOR_JAVA_OPTIONS="spark.executor.extraJavaOptions=${LOG4J_SETTINGS} ${KB_SETTINGS}"
 
 #  DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
 #  if [[ ! -z "${DRIVER_CORES}" ]]
@@ -391,7 +391,7 @@ run_spark_local_mode() {
 
   ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${SPARK_LOCAL_OPTIONS} \
       --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
-      --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
+      --conf "${EXTRA_EXECUTOR_JAVA_OPTIONS}" \
       --conf spark.metrics.conf="${lib_dir}/../monitoring/metrics.properties"  \
       --driver-library-path ${OPENCV_NATIVE_LIB_PATH} \
       --class ${app_mainclass} \
@@ -700,21 +700,21 @@ run_spark_client_mode() {
   update_cluster_options_for_spark_cluster
 
   EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions='${LOG4J_SETTINGS}
-  EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions='${LOG4J_SETTINGS}
+  EXTRA_EXECUTOR_JAVA_OPTIONS='spark.executor.extraJavaOptions='${LOG4J_SETTINGS}
 
   echo "##################"
   echo "Will run command :"
   echo "##################"
   echo ${SPARK_HOME}'/bin/spark-submit '${VERBOSE_OPTIONS}' '${SPARK_CLUSTER_OPTIONS}' \
   --conf "'${EXTRA_DRIVER_JAVA_OPTIONS}'" \
-  --conf "'${EXTRA_PROCESSOR_JAVA_OPTIONS}'" \
+  --conf "'${EXTRA_EXECUTOR_JAVA_OPTIONS}'" \
   --class '${app_mainclass}' \
   --jars '${app_classpath}' '${engine_jar}' \
   -conf '${CONF_FILE_ABOSLUTE_PATH}''
 
   ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${SPARK_CLUSTER_OPTIONS} \
   --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
-  --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
+  --conf "${EXTRA_EXECUTOR_JAVA_OPTIONS}" \
   --class ${app_mainclass} \
   --jars ${app_classpath} ${engine_jar} \
   -conf ${CONF_FILE_ABOSLUTE_PATH}
@@ -733,21 +733,31 @@ run_spark_cluster_mode() {
   fi
 
   EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions='${LOG4J_SETTINGS}
-  EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions='${LOG4J_SETTINGS}
+  if [ -z "${EXTRA_EXECUTOR_JAVA_OPTIONS}" ]
+  then
+    EXTRA_EXECUTOR_JAVA_OPTIONS='spark.executor.extraJavaOptions='${LOG4J_SETTINGS}
+  else
+    # EXTRA_EXECUTOR_JAVA_OPTIONS already filled with some options, reuse them.
+    # This allows for instance to set the garbage collector on executor nodes with
+    # something like
+    # EXTRA_EXECUTOR_JAVA_OPTIONS="-Xmn1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=65 -XX:+UseCMSInitiatingOccupancyOnly -XX:+UseCompressedOops"
+    # in a script calling logisland.sh:q!
+    EXTRA_EXECUTOR_JAVA_OPTIONS="spark.executor.extraJavaOptions=${LOG4J_SETTINGS} ${EXTRA_EXECUTOR_JAVA_OPTIONS}"
+  fi
 
   echo "##################"
   echo "Will run command :"
   echo "##################"
   echo ${SPARK_HOME}'/bin/spark-submit '${VERBOSE_OPTIONS}' '${SPARK_CLUSTER_OPTIONS}' \
   --conf "'${EXTRA_DRIVER_JAVA_OPTIONS}'" \
-  --conf "'${EXTRA_PROCESSOR_JAVA_OPTIONS}'" \
+  --conf "'${EXTRA_EXECUTOR_JAVA_OPTIONS}'" \
   --class '${app_mainclass}' \
   --jars '${app_classpath}' '${engine_jar}' \
   -conf '${CONF_FILE_ABOSLUTE_PATH}''
 
   ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${SPARK_CLUSTER_OPTIONS} \
   --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
-  --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
+  --conf "${EXTRA_EXECUTOR_JAVA_OPTIONS}" \
   --class ${app_mainclass} \
   --jars ${app_classpath} ${engine_jar} \
   -conf ${CONF_FILE_ABOSLUTE_PATH}
