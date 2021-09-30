@@ -3,7 +3,6 @@ package com.hurence.logisland.processor.webanalytics.util;
 import com.hurence.logisland.processor.webanalytics.modele.*;
 import com.hurence.logisland.util.runner.MockRecord;
 
-import org.apache.commons.collections.iterators.EmptyListIterator;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

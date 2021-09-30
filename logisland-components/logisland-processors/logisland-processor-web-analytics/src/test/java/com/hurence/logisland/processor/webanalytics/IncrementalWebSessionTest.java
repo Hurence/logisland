@@ -42,7 +42,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.hurence.logisland.processor.webanalytics.IncrementalWebSession.*;
 import static com.hurence.logisland.processor.webanalytics.util.ElasticsearchServiceUtil.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -282,8 +281,8 @@ public class IncrementalWebSessionTest {
         testRunner.assertOutputRecordsCount(4);
         List<MockRecord> outputRecords = testRunner.getOutputRecords();
         MockRecord session1 = getFirstRecordWithId(SESSION1, outputRecords);
-        session1.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
-        session1.assertFieldEquals(defaultOutputFieldNameForEsType, SESSION_TYPE);
+        session1.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
+        session1.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, SESSION_TYPE);
         new WebSessionChecker(session1).sessionId(SESSION1)
                 .Userid(USER1)
                 .record_type("consolidate-session")
@@ -298,8 +297,8 @@ public class IncrementalWebSessionTest {
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
         MockRecord session2 = getFirstRecordWithId(SESSION1+"#2", outputRecords);
-        session2.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY2);
-        session2.assertFieldEquals(defaultOutputFieldNameForEsType, SESSION_TYPE);
+        session2.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY2);
+        session2.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, SESSION_TYPE);
         new WebSessionChecker(session2).sessionId(SESSION1+"#2")
                 .Userid(USER1)
                 .record_type("consolidate-session")
@@ -322,19 +321,19 @@ public class IncrementalWebSessionTest {
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getUserIdField(), USER1);
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getVisitedPageField(), URL);
         event1Output.assertNullField(WebEvent.CURRENT_CART);
-        event1Output.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
-        event1Output.assertFieldEquals(defaultOutputFieldNameForEsType, EVENT_TYPE);
+        event1Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
+        event1Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, EVENT_TYPE);
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getTimestampField(), DAY1);
         event1Output.assertRecordSizeEquals(EVENT_NUMBER_OF_FIELD_ORIGINAL_SESSION);
 
         event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getOriginalSessionIdField(), SESSION1);
         event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1+"#2");
-        event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getNewSessionReasonField(), DAY_OVERLAP.reason());
+        event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getNewSessionReasonField(), IncrementalWebSession.DAY_OVERLAP.reason());
         event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getUserIdField(), USER1);
         event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getVisitedPageField(), URL2);
         event2Output.assertNullField(WebEvent.CURRENT_CART);
-        event2Output.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY2);
-        event2Output.assertFieldEquals(defaultOutputFieldNameForEsType, EVENT_TYPE);
+        event2Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY2);
+        event2Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, EVENT_TYPE);
         event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getTimestampField(), DAY2);
         event2Output.assertRecordSizeEquals(EVENT_NUMBER_OF_FIELD_NEW_SESSION);
     }
@@ -354,8 +353,8 @@ public class IncrementalWebSessionTest {
         testRunner.assertOutputRecordsCount(2);
 
         final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
-        session.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
-        session.assertFieldEquals(defaultOutputFieldNameForEsType, SESSION_TYPE);
+        session.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
+        session.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, SESSION_TYPE);
         new WebSessionChecker(session).sessionId(SESSION1)
                 .Userid(USER1)
                 .record_type("consolidate-session")
@@ -376,8 +375,8 @@ public class IncrementalWebSessionTest {
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getUserIdField(), USER1);
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getVisitedPageField(), URL1);
         event1Output.assertNullField(WebEvent.CURRENT_CART);
-        event1Output.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
-        event1Output.assertFieldEquals(defaultOutputFieldNameForEsType, EVENT_TYPE);
+        event1Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
+        event1Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, EVENT_TYPE);
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getTimestampField(), DAY1);
         event1Output.assertRecordSizeEquals(EVENT_NUMBER_OF_FIELD_ORIGINAL_SESSION);
     }
@@ -397,8 +396,8 @@ public class IncrementalWebSessionTest {
         // One webSession expected.
         testRunner.assertOutputRecordsCount(2);
         final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
-        session.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
-        session.assertFieldEquals(defaultOutputFieldNameForEsType, SESSION_TYPE);
+        session.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
+        session.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, SESSION_TYPE);
         new WebSessionChecker(session).sessionId(SESSION1)
                 .Userid(USER1)
                 .record_type("consolidate-session")
@@ -418,8 +417,8 @@ public class IncrementalWebSessionTest {
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getUserIdField(), USER1);
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getVisitedPageField(), URL1);
         event1Output.assertNullField(WebEvent.CURRENT_CART);
-        event1Output.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
-        event1Output.assertFieldEquals(defaultOutputFieldNameForEsType, EVENT_TYPE);
+        event1Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
+        event1Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, EVENT_TYPE);
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getTimestampField(), DAY1);
         event1Output.assertRecordSizeEquals(EVENT_NUMBER_OF_FIELD_ORIGINAL_SESSION);
     }
@@ -458,8 +457,8 @@ public class IncrementalWebSessionTest {
         event1Output.assertNullField(TestMappings.eventsInternalFields.getUserIdField());
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getVisitedPageField(), URL1);
         event1Output.assertNullField(WebEvent.CURRENT_CART);
-        event1Output.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
-        event1Output.assertFieldEquals(defaultOutputFieldNameForEsType, EVENT_TYPE);
+        event1Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
+        event1Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, EVENT_TYPE);
         event1Output.assertFieldEquals(TestMappings.eventsInternalFields.getTimestampField(), DAY1);
         event1Output.assertRecordSizeEquals(EVENT_NUMBER_OF_FIELD_ORIGINAL_SESSION);
 
@@ -468,8 +467,8 @@ public class IncrementalWebSessionTest {
         event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getUserIdField(), USER1);
         event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getVisitedPageField(), URL2);
         event2Output.assertNullField(WebEvent.CURRENT_CART);
-        event2Output.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
-        event2Output.assertFieldEquals(defaultOutputFieldNameForEsType, EVENT_TYPE);
+        event2Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
+        event2Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, EVENT_TYPE);
         event2Output.assertFieldEquals(TestMappings.eventsInternalFields.getTimestampField(), DAY1+1000L);
         event2Output.assertRecordSizeEquals(EVENT_NUMBER_OF_FIELD_ORIGINAL_SESSION);
 
@@ -478,8 +477,8 @@ public class IncrementalWebSessionTest {
         event3Output.assertNullField(TestMappings.eventsInternalFields.getUserIdField());
         event3Output.assertFieldEquals(TestMappings.eventsInternalFields.getVisitedPageField(), URL3);
         event3Output.assertNullField(WebEvent.CURRENT_CART);
-        event3Output.assertFieldEquals(defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
-        event3Output.assertFieldEquals(defaultOutputFieldNameForEsType, EVENT_TYPE);
+        event3Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_EVENT_DAY1);
+        event3Output.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, EVENT_TYPE);
         event3Output.assertFieldEquals(TestMappings.eventsInternalFields.getTimestampField(), DAY1+2000L);
         event3Output.assertRecordSizeEquals(EVENT_NUMBER_OF_FIELD_ORIGINAL_SESSION);
     }
