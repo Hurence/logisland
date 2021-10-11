@@ -20,7 +20,7 @@
         <repository>
             <id>bintray</id>
             <name>bintray repo</name>
-            <url>http://dl.bintray.com/chronix/maven</url>
+            <url>https://dl.bintray.com/chronix/maven</url>
         </repository>
     </repositories>
 
