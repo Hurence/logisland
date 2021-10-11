@@ -180,6 +180,7 @@ public class IncrementalWebSessionTest {
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, EVENT_TYPE);
         runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
+        runner.setProperty(IncrementalWebSession.ZONEID_CONF, "UTC");
         runner.assertValid();
         runner.run();
         // 1/12/2019 à 1:00:00 +0100
