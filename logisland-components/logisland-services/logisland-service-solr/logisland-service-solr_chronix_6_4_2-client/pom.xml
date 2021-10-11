@@ -16,13 +16,6 @@
     <name>Chronix-Solr 6.4.2 Service Plugin</name>
     <description>An Implementation of the datastore logisland api for Chronix</description>
 
-    <repositories>
-        <repository>
-            <id>bintray</id>
-            <name>bintray repo</name>
-            <url>https://dl.bintray.com/chronix/maven</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
