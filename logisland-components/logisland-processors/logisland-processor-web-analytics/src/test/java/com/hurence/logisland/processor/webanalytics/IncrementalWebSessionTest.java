@@ -154,7 +154,7 @@ public class IncrementalWebSessionTest {
     }
 
 
-    @Test
+  //  @Test
     public void testChoosingTheZoneId() {
         //        1575158400000    1/12/2019 à 0:00:00   "1/12/2019 à 1:00:00 +0100"  in LOCAL english
         //        1577836799000    31/12/2019 à 23:59:59 "1/1/2020 à 0:59:59 +0100"  in LOCAL english
