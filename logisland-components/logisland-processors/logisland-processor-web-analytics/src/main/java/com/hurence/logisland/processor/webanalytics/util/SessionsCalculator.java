@@ -284,6 +284,11 @@ public class SessionsCalculator {
             }
         }
 
+        // IS_SINGLE_PAGE
+        final Boolean currentIsSinglePageVisit = sessionInternalRecord.getField(webSessionInternalFields.getIsSinglePageVisit()).asBoolean();
+        final String sessionFirstVisitedPage = sessionInternalRecord.getField(webSessionInternalFields.getFirstVisitedPageField()).asString();
+        session.setIsSinglePageVisit(currentIsSinglePageVisit && sessionFirstVisitedPage.equals(visitedPage.asString()));
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime eventLocalDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(eventTimestamp),
                 ZoneId.systemDefault());
@@ -327,7 +332,7 @@ public class SessionsCalculator {
             sessionInternalRecord.getFieldsEntrySet().forEach(entry ->
             {
                 final Field f = entry.getValue();
-                logger.debug("INVALID field type={}, class={}", f.getType(), f.getRawValue().getClass());
+                logger.debug("INVALID field {} type={}, class={}", f.getName(), f.getType(), f.getRawValue().getClass());
             });
         }
     }

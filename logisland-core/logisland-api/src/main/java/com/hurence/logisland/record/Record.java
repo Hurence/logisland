@@ -49,6 +49,8 @@ public interface Record extends Serializable {
 
     boolean hasField(String fieldName);
 
+    boolean checkFieldIsSet(String fieldName);
+
     boolean isInternField(String fieldName);
 
     boolean isInternField(Field field);

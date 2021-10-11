@@ -255,6 +255,15 @@ public class IncrementalWebSession
                     .defaultValue("lastVisitedPage")
                     .build();
 
+    public static final PropertyDescriptor IS_SINGLE_PAGE_VISIT_FIELD =
+            new PropertyDescriptor.Builder()
+                    .name("isSinglePageVisit.out.field")
+                    .description("the name of the field stating whether the session is single page visit or not => will override default value if set")
+                    .required(true)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue("is_single_page_visit")
+                    .build();
+        
     public static final PropertyDescriptor IS_SESSION_ACTIVE_FIELD =
             new PropertyDescriptor.Builder()
                     .name("isSessionActive.out.field")
@@ -462,7 +471,6 @@ public class IncrementalWebSession
     public final static SessionCheckResult SESSION_TIMEDOUT = new InvalidSessionCheckResult("Session timed-out");
     public final static SessionCheckResult SOURCE_OF_TRAFFIC = new InvalidSessionCheckResult("Source of traffic differed");
 
-
     //services
     private ElasticsearchClientService elasticsearchClientService;
     private CacheService<String/*sessionId*/, WebSession> cacheService;
@@ -524,6 +532,7 @@ public class IncrementalWebSession
                 FIELDS_TO_RETURN,
                 FIRST_VISITED_PAGE_FIELD,
                 LAST_VISITED_PAGE_FIELD,
+                IS_SINGLE_PAGE_VISIT_FIELD,
                 IS_SESSION_ACTIVE_FIELD,
                 SESSION_DURATION_FIELD,
                 SESSION_INACTIVITY_DURATION_FIELD,
@@ -556,6 +565,7 @@ public class IncrementalWebSession
     public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
+        this._DEBUG = context.getPropertyValue(DEBUG_CONF).asBoolean();
         this.elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE_CONF)
                 .asControllerService());
         if (elasticsearchClientService == null)
@@ -581,6 +591,7 @@ public class IncrementalWebSession
         final String _USERID_FIELD = context.getPropertyValue(USER_ID_FIELD).asString();
         final String _FIRST_VISITED_PAGE_FIELD = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
         final String _LAST_VISITED_PAGE_FIELD = context.getPropertyValue(LAST_VISITED_PAGE_FIELD).asString();
+        String _IS_SINGLE_PAGE_VISIT = context.getPropertyValue(IS_SINGLE_PAGE_VISIT_FIELD).asString();
         String _IS_SESSION_ACTIVE_FIELD = context.getPropertyValue(IS_SESSION_ACTIVE_FIELD).asString();
         String _SESSION_DURATION_FIELD = context.getPropertyValue(SESSION_DURATION_FIELD).asString();
         String _EVENTS_COUNTER_FIELD = context.getPropertyValue(EVENTS_COUNTER_FIELD).asString();
@@ -657,7 +668,8 @@ public class IncrementalWebSession
                 .setLastEventEpochSecondsField(_LAST_EVENT_EPOCH_SECONDS_FIELD)
                 .setLastVisitedPageField(_LAST_VISITED_PAGE_FIELD)
                 .setTransactionIdsField(_TRANSACTION_IDS)
-                .setUserIdField(_USERID_FIELD);
+                .setUserIdField(_USERID_FIELD)
+                .setIsSinglePageVisit(_IS_SINGLE_PAGE_VISIT);
 
         this.zoneIdToUse = ZoneId.systemDefault();
         if (context.getPropertyValue(ZONEID_CONF).isSet()) {
@@ -680,7 +692,10 @@ public class IncrementalWebSession
                             && lastEvent.getYear() == timestamp.getYear();
 
                     if (_DEBUG && !isValid) {
-                        debug("'Day overlap' isValid=" + isValid + " session-id=" + session.getSessionId());
+                        debug("Invalid Session Check: 'Day overlap' isValid=" + isValid + " session-id=" + session.getSessionId() +
+                                " firstEvent=" + firstEvent.format(DateTimeFormatter.ISO_ORDINAL_DATE) + 
+                                " event=" + timestamp.format(DateTimeFormatter.ISO_ORDINAL_DATE) +
+                                " lastEvent=" + lastEvent.format(DateTimeFormatter.ISO_ORDINAL_DATE));
                     }
 
                     return isValid ? ValidSessionCheckResult.getInstance() : DAY_OVERLAP;
@@ -694,7 +709,7 @@ public class IncrementalWebSession
                     boolean isValid = durationInSeconds <= this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS;
 
                     if (_DEBUG && !isValid) {
-                        debug("'Timeout exceeded' isValid=" + isValid + " seconds=" + durationInSeconds +
+                        debug("Invalid Session Check: 'Timeout exceeded' isValid=" + isValid + " seconds=" + durationInSeconds +
                                 " timeout=" + this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS + " session-id=" + session.getSessionId());
                     }
 
@@ -709,7 +724,7 @@ public class IncrementalWebSession
                             Objects.deepEquals(session.getSourceOfTraffic(), event.getSourceOfTraffic());
 
                     if (_DEBUG && !isValid) {
-                        debug("'Fields of traffic' isValid=" + isValid + " session-id=" + session.getSessionId());
+                        debug("Invalid Session Check: 'Fields of traffic' isValid=" + isValid + " session-id=" + session.getSessionId());
                     }
 
                     return isValid ? ValidSessionCheckResult.getInstance() : SOURCE_OF_TRAFFIC;
@@ -1514,19 +1529,15 @@ public class IncrementalWebSession
      * @param format the format of the String.
      * @param args the arguments.
      */
-    private void debug(final String format, final Object... args)
-    {
-        if ( _DEBUG )
-        {
-            if ( args.length == 0 )
-            {
-                getLogger().debug(format);
-            }
-            else
-            {
-                getLogger().debug(String.format(format + "\n", args));
-            }
+    private void debug(final String format, final Object... args) {
+      if (_DEBUG) {
+        if (args.length == 0) {
+          getLogger().debug(format);
+        } else {
+          String newLineFormat = format + "\n";
+          getLogger().debug(String.format(newLineFormat, args));
         }
+      }
     }
 
 }
