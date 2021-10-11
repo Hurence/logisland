@@ -129,7 +129,7 @@
         <repository>
             <id>hdp</id>
             <name>Hortonwork repo</name>
-            <url>http://repo.hortonworks.com/content/groups/public/</url>
+            <url>https://repo.hortonworks.com/content/groups/public/</url>
         </repository>
         <repository>
             <id>central</id>
@@ -183,7 +183,7 @@
         <repository>
             <id>confluent</id>
             <name>Confluent</name>
-            <url>http://packages.confluent.io/maven/</url>
+            <url>https://packages.confluent.io/maven/</url>
         </repository>
 
         <repository>
