@@ -136,20 +136,20 @@ public class IncrementalWebSessionTest {
         runner.assertValid();
         runner.setProperty(IncrementalWebSession.ZONEID_CONF, "Japan");
         runner.assertValid();
-        runner.setProperty(PROCESSING_MODE, ProcessingMode.FAST.getName());
+        runner.setProperty(IncrementalWebSession.PROCESSING_MODE, IncrementalWebSession.ProcessingMode.FAST.getName());
         runner.assertValid();
-        runner.setProperty(PROCESSING_MODE, "FAST");
+        runner.setProperty(IncrementalWebSession.PROCESSING_MODE, "FAST");
         runner.assertValid();
-        runner.setProperty(PROCESSING_MODE, "MODERATE");
+        runner.setProperty(IncrementalWebSession.PROCESSING_MODE, "MODERATE");
         runner.assertValid();
-        runner.setProperty(PROCESSING_MODE, "SLOW");
+        runner.setProperty(IncrementalWebSession.PROCESSING_MODE, "SLOW");
         runner.assertValid();
-        runner.setProperty(PROCESSING_MODE, "SLOW2");
+        runner.setProperty(IncrementalWebSession.PROCESSING_MODE, "SLOW2");
         runner.assertNotValid();
-        runner.setProperty(PROCESSING_MODE, "SLOW");
-        runner.setProperty(ES_REFRESH_TIMEOUT, "100");
+        runner.setProperty(IncrementalWebSession.PROCESSING_MODE, "SLOW");
+        runner.setProperty(IncrementalWebSession.ES_REFRESH_TIMEOUT, "100");
         runner.assertValid();
-        runner.setProperty(ES_REFRESH_TIMEOUT, "-1");
+        runner.setProperty(IncrementalWebSession.ES_REFRESH_TIMEOUT, "-1");
         runner.assertNotValid();
     }
 
