@@ -1950,7 +1950,7 @@ public class IncrementalWebSessionIT {
         testRunner.enqueue(event2, event6);
         testRunner.run();
         testRunner.assertOutputErrorCount(0);//TODO random failure here...
-        testRunner.assertOutputRecordsCount(7 + 4);//7 events et 4 sessions
+        testRunner.assertOutputRecordsCount(5 + 4);//7 events et 4 sessions
 
         getFirstRecordWithId(buildId(time1, SESSION1), testRunner.getOutputRecords())
                 .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1);
@@ -2190,7 +2190,7 @@ public class IncrementalWebSessionIT {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(1 + 2);//session + event
+        testRunner.assertOutputRecordsCount(2 + 2);//session + event
         injectOutputIntoEsWithoutRefreshing(testRunner.getOutputRecords());
         //T1------T2------T3---T4-------------T5---T6-------T7
         //--------X------------X-------------------X----------
@@ -2545,7 +2545,7 @@ public class IncrementalWebSessionIT {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(2 + 3);//session + event
+        testRunner.assertOutputRecordsCount(2 + 2);//session + event
         injectOutputIntoEsWithoutRefreshing(testRunner.getOutputRecords());
         //T1------T2------T3---T4-------------T5---T6-------T7
         //--------X------------X-------------------X----------

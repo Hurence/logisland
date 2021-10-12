@@ -18,7 +18,7 @@ jobs:
 
       # Step that does that actual cache save and restore
       - uses: actions/cache@v2
-        with:
+        with:d
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
@@ -28,6 +28,6 @@ jobs:
         id: build
         run: mvn clean package
 
-      - name: Create artifact of test coverage
+      - name: Run integration tests
         if: steps.build.outputs.exit_code == 0
         run: mvn -Pintegration-tests clean verify
