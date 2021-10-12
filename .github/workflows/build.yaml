@@ -28,6 +28,6 @@ jobs:
         id: build
         run: mvn clean package
 
-      - name: Run integration tests
-        if: steps.build.outputs.exit_code == 0
-        run: mvn -Pintegration-tests clean verify
+    #  - name: Run integration tests
+    #    if: steps.build.outputs.exit_code == 0
+    #    run: mvn -Pintegration-tests clean verify
