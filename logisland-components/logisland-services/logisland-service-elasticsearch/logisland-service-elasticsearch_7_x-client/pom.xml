@@ -17,7 +17,7 @@
     <properties>
         <!-- Versions -->
         <elasticsearch.version>7.1.1</elasticsearch.version>
-        <testcontainers.version>1.12.5</testcontainers.version>
+        <testcontainers.version>1.16.0</testcontainers.version>
     </properties>
 
     <dependencies>
