@@ -92,7 +92,7 @@ public class AsyncCallRequestBulkPostJsonTest  {
         out.assertRecordSizeEquals(6);
 
         MockRecord coordinates = new MockRecord(out.getField("response").asRecord());
-        coordinates.assertRecordSizeEquals(8);
+        coordinates.assertRecordSizeEquals(9);
 
     }
 
