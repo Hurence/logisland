@@ -140,12 +140,6 @@ extensions:
     module: com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
     class: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
     tags: [elasticsearch]
-  - name: FetchHBaseRow
-    description: Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
-    category: datastore
-    module: com.hurence.logisland:logisland-processor-hbase:1.4.0
-    class: com.hurence.logisland.processor.hbase.FetchHBaseRow
-    tags: [hbase, scan, fetch, get, enrich]
   - name: MultiGetElasticsearch
     description:  >
       Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.
@@ -170,12 +164,6 @@ extensions:
     module: com.hurence.logisland:logisland-processor-elasticsearch:1.4.0
     class: com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
     tags: [elasticsearch]
-  - name: PutHBaseCell
-    description: Adds the Contents of a Record to HBase as the value of a single cell
-    category: datastore
-    module: com.hurence.logisland:logisland-processor-hbase:1.4.0
-    class: com.hurence.logisland.processor.hbase.PutHBaseCell
-    tags: [hadoop, hbase]
   - name: EvaluateXPath
     description: Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to new attributes in the records, depending on configuration of the Processor. XPaths are entered by adding user-defined properties; the name of the property maps to the Attribute Name into which the result will be placed. The value of the property must be a valid XPath expression. If the expression matches nothing, no attributes is added. 
     category: parsing
@@ -454,12 +442,6 @@ extensions:
     module: com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
     class: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
     tags: [elasticsearch, client]
-  - name: HBase_1_1_2_ClientService
-    description: Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
-    category: datastore
-    module: com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
-    class: com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
-    tags: [hbase, client]
   - name: InfluxDBControllerService
     description: Provides a controller service that for the moment only allows to bulkput records into influxdb.
     category: datastore
