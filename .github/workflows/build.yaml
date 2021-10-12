@@ -18,7 +18,7 @@ jobs:
 
       # Step that does that actual cache save and restore
       - uses: actions/cache@v2
-        with:d
+        with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
