@@ -32,7 +32,6 @@
     <modules>
         <module>logisland-processor-common</module>
         <module>logisland-processor-elasticsearch</module>
-        <module>logisland-processor-hbase</module>
         <module>logisland-processor-useragent</module>
         <module>logisland-processor-scripting</module>
         <module>logisland-processor-enrichment</module>

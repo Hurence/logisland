@@ -21,7 +21,6 @@
         <module>logisland-service-inmemory-cache</module>
         <module>logisland-service-ip-to-geo</module>
         <module>logisland-service-redis</module>
-        <module>logisland-service-hbase</module>
         <module>logisland-service-solr</module>
         <module>logisland-service-elasticsearch</module>
         <module>logisland-service-rest</module>
