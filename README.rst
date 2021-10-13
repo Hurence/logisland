@@ -9,6 +9,10 @@ Logisland
    :target: https://gitter.im/logisland/logisland?utm_source=share-link&utm_medium=link&utm_campaign=share-link
    :alt: Gitter
 
+.. image:: https://app.fossa.io/api/projects/git%2Bgithub.com%2FHurence%2Flogisland.svg?type=shield
+   :target: https://app.fossa.io/projects/git%2Bgithub.com%2FHurence%2Flogisland?ref=badge_shield
+   :alt: License scan
+
 
 Download the `latest release build <https://github.com/Hurence/logisland/releases>`_  and
 chat with us on `gitter <https://gitter.im/logisland/logisland>`_
