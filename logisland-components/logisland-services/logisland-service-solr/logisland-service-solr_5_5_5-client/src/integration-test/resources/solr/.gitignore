@@ -1,9 +1,0 @@
-*
-
-!.gitignore
-!solr.xml
-!zoo.cfg
-!configsets/**/*
-!README.txt
-
-!*/

@@ -15,7 +15,7 @@ Be sure `HubFlow git extension <https://github.com/datasift/gitflow>`_ is instal
 
 .. code-block:: sh
 
-    git hf release start v1.4.0
+    mvn version:set -
 
 Update the version with the bump_version.sh script. Usage: bump_version.sh <old_version> <new_version>. You should double escape dots (in the old version only) so it is correctly parsed, otherwise it will be considered as the any character
 

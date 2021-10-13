@@ -6,7 +6,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-engine-spark_2_X</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.1</version>
     </parent>
     <artifactId>logisland-engine-spark_2_common</artifactId>
     <packaging>jar</packaging>

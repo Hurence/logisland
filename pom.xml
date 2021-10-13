@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -116,8 +116,8 @@
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
 
-        <junit.version>4.13.1</junit.version>
-        <junit-platform.version>1.2.0</junit-platform.version>
+        <junit.version>4.13</junit.version>
+        <junit-platform.version>1.5.2</junit-platform.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <!-- Package to use when relocating shaded classes. -->
         <logisland.shade.packageName>shade.logisland</logisland.shade.packageName>
@@ -456,7 +456,7 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>6.5</version>
+                            <version>8.29</version>
                         </dependency>
                     </dependencies>
                 </plugin>

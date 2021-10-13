@@ -153,7 +153,7 @@ public class IncrementalWebSessionTest {
         runner.assertNotValid();
     }
 
-
+    // TODO fix that test
   //  @Test
     public void testChoosingTheZoneId() {
         //        1575158400000    1/12/2019 à 0:00:00   "1/12/2019 à 1:00:00 +0100"  in LOCAL english

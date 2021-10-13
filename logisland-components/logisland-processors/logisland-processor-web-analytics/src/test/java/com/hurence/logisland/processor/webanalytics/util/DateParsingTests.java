@@ -35,6 +35,7 @@ public class DateParsingTests {
     //        1580515200000    1/2/2020 à 0:00:00
     //        1583020799000    29/2/2020 à 23:59:59
    // @Test
+    // TODO fix that test
     public void testDateFormatters() {
         DateTimeFormatter eventFormatter = DateTimeFormatter.ofPattern("d/M/yyyy à H:mm:ss Z", Locale.ENGLISH);
         SimpleDateFormat sessionsFormatter = new SimpleDateFormat("d/M/yyyy à H:mm:ss Z");
