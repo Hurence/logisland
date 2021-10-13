@@ -79,6 +79,18 @@ public class LRUKeyValueCacheServiceTest {
         assertEquals("5", cacheService.get("5"));
         assertEquals("3", cacheService.get("3"));
         assertEquals("6", cacheService.get("6"));
+
+        cacheService.get("3");
+        cacheService.get("5");
+        cacheService.set("7", "7");
+
+        assertEquals(null, cacheService.get("1"));
+        assertEquals(null, cacheService.get("2"));
+        assertEquals(null, cacheService.get("4"));
+        assertEquals("5", cacheService.get("5"));
+        assertEquals("3", cacheService.get("3"));
+        assertEquals(null, cacheService.get("6"));
+        assertEquals("7", cacheService.get("7"));
     }
 
     private class MockCacheService<K, V> extends LRUKeyValueCacheService<K, V> {

@@ -1,12 +1,12 @@
 /**
- * Copyright © 2016 Jeremy Custenborder (jcustenborder@gmail.com)
- * <p>
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,8 @@ import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.source.SourceRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SpoolDirJsonSourceTask extends SpoolDirSourceTask<SpoolDirJsonSourceConnectorConfig> {
+  private static final Logger log = LoggerFactory.getLogger(SpoolDirJsonSourceTask.class);
   JsonFactory jsonFactory;
   JsonParser jsonParser;
   Iterator<JsonNode> iterator;

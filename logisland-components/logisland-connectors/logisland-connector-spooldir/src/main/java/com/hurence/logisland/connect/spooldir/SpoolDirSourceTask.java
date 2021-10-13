@@ -1,12 +1,12 @@
 /**
- * Copyright © 2016 Jeremy Custenborder (jcustenborder@gmail.com)
- * <p>
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,8 @@ import com.github.jcustenborder.kafka.connect.utils.data.type.TypeParser;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
+import com.hurence.logisland.connect.spooldir.modele.DelayedFile;
+import com.hurence.logisland.utils.LinkedHashSetBlockingQueue;
 import com.hurence.logisland.utils.SynchronizedFileLister;
 import org.apache.kafka.connect.data.Date;
 import org.apache.kafka.connect.data.Schema;
@@ -43,23 +44,33 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 
 public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorConfig> extends SourceTask {
-    static final Logger log = LoggerFactory.getLogger(SpoolDirSourceTask.class);
+    private static final Logger log = LoggerFactory.getLogger(SpoolDirSourceTask.class);
     protected Parser parser;
     protected Map<String, ?> sourcePartition;
     CONF config;
     Stopwatch processingTime = Stopwatch.createStarted();
+    //those 4 properties are set up in openNextFileAndConfigureIt
     private File inputFile;
-    private long inputFileModifiedTime;
     private InputStream inputStream;
-    private boolean hasRecords = false;
+    private long inputFileModifiedTime;
     private Map<String, String> metadata;
 
+
+    private boolean currentFileFinished = false;
+    private boolean currentFileInError = false;
+    private boolean lastChance = false;
+    private boolean firstPoll = true;
     private SynchronizedFileLister fileLister;
+    final DelayQueue<DelayedFile> errorFileQueue = new DelayQueue<>();
+
 
     private static void checkDirectory(String key, File directoryPath) {
         if (log.isInfoEnabled()) {
@@ -146,77 +157,158 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
         for (Map.Entry<Schema, TypeParser> kvp : dateTypeParsers.entrySet()) {
             this.parser.registerTypeParser(kvp.getKey(), kvp.getValue());
         }
+        config.logUnused();
+        log.info("Started source task : {}", SpoolDirSourceTask.class.getCanonicalName());
     }
 
     @Override
     public void stop() {
-
+        if (this.inputStream != null) {
+            try {
+                this.inputStream.close();
+            } catch (IOException e) {
+                log.error("Exception thrown while closing inputstream of class : " +  this.getClass().getCanonicalName(), e);
+            }
+        }
     }
 
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
-        fileLister.updateList();
-        log.trace("poll()");
-        List<SourceRecord> results = read();
-
-        if (results.isEmpty()) {
-            log.trace("read() returned empty list. Sleeping {} ms.", this.config.emptyPollWaitMs);
-            Thread.sleep(this.config.emptyPollWaitMs);
+        log.debug("Polling for new data (files)");
+        if (fileLister.needToUpdateList()) {
+            fileLister.lock();
+            try {
+                if (fileLister.needToUpdateList()) {
+                    fileLister.updateList();
+                }
+            } finally {
+                fileLister.unlock();
+            }
+        }
+        if (firstPoll) {
+            firstPoll = false;
+            if (!openNextFileAndConfigureIt()) {//no file available
+                log.info("No more files available. Sleeping {} ms.", this.config.emptyPollWaitMs * 2);
+                Thread.sleep(this.config.emptyPollWaitMs * 2);
+                return Collections.emptyList();
+            }
+        }
+        if (currentFileFinished) {
+            if (!openNextFileAndConfigureIt()) {//no file available
+                log.info("No more files available. Sleeping {} ms.", this.config.emptyPollWaitMs * 2);
+                Thread.sleep(this.config.emptyPollWaitMs * 2);
+                return Collections.emptyList();
+            }
         }
 
-        log.trace("read() returning {} result(s)", results.size());
+        List<SourceRecord> results = read();
+        this.currentFileFinished = results.isEmpty();
+        if (currentFileFinished) {
+            if (currentFileInError) {
+                if (lastChance) {
+                    moveCurrentFileToErrorFolder();
+                } else {
+                    log.error("parsing file {} resulted in an error. Will try once more time after a delay", this.inputFile);
+                    errorFileQueue.add(new DelayedFile(this.inputFile, this.config.delayOnErrorMs, TimeUnit.MILLISECONDS));
+                }
+                lastChance = false;
+                currentFileInError = false;
+            } else {
+                moveCurrentFileToFinishedFolder();
+            }
+            log.info("Current file is ended. Sleeping {} ms before processing next file.", this.config.emptyPollWaitMs);
+            Thread.sleep(this.config.emptyPollWaitMs);
+        } else {
+            log.trace("read() returning {} result(s)", results.size());
+        }
 
         return results;
     }
 
-
-    public List<SourceRecord> read() {
+    public void moveCurrentFileToErrorFolder() {
         try {
-            if (!hasRecords) {
-                fileLister.closeAndMoveToFinished(this.inputStream, this.inputFile, this.config.inputPath, this.config.finishedPath, false);
-                this.inputStream = null;
+            log.info("Moving file {} to error folder {}", this.inputFile, this.config.errorPath);
+            fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.errorPath);
+        } catch (IOException ex0) {
+            log.error(
+                    String.format("Exception thrown while moving file %s to error folder %s",
+                            this.inputFile, this.config.errorPath),
+                    ex0);
+        }
+    }
 
-                File nextFile = fileLister.take();
-                if (null == nextFile) {
-                    return new ArrayList<>();
+    public void moveCurrentFileToFinishedFolder() {
+        log.info("Moving file {} to finished folder {}", this.inputFile, this.config.finishedPath);
+        try {
+            fileLister.moveTo(this.inputFile, this.config.inputPath, this.config.finishedPath);
+        } catch (IOException e) {
+            log.error(
+                    String.format("Exception encountered moving file %s to finished folder %s",
+                            this.inputFile, this.config.finishedPath),
+                    e);
+        }
+    }
+
+    /**
+     *
+     * @return true if there is a next file otherwise return false
+     */
+    private boolean openNextFileAndConfigureIt() {
+        DelayedFile failedFile = errorFileQueue.poll();
+        if (failedFile != null) {
+            this.inputFile = failedFile.getFailedFile();
+            lastChance = true;
+            log.info("Opening {}, this file produced an error last time trying to parse it", this.inputFile);
+        } else {
+            this.inputFile = fileLister.take();
+        }
+        if (null == this.inputFile) {
+            return false;
+        }
+        this.metadata = ImmutableMap.of();
+        this.inputFileModifiedTime = this.inputFile.lastModified();
+
+        try {
+            this.sourcePartition = ImmutableMap.of(
+                    "fileName", this.inputFile.getName()
+            );
+            log.info("Opening {}", this.inputFile);
+            Long lastOffset = null;
+            log.debug("looking up offset for {}", this.sourcePartition);
+            if (this.context != null) {
+                Map<String, Object> offset = this.context.offsetStorageReader().offset(this.sourcePartition);
+                if (null != offset && !offset.isEmpty()) {
+                    Number number = (Number) offset.get("offset");
+                    lastOffset = number.longValue();
                 }
-
-                this.metadata = ImmutableMap.of();
-                this.inputFile = nextFile;
-                this.inputFileModifiedTime = this.inputFile.lastModified();
-
+            }
+            if (this.inputStream != null) {
                 try {
-                    this.sourcePartition = ImmutableMap.of(
-                            "fileName", this.inputFile.getName()
-                    );
-                    log.info("Opening {}", this.inputFile);
-                    Long lastOffset = null;
-                    log.trace("looking up offset for {}", this.sourcePartition);
-                    Map<String, Object> offset = this.context.offsetStorageReader().offset(this.sourcePartition);
-                    if (null != offset && !offset.isEmpty()) {
-                        Number number = (Number) offset.get("offset");
-                        lastOffset = number.longValue();
-                    }
-                    this.inputStream = new FileInputStream(this.inputFile);
-                    configure(this.inputStream, this.metadata, lastOffset);
+                    this.inputStream.close();
                 } catch (Exception ex) {
-                    throw new ConnectException(ex);
+                    log.error("Exception during inputStream close", ex);
                 }
-                processingTime.reset();
-                processingTime.start();
             }
-            List<SourceRecord> records = process();
-            this.hasRecords = !records.isEmpty();
-            return records;
+            this.inputStream = new FileInputStream(this.inputFile);
+            configure(this.inputStream, this.metadata, lastOffset);
         } catch (Exception ex) {
-            log.error("Exception encountered processing line {} of {}.", recordOffset(), this.inputFile, ex);
+            log.error("Exception during inputStream configuration", ex);
+            throw new ConnectException(ex);
+        }
+        processingTime.reset();
+        processingTime.start();
+        return true;
+    }
 
-            try {
-                fileLister.closeAndMoveToFinished(this.inputStream, this.inputFile, this.config.inputPath, this.config.errorPath, false);
-                this.inputStream = null;
-            } catch (IOException | InterruptedException ex0) {
-                log.error("Exception thrown while moving {} to {}", this.inputFile, this.config.errorPath, ex0);
-            }
+    private List<SourceRecord> read() {
+        try {
+            return process();
+        } catch (Exception ex) {
+            log.error(
+                    String.format("Exception encountered processing line %s of %s.",
+                            recordOffset(), this.inputFile),
+                    ex);
+            currentFileInError = true;
             if (this.config.haltOnError) {
                 throw new ConnectException(ex);
             } else {
@@ -230,6 +322,7 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
                 "offset",
                 recordOffset()
         );
+
         log.trace("addRecord() - {}", sourceOffset);
         if (this.config.hasKeyMetadataField && null != keyStruct) {
             keyStruct.put(this.config.keyMetadataField, this.metadata);
@@ -243,7 +336,7 @@ public abstract class SpoolDirSourceTask<CONF extends SpoolDirSourceConnectorCon
 
         switch (this.config.timestampMode) {
             case FIELD:
-                log.trace("addRecord() - Reading date from timestamp field '{}'", this.config.timestampField);
+                log.debug("addRecord() - Reading date from timestamp field '{}'", this.config.timestampField);
                 java.util.Date date = (java.util.Date) valueStruct.get(this.config.timestampField);
                 timestamp = date.getTime();
                 break;

@@ -8,7 +8,8 @@
     {
       "name": "record_id",
       "type": "string"
-    }, {
+    }, 
+    {
       "name": "record_type",
       "type": "string"
     },
@@ -59,6 +60,10 @@
     {
       "name": "is_host_blacklisted",
       "type": "boolean"
+    },
+    {
+      "name": "topic",
+      "type": "string"
     },
     {
       "name": "tags",

@@ -44,14 +44,13 @@ public class MockProcessorTest {
         componentConfiguration.setType(ComponentType.PROCESSOR.toString());
         componentConfiguration.setConfiguration(conf);
 
-        Optional<ProcessContext> context = ComponentFactory.getProcessContext(componentConfiguration);
-        assertTrue(context.isPresent());
-        Processor processor = context.get().getProcessor();
+        ProcessContext context = ComponentFactory.buildAndSetUpProcessContext(componentConfiguration);
+        Processor processor = context.getProcessor();
 
         Record record = new StandardRecord("mock_record");
         record.setId("record1");
         record.setStringField("name", "tom");
-        List<Record> records = new ArrayList<>(processor.process(context.get(), Collections.singleton(record)));
+        List<Record> records = new ArrayList<>(processor.process(context, Collections.singleton(record)));
 
         assertEquals(1, records.size());
         assertTrue(records.get(0).hasField("message"));

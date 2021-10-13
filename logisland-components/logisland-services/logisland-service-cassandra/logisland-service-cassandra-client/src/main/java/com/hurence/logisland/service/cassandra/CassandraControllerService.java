@@ -30,8 +30,8 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -271,6 +271,11 @@ public class CassandraControllerService extends AbstractControllerService implem
         }
 
         updater = null;
+    }
+
+    @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for Cassandra");
     }
 
     @Override

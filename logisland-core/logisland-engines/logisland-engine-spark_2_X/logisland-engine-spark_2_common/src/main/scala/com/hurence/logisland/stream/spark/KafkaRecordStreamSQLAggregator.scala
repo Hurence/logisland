@@ -36,17 +36,17 @@ import java.util.Collections
 import com.hurence.logisland.annotation.documentation.{CapabilityDescription, Tags}
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record}
-import com.hurence.logisland.util.spark.{ProcessorMetrics, SparkUtils}
+import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator.{MAX_RESULTS_COUNT, OUTPUT_RECORD_TYPE, SQL_QUERY}
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.{ERROR_SERIALIZER, ERROR_TOPICS, INPUT_SERIALIZER, INPUT_TOPICS, OUTPUT_SERIALIZER, OUTPUT_TOPICS}
+import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
+import org.apache.spark.streaming.kafka010.OffsetRange
 import org.slf4j.LoggerFactory
-
-import scala.collection.JavaConversions._
-import com.hurence.logisland.stream.StreamProperties._
 
 
 @Tags(Array("stream", "SQL", "query", "record"))
@@ -65,23 +65,17 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
         Collections.unmodifiableList(descriptors)
     }
 
+
     override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             // val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
-
-            val sqlContext = SparkSession
-                .builder()
-                .appName(appName)
-                .config(ssc.sparkContext.getConf)
-                .getOrCreate()
-
             // this is used to implicitly convert an RDD to a DataFrame.
             @transient lazy val deserializer = getSerializer(
-                streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_SERIALIZER).asString,
+                sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 
-            val inputTopics = streamContext.getPropertyValue(INPUT_TOPICS).asString
+            val inputTopics = sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_TOPICS).asString
 
             //here how to handle elements that are not successfully deserialized ???
             //currently we lose them !
@@ -93,7 +87,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
               */
             val schema = try {
                 val parser = new Schema.Parser
-                val schema = parser.parse(streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                val schema = parser.parse(sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
                 SparkUtils.convertAvroSchemaToDataframeSchema(schema)
             }
             catch {
@@ -113,8 +107,8 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
 
 
-                val query = streamContext.getPropertyValue(SQL_QUERY).asString()
-                val outputRecordType = streamContext.getPropertyValue(OUTPUT_RECORD_TYPE).asString()
+                val query = sparkStreamContext.logislandStreamContext.getPropertyValue(SQL_QUERY).asString()
+                val outputRecordType = sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_RECORD_TYPE).asString()
 
                 sqlContext.sql(query).rdd
                     .foreachPartition(rows => {
@@ -123,11 +117,11 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
                           * create serializers
                           */
                         val serializer = getSerializer(
-                            streamContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
-                            streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
                         val errorSerializer = getSerializer(
-                            streamContext.getPropertyValue(ERROR_SERIALIZER).asString,
-                            streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(ERROR_SERIALIZER).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
 
 
 
@@ -136,13 +130,13 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
                           * push outgoing events and errors to Kafka
                           */
                         kafkaSink.value.produce(
-                            streamContext.getPropertyValue(OUTPUT_TOPICS).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_TOPICS).asString,
                             outgoingEvents,
                             serializer
                         )
 
                         kafkaSink.value.produce(
-                            streamContext.getPropertyValue(ERROR_TOPICS).asString,
+                            sparkStreamContext.logislandStreamContext.getPropertyValue(ERROR_TOPICS).asString,
                             outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERRORS)),
                             errorSerializer
                         )
@@ -155,6 +149,36 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
         }
         None
     }
+
 }
+
+object KafkaRecordStreamSQLAggregator {
+
+  val SQL_QUERY = new PropertyDescriptor.Builder()
+    .name("sql.query")
+    .description("The SQL query to execute, " +
+      "please note that the table name must exists in input topics names")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val MAX_RESULTS_COUNT = new PropertyDescriptor.Builder()
+    .name("max.results.count")
+    .description("the max number of rows to output. (-1 for no limit)")
+    .required(false)
+    .addValidator(StandardValidators.INTEGER_VALIDATOR)
+    .defaultValue("-1")
+    .build
+
+  val OUTPUT_RECORD_TYPE = new PropertyDescriptor.Builder()
+    .name("output.record.type")
+    .description("the output type of the record")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue("aggregation")
+    .build
+
+}
+
 
 

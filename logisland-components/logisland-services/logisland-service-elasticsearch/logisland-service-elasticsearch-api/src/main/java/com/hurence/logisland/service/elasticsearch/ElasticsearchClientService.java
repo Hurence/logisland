@@ -15,22 +15,21 @@
  */
 package com.hurence.logisland.service.elasticsearch;
 
-
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.service.datastore.DatastoreClientService;
+import com.hurence.logisland.service.datastore.*;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.datastore.model.MultiQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiQueryResponseRecord;
+import com.hurence.logisland.service.datastore.model.QueryRecord;
+import com.hurence.logisland.service.datastore.model.QueryResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import java.util.*;
 
 @Tags({"elasticsearch", "client"})
 @CapabilityDescription("A controller service for accessing an elasticsearch client.")
@@ -154,6 +153,16 @@ public interface ElasticsearchClientService extends DatastoreClientService {
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
 
+    PropertyDescriptor ENABLE_SSL = new PropertyDescriptor.Builder()
+            .name("enable.ssl")
+            .description("Whether to enable (true) TLS/SSL connections or not (false). This can for instance be used" +
+                    " with opendistro. Defaults to false. Note that the current implementation does try to validate" +
+                    " the server certificate.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .build();
+
     PropertyDescriptor USERNAME = new PropertyDescriptor.Builder()
             .name("username")
             .description("Username to access the Elasticsearch cluster")
@@ -195,6 +204,12 @@ public interface ElasticsearchClientService extends DatastoreClientService {
             .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
             .build();
 
+    PropertyDescriptor GEOLOCATION_FIELD_LABEL = new PropertyDescriptor.Builder()
+            .name("geolocation.output.field.name")
+            .description("Label used to name the output record field for geolocation properties")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
 
     /**
      * Put a given document in elasticsearch bulk processor.
@@ -214,6 +229,39 @@ public interface ElasticsearchClientService extends DatastoreClientService {
      */
     void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId);
 
+    /**
+     * Delete a given document in elasticsearch bulk processor.
+     *
+     * @param docIndex index name
+     * @param docType type name
+     * @param id document to delete
+     */
+    void bulkDelete(String docIndex, String docType, String id);
+
+    void deleteByQuery(QueryRecord queryRecord) throws DatastoreClientServiceException;
+
+    /**
+     * Get a list of documents based on a query.
+     *
+     * @param queryRecord query to do
+     * @return the list of fetched documents
+     */
+    QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException;
+
+    MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException;
+
+    /**
+     * Wait until specified collection is ready to be used. Then if it is ready before timeout,
+     * wait until there is no pending task in the index.
+     */
+    default void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String index, long timeoutMilli) throws DatastoreClientServiceException {
+        waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(new String[]{index}, timeoutMilli);
+    }
+    /**
+     * Wait until specified collection is ready to be used. Then if it is ready before timeout,
+     * wait until there is no pending task in the index.
+     */
+    void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String[] indices, long timeoutMilli) throws DatastoreClientServiceException;
 
     /**
      * Save the specified object to the index.
@@ -230,5 +278,12 @@ public interface ElasticsearchClientService extends DatastoreClientService {
      * Converts a record into a string
      */
     String convertRecordToString(Record record);
+
+    /**
+     * Wait until the specified collection has integrated all previously-saved data.
+     */
+    default void refreshCollection(String name) throws DatastoreClientServiceException {
+        refreshCollections(new String[]{name});
+    }
 
 }

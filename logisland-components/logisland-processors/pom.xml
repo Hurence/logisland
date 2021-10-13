@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-components</artifactId>
-        <version>1.3.0</version>
+        <version>1.4.0</version>
     </parent>
 
     <name>Logisland processors package</name>
@@ -32,7 +32,6 @@
     <modules>
         <module>logisland-processor-common</module>
         <module>logisland-processor-elasticsearch</module>
-        <module>logisland-processor-hbase</module>
         <module>logisland-processor-useragent</module>
         <module>logisland-processor-scripting</module>
         <module>logisland-processor-enrichment</module>
@@ -63,4 +62,32 @@
             </modules>
         </profile>
     </profiles>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <configuration>
+                                <classifier>repackaged</classifier>
+                            </configuration>
+                            <phase>package</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

@@ -275,12 +275,12 @@ public class EncryptorAESTest {
         out1.assertFieldEquals("boolean2", false);
         byte[] expectedBytes = EncryptField.toByteArray(type);
         byte[] expectedBytes1 = EncryptField.toByteArray(method);
-        Assert.assertTrue(Arrays.equals(expectedBytes,EncryptField.toByteArray(out.getField("enum1").getRawValue())));
-        Assert.assertTrue(Arrays.equals( expectedBytes1, EncryptField.toByteArray(out.getField("enum2").getRawValue())));
+        Assert.assertTrue(Arrays.equals(expectedBytes,EncryptField.toByteArray(out1.getField("enum1").getRawValue())));
+        Assert.assertTrue(Arrays.equals( expectedBytes1, EncryptField.toByteArray(out1.getField("enum2").getRawValue())));
         byte[] expectedBytes2 = EncryptField.toByteArray(date);
         byte[] expectedBytes3 = EncryptField.toByteArray(date1);
-        Assert.assertTrue(Arrays.equals(expectedBytes2,EncryptField.toByteArray(out.getField("date1").getRawValue())) );
-        Assert.assertTrue(Arrays.equals( expectedBytes3, EncryptField.toByteArray(out.getField("date2").getRawValue())));
+        Assert.assertTrue(Arrays.equals(expectedBytes2,EncryptField.toByteArray(out1.getField("date1").getRawValue())) );
+        Assert.assertTrue(Arrays.equals( expectedBytes3, EncryptField.toByteArray(out1.getField("date2").getRawValue())));
 
     }
 }

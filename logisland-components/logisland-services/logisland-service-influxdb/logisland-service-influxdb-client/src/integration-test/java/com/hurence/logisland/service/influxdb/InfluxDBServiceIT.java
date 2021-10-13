@@ -56,7 +56,7 @@ public class InfluxDBServiceIT {
 
     private static Logger logger = LoggerFactory.getLogger(InfluxDBServiceIT.class);
 
-    private final static String INFLUXDB_HOST = "172.17.0.2";
+    private final static String INFLUXDB_HOST = "localhost";
     private final static String INFLUXDB_PORT = "8086";
     private final static String INFLUXDB_URL = "http://" + INFLUXDB_HOST + ":" + INFLUXDB_PORT;
 

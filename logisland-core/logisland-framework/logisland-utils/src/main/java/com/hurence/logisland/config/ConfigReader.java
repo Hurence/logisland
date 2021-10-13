@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.config;
 
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -28,25 +27,23 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-
 public class ConfigReader {
 
 
-    static String readFile(String path, Charset encoding)
+    private static String readFile(String path, Charset encoding)
             throws IOException {
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         return new String(encoded, encoding);
     }
 
-
     /**
-     * Loads a YAML config file
+     * Loads a YAML config file (file located in the local file system)
      *
      * @param configFilePath the path of the config file
      * @return a LogislandSessionConfiguration
      * @throws Exception
      */
-    public static LogislandConfiguration loadConfig(String configFilePath) throws Exception {
+    public static LogislandConfiguration loadConfig(String configFilePath) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory()
                 .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION));
@@ -66,7 +63,7 @@ public class ConfigReader {
         return logislandConf;
     }
 
-    private static void checkLogislandConf(LogislandConfiguration conf) throws IllegalArgumentException {
+    public static void checkLogislandConf(LogislandConfiguration conf) throws IllegalArgumentException {
         if (conf.getEngine().getComponent() == null || conf.getEngine().getComponent().isEmpty()) {
             throw new IllegalArgumentException("key 'component' is missing or empty for engine in configuration file");
         }

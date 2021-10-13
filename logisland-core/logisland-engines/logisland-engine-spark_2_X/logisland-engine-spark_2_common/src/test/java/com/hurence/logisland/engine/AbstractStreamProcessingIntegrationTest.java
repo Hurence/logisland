@@ -18,7 +18,7 @@ package com.hurence.logisland.engine;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.stream.StreamProperties;
-import com.hurence.logisland.util.spark.SparkUtils;
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
 import kafka.server.KafkaConfig;
@@ -113,19 +113,19 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         kafkaServer = TestUtils.createServer(config, mock);
 
         // create topics
-        if (!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue()))
+        if (!AdminUtils.topicExists(zkUtils, KafkaProperties.DEFAULT_ERRORS_TOPIC().getValue()))
             AdminUtils.createTopic(zkUtils,
-                    StreamProperties.DEFAULT_ERRORS_TOPIC().getValue(),
+                    KafkaProperties.DEFAULT_ERRORS_TOPIC().getValue(),
                     1,
                     1,
                     new Properties(),
                     RackAwareMode.Disabled$.MODULE$);
-        if (!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue()))
-            AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-        if (!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue()))
-            AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-        if (!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue()))
-            AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if (!AdminUtils.topicExists(zkUtils, KafkaProperties.DEFAULT_RECORDS_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, KafkaProperties.DEFAULT_RECORDS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if (!AdminUtils.topicExists(zkUtils, KafkaProperties.DEFAULT_RAW_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, KafkaProperties.DEFAULT_RAW_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if (!AdminUtils.topicExists(zkUtils, KafkaProperties.DEFAULT_METRICS_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, KafkaProperties.DEFAULT_METRICS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
 
 
         // deleting zookeeper information to make sure the consumer starts from the beginning
@@ -160,7 +160,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     @After
     public void tearDown() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
-        engine.shutdown(engineContext);
+        engine.stop(engineContext);
         Thread.sleep(2000);
 
         if (kafkaServer != null) {
@@ -170,14 +170,14 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         }
 
         if (zkUtils != null) {
-            if (AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue()))
-                AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue());
-            if (AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue()))
-                AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue());
-            if (AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue()))
-                AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue());
-            if (AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue()))
-                AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue());
+            if (AdminUtils.topicExists(zkUtils, KafkaProperties.DEFAULT_ERRORS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, KafkaProperties.DEFAULT_ERRORS_TOPIC().getValue());
+            if (AdminUtils.topicExists(zkUtils, KafkaProperties.DEFAULT_RECORDS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, KafkaProperties.DEFAULT_RECORDS_TOPIC().getValue());
+            if (AdminUtils.topicExists(zkUtils, KafkaProperties.DEFAULT_RAW_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, KafkaProperties.DEFAULT_RAW_TOPIC().getValue());
+            if (AdminUtils.topicExists(zkUtils, KafkaProperties.DEFAULT_METRICS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, KafkaProperties.DEFAULT_METRICS_TOPIC().getValue());
             zkUtils.close();
         }
 

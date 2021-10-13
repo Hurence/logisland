@@ -1,12 +1,12 @@
 /**
- * Copyright © 2016 Jeremy Custenborder (jcustenborder@gmail.com)
- * <p>
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,8 @@ import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.source.SourceRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceConnectorConfig> {
+  private static final Logger log = LoggerFactory.getLogger(SpoolDirCsvSourceTask.class);
   String[] fieldNames;
   private CSVParser csvParser;
   private CSVReader csvReader;
@@ -46,6 +49,7 @@ public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceC
 
   @Override
   protected void configure(InputStream inputStream, Map<String, String> metadata, final Long lastOffset) throws IOException {
+    releaseCurrentRessources();
     log.trace("configure() - creating csvParser");
     this.csvParser = this.config.createCSVParserBuilder().build();
     this.streamReader = new InputStreamReader(inputStream, this.config.charset);
@@ -86,12 +90,40 @@ public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceC
   }
 
   @Override
-  public long recordOffset() {
-    return this.csvReader.getLinesRead();
+  public void stop() {
+    releaseCurrentRessources();
+    super.stop();
+  }
+
+  private void releaseCurrentRessources() {
+    log.debug("releaseCurrentRessources()");
+    if (this.csvReader != null) {
+      try {
+        this.csvReader.close();
+      } catch (IOException e) {
+        log.error("Exception thrown while closing CsvReader of class : " +  this.getClass().getCanonicalName(), e);
+      }
+    }
+    if (this.streamReader != null) {
+      try {
+        this.streamReader.close();
+      } catch (IOException e) {
+        log.error("Exception thrown while closing InputStreamReader of class : " +  this.getClass().getCanonicalName(), e);
+      }
+    }
   }
 
   @Override
-  public List<SourceRecord> process() throws IOException {
+  public long recordOffset() {
+    if (this.csvReader != null) {
+      return this.csvReader.getLinesRead();
+    } else {
+      return -1;
+    }
+  }
+
+  @Override
+  public List<SourceRecord> process() throws IOException, DataException {
     List<SourceRecord> records = new ArrayList<>(this.config.batchSize);
 
     while (records.size() < this.config.batchSize) {
@@ -100,7 +132,10 @@ public class SpoolDirCsvSourceTask extends SpoolDirSourceTask<SpoolDirCsvSourceC
       if (row == null) {
         break;
       }
-      log.trace("process() - Row on line {} has {} field(s)", recordOffset(), row.length);
+
+      if (log.isDebugEnabled() && (this.csvReader.getLinesRead() % 1000) == 0) {
+        log.debug("process() - Row on line {} has {} field(s)", recordOffset(), row.length);
+      }
 
       Struct keyStruct = new Struct(this.config.keySchema);
       Struct valueStruct = new Struct(this.config.valueSchema);

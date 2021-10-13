@@ -1,0 +1,52 @@
+
+@startuml
+participant session_processor as P1
+participant cache_service as CACHE
+participant es_service as ES_S
+database ES as ES_D
+
+== Initialization ==
+
+P1 -> P1: compute Map<sessionId, Long> sessionIdToFirstTs (Tmin pour chaque sessionId) a partir des events en entrée.
+P1 -> CACHE: pour chaque sessionId demande la dernière sous sessions connue (notamment son timestamp de fin)
+CACHE -> CACHE: a l'info et la renvoie ou bien
+CACHE -> ES_S: query elasticsearch l'index des sessions pour le mois en cours
+ES_S -> CACHE: retourne Map<sessionId, lastSubSession> sessionIdToLastSubSessions (y compris les sous sessions)
+CACHE -> P1: retourne Map<sessionId, lastSubSession> sessionIdToLastSubSessions
+
+== Cas des sessions avec des évènements du présent (ou bien les sessions du futur ont été effacés) ==
+
+P1 -> P1: petit algo => sessions sans evenement du passé
+
+P1 -> P1: Applique tous les évènements a leur session correspondante. Ce qui peut modifier et créer de nouvelle sessions.
+
+P1 -> ES_S: save all input events (sessionId potentially modified)
+ES_S -> ES_D: bulkput et bulkFlush of events
+
+P1 -> bulkPut_processor: give the sessions
+bulkPut_processor -> ES_S: bulkput et bulkFlush of sessions
+ES_S -> ES_D: bulkput et bulkFlush of sessions
+ES_D --> ES_S: response
+ES_S --> bulkPut_processor: response
+
+== Cas des sessions avec des évènements du passé ==
+
+P1 -> P1: petit algo => sessions avec evenement du passé
+
+P1 -> ES_S: delete toutes les sous sessions sauf la première session car elle va être recalculé et écraser de toute manière (et cela permet d'être capable de redetecter le rewind ou restart si le job restart avant de commit l'offset).
+ES_S -> ES_D: delete sessions
+P1 -> ES_S: requête tout les évènements associés aux sessionsId (sous session compris) et Tevent <= Tmin
+ES_S -> ES_D: multi get events
+P1 -> P1: merger avec les events en input (garder en priorité les events en input) et transformer les sous sessionId en sessionId
+P1 -> P1: Applique tous les évènements a leur session correspondante. Ce qui peut modifier et créer de nouvelle sessions.
+
+P1 -> ES_S: save all input events (sessionId potentially modified)
+ES_S -> ES_D: bulkput et bulkFlush of events
+
+P1 -> bulkPut_processor: give the sessions
+bulkPut_processor -> ES_S: bulkput et bulkFlush of sessions
+ES_S -> ES_D: bulkput et bulkFlush of sessions
+ES_D --> ES_S: response
+ES_S --> bulkPut_processor: response
+
+@enduml

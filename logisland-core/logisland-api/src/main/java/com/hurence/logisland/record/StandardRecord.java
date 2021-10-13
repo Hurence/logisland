@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -60,12 +61,26 @@ public class StandardRecord implements Record {
 
     @Override
     public String toString() {
-        return "Record{" +
-                "fields=" + fields +
-                ", time=" + getTime() +
-                ", type='" + getType() + '\'' +
-                ", id='" + getId() + '\'' +
-                '}';
+        return toString(1);
+    }
+
+    @Override
+    public String toString(int deepness, String indentationString) {
+        if (deepness < 0) throw new IllegalArgumentException("deepness must be grater than 0 ! [" + deepness + "]");
+        String deepnessStr = String.join("", Collections.nCopies(deepness, indentationString));
+        String deepnessStrMinus1 = "";
+        if (deepness > 0) {
+            deepnessStrMinus1 = String.join("", Collections.nCopies(deepness - 1, indentationString));
+        }
+        String fieldAsString = fields.keySet().stream()
+                .map(key -> fields.get(key).toString(deepness + 1))
+                .collect(Collectors.joining(",\n" + deepnessStr, deepnessStr, "\n" + deepnessStrMinus1));
+        return "Record{\n" + fieldAsString + "}";
+    }
+
+    @Override
+    public String toString(int deepness) {
+        return toString(deepness, "  ");
     }
 
     @Override
@@ -94,14 +109,14 @@ public class StandardRecord implements Record {
     @Override
     public Position getPosition() {
         if (hasPosition())
-            return (Position) getField(FieldDictionary.RECORD_POSITION).asRecord();
+            return (Position) getField(FieldDictionary.RECORD_POSITION).getRawValue();
         else return null;
     }
 
     @Override
     public Record setPosition(Position position) {
         if (position != null)
-            setRecordField(FieldDictionary.RECORD_POSITION, position);
+            setObjectField(FieldDictionary.RECORD_POSITION, position);
         return this;
     }
 
@@ -492,5 +507,13 @@ public class StandardRecord implements Record {
     @Override
     public Collection<String> getErrors() {
         return new ArrayList<>(errors);
+    }
+
+    @Override
+    public boolean checkFieldIsSet(String fieldName) {
+      if (this.hasField(fieldName)) {
+        return this.getField(fieldName).getRawValue() != null;
+      }
+      return false;
     }
 }

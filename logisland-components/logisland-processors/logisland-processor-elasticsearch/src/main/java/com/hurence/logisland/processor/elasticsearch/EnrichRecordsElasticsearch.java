@@ -19,16 +19,19 @@ package com.hurence.logisland.processor.elasticsearch;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.cache.CacheService;
+import com.hurence.logisland.service.datastore.model.exception.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecordBuilder;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
+import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -68,7 +71,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             .name("es.type")
             .description("The name of the ES type to use in multiget query.")
             .required(false)
-            .defaultValue("default")
+            .defaultValue("_doc")
             .expressionLanguageSupported(true)
             .build();
 
@@ -89,10 +92,18 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             .defaultValue("N/A")
             .build();
 
+    public static final PropertyDescriptor CACHE_SERVICE = new PropertyDescriptor.Builder()
+            .name("cache.service")
+            .description("The instance of the Cache Service to use (optional).")
+            .required(false)
+            .identifiesControllerService(CacheService.class)
+            .build();
+
     private static final String ATTRIBUTE_MAPPING_SEPARATOR = ":";
     private static final String ATTRIBUTE_MAPPING_SEPARATOR_REGEXP = "\\s*"+ATTRIBUTE_MAPPING_SEPARATOR+"\\s*";
 
     private String[] excludesArray = null;
+    private CacheService<String, MultiGetResponseRecord> cacheService = null;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -104,10 +115,10 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         props.add(ES_TYPE_FIELD);
         props.add(ES_INCLUDES_FIELD);
         props.add(ES_EXCLUDES_FIELD);
+        props.add(CACHE_SERVICE);
 
         return Collections.unmodifiableList(props);
     }
-
 
     @Override
     public void init(final ProcessContext context) throws InitializationException {
@@ -116,6 +127,8 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         if ((excludesFieldName != null) && (!excludesFieldName.isEmpty())) {
             excludesArray = excludesFieldName.split("\\s*,\\s*");
         }
+
+        cacheService = PluginProxy.rewrap(context.getPropertyValue(CACHE_SERVICE).asControllerService());
     }
 
     /**
@@ -131,6 +144,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             return Collections.emptyList();
         }
 
+        Map<String, MultiGetResponseRecord> esInfoFromCache = new HashMap<String, MultiGetResponseRecord>();
         List<Triple<Record, String, IncludeFields>> recordsToEnrich = new ArrayList<>();
         MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
 
@@ -143,22 +157,41 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             String typeName = evaluatePropAsString(record, context, ES_TYPE_FIELD);
             String includesFieldName = evaluatePropAsString(record, context, ES_INCLUDES_FIELD);
 
-            if (recordKeyName != null && indexName != null && typeName != null) {
-                try {
-                    // Includes :
-                    String[] includesArray = null;
-                    if ((includesFieldName != null) && (!includesFieldName.isEmpty())) {
-                        includesArray = includesFieldName.split("\\s*,\\s*");
-                    }
-                    IncludeFields includeFields = new IncludeFields(includesArray);
-                    mgqrBuilder.add(indexName, typeName, includeFields.getAttrsToIncludeArray(), recordKeyName);
-                    recordsToEnrich.add(new ImmutableTriple(record, asUniqueKey(indexName, typeName, recordKeyName), includeFields));
-                } catch (Throwable t) {
-                    record.setStringField(FieldDictionary.RECORD_ERRORS, "Can not request ElasticSearch with " + indexName + " "  + typeName + " " + recordKeyName);
-                    getLogger().error("Can not request ElasticSearch with index: {}, type: {}, recordKey: {}, record id is :\n{}",
-                            new Object[]{ indexName, typeName, recordKeyName, record.getId() },
-                            t);
+            String[] includesArray = null;
+            try {
+                // Includes :
+                if ((includesFieldName != null) && (!includesFieldName.isEmpty())) {
+                    includesArray = includesFieldName.split("\\s*,\\s*");
                 }
+            } catch (Throwable t) {
+                record.setStringField(FieldDictionary.RECORD_ERRORS, "Can not request ElasticSearch with " + indexName + " "  + typeName + " " + recordKeyName);
+                getLogger().error("Can not request ElasticSearch with index: {}, type: {}, recordKey: {}, record id is :\n{}",
+                        new Object[]{ indexName, typeName, recordKeyName, record.getId() },
+                        t);
+            }
+            IncludeFields includeFields = new IncludeFields(includesArray);
+
+            if (recordKeyName != null && indexName != null && typeName != null) {
+
+                // Compute unique key for the ES entry to get ans also stored in the cache
+                String esKey = asUniqueKey(indexName, typeName, recordKeyName);
+
+                // Is info es info already present in the cache ?
+                MultiGetResponseRecord multiGetResponseRecord = null;
+                if (cacheService != null) {
+                    // Retrieve es doc fields from cache if it exists
+                    multiGetResponseRecord = cacheService.get(esKey);
+                }
+                if (multiGetResponseRecord != null) {
+                    // Info is already in cache, store it
+                    esInfoFromCache.put(asUniqueKey(multiGetResponseRecord), multiGetResponseRecord);
+                } else {
+                    // Info is not yet in the cache, add it to the list of info to fetch from ES
+                    mgqrBuilder.add(indexName, typeName, includeFields.getAttrsToIncludeArray(), recordKeyName);
+                }
+
+                // All records are anyway to be enriched
+                recordsToEnrich.add(new ImmutableTriple(record, esKey, includeFields));
             } else {
                 getLogger().warn("Can not request ElasticSearch with " +
                         "index: {}, type: {}, recordKey: {}, record id is :\n{}",
@@ -166,24 +199,34 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             }
         }
 
+        // Ask ES for missing info
         List<MultiGetResponseRecord> multiGetResponseRecords = null;
         try {
             List<MultiGetQueryRecord> mgqrs = mgqrBuilder.build();
-            if (mgqrs.isEmpty()) return records;
+            if (mgqrs.isEmpty() && esInfoFromCache.size() == 0) return records;
             multiGetResponseRecords = elasticsearchClientService.multiGet(mgqrs);
         } catch (InvalidMultiGetQueryRecordException e ) {
             getLogger().error("error while multiGet elasticsearch", e);
         }
 
-        if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) {
+        if ( (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) && esInfoFromCache.size() == 0) {
             return records;
         }
-
 
         // Transform the returned documents from ES in a Map
         Map<String, MultiGetResponseRecord> responses = multiGetResponseRecords.
                 stream().
                 collect(Collectors.toMap(EnrichRecordsElasticsearch::asUniqueKey, Function.identity()));
+
+        if (cacheService != null) {
+            // Update cache with newly retrieved info from ES
+            responses.forEach((esKey, multiGetResponseRecord) -> {
+                cacheService.set(esKey, multiGetResponseRecord);
+            });
+
+            // Add to responses info that were already present in the cache
+            responses.putAll(esInfoFromCache);
+        }
 
         recordsToEnrich.forEach(recordToEnrich -> {
 

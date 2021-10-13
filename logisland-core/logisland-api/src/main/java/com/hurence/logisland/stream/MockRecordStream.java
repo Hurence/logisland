@@ -46,5 +46,4 @@ public class MockRecordStream extends AbstractRecordStream {
 
         return Collections.unmodifiableList(descriptors);
     }
-
 }

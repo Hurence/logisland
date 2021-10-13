@@ -18,14 +18,9 @@ package com.hurence.logisland.engine.spark;
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.ComponentType;
 import com.hurence.logisland.config.EngineConfiguration;
-import com.hurence.logisland.config.ProcessorConfiguration;
-import com.hurence.logisland.config.StreamConfiguration;
 import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine;
-import com.hurence.logisland.stream.spark.*;
-import com.hurence.logisland.util.runner.MockProcessor;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,14 +124,14 @@ public class SparkEngineConfTest {
 
 
     private void testConfIsValid(EngineConfiguration engineConf) {
-        Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(engineConf);
+        Optional<EngineContext> engineInstance = ComponentFactory.buildAndSetUpEngineContext(engineConf);
         Assert.assertTrue(engineInstance.isPresent());
         Assert.assertTrue(engineInstance.get().isValid());
         engineInstance.get();
     }
 
     private void testConfIsNotValid(EngineConfiguration engineConf) {
-        Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(engineConf);
+        Optional<EngineContext> engineInstance = ComponentFactory.buildAndSetUpEngineContext(engineConf);
         Assert.assertTrue(engineInstance.isPresent());
         Assert.assertFalse(engineInstance.get().isValid());
         engineInstance.get();

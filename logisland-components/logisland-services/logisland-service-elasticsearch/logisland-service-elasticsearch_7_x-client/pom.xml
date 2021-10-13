@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-elasticsearch</artifactId>
-        <version>1.3.0</version>
+        <version>1.4.0</version>
     </parent>
 
     <artifactId>logisland-service-elasticsearch_7_x-client</artifactId>
@@ -17,6 +17,7 @@
     <properties>
         <!-- Versions -->
         <elasticsearch.version>7.1.1</elasticsearch.version>
+        <testcontainers.version>1.16.0</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -70,14 +71,14 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.10.7</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>1.10.7</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -112,6 +113,13 @@
             <version>2.11.1</version>
         </dependency>
 
+        <!--log dependencies-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -119,20 +127,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -184,8 +184,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                                 processorContext.setControllerServiceLookup(controllerServiceLookup)
                             }
                             processor.init(processorContext)
+                            processor.start()
                             outgoingEvents = processor.process(processorContext, incomingEvents)
-
+                            processor.stop()
                             /**
                               * compute metrics
                               */

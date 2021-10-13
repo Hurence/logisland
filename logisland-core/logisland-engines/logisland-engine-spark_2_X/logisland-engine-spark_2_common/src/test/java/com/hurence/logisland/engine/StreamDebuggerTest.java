@@ -18,7 +18,6 @@ package com.hurence.logisland.engine;
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.LogislandConfiguration;
-import com.hurence.logisland.util.spark.SparkUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -48,7 +47,7 @@ public class StreamDebuggerTest {
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
+            engineInstance = ComponentFactory.buildAndSetUpEngineContext(sessionConf.getEngine());
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
 

@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.service.mongodb;
 
-import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import com.mongodb.MongoClientURI;

@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,7 +112,7 @@ public class SplitTextTest {
     }
 
     @Test
-    public void testApacheLogWithoutRawContent() {
+    public void testApacheLogWithoutRawContent() throws IOException {
         final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
         final RecordValidator avroValidator = new AvroRecordValidator(SplitTextTest.class.getResourceAsStream(APACHE_LOG_SCHEMA));
         testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);

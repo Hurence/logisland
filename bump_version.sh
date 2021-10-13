@@ -18,7 +18,7 @@ function bump_files() {
     for i in `find . -name "*.yml"` ; do
         bump $i "version: $current_version" "version: $new_version"
     done
-    for i in `find . -name "*.rst"` ; do
+    for i in `find . -name "*.rst"|grep -v changes.rst|grep -v RELEASING.rst` ; do
         bump $i "$current_version" "$new_version"
     done
 }
@@ -27,7 +27,7 @@ function bump() {
 	echo -n "Updating $1..."
 	tmp_file=$(mktemp)
 	rm -f "$tmp_file"
-	sed -i '' "s/$2/$3/1w $tmp_file" $1
+	sed -i "s/$2/$3/1w $tmp_file" $1
 	if [ -s "$tmp_file" ]; then
 		echo "Done"
 	else

@@ -1,0 +1,33 @@
+name: Java CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+
+      # Step that does that actual cache save and restore
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build & Test with Maven
+        id: build
+        run: mvn clean package
+
+    #  - name: Run integration tests
+    #    if: steps.build.outputs.exit_code == 0
+    #    run: mvn -Pintegration-tests clean verify

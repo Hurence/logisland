@@ -17,6 +17,7 @@ package com.hurence.logisland.service.elasticsearch;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.RecordUtils;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.joda.time.format.DateTimeFormatter;
@@ -24,8 +25,8 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
+import java.lang.reflect.Array;
+import java.util.*;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -41,12 +42,22 @@ class ElasticsearchRecordConverter {
      * @return the json converted record
      */
     static String convertToString(Record record) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-            XContentBuilder document = jsonBuilder().startObject();
-            final float[] geolocation = new float[2];
+      return convertToString(record, "location");
+    }
 
+
+    /**
+     * Converts an Event into an Elasticsearch document
+     * to be indexed later
+     *e
+     * @param record to convert
+     * @param geolocationFieldLabel is the label for the geolocation field
+     * @return the json converted record
+     */
+    static String convertToString(Record record, String geolocationFieldLabel) {
+        logger.trace(record.toString());
+        try {
+            final XContentBuilder document = jsonBuilder().startObject();
             // convert event_time as ISO for ES
             if (record.hasField(FieldDictionary.RECORD_TIME)) {
                 try {
@@ -57,6 +68,7 @@ class ElasticsearchRecordConverter {
                 }
             }
 
+            final float[] geolocation = new float[2];
             // add all other records
             record.getAllFieldsSorted().forEach(field -> {
 
@@ -69,13 +81,10 @@ class ElasticsearchRecordConverter {
                     return;
                 }
 
+                final String fieldName = field.getName().replaceAll("\\.", "_");
                 try {
                     // cleanup invalid es fields characters like '.'
-                    String fieldName = field.getName().replaceAll("\\.", "_");
-
-
                     switch (field.getType()) {
-
                         case STRING:
                             document.field(fieldName, field.asString());
                             break;
@@ -99,30 +108,59 @@ class ElasticsearchRecordConverter {
                                 geolocation[0] = field.asFloat();
                             if( fieldName.equals("long") || fieldName.equals("longitude"))
                                 geolocation[1] = field.asFloat();
-
                             break;
                         case BOOLEAN:
                             document.field(fieldName, field.asBoolean().booleanValue());
+                            break;
+                        case RECORD:
+                            Map<String, Object> map =  RecordUtils.toMap(field.asRecord(), true);
+                            document.field(fieldName, map);
+                            break;
+                        case ARRAY:
+                            Collection collection;
+                            Object value = field.getRawValue();
+                            if (value == null) {
+                                break;
+                            } else if (value.getClass().isArray()) {
+                                collection = new ArrayList<>();
+                                for (int i = 0; i < Array.getLength(value); i++) {
+                                    collection.add(Array.get(value, i));
+                                }
+                            } else if (value instanceof Collection) {
+                                collection = (Collection) value;
+                            } else {
+                                logger.error("unable to process field '{}' in record : {}, {}", fieldName, record, "the value of field is not an array or collection");
+                                break;
+                            }
+
+                            final List list = new ArrayList(collection.size());
+                            for (final Object item : collection) {
+                                if (item instanceof Record) {
+                                    list.add(RecordUtils.toMap((Record) item, true));
+                                } else {
+                                    list.add(item);
+                                }
+                            }
+                            document.field(fieldName, list);
                             break;
                         default:
                             document.field(fieldName, field.getRawValue());
                             break;
                     }
-
                 } catch (Throwable ex) {
-                    logger.error("unable to process a field in record : {}, {}", record, ex.toString());
+                    logger.error("unable to process field '{}' in record : {}, {}", fieldName, record, ex.toString());
                 }
             });
 
 
-            if((geolocation[0] != 0) && (geolocation[1] != 0)){
-                GeoPoint point = new GeoPoint(geolocation[0], geolocation[1]);
-                document.latlon("location", geolocation[0], geolocation[1]);
+            if((geolocation[0] != 0) && (geolocation[1] != 0)) {
+                document.latlon(geolocationFieldLabel, geolocation[0], geolocation[1]);
             }
 
 
             String result = Strings.toString(document.endObject());
             document.flush();
+            logger.trace(result);
             return result;
         } catch (Throwable ex) {
             logger.error("unable to convert record : {}, {}", record, ex.toString());
@@ -130,4 +168,14 @@ class ElasticsearchRecordConverter {
         return null;
     }
 
+    /**
+     * Returns the conversion of a record to a map where all {@code null} values were removed.
+     *
+     * @param record the record to convert.
+     *
+     * @return the conversion of a record to a map where all {@code null} values were removed.
+     */
+    private static Map<String, Object> toMap(final Record record) {
+        return RecordUtils.toMap(record, false);
+    }
 }

@@ -16,6 +16,8 @@
 package com.hurence.logisland.engine.vanilla;
 
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.config.ControllerServiceConfiguration;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.controller.StandardControllerServiceLookup;
 import com.hurence.logisland.engine.AbstractProcessingEngine;
@@ -25,6 +27,7 @@ import com.hurence.logisland.stream.AbstractRecordStream;
 import com.hurence.logisland.stream.StreamContext;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -63,7 +66,7 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
         }
         countDownLatch = new CountDownLatch(engineContext.getStreamContexts().size());
         Runtime.getRuntime().addShutdownHook(new Thread(()-> {
-            shutdown(engineContext);
+            stop(engineContext);
         }));
         logger.info("Started");
 
@@ -71,7 +74,7 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
     }
 
     @Override
-    public void shutdown(EngineContext engineContext) {
+    public void stop(EngineContext engineContext) {
         logger.info("Stopping");
         engineContext.getStreamContexts().forEach(streamContext -> {
             try {
@@ -87,16 +90,16 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
     }
 
     @Override
+    public void softStop(EngineContext engineContext) {
+        stop(engineContext);
+    }
+
+    @Override
     public void awaitTermination(EngineContext engineContext) {
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
             logger.warn("Interrupted while waiting");
         }
-    }
-
-    @Override
-    public void reset(EngineContext engineContext) {
-        shutdown(engineContext);
     }
 }

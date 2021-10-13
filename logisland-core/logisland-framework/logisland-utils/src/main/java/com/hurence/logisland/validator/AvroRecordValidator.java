@@ -32,14 +32,11 @@ public class AvroRecordValidator implements RecordValidator {
 
     private final AvroSerializer serializer;
 
-    public AvroRecordValidator(Schema schema) {
-        this.serializer = new AvroSerializer(schema);
-    }
-
     public AvroRecordValidator(String strSchema) {
         this.serializer = new AvroSerializer(strSchema);
     }
-    public AvroRecordValidator(InputStream inputStream) {
+
+    public AvroRecordValidator(InputStream inputStream) throws IOException {
         this.serializer = new AvroSerializer(inputStream);
     }
 

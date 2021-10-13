@@ -48,7 +48,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -222,13 +221,13 @@ public class AmqpClientPipelineStreamTest {
     public void testEmptyEngine() {
         EngineConfiguration engineConfiguration = engineConfiguration();
         engineConfiguration.addPipelineConfigurations(emptyStream(defaultPropertySupplier()));
-        EngineContext context = ComponentFactory.getEngineContext(engineConfiguration).get();
+        EngineContext context = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration).get();
         Assert.assertTrue(context.isValid());
         context.getEngine().start(context);
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                context.getEngine().shutdown(context);
+                context.getEngine().stop(context);
             }
         }, 2000);
 
@@ -253,7 +252,7 @@ public class AmqpClientPipelineStreamTest {
         ));
         streamConfiguration.addProcessorConfiguration(modifyKeyProcessor("i_m_the_new_key"));
         engineConfiguration.addPipelineConfigurations(streamConfiguration);
-        EngineContext context = ComponentFactory.getEngineContext(engineConfiguration).get();
+        EngineContext context = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration).get();
         Assert.assertTrue(context.isValid());
         context.getEngine().start(context);
         vertx.runOnContext(v -> {
@@ -274,7 +273,7 @@ public class AmqpClientPipelineStreamTest {
 
             if (inQueue.size() == 0) {
                 vertx.cancelTimer(id);
-                context.getEngine().shutdown(context);
+                context.getEngine().stop(context);
             }
         });
 

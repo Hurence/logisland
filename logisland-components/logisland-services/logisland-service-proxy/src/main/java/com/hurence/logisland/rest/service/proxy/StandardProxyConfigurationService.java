@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2019 Hurence (support@hurence.com)
- * <p>
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,8 +26,8 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.service.proxy.ProxyConfiguration;
 import com.hurence.logisland.service.proxy.ProxyConfigurationService;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.net.Proxy;
@@ -129,18 +129,18 @@ public class StandardProxyConfigurationService extends AbstractControllerService
     }
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
-        final Proxy.Type proxyType = Proxy.Type.valueOf(validationContext.getPropertyValue(PROXY_TYPE).asString());
+    protected Collection<ValidationResult> customValidate(Configuration configuration) {
+        final Proxy.Type proxyType = Proxy.Type.valueOf(configuration.getPropertyValue(PROXY_TYPE).asString());
         if (Proxy.Type.DIRECT.equals(proxyType)) {
             return Collections.emptyList();
         }
 
         final List<ValidationResult> results = new ArrayList<>();
-        if (!validationContext.getPropertyValue(PROXY_SERVER_HOST).isSet()) {
+        if (!configuration.getPropertyValue(PROXY_SERVER_HOST).isSet()) {
             results.add(new ValidationResult.Builder().subject(PROXY_SERVER_HOST.getDisplayName())
                     .explanation("required").valid(false).build());
         }
-        if (!validationContext.getPropertyValue(PROXY_SERVER_PORT).isSet()) {
+        if (!configuration.getPropertyValue(PROXY_SERVER_PORT).isSet()) {
             results.add(new ValidationResult.Builder().subject(PROXY_SERVER_PORT.getDisplayName())
                     .explanation("required").valid(false).build());
         }

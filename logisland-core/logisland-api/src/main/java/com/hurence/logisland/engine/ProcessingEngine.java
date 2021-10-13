@@ -16,11 +16,19 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.ConfigurableComponent;
+import com.hurence.logisland.component.InitializationException;
 
 /**
  * Carry the whole workload of processing
  */
 public interface ProcessingEngine extends ConfigurableComponent {
+
+    /**
+     * Init the engine with a context
+     *
+     * @param engineContext
+     */
+    void init(EngineContext engineContext) throws InitializationException;
 
     /**
      * start the engine with a context
@@ -34,18 +42,22 @@ public interface ProcessingEngine extends ConfigurableComponent {
      *
      * @param engineContext
      */
-    void shutdown(EngineContext engineContext);
+    void stop(EngineContext engineContext);
+
+
+    /**
+     * Stop the engine (and all streams in it) but keep reusable
+     * ressources without closing them so that it can be used in
+     * a next run
+     *
+     * @param engineContext
+     */
+    void softStop(EngineContext engineContext);
 
     /**
      * Await for termination.
      * @param engineContext
      */
     void awaitTermination(EngineContext engineContext);
-
-    /**
-     * Reset the engine by stopping the streaming context.
-     * @param engineContext
-     */
-    void reset(EngineContext engineContext);
 
 }

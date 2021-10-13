@@ -1,4 +1,4 @@
-version: 1.3.0
+version: 1.4.0
 documentation: LogIsland future factory job
 
 engine:
@@ -43,7 +43,7 @@ engine:
 
   streamConfigurations:
 
-    # This stream take all raw events as lines comming from local files
+    # This stream take all raw events as lines coming from local files
     # these lines are split into logisland records and sent into a kafka topic
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.structured.StructuredStream

@@ -56,6 +56,8 @@ public class AsyncCallRequest extends AbstractCallRequest
     public void stop() {
         if (vertx != null) {
             vertx.close();
+            vertx = null;
+            setIsInitialized(false);
         }
     }
 
@@ -76,6 +78,7 @@ public class AsyncCallRequest extends AbstractCallRequest
          * loop over events to add them to bulk
          */
         List<Maybe<Optional<Record>>> responses = records.stream()
+                .filter(record -> triggerRestCall(record, context))
                 .map(record -> {
                     StandardRecord coordinates = new StandardRecord(record);
                     calculVerb(record, context).ifPresent(verb -> coordinates.setStringField(restClientService.getMethodKey(), verb));
@@ -105,7 +108,6 @@ public class AsyncCallRequest extends AbstractCallRequest
                             });
                 }).collect(Collectors.toList());
         Maybe.<Optional<Record>, Integer>zip(responses, (opts) -> { return 0; }).blockingGet();//wait until all request are done
-        stop();
         return records;
     }
 }
