@@ -18,7 +18,7 @@
 
     <properties>
         <!-- Versions -->
-        <solr.version>8.10.0</solr.version>
+        <solr.version>8.0.0</solr.version>
     </properties>
     <dependencies>
         <dependency>
