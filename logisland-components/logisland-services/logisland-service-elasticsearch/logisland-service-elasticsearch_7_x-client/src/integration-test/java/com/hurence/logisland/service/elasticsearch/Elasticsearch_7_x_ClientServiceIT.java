@@ -17,15 +17,12 @@ package com.hurence.logisland.service.elasticsearch;
 
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
-import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.exception.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -52,6 +49,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
     private static final String MAPPING2 = "{'properties':{'name':{'type': 'text'},'val':{'type': 'text'}}}";
     private static final String MAPPING3 =
             "{'dynamic':'strict','properties':{'name':{'type': 'text'},'xyz':{'type': 'text'}}}";
+    private static final String MAPPING4 = "{'properties':{'an_int_value':{'type': 'integer'}}}";
 
     private static Logger logger = LoggerFactory.getLogger(Elasticsearch_7_x_ClientServiceIT.class);
 
@@ -166,6 +164,58 @@ public class Elasticsearch_7_x_ClientServiceIT {
         Assert.assertEquals(false, elasticsearchClientService.existsCollection("foo"));
         Assert.assertEquals(false, elasticsearchClientService.existsCollection("aliasFoo")); // alias for foo disappears too
         Assert.assertEquals(true, elasticsearchClientService.existsCollection("bar"));
+    }
+
+    @Test
+    public void testBulkPutError() throws Exception {
+
+        final String index = "error_test";
+        final String docId1 = "id1";
+        final String docId2 = "id2";
+        Map<String, Object> document1 = new HashMap<>();
+        document1.put("an_int_value", 1);
+        Map<String, Object> document2 = new HashMap<>();
+        document2.put("an_int_value", "This string value should not be accepted as value should be an integer");
+
+        boolean result;
+
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
+
+        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
+
+        // Verify the index does not exist
+        Assert.assertEquals(false, elasticsearchClientService.existsCollection(index));
+
+        // Define the index
+        elasticsearchClientService.createCollection(index, 2, 1);
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection(index));
+
+        // Add a mapping to error_test
+        result = elasticsearchClientService.putMapping(index, null, MAPPING4.replace('\'', '"'));
+        Assert.assertEquals(true, result);
+
+        // Put both documents in the bulk processor :
+        elasticsearchClientService.bulkPut(index, null, document1, Optional.of(docId1));
+        elasticsearchClientService.bulkPut(index, null, document2, Optional.of(docId2));
+        // Flush the bulk processor :
+        elasticsearchClientService.bulkFlush();
+        Thread.sleep(2000);
+        try {
+            // Refresh the index :
+            elasticsearchClientService.refreshCollection(index);
+        } catch (Exception e) {
+            logger.error("Error while refreshing the index : " + e.toString());
+        }
+
+        long documentsNumber = 0;
+        try {
+            documentsNumber = elasticsearchClientService.countCollection(index);
+        } catch (Exception e) {
+            logger.error("Error while counting the number of documents in the index : " + e.toString());
+        }
+
+        // First must have been added, second should have made error due to wrong value format
+        Assert.assertEquals(1, documentsNumber);
     }
 
     @Test

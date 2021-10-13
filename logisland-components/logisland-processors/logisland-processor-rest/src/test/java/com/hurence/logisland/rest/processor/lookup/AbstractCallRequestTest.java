@@ -72,39 +72,6 @@ public abstract class AbstractCallRequestTest {
         runner.assertValid();
     }
 
-    @Test
-    public void basic_test() throws InitializationException {
-        final TestRunner runner = getRunnerInitialized();
-
-        //test queries
-        StandardRecord record1 = new StandardRecord();
-        record1.setField("employeeId", FieldType.INT, 1);
-        StandardRecord record2 = new StandardRecord();
-        record2.setField("employeeId", FieldType.INT, 2);
-        runner.enqueue(record1, record2);
-        runner.run();
-        runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(2);
-
-        MockRecord out = runner.getOutputRecords().get(0);
-        out.assertRecordSizeEquals(2);
-        out.assertFieldEquals("employeeId", 1);
-        out.assertFieldTypeEquals("employeeId", FieldType.INT);
-        out.assertFieldTypeEquals("response", FieldType.RECORD);
-        MockRecord coordinnates = new MockRecord(out.getField("response").asRecord());
-        coordinnates.assertRecordSizeEquals(1);
-        coordinnates.assertFieldEquals("employeeId", 1);
-        coordinnates.assertFieldTypeEquals("employeeId", FieldType.INT);
-        MockRecord out2 = runner.getOutputRecords().get(1);
-        out2.assertFieldEquals("employeeId", 2);
-        out2.assertFieldTypeEquals("employeeId", FieldType.INT);
-        out2.assertFieldTypeEquals("response", FieldType.RECORD);
-        MockRecord coordinnates2 = new MockRecord(out2.getField("response").asRecord());
-        coordinnates2.assertRecordSizeEquals(1);
-        coordinnates2.assertFieldEquals("employeeId", 2);
-        coordinnates2.assertFieldTypeEquals("employeeId", FieldType.INT);
-
-    }
 
     @Test
     public void basic_test_2() throws InitializationException, IOException, LookupFailureException {
@@ -114,6 +81,7 @@ public abstract class AbstractCallRequestTest {
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
         runner.enqueue(new StandardRecord(record));
+        runner.setProperty(TAG_KEY_VALUE, "employeeId=hello");
         runner.run();
         runner.assertAllInputRecordsProcessed();
         runner.assertOutputRecordsCount(1);
@@ -139,6 +107,7 @@ public abstract class AbstractCallRequestTest {
         //test queries
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
+        runner.setProperty(TAG_KEY_VALUE, "employeeId=hello");
         runner.enqueue(new StandardRecord(record));
         runner.run();
         runner.assertAllInputRecordsProcessed();
@@ -167,6 +136,7 @@ public abstract class AbstractCallRequestTest {
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
         runner.enqueue(new StandardRecord(record));
+        runner.setProperty(TAG_KEY_VALUE, "employeeId=hello");
         runner.run();
         runner.assertAllInputRecordsProcessed();
         runner.assertOutputRecordsCount(1);
@@ -193,6 +163,7 @@ public abstract class AbstractCallRequestTest {
         //test queries
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
+        runner.setProperty(TAG_KEY_VALUE, "employeeId=hello");
         runner.enqueue(new StandardRecord(record));
         runner.run();
         runner.assertAllInputRecordsProcessed();
@@ -220,6 +191,7 @@ public abstract class AbstractCallRequestTest {
         //test queries
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
+        runner.setProperty(TAG_KEY_VALUE, "employeeId=hello");
         runner.enqueue(new StandardRecord(record));
         runner.run();
         runner.assertAllInputRecordsProcessed();
@@ -248,6 +220,7 @@ public abstract class AbstractCallRequestTest {
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
         runner.enqueue(new StandardRecord(record));
+        runner.setProperty(TAG_KEY_VALUE, "employeeId=hello");
         runner.run();
         runner.assertAllInputRecordsProcessed();
         runner.assertOutputRecordsCount(1);
@@ -274,6 +247,7 @@ public abstract class AbstractCallRequestTest {
         //test queries
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
+        runner.setProperty(TAG_KEY_VALUE, "employeeId=hello");
         runner.enqueue(new StandardRecord(record));
         runner.run();
         runner.assertAllInputRecordsProcessed();
@@ -301,6 +275,7 @@ public abstract class AbstractCallRequestTest {
         //test queries
         StandardRecord record = new StandardRecord();
         record.setField("http_query", FieldType.STRING, "my query");
+        runner.setProperty(TAG_KEY_VALUE, "http_query=my query");
         runner.enqueue(new StandardRecord(record));
         runner.run();
         runner.assertAllInputRecordsProcessed();
@@ -318,26 +293,7 @@ public abstract class AbstractCallRequestTest {
         coordinates.assertFieldTypeEquals("http_query", FieldType.STRING);
     }
 
-    @Test
-    public void adding_body_coordinates_expression_language_3() throws InitializationException, IOException, LookupFailureException {
-        final TestRunner runner = getRunnerInitialized();
-        final RestClientService service = (RestClientService) runner.getControllerService(SERVICE_ID);
-        runner.setProperty(REQUEST_BODY, "${http_query}");
-        runner.assertValid();
 
-        //test queries
-        StandardRecord record = new StandardRecord();
-        runner.enqueue(new StandardRecord(record));
-        runner.run();
-        runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(1);
-
-        MockRecord out = runner.getOutputRecords().get(0);
-        out.assertRecordSizeEquals(1);
-        out.assertFieldTypeEquals("response", FieldType.RECORD);
-        MockRecord coordinates = new MockRecord(out.getField("response").asRecord());
-        coordinates.assertRecordSizeEquals(0);
-    }
 
     @Test
     public void test_with_input_as_body() throws InitializationException, IOException, LookupFailureException {
@@ -354,6 +310,7 @@ public abstract class AbstractCallRequestTest {
         record.setField(FieldDictionary.RECORD_TYPE, FieldType.STRING, "my_type");
         record.setField(FieldDictionary.RECORD_ID, FieldType.STRING, "my_id");
         record.setField(FieldDictionary.RECORD_TIME, FieldType.STRING, 1569938866837L);
+        runner.setProperty(TAG_KEY_VALUE, "param1=hello1;param2=hello2;param3=hello3");
         runner.enqueue(new StandardRecord(record));
         runner.run();
         runner.assertAllInputRecordsProcessed();
@@ -399,6 +356,7 @@ public abstract class AbstractCallRequestTest {
         //test queries
         StandardRecord record = new StandardRecord();
         record.setField("employeeId", FieldType.STRING, "hello");
+        runner.setProperty(TAG_KEY_VALUE, "employeeId=hello");
         runner.enqueue(new StandardRecord(record));
         runner.run();
         runner.assertAllInputRecordsProcessed();
@@ -412,7 +370,7 @@ public abstract class AbstractCallRequestTest {
         out.assertFieldEquals("response", fakebody);
     }
 
-    private TestRunner getRunnerInitialized() throws InitializationException {
+    TestRunner getRunnerInitialized() throws InitializationException {
         return getRunnerInitialized(null);
     }
 

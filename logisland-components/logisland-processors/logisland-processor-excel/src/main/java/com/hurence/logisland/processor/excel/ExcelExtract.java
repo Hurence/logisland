@@ -25,7 +25,7 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.util.stream.io.StreamUtils;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -68,7 +68,7 @@ public class ExcelExtract extends AbstractProcessor {
 
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
         ValidationResult.Builder ret = new ValidationResult.Builder().valid(true);
         if (!(context.getPropertyValue(ExcelExtractProperties.FIELD_NAMES).isSet() ^
                 context.getPropertyValue(ExcelExtractProperties.HEADER_ROW_NB).isSet())) {

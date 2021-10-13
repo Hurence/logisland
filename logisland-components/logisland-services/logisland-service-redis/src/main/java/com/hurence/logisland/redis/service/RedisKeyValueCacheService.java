@@ -32,11 +32,11 @@ import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
 import com.hurence.logisland.util.Tuple;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.io.IOUtils;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -125,8 +125,8 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     }
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
-        return RedisUtils.validate(validationContext);
+    protected Collection<ValidationResult> customValidate(Configuration configuration) {
+        return RedisUtils.validate(configuration);
     }
 
     @Override
@@ -190,9 +190,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
                                 + firstResult.getClass().getName() + " with value " + firstResult.toString());
                     }
                 }
-            } while (isEnabled());
-
-            return null;
+            } while (true);
         });
     }
 
@@ -346,6 +344,11 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             return new KuraProtobufSerializer();
         }
         return new KryoSerializer(true);
+
+    }
+
+    @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
 
     }
 

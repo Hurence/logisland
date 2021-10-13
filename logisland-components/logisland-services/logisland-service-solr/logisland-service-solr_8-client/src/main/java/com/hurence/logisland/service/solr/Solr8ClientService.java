@@ -89,4 +89,5 @@ public class Solr8ClientService extends SolrClientService {
     protected SolrClient createHttpClient(String connectionString, String collection) {
         return new HttpSolrClient.Builder(connectionString + "/" + collection).build();
     }
+
 }

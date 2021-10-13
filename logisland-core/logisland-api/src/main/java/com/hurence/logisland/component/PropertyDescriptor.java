@@ -452,7 +452,17 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + displayName + "]";
+        String toReturn = "{\n" +
+                "\tname : " + displayName + ",\n" +
+                "\tdescription : " + description + ",\n" +
+                "\tdefault : " + defaultValue + ",\n" +
+                "\trequired : " + required;
+        if (getAllowableValues() != null && !getAllowableValues().isEmpty()) {
+            toReturn = toReturn + ",\n\tallowable values : " + getAllowableValues() + "\n}";
+        } else {
+            toReturn = toReturn + "\n}";
+        }
+        return toReturn;
     }
 
     private static final class ConstrainedSetValidator implements Validator {

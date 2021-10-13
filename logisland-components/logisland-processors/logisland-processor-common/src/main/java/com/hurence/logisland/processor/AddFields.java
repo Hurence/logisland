@@ -117,7 +117,6 @@ public class AddFields extends AbstractProcessor {
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
                 .expressionLanguageSupported(true)
-                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                 .required(false)
                 .dynamic(true)
                 .build();

@@ -26,7 +26,7 @@ import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 
 
@@ -245,7 +245,7 @@ public class EncryptField extends AbstractProcessor {
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
-                .expressionLanguageSupported(false)  // TODO understand what expressionLanguage is !!!
+                .expressionLanguageSupported(false)
                 .required(false)
                 .dynamic(true)
                 .build();
@@ -253,7 +253,7 @@ public class EncryptField extends AbstractProcessor {
 
 
     @Override
-    protected Collection<ValidationResult> customValidate(final ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(final Configuration context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
         try {
             String keyFile;

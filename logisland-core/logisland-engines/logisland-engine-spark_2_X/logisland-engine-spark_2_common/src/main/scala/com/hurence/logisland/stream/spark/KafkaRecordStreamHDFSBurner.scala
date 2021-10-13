@@ -14,21 +14,6 @@
  * limitations under the License.
  */
 /**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
-/**
   * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +37,10 @@ import java.util.Collections
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, FieldType}
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner.{DATE_FORMAT, EXCLUDE_ERRORS, INPUT_FORMAT, NUM_PARTITIONS, OUTPUT_FOLDER_PATH, OUTPUT_FORMAT, RECORD_TYPE}
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties.INPUT_SERIALIZER
 import com.hurence.logisland.util.spark.SparkUtils
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
@@ -103,19 +91,11 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
-            // Get the singleton instance of SQLContext
-            val sqlContext = SparkSession
-                .builder()
-                .appName(appName)
-                .config(ssc.sparkContext.getConf)
-                .getOrCreate()
-
-
             // this is used to implicitly convert an RDD to a DataFrame.
 
             val deserializer = getSerializer(
-                streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
-                streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+                sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_SERIALIZER).asString,
+                sparkStreamContext.logislandStreamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 
 
             val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
@@ -124,14 +104,14 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
             if (!records.isEmpty()) {
 
 
-                val sdf = new SimpleDateFormat(streamContext.getPropertyValue(DATE_FORMAT).asString)
+                val sdf = new SimpleDateFormat(sparkStreamContext.logislandStreamContext.getPropertyValue(DATE_FORMAT).asString)
 
 
-                val numPartitions = streamContext.getPropertyValue(NUM_PARTITIONS).asInteger()
-                val outputFormat = streamContext.getPropertyValue(OUTPUT_FORMAT).asString()
-                val doExcludeErrors = streamContext.getPropertyValue(EXCLUDE_ERRORS).asBoolean()
-                val recordType = streamContext.getPropertyValue(RECORD_TYPE).asString()
-                val outPath = streamContext.getPropertyValue(OUTPUT_FOLDER_PATH).asString()
+                val numPartitions = sparkStreamContext.logislandStreamContext.getPropertyValue(NUM_PARTITIONS).asInteger()
+                val outputFormat = sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_FORMAT).asString()
+                val doExcludeErrors = sparkStreamContext.logislandStreamContext.getPropertyValue(EXCLUDE_ERRORS).asBoolean()
+                val recordType = sparkStreamContext.logislandStreamContext.getPropertyValue(RECORD_TYPE).asString()
+                val outPath = sparkStreamContext.logislandStreamContext.getPropertyValue(OUTPUT_FOLDER_PATH).asString()
 
                 val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
                     .filter(r =>
@@ -152,7 +132,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
                 if (!records.isEmpty()) {
                     var df: DataFrame = null;
-                    val inputFormat = streamContext.getPropertyValue(INPUT_FORMAT).asString()
+                    val inputFormat = sparkStreamContext.logislandStreamContext.getPropertyValue(INPUT_FORMAT).asString()
                     if (inputFormat.isEmpty) {
 
                         val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))
@@ -169,7 +149,8 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                         df = sqlContext.createDataFrame(rows, schema)
                     } else {
                         if ("json".equals(inputFormat)) {
-                            import sqlContext.implicits._
+                            val mySqlContext = sqlContext
+                            import mySqlContext.implicits._
                             val rdf = records.map(record => (record.getType, record.getField(FieldDictionary.RECORD_DAYTIME).asString))
                                 .toDF(FieldDictionary.RECORD_TYPE, FieldDictionary.RECORD_DAYTIME)
                             val json = sqlContext.read.json(records.map(record => record.getField(FieldDictionary.RECORD_VALUE).asString()))
@@ -224,6 +205,66 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
         }
         None
     }
+
+
+}
+
+object KafkaRecordStreamHDFSBurner {
+
+  val OUTPUT_FOLDER_PATH = new PropertyDescriptor.Builder()
+    .name("output.folder.path")
+    .description("the location where to put files : file:///tmp/out")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+
+  val INPUT_FORMAT = new PropertyDescriptor.Builder()
+    .name("input.format")
+    .description("Used to load data from a raw record_value. Only json supported")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue("")
+    .build
+
+  val OUTPUT_FORMAT = new PropertyDescriptor.Builder()
+    .name("output.format")
+    .description("can be parquet, orc csv")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .allowableValues(FILE_FORMAT_PARQUET, FILE_FORMAT_TXT, FILE_FORMAT_JSON, FILE_FORMAT_JSON)
+    .build
+
+  val RECORD_TYPE = new PropertyDescriptor.Builder()
+    .name("record.type")
+    .description("the type of event to filter")
+    .required(true)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .build
+
+  val NUM_PARTITIONS = new PropertyDescriptor.Builder()
+    .name("num.partitions")
+    .description("the numbers of physical files on HDFS")
+    .required(false)
+    .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+    .defaultValue("4")
+    .build
+
+  val EXCLUDE_ERRORS = new PropertyDescriptor.Builder()
+    .name("exclude.errors")
+    .description("do we include records with errors ?")
+    .required(false)
+    .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+    .defaultValue("true")
+    .build
+
+  val DATE_FORMAT = new PropertyDescriptor.Builder()
+    .name("date.format")
+    .description("The format of the date for the partition")
+    .required(false)
+    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+    .defaultValue("yyyy-MM-dd")
+    .build
 }
 
 

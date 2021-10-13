@@ -1,11 +1,11 @@
 /**
- * Copyright © 2016 Jeremy Custenborder (jcustenborder@gmail.com)
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-class SpoolDirCsvSourceConnectorConfig extends SpoolDirSourceConnectorConfig {
+public class SpoolDirCsvSourceConnectorConfig extends SpoolDirSourceConnectorConfig {
 
   //CSVRecordProcessorConfig
   public static final String CSV_SKIP_LINES_CONF = "csv.skip.lines";

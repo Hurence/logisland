@@ -15,20 +15,14 @@
  */
 package com.hurence.logisland.stream.spark
 
-import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.stream.{RecordStream, StreamContext}
-import org.apache.spark.streaming.StreamingContext
 
 
 trait SparkRecordStream extends RecordStream {
 
     /**
-      * ssetup the stream with spark app properties
+      * init the stream with spark streaming context
       *
-      * @param appName
-      * @param ssc
-      * @param streamContext
       */
-    def setup(appName: String,ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext)
-    def getStreamContext() : StreamingContext
+    def init(sparkStreamContext: SparkStreamContext): Unit
 }

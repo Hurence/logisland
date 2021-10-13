@@ -27,6 +27,20 @@ public interface Processor extends ConfigurableComponent {
     boolean isInitialized();
 
     /**
+     * Initialize heavy object or start them (ie connections). Make service
+     * enabled
+     * Calling stop() then start() on a service should make the service ok.
+     */
+    default void start() {}
+
+    /**
+     * Stop heavy object or stop them (ie connections). To free resources as
+     * the services is not necessary anymore.
+     * Calling stop() then start() on a service should make the service ok
+     */
+    default void stop() {}
+
+    /**
      * Setup statefull parameters
      *
      * @param context

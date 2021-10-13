@@ -152,14 +152,14 @@ public class SparkEngineConfTest {
     }
 
     private void testConfIsValid(EngineConfiguration engineConf) {
-        Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(engineConf);
+        Optional<EngineContext> engineInstance = ComponentFactory.buildAndSetUpEngineContext(engineConf);
         Assert.assertTrue(engineInstance.isPresent());
         Assert.assertTrue(engineInstance.get().isValid());
         engineInstance.get();
     }
 
     private void testConfIsNotValid(EngineConfiguration engineConf) {
-        Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(engineConf);
+        Optional<EngineContext> engineInstance = ComponentFactory.buildAndSetUpEngineContext(engineConf);
         Assert.assertTrue(engineInstance.isPresent());
         Assert.assertFalse(engineInstance.get().isValid());
         engineInstance.get();

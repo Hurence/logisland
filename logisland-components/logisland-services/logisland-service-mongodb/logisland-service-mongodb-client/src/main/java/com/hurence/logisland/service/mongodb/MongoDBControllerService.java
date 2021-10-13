@@ -27,16 +27,14 @@ import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
 import com.hurence.logisland.util.Tuple;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
-import org.bson.BSON;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -224,6 +222,11 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
     @Override
     public MongoDatabase getDatabase(String name) {
         return mongoClient.getDatabase(name);
+    }
+
+    @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        getLogger().warn("not implemented for Mongo");
     }
 
     @Override

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Hurence (support@hurence.com)
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.NotImplementedException;
 import org.influxdb.InfluxDB;
@@ -403,7 +403,7 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
     }
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+    protected Collection<ValidationResult> customValidate(Configuration context) {
 
         final List<ValidationResult> problems = new ArrayList<>();
 
@@ -804,6 +804,11 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
         }
 
         updater = null;
+    }
+
+    @Override
+    public void waitUntilCollectionReady(String name, long timeoutMilli) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for InfluxDB");
     }
 
     @Override

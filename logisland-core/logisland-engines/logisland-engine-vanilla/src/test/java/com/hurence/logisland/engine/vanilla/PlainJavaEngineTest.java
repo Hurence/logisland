@@ -87,20 +87,20 @@ public class PlainJavaEngineTest {
 
     @Test
     public void testEmpty() {
-        EngineContext engineContext = ComponentFactory.getEngineContext(engineConfiguration()).get();
+        EngineContext engineContext = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration()).get();
         engineContext.getEngine().start(engineContext);
         engineContext.getEngine().awaitTermination(engineContext);
-        engineContext.getEngine().shutdown(engineContext);
+        engineContext.getEngine().stop(engineContext);
     }
 
     @Test
     public void testWithDefaultKafkaStream() {
         EngineConfiguration engineConfiguration = engineConfiguration();
         engineConfiguration.addPipelineConfigurations(emptyKafkaStream(defaultPropertySupplier()));
-        EngineContext engineContext = ComponentFactory.getEngineContext(engineConfiguration).get();
+        EngineContext engineContext = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration).get();
         Assert.assertTrue(engineContext.isValid());
         engineContext.getEngine().start(engineContext);
-        engineContext.getEngine().shutdown(engineContext);
+        engineContext.getEngine().stop(engineContext);
         engineContext.getEngine().awaitTermination(engineContext);
     }
 
@@ -108,7 +108,7 @@ public class PlainJavaEngineTest {
     public void testWithBadConfiguredKafkaStream() {
         EngineConfiguration engineConfiguration = engineConfiguration();
         engineConfiguration.addPipelineConfigurations(emptyKafkaStream(defaultPropertySupplier(Collections.singletonMap("i.do.not.exist", "!"))));
-        EngineContext engineContext = ComponentFactory.getEngineContext(engineConfiguration).get();
+        EngineContext engineContext = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration).get();
         Assert.assertFalse(engineContext.isValid());
     }
 
@@ -122,7 +122,7 @@ public class PlainJavaEngineTest {
         StreamConfiguration streamConfiguration = emptyKafkaStream(defaultPropertySupplier(props));
         streamConfiguration.addProcessorConfiguration(processorConfiguration(Collections.emptyMap()));
         engineConfiguration.addPipelineConfigurations(streamConfiguration);
-        EngineContext engineContext = ComponentFactory.getEngineContext(engineConfiguration).get();
+        EngineContext engineContext = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration).get();
         Assert.assertTrue(engineContext.isValid());
         engineContext.getEngine().start(engineContext);
         sharedKafkaTestResource.getKafkaTestUtils().createTopic("topic.in", 1, (short) 1);
@@ -141,7 +141,7 @@ public class PlainJavaEngineTest {
             Record tmp = recordSerializer.deserialize(new ByteArrayInputStream(cr.value()));
             Assert.assertEquals(new String(ir.getValue()), tmp.getField(FieldDictionary.RECORD_VALUE).asString());
         }
-        engineContext.getEngine().shutdown(engineContext);
+        engineContext.getEngine().stop(engineContext);
         engineContext.getEngine().awaitTermination(engineContext);
     }
 

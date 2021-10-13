@@ -25,9 +25,9 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
-import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.*;
+import com.hurence.logisland.service.datastore.model.*;
+import com.hurence.logisland.service.datastore.model.bool.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -36,41 +36,65 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.DocWriteRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.bulk.*;
-import org.elasticsearch.action.get.*;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.get.MultiGetItemResponse;
+import org.elasticsearch.action.get.MultiGetRequest;
+import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.MultiSearchRequest;
+import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.*;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.PutMappingRequest;
+import org.elasticsearch.common.Priority;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.ReindexRequest;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-//import javax.security.cert.X509Certificate;
+import java.beans.Transient;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 @Tags({ "elasticsearch", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although " +
@@ -80,11 +104,11 @@ import java.util.function.BiConsumer;
 public class Elasticsearch_7_x_ClientService extends AbstractControllerService implements ElasticsearchClientService {
 
 
-    protected volatile RestHighLevelClient esClient;
+    protected volatile transient RestHighLevelClient esClient;
     private volatile HttpHost[] esHosts;
     private volatile String authToken;
-    protected volatile BulkProcessor bulkProcessor;
-    protected volatile Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
+    protected volatile transient BulkProcessor bulkProcessor;
+    private String geolocationFieldLabel;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -106,6 +130,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         props.add(HOSTS);
         props.add(PROP_SSL_CONTEXT_SERVICE);
         props.add(CHARSET);
+        props.add(GEOLOCATION_FIELD_LABEL);
 
         return Collections.unmodifiableList(props);
     }
@@ -116,6 +141,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         super.init(context);
         synchronized(this) {
             try {
+                shutdown();
                 createElasticsearchClient(context);
                 createBulkProcessor(context);
             } catch (Exception e){
@@ -133,15 +159,12 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
      * @throws ProcessException if an error occurs while creating an Elasticsearch client
      */
     protected void createElasticsearchClient(ControllerServiceInitializationContext context) throws ProcessException {
-        if (esClient != null) {
-            return;
-        }
-
         try {
             final String username = context.getPropertyValue(USERNAME).asString();
             final String password = context.getPropertyValue(PASSWORD).asString();
             final String hosts = context.getPropertyValue(HOSTS).asString();
             final boolean enableSsl = context.getPropertyValue(ENABLE_SSL).asBoolean();
+            geolocationFieldLabel = context.getPropertyValue(GEOLOCATION_FIELD_LABEL).asString();
 
             esHosts = getEsHosts(hosts, enableSsl);
 
@@ -242,12 +265,6 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     protected void createBulkProcessor(ControllerServiceInitializationContext context)
     {
-        if (bulkProcessor != null) {
-            return;
-        }
-
-        // create the bulk processor
-
        BulkProcessor.Listener listener = new BulkProcessor.Listener() {
             @Override
             public void beforeBulk(long l, BulkRequest bulkRequest) {
@@ -258,12 +275,24 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
                 getLogger().debug("Executed bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
                 if (bulkResponse.hasFailures()) {
-                    getLogger().warn("There was failures while executing bulk [id:{}]," +
+                    getLogger().error("There was failures while executing bulk [id:{}]," +
                                     " done bulk request in {} ms with failure = {}",
                             new Object[]{l, bulkResponse.getTook().getMillis(), bulkResponse.buildFailureMessage()});
+                    // For each failed doc retrieve the doc we tried to send and display original content
+                    // with error returned by the bulkResponse
+                    List<DocWriteRequest<?>> requests = bulkRequest.requests();
                     for (BulkItemResponse item : bulkResponse.getItems()) {
                         if (item.isFailed()) {
-                            errors.put(item.getId(), item.getFailureMessage());
+                            String itemId = item.getId();
+                            String failureMessage = item.getFailureMessage();
+                            for (DocWriteRequest<?> dwr : requests) {
+                                if (dwr.id().equals(itemId)) {
+                                    getLogger().error("\nBULK ID: " + l +
+                                            "\nDOCUMENT ID: " + itemId +
+                                            "\nERROR: " + failureMessage +
+                                            "\nORIGINAL DOCUMENT:" + dwr.toString() + "\n");
+                                }
+                            }
                         }
                     }
                 }
@@ -336,21 +365,214 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId) {
-
         // Note: we do not support type anymore but keep it in API (method signature) for backward compatibility
         // purpose. So the type is ignored, even if filled.
-
 
         // add it to the bulk
         IndexRequest request = new IndexRequest(docIndex)
                 .source(document)
                 .opType(IndexRequest.OpType.INDEX);
 
-        if(OptionalId.isPresent()){
+        if (OptionalId.isPresent()) {
             request.id(OptionalId.get());
         }
 
         bulkProcessor.add(request);
+    }
+
+    @Override
+    public void bulkDelete(String docIndex, String docType, String id) {
+        DeleteRequest request = new DeleteRequest(docIndex, id);
+        bulkProcessor.add(request);
+    }
+
+
+    @Override
+    public void deleteByQuery(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        String[] indices = new String[queryRecord.getCollections().size()];
+        DeleteByQueryRequest request = new DeleteByQueryRequest(queryRecord.getCollections().toArray(indices));
+        QueryBuilder builder = toQueryBuilder(queryRecord);
+        request.setQuery(builder);
+        if (queryRecord.getSize() >= 0) {
+            request.setSize(queryRecord.getSize());
+        }
+        //TODO supporting sort, usefull only when using size. Well not needed at the moment
+        request.setRefresh(queryRecord.getRefresh());
+        try {
+            BulkByScrollResponse bulkResponse =
+                    esClient.deleteByQuery(request, RequestOptions.DEFAULT);
+            getLogger().info("deleted {} documents, got {} failure(s).", new Object[]{bulkResponse.getDeleted(), bulkResponse.getBulkFailures().size()});
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("response was {}", new Object[]{bulkResponse});
+            }
+        } catch (IOException e) {
+            getLogger().error("error while deleteByQuery", e);
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    @Override
+    public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
+        final SearchRequest searchRequest = buildSearchRequest(queryRecord);
+        try {
+            SearchResponse searchRsp = esClient.search(searchRequest, RequestOptions.DEFAULT);
+            return buildQueryResponseRecord(searchRsp);
+        } catch (IOException e) {
+            getLogger().error("error while queryGet", e);
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    public QueryResponseRecord buildQueryResponseRecord(SearchResponse searchRsp) {
+        Objects.requireNonNull(searchRsp);
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("response was {}", new Object[]{searchRsp});
+        }
+        if (searchRsp.getHits() != null &&
+                searchRsp.getHits().getHits() != null &&
+                searchRsp.getHits().getTotalHits() != null) {
+            long totalMatched = searchRsp.getHits().getTotalHits().value;
+            long totalReturned = searchRsp.getHits().getHits().length;
+            getLogger().info("Number of documents returned is {}, Total number of documents that matched is {}.",
+                    new Object[]{
+                            totalReturned,
+                            totalMatched
+                    });
+            List<ResponseRecord> docs = new ArrayList<>();
+            for (SearchHit hit : searchRsp.getHits().getHits()) {
+                Map<String,Object> responseMap = hit.getSourceAsMap();
+                docs.add(new ResponseRecord(hit.getIndex(), hit.getType(), hit.getId(), responseMap));
+            }
+            return new QueryResponseRecord(totalMatched, docs);
+        }
+        return new QueryResponseRecord(-1, Collections.emptyList());
+    }
+
+    public SearchRequest buildSearchRequest(QueryRecord queryRecord) {
+        //build SearchSourceBuilder
+        final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        final QueryBuilder queryBuilder = toQueryBuilder(queryRecord);
+        searchSourceBuilder.query(queryBuilder);
+        if (queryRecord.getSize() >= 0) {
+            searchSourceBuilder.size(queryRecord.getSize());
+        }
+        List<SortBuilder<?>> sortBuilders = toSortBuilders(queryRecord);
+        sortBuilders.forEach(searchSourceBuilder::sort);
+        //build SearchRequest
+        String[] indices = new String[queryRecord.getCollections().size()];
+        return new SearchRequest(queryRecord.getCollections().toArray(indices), searchSourceBuilder);
+    }
+
+    private List<SortBuilder<?>> toSortBuilders(QueryRecord queryRecord) {
+        List<SortBuilder<?>> sortBuilders = new ArrayList<>();
+        for (SortQueryRecord sortQuery : queryRecord.getSortQueries()) {
+            FieldSortBuilder sortBuilder = SortBuilders.fieldSort(sortQuery.getFieldName());
+            switch (sortQuery.getSortingOrder()) {
+                case ASC:
+                    sortBuilder = sortBuilder.order(SortOrder.ASC);
+                    break;
+                case DESC:
+                    sortBuilder = sortBuilder.order(SortOrder.DESC);
+                    break;
+            }
+            sortBuilders.add(sortBuilder);
+        }
+        return sortBuilders;
+    }
+
+    private QueryBuilder toQueryBuilder(BoolQueryRecord boolQueryRecord) {
+        if (boolQueryRecord instanceof BoolQueryRecordRoot) {
+            return toQueryBuilder((BoolQueryRecordRoot) boolQueryRecord);
+        } else if (boolQueryRecord instanceof RangeQueryRecord) {
+            RangeQueryRecord rangeQuery = (RangeQueryRecord) boolQueryRecord;
+            return QueryBuilders
+                    .rangeQuery(rangeQuery.getFieldName())
+                    .from(rangeQuery.getFrom(), rangeQuery.isIncludeLower())
+                    .to(rangeQuery.getTo(), rangeQuery.isIncludeUpper());
+        } else if (boolQueryRecord instanceof TermQueryRecord) {
+            TermQueryRecord termQuery = (TermQueryRecord) boolQueryRecord;
+            return QueryBuilders.termQuery(termQuery.getFieldName(), termQuery.getFieldValue());
+        } else if (boolQueryRecord instanceof WildCardQueryRecord) {
+            WildCardQueryRecord wildCardQuery = (WildCardQueryRecord) boolQueryRecord;
+            return QueryBuilders.wildcardQuery(wildCardQuery.getFieldName(), wildCardQuery.getFieldValue());
+        } else {
+            getLogger().error("BoolQueryRecord of class " + boolQueryRecord.getClass() + " is not yet supported");
+            throw new IllegalArgumentException("BoolQueryRecord of class " + boolQueryRecord.getClass() + " is not yet supported");
+        }
+    }
+
+    private QueryBuilder toQueryBuilder(BoolQueryRecordRoot boolQueryRoot) {
+        final BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        boolQueryRoot.getChildren().forEach(node -> {
+            QueryBuilder query = toQueryBuilder(node.getData());
+            switch (node.getBoolCondition()) {
+                case MUSTNOT:
+                    boolQuery.mustNot(query);
+                    break;
+                case MUST:
+                    boolQuery.must(query);
+                    break;
+                case SHOULD:
+                    boolQuery.should(query);
+                    break;
+            }
+        });
+        return boolQuery;
+    }
+
+    private QueryBuilder toQueryBuilder(QueryRecord queryRecord) {
+        return toQueryBuilder(queryRecord.getBoolQuery());
+    }
+
+
+    /**
+     * Wait until specified collection is ready to be used.
+     */
+    @Override
+    public void waitUntilCollectionReady(String collection, long timeoutMilli) throws DatastoreClientServiceException {
+        getIndexHealth(new String[]{collection}, timeoutMilli);
+    }
+
+    @Override
+    public void waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(String[] indices, long timeoutMilli) throws DatastoreClientServiceException {
+        ClusterHealthResponse rsp = getIndexHealth(indices, timeoutMilli);
+        if (rsp == null) {
+            getLogger().error("index {} seems to not be ready (query failed) !", new Object[]{indices});
+            return;
+        }
+        if (rsp.isTimedOut()) {
+            getLogger().error("index {} is not ready !", new Object[]{indices});
+        } else {
+            if (rsp.getNumberOfPendingTasks() != 0) {
+                this.refreshCollections(indices);
+            }
+        }
+    }
+
+    @Override
+    public void refreshCollections(String[] indices) throws DatastoreClientServiceException {
+        try {
+            RefreshRequest request = new RefreshRequest(indices);
+            RefreshResponse rsp = esClient.indices().refresh(request, RequestOptions.DEFAULT);
+            getLogger().info("refresh response for indices {} is {}", new Object[]{indices, rsp.getStatus()});
+        } catch (Exception e){
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    private ClusterHealthResponse getIndexHealth(String[] indices, long timeoutMilli) {
+        ClusterHealthRequest request = new ClusterHealthRequest(indices)
+                .timeout(TimeValue.timeValueMillis(timeoutMilli))
+                .waitForGreenStatus()
+                .waitForEvents(Priority.LOW);
+        ClusterHealthResponse response = null;
+        try {
+            response = esClient.cluster().health(request, RequestOptions.DEFAULT);
+            getLogger().trace("health response for indices {} is {}", new Object[]{indices, response});
+        } catch (Exception e) {
+            getLogger().error("health query failed : {}", new Object[]{e.getMessage()});
+        }
+        return response;
     }
 
     @Override
@@ -402,6 +624,45 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     }
 
     @Override
+    public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException{
+        final MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+        List<SearchRequest> searchRequests = buildSearchRequests(queryRecords);
+        searchRequests.forEach(multiSearchRequest::add);
+        try {
+            MultiSearchResponse multiSearchResponse = esClient.msearch(multiSearchRequest, RequestOptions.DEFAULT);
+            if (getLogger().isTraceEnabled()) {
+                getLogger().trace("response was {}", new Object[]{multiSearchResponse});
+            }
+            List<QueryResponseRecord> searchResponses = new ArrayList<>();
+
+            if (multiSearchResponse.getResponses() != null) {
+                MultiSearchResponse.Item[] items = multiSearchResponse.getResponses();
+                for (MultiSearchResponse.Item item : items) {
+                    SearchResponse searchResponse = item.getResponse();
+                    if (searchResponse != null) {
+                        searchResponses.add(buildQueryResponseRecord(searchResponse));
+                    } else {
+                        if (item.isFailure()) {
+                            getLogger().error("a search request failed because :\n'{}'", new Object[]{item.getFailureMessage()});
+                        }
+                    }
+                }
+            }
+
+            return new MultiQueryResponseRecord(searchResponses);
+        } catch (IOException e) {
+            getLogger().error("error while queryGet", e);
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    private List<SearchRequest> buildSearchRequests(MultiQueryRecord queryRecords) {
+        return queryRecords.getQueries().stream()
+                .map(this::buildSearchRequest)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public boolean existsCollection(String indexName) throws DatastoreClientServiceException {
         boolean exists;
         try {
@@ -414,16 +675,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         return exists;
     }
 
-    @Override
-    public void refreshCollection(String indexName) throws DatastoreClientServiceException {
-        try {
-            RefreshRequest request = new RefreshRequest(indexName);
-            esClient.indices().refresh(request, RequestOptions.DEFAULT);
-        }
-        catch (Exception e){
-            throw new DatastoreClientServiceException(e);
-        }
-    }
+
 
     @Override
     public void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
@@ -562,7 +814,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
         }
 
-        bulkPut(indexName, null, ElasticsearchRecordConverter.convertToString(record), Optional.of(record.getId()));
+        bulkPut(indexName, null, convertRecordToString(record), Optional.of(record.getId()));
     }
 
     @Override
@@ -592,6 +844,9 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public String convertRecordToString(Record record) {
+        if (geolocationFieldLabel != null) {
+          return ElasticsearchRecordConverter.convertToString(record, geolocationFieldLabel);
+        }
         return ElasticsearchRecordConverter.convertToString(record);
     }
 

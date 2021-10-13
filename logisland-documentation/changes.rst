@@ -1,6 +1,15 @@
 What's new in logisland ?
 =========================
 
+v1.4.0
+------
+
+- support for Azure databricks deployment (see -databricks and -chkloc run options)
+- support for Azure Event Hubs through new structured stream source/sink service
+- support for Avro serialization in structured streams
+- support for opendistro (using elasticsearch 7.X service, validated against OD 1.4.0 with security [ssl - user/password])
+- support for spark 2.4.0 through new logisland spark engine (warning: no support for 2.4.1 where scala needed version is 2.12, no more 2.11)
+- added spark standalone experimental run mode (no documentation)
 
 v1.3.0
 ------

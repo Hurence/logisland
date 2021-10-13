@@ -43,6 +43,32 @@ public class TestBulkAddElasticsearch {
     private static Logger logger = LoggerFactory.getLogger(TestBulkAddElasticsearch.class);
 
     @Test
+    public void testValidity() {
+        final TestRunner runner = TestRunners.newTestRunner(new BulkAddElasticsearch());
+        runner.assertNotValid();
+        runner.setProperty(BulkAddElasticsearch.DEFAULT_INDEX, "aaa");
+        runner.setProperty(BulkAddElasticsearch.DEFAULT_TYPE, "bbb");
+        runner.setProperty(BulkAddElasticsearch.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
+        runner.assertValid();
+        runner.setProperty(BulkAddElasticsearch.TIMEBASED_INDEX, TODAY_DATE_SUFFIX);
+        runner.setProperty(BulkAddElasticsearch.ES_INDEX_FIELD, "aa");
+        runner.setProperty(BulkAddElasticsearch.ES_TYPE_FIELD, "bb");
+        runner.assertValid();
+        runner.removeProperty(BulkAddElasticsearch.DEFAULT_INDEX);
+        runner.assertNotValid();
+        runner.setProperty(BulkAddElasticsearch.DEFAULT_INDEX, "aaa");
+        runner.assertValid();
+        runner.removeProperty(BulkAddElasticsearch.DEFAULT_TYPE);
+        runner.assertNotValid();
+        runner.setProperty(BulkAddElasticsearch.DEFAULT_TYPE, "aaa");
+        runner.assertValid();
+        runner.removeProperty(BulkAddElasticsearch.ELASTICSEARCH_CLIENT_SERVICE);
+        runner.assertNotValid();
+        runner.setProperty(BulkAddElasticsearch.ELASTICSEARCH_CLIENT_SERVICE, "aaa");
+        runner.assertValid();
+    }
+
+    @Test
     public void testBulkAddElasticsearchTwoRecords() throws IOException, InitializationException {
 
         final String DEFAULT_INDEX = "test_index";

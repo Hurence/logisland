@@ -48,7 +48,6 @@ public class LocalFileStructuredStreamProviderServiceTest {
 
   private String JOB_CONF_FILE = "/conf/timeseries-structured-stream.yml";
 
-
   @Test
   @Ignore
   public void testLocalFileStructuredStreamProviderService() {

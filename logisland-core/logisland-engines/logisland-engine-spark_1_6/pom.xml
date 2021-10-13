@@ -23,7 +23,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-engines</artifactId>
-        <version>1.3.0</version>
+        <version>1.4.0</version>
     </parent>
     <artifactId>logisland-engine-spark_1_6</artifactId>
     <packaging>jar</packaging>
@@ -136,33 +136,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-hbase_1_1_2-client</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-hbase-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-processor-hbase</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-            <version>1.1.2.2.4.0.0-169</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
 

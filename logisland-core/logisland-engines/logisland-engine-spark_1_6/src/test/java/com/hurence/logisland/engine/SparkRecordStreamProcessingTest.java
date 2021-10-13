@@ -84,7 +84,7 @@ public class SparkRecordStreamProcessingTest {
         if (checkpointDir.isDirectory())
             FileUtils.forceDelete(checkpointDir);*/
 
-        Optional<EngineContext> instance = ComponentFactory.getEngineContext(engineConfiguration);
+        Optional<EngineContext> instance = ComponentFactory.buildAndSetUpEngineContext(engineConfiguration);
         assertTrue(instance.isPresent());
         assertTrue(instance.get().isValid());
         ProcessingEngine engine = instance.get().getEngine();
@@ -96,7 +96,7 @@ public class SparkRecordStreamProcessingTest {
             public void run() {
                 System.setProperty("hadoop.home.dir", "/");
                 engine.start(engineContext);
-                engine.shutdown(engineContext);
+                engine.stop(engineContext);
                 System.out.println("done");
             }
         };

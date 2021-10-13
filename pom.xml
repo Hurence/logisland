@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -80,6 +80,7 @@
         <module>logisland-documentation</module>
         <module>logisland-resources</module>
         <module>logisland-assembly</module>
+        <module>logisland-tests</module>
     </modules>
 
     <properties>
@@ -88,8 +89,8 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.min-version>3.1.0</maven.min-version>
         <maven-jar-plugin>3.1.2</maven-jar-plugin>
-        <maven-surefire-plugin>2.22.1</maven-surefire-plugin>
-        <maven-failsafe-plugin>2.18.1</maven-failsafe-plugin>
+        <maven-surefire-plugin>2.22.2</maven-surefire-plugin>
+        <maven-failsafe-plugin>2.22.2</maven-failsafe-plugin>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2014</inceptionYear>
@@ -115,7 +116,7 @@
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
 
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <junit-platform.version>1.2.0</junit-platform.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <!-- Package to use when relocating shaded classes. -->
@@ -123,19 +124,12 @@
         <shade-plugin.version>2.4.3</shade-plugin.version>
     </properties>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </pluginRepository>
-    </pluginRepositories>
     <repositories>
 
         <repository>
             <id>hdp</id>
             <name>Hortonwork repo</name>
-            <url>http://repo.hortonworks.com/content/groups/public/</url>
+            <url>https://repo.hortonworks.com/content/groups/public/</url>
         </repository>
         <repository>
             <id>central</id>
@@ -189,7 +183,7 @@
         <repository>
             <id>confluent</id>
             <name>Confluent</name>
-            <url>http://packages.confluent.io/maven/</url>
+            <url>https://packages.confluent.io/maven/</url>
         </repository>
 
         <repository>
@@ -199,17 +193,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-
-
-            <repository>
-                <id>scala-tools.org</id>
-                <name>Scala-tools Maven2 Repository</name>
-                <url>http://scala-tools.org/repo-releases</url>
-            </repository>
-
-
     </repositories>
-
 
     <dependencyManagement>
         <dependencies>
@@ -306,10 +290,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
@@ -374,6 +354,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven-failsafe-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -481,6 +466,27 @@
                     <version>1.9.1</version>
 
                 </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <configuration>
+                                <classifier>repackaged</classifier>
+                            </configuration>
+                            <phase>package</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -514,19 +520,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin}</version>
                 <configuration>
                     <forkCount>3</forkCount>
                     <reuseForks>true</reuseForks>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <argLine>-Xmx1024m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=true</argLine>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven-failsafe-plugin}</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>1.3.0</version>
+        <version>1.4.0</version>
     </parent>
     <artifactId>logisland-assembly</artifactId>
     <packaging>pom</packaging>
@@ -42,7 +42,7 @@
                     <attach>false</attach>
                     <appendAssemblyId>true</appendAssemblyId>
                 </configuration>
-                <version>3.1.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>make shared resource</id>

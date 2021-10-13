@@ -5,7 +5,7 @@
     <parent>
         <artifactId>logisland-services</artifactId>
         <groupId>com.hurence.logisland</groupId>
-        <version>1.3.0</version>
+        <version>1.4.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -44,22 +44,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
-
 </project>

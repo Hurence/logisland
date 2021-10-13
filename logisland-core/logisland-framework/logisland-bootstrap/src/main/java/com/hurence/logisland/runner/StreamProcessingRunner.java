@@ -78,6 +78,17 @@ public class StreamProcessingRunner {
         Option checkpointLocation = OptionBuilder.create("chkploc");
         options.addOption(checkpointLocation);
 
+        // Checkpoint directory
+        OptionBuilder.withArgName("strict");
+        OptionBuilder.withLongOpt("strict-conf-check");
+        OptionBuilder.isRequired(false);
+        OptionBuilder.hasArg(false);
+        OptionBuilder.withDescription("If set, no not allowed configuration will be tolerated. " +
+                "A full check of the conf will be done before running the job. " +
+                "This way your conf file will not work if it is not clean.");
+        Option checkConfOpt = OptionBuilder.create("strict");
+        options.addOption(checkConfOpt);
+
         Optional<EngineContext> engineInstance = Optional.empty();
         try {
             System.out.println(BannerLoader.loadBanner());
@@ -102,21 +113,22 @@ public class StreamProcessingRunner {
 
             // Get checkpoint location if any
             boolean chkploc = line.hasOption("chkploc");
-
             if (databricksMode && !chkploc) {
                 logger.error("Databricks mode requires checkpoint location to be set");
                 System.exit(-1);
             }
-
             GlobalOptions.checkpointLocation = line.getOptionValue("chkploc");
             logger.info("Using checkpoint location: " + GlobalOptions.checkpointLocation);
 
+            boolean strictCheckConf = line.hasOption("strict");
             // instantiate engine and all the processor from the config
-            engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
+            // This init the engine as well
+            engineInstance = ComponentFactory.buildAndSetUpEngineContext(sessionConf.getEngine());
             if (!engineInstance.isPresent()) {
                 throw new IllegalArgumentException("engineInstance could not be instantiated");
             }
-            if (!engineInstance.get().isValid()) {
+            //At the moment strictCheckConf has no effect ! But we could imagine latter an usage.
+            if (!engineInstance.get().isValid(strictCheckConf)) {
                 throw new IllegalArgumentException("engineInstance is not valid with input configuration !");
             }
             logger.info("Starting Logisland session version {}", sessionConf.getVersion());
@@ -129,6 +141,8 @@ public class StreamProcessingRunner {
         try {
             // start the engine
             EngineContext engineContext = engineInstance.get();
+            logger.info("Init engine {}", engineName);
+            engineInstance.get().getEngine().init(engineContext);
             logger.info("Start engine {}", engineName);
             engineInstance.get().getEngine().start(engineContext);
             logger.info("Waiting termination of engine {}", engineName);

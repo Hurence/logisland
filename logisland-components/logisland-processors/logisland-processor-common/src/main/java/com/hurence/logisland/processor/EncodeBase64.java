@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2019 Hurence (support@hurence.com)
- * <p>
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,21 +66,16 @@ public class EncodeBase64 extends AbstractProcessor {
     @Override
     public void init(ProcessContext context) throws InitializationException {
         super.init(context);
+        context.getPropertyValue(SOURCE_FIELDS).asStringOpt().ifPresent(s ->
+                sourceFieldNames.addAll(Arrays.asList((s.split(",")))));
+        context.getPropertyValue(DESTINATION_FIELDS).asStringOpt().ifPresent(s ->
+                destinationFieldNames.addAll(Arrays.asList((s.split(",")))));
+        if (sourceFieldNames.size() != destinationFieldNames.size()) {
+            throw new InitializationException(String.format("Processor properties %s and %s must contains the same number of elements. " +
+                            "Actual are: %d and %d", SOURCE_FIELDS.getName(), DESTINATION_FIELDS.getName(),
+                    sourceFieldNames.size(), destinationFieldNames.size()));
 
-        if(!isInitialized){
-            context.getPropertyValue(SOURCE_FIELDS).asStringOpt().ifPresent(s ->
-                    sourceFieldNames.addAll(Arrays.asList((s.split(",")))));
-            context.getPropertyValue(DESTINATION_FIELDS).asStringOpt().ifPresent(s ->
-                    destinationFieldNames.addAll(Arrays.asList((s.split(",")))));
-            if (sourceFieldNames.size() != destinationFieldNames.size()) {
-                throw new InitializationException(String.format("Processor properties %s and %s must contains the same number of elements. " +
-                                "Actual are: %d and %d", SOURCE_FIELDS.getName(), DESTINATION_FIELDS.getName(),
-                        sourceFieldNames.size(), destinationFieldNames.size()));
-
-            }
-            isInitialized = true;
         }
-
     }
 
     @Override

@@ -24,6 +24,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRulesException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
@@ -116,6 +121,28 @@ public class StandardValidators {
         }
     };
 
+    public static final Validator CHAR_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                if (value == null) {
+                    reason = "null is not a valid character";
+                } else {
+                    if (value.length() != 1) {
+                        reason = "Not a valid character !";
+                    } else {
+                        value.charAt(0);
+                    }
+                }
+            } catch (final NumberFormatException e) {
+                reason = "Not a valid character";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
     public static final Validator POSITIVE_DOUBLE_VALIDATOR = new Validator() {
         @Override
         public ValidationResult validate(final String subject, final String value) {
@@ -170,6 +197,37 @@ public class StandardValidators {
         }
     };
 
+
+    public static final Validator SIMPLE_DATE_FORMAT_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                new SimpleDateFormat(value);
+            } catch (final NumberFormatException e) {
+                reason = "not a valid " + SimpleDateFormat.class.getCanonicalName();
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+    public static final Validator DATE_TIME_FORMATTER_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                DateTimeFormatter.ofPattern(value);
+            } /*catch (final NumberFormatException e) {
+                reason = "not a valid " + DateTimeFormatter.class.getCanonicalName();
+            }*/ catch (final Exception e) {
+                reason = "not a valid " + DateTimeFormatter.class.getCanonicalName()
+                + " caused by : " + e.getMessage();
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
 
     public static final Validator BOOLEAN_VALIDATOR = new Validator() {
         @Override
@@ -261,6 +319,39 @@ public class StandardValidators {
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
         }
     };
+
+    /**
+     * input should be separated by "," and optionnaly separated again with ":". Sub group should not be more than 2
+     *
+     * Valid example :
+     * -a,b,v,d
+     * -a:r,b,v:m,d
+     * -a:i,b:zzz,v:pp,d:po
+     * Not Valid example :
+     * -a:a:a,b,v,d
+     * -a:b,b:p,v:g:g,d:a
+     */
+    public static final Validator COMMA_SEPARATED_LIST_COLON_SUB_SEPARATOR_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                String[] fieldsArr = value.split("\\s*,\\s*");
+                for (String field : fieldsArr) {
+                    if (field.contains(":")) {
+                        String[] fieldPair = field.split("\\s*:\\s*");
+                        if (fieldPair.length > 2) {
+                            reason = "An element of the list contain several ':'";
+                        }
+                    }
+                }
+            } catch (final Exception e) {
+                reason = "not a comma separated list";
+            }
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
 
     public static final Validator COMMA_SEPARATED_LIST_VALIDATOR = new Validator() {
         @Override
@@ -394,6 +485,27 @@ public class StandardValidators {
         public ValidationResult validate(final String subject, final String value) {
             String reason = null;
             if (!Arrays.asList(TimeZone.getAvailableIDs()).contains(value)) reason = "not a valid timezone";
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+    /**
+     * ZoneId Validators
+     */
+    public static final Validator ZONE_ID_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            try {
+                ZoneId.of(value);
+            } catch (Exception ex) {
+                if (ex.getMessage() != null) {
+                    reason = ex.getMessage();
+                } else {
+                    reason = "Not a valid ZoneId for your system.";
+                }
+                reason += "\n Current supported ZoneId for system are : " + ZoneId.getAvailableZoneIds();
+            }
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
         }
     };

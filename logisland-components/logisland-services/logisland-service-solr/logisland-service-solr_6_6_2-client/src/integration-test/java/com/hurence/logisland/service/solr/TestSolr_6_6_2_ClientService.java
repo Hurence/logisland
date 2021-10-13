@@ -19,10 +19,9 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.model.exception.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.solr.api.SolrClientService;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.junit.Test;
 
 import java.io.IOException;

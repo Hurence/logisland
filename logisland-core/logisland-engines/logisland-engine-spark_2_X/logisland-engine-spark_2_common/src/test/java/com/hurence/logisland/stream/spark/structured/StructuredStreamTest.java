@@ -53,7 +53,7 @@ public class StructuredStreamTest {
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instantiate engine and all the processor from the config
-            engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
+            engineInstance = ComponentFactory.buildAndSetUpEngineContext(sessionConf.getEngine());
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
 

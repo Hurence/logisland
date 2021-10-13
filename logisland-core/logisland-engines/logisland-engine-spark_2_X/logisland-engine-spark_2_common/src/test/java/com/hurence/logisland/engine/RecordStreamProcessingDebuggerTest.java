@@ -26,6 +26,7 @@ import com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator;
+import com.hurence.logisland.stream.spark.structured.provider.KafkaProperties;
 import com.hurence.logisland.util.runner.MockProcessor;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -60,7 +61,7 @@ public class RecordStreamProcessingDebuggerTest {
         try {
 
             // instanciate engine and all the processor from the config
-            Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(engineConf);
+            Optional<EngineContext> engineInstance = ComponentFactory.buildAndSetUpEngineContext(engineConf);
 
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
@@ -98,20 +99,20 @@ public class RecordStreamProcessingDebuggerTest {
                 "sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667");
         chainProperties.put(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM().getName(),
                 "sd-76387:2181,sd-84186:2181,sd-84189:2181");*/
-        streamProperties.put(StreamProperties.KAFKA_METADATA_BROKER_LIST().getName(),
+        streamProperties.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(),
                 "sandbox:9092");
-        streamProperties.put(StreamProperties.KAFKA_ZOOKEEPER_QUORUM().getName(),
+        streamProperties.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(),
                 "sandbox:2181");
-        streamProperties.put(StreamProperties.INPUT_TOPICS().getName(), "logisland_events");
-        streamProperties.put(StreamProperties.OUTPUT_TOPICS().getName(), "none");
-        streamProperties.put(StreamProperties.INPUT_SERIALIZER().getName(), StreamProperties.KRYO_SERIALIZER().getValue());
-        streamProperties.put(StreamProperties.OUTPUT_SERIALIZER().getName(), StreamProperties.NO_SERIALIZER().getValue());
-        streamProperties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
-        streamProperties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
+        streamProperties.put(KafkaProperties.INPUT_TOPICS().getName(), "logisland_events");
+        streamProperties.put(KafkaProperties.OUTPUT_TOPICS().getName(), "none");
+        streamProperties.put(KafkaProperties.INPUT_SERIALIZER().getName(), StreamProperties.KRYO_SERIALIZER().getValue());
+        streamProperties.put(KafkaProperties.OUTPUT_SERIALIZER().getName(), StreamProperties.NO_SERIALIZER().getValue());
+        streamProperties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
+        streamProperties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
 
-        streamProperties.put(StreamProperties.OUTPUT_FOLDER_PATH().getName(), "data/logisland_events");
-        streamProperties.put(StreamProperties.OUTPUT_FORMAT().getName(), "parquet");
-        streamProperties.put(StreamProperties.RECORD_TYPE().getName(), "record");
+        streamProperties.put(KafkaRecordStreamHDFSBurner.OUTPUT_FOLDER_PATH().getName(), "data/logisland_events");
+        streamProperties.put(KafkaRecordStreamHDFSBurner.OUTPUT_FORMAT().getName(), "parquet");
+        streamProperties.put(KafkaRecordStreamHDFSBurner.RECORD_TYPE().getName(), "record");
 
         StreamConfiguration chainConf = new StreamConfiguration();
         chainConf.setComponent(KafkaRecordStreamHDFSBurner.class.getName());
@@ -124,18 +125,18 @@ public class RecordStreamProcessingDebuggerTest {
 
     private StreamConfiguration getParallelStreamConfiguration() {
         Map<String, String> streamProperties = new HashMap<>();
-        streamProperties.put(StreamProperties.KAFKA_METADATA_BROKER_LIST().getName(),
+        streamProperties.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(),
                 "sandbox:9092");
-        streamProperties.put(StreamProperties.KAFKA_ZOOKEEPER_QUORUM().getName(),
+        streamProperties.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(),
                 "sandbox:2181");
-        streamProperties.put(StreamProperties.OUTPUT_TOPICS().getName(), "logisland_events");
-        streamProperties.put(StreamProperties.INPUT_TOPICS().getName(), "logisland_raw");
-        streamProperties.put(StreamProperties.ERROR_TOPICS().getName(), "logisland_errors");
-        streamProperties.put(StreamProperties.INPUT_SERIALIZER().getName(),
+        streamProperties.put(KafkaProperties.OUTPUT_TOPICS().getName(), "logisland_events");
+        streamProperties.put(KafkaProperties.INPUT_TOPICS().getName(), "logisland_raw");
+        streamProperties.put(KafkaProperties.ERROR_TOPICS().getName(), "logisland_errors");
+        streamProperties.put(KafkaProperties.INPUT_SERIALIZER().getName(),
                 StreamProperties.NO_SERIALIZER().getValue());
-        streamProperties.put(StreamProperties.OUTPUT_SERIALIZER().getName(),
+        streamProperties.put(KafkaProperties.OUTPUT_SERIALIZER().getName(),
                 StreamProperties.JSON_SERIALIZER().getValue());
-        streamProperties.put(StreamProperties.ERROR_SERIALIZER().getName(),
+        streamProperties.put(KafkaProperties.ERROR_SERIALIZER().getName(),
                 StreamProperties.JSON_SERIALIZER().getValue());
 
         streamProperties.put(StreamProperties.AVRO_OUTPUT_SCHEMA().getName(),
@@ -157,8 +158,8 @@ public class RecordStreamProcessingDebuggerTest {
                         "               { \"name\": \"identd\", \"type\": [\"string\",\"null\"] },\n" +
                         "               { \"name\": \"user\",        \"type\": [\"string\",\"null\"] }    ]}");
 
-        streamProperties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
-        streamProperties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
+        streamProperties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
+        streamProperties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
 
 
         StreamConfiguration chainConf = new StreamConfiguration();
@@ -172,14 +173,14 @@ public class RecordStreamProcessingDebuggerTest {
 
     private StreamConfiguration getDebuggerStreamConfiguration() {
         Map<String, String> streamProperties = new HashMap<>();
-        streamProperties.put(StreamProperties.KAFKA_METADATA_BROKER_LIST().getName(), "sandbox:9092");
-        streamProperties.put(StreamProperties.KAFKA_ZOOKEEPER_QUORUM().getName(), "sandbox:2181");
-        streamProperties.put(StreamProperties.INPUT_TOPICS().getName(), "logisland_raw");
-        streamProperties.put(StreamProperties.OUTPUT_TOPICS().getName(), "logisland_events");
-        streamProperties.put(StreamProperties.INPUT_SERIALIZER().getName(), StreamProperties.NO_SERIALIZER().getValue());
-        streamProperties.put(StreamProperties.OUTPUT_SERIALIZER().getName(), StreamProperties.JSON_SERIALIZER().getValue());
-        streamProperties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
-        streamProperties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "4");
+        streamProperties.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(), "sandbox:9092");
+        streamProperties.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(), "sandbox:2181");
+        streamProperties.put(KafkaProperties.INPUT_TOPICS().getName(), "logisland_raw");
+        streamProperties.put(KafkaProperties.OUTPUT_TOPICS().getName(), "logisland_events");
+        streamProperties.put(KafkaProperties.INPUT_SERIALIZER().getName(), StreamProperties.NO_SERIALIZER().getValue());
+        streamProperties.put(KafkaProperties.OUTPUT_SERIALIZER().getName(), StreamProperties.JSON_SERIALIZER().getValue());
+        streamProperties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
+        streamProperties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "4");
 
 
         StreamConfiguration chainConf = new StreamConfiguration();
@@ -193,21 +194,21 @@ public class RecordStreamProcessingDebuggerTest {
 
     private StreamConfiguration getSQLStreamConfiguration() {
         Map<String, String> streamProperties = new HashMap<>();
-        streamProperties.put(StreamProperties.OUTPUT_RECORD_TYPE().getName(), "product_metric");
-        streamProperties.put(StreamProperties.KAFKA_METADATA_BROKER_LIST().getName(),
+        streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_RECORD_TYPE().getName(), "product_metric");
+        streamProperties.put(KafkaProperties.KAFKA_METADATA_BROKER_LIST().getName(),
                 "sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84186:6667");
-        streamProperties.put(StreamProperties.KAFKA_ZOOKEEPER_QUORUM().getName(),
+        streamProperties.put(KafkaProperties.KAFKA_ZOOKEEPER_QUORUM().getName(),
                 "sd-76387:2181,sd-84186:2181,sd-84189:2181");
-        streamProperties.put(StreamProperties.INPUT_TOPICS().getName(), "ffact_products");
-        streamProperties.put(StreamProperties.OUTPUT_TOPICS().getName(), "ffact_metrics");
-        streamProperties.put(StreamProperties.INPUT_SERIALIZER().getName(), StreamProperties.JSON_SERIALIZER().getValue());
+        streamProperties.put(KafkaProperties.INPUT_TOPICS().getName(), "ffact_products");
+        streamProperties.put(KafkaProperties.OUTPUT_TOPICS().getName(), "ffact_metrics");
+        streamProperties.put(KafkaProperties.INPUT_SERIALIZER().getName(), StreamProperties.JSON_SERIALIZER().getValue());
 
-        streamProperties.put(StreamProperties.OUTPUT_SERIALIZER().getName(), StreamProperties.JSON_SERIALIZER().getValue());
-        streamProperties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
-        streamProperties.put(StreamProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "1");
+        streamProperties.put(KafkaProperties.OUTPUT_SERIALIZER().getName(), StreamProperties.JSON_SERIALIZER().getValue());
+        streamProperties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
+        streamProperties.put(KafkaProperties.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "1");
 
-        streamProperties.put(StreamProperties.MAX_RESULTS_COUNT().getName(), "10");
-        streamProperties.put(StreamProperties.SQL_QUERY().getName(), "SELECT count(*)/first(theoretical_cadence) AS product_trs, count(*) as product_count, factory, line, first(product_type) as product_type, first(theoretical_cadence) as theoretical_cadence, max(record_time) as record_time\n" +
+        streamProperties.put(KafkaRecordStreamSQLAggregator.MAX_RESULTS_COUNT().getName(), "10");
+        streamProperties.put(KafkaRecordStreamSQLAggregator.SQL_QUERY().getName(), "SELECT count(*)/first(theoretical_cadence) AS product_trs, count(*) as product_count, factory, line, first(product_type) as product_type, first(theoretical_cadence) as theoretical_cadence, max(record_time) as record_time\n" +
                 "          FROM ffact_products\n" +
                 "          GROUP BY factory, line\n" +
                 "          LIMIT 20");

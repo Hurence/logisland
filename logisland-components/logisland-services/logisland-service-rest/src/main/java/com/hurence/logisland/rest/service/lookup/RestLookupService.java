@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2019 Hurence (support@hurence.com)
- * <p>
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -180,7 +180,7 @@ public class RestLookupService extends AbstractControllerService implements Rest
 
     private volatile ProxyConfigurationService proxyConfigurationService;
     private volatile RecordSerializer deserializer;
-    private volatile OkHttpClient client;
+    private volatile transient OkHttpClient client;
     private volatile Map<String, String> headers;
     private volatile String urlTemplate;
     private volatile String basicUser;
@@ -234,9 +234,21 @@ public class RestLookupService extends AbstractControllerService implements Rest
         }
     }
 
+
+    @Override
+    public void start() {
+        super.start();
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+//        this.urlTemplate = null;
+    }
+
     @OnDisabled
     public void onDisable() {
-        this.urlTemplate = null;
+        stop();
     }
 
     private void buildHeaders(ControllerServiceInitializationContext context) {
@@ -260,9 +272,13 @@ public class RestLookupService extends AbstractControllerService implements Rest
             if (config.hasCredential()){
                 builder.proxyAuthenticator((route, response) -> {
                     final String credential= Credentials.basic(config.getProxyUserName(), config.getProxyUserPassword());
-                    return response.request().newBuilder()
-                            .header("Proxy-Authorization", credential)
-                            .build();
+                    try {//bug memory leak 28/08/2020
+                        return response.request().newBuilder()
+                                .header("Proxy-Authorization", credential)
+                                .build();
+                    } finally {
+                        response.close();
+                    }
                 });
             }
         }
@@ -295,11 +311,15 @@ public class RestLookupService extends AbstractControllerService implements Rest
         Request request = buildRequest(mimeType, method, body, endpoint);
         try {
             Response response = executeRequest(request);
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Response code {} was returned for coordinate {}",
-                        new Object[]{response.code(), coordinates});
+            try {//bug memory leak 28/08/2020
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("Response code {} was returned for coordinate {}",
+                            new Object[]{response.code(), coordinates});
+                }
+                return handleResponse(response);
+            } finally {
+                response.close();
             }
-            return handleResponse(response);
         } catch (Exception e) {
             getLogger().error(String.format("Could not execute lookup at endpoint '%s'.", endpoint), e);
             throw new LookupFailureException(e);
@@ -482,4 +502,5 @@ public class RestLookupService extends AbstractControllerService implements Rest
     public String getResponseBodyKey() {
         return RESPONSE_BODY_FIELD;
     }
+
 }

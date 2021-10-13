@@ -24,11 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Primitive Types
@@ -124,19 +122,66 @@ public class Field extends AbstractPropertyValue implements PropertyValue, Seria
 
     @Override
     public String toString() {
+        return toString(0);
+    }
 
-        if (rawValue != null)
-            return "Field{" +
-                    "name='" + name + '\'' +
-                    ", type=" + type +
-                    ", rawValue=" + rawValue +
-                    '}';
-        else
-            return "Field{" +
-                    "name='" + name + '\'' +
-                    ", type=" + type +
-                    ", rawValue=null" +
-                    '}';
+    public String toString(int deepness) {
+        if (deepness < 0) throw new IllegalArgumentException("deepness must be grater than 0 ! [" + deepness + "]");
+
+        String valueAsString = "null";
+        if (rawValue != null) {
+            switch(type) {
+                case BYTES:
+                case ARRAY:
+                    try {
+                        if (rawValue.getClass().isArray()) {
+                            if (rawValue instanceof int[]) {
+                                valueAsString = Arrays.toString((int[]) rawValue);
+                            } else if (rawValue instanceof double[])  {
+                                valueAsString = Arrays.toString((double[]) rawValue);
+                            } else if (rawValue instanceof float[])  {
+                                valueAsString = Arrays.toString((float[]) rawValue);
+                            } else if (rawValue instanceof long[])  {
+                                valueAsString = Arrays.toString((long[]) rawValue);
+                            } else if (rawValue instanceof byte[])  {
+                                valueAsString = Arrays.toString((byte[]) rawValue);
+                            } else if (rawValue instanceof short[])  {
+                                valueAsString = Arrays.toString((short[]) rawValue);
+                            } else if (rawValue instanceof char[])  {
+                                valueAsString = Arrays.toString((char[]) rawValue);
+                            } else if (rawValue instanceof boolean[])  {
+                                valueAsString = Arrays.toString((boolean[]) rawValue);
+                            } else if (rawValue instanceof Object[])  {
+                                valueAsString = Arrays.toString((Object[]) rawValue);
+                            } else {
+                                valueAsString = rawValue.toString();
+                            }
+                        } else {
+                            valueAsString = rawValue.toString();
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("failed to cast record type as record !");
+                        valueAsString = rawValue.toString();
+                    }
+                    break;
+                case RECORD:
+                    try {
+                        valueAsString = asRecord().toString(deepness);
+                    } catch (Exception ex) {
+                        logger.warn("failed to cast record type as record !");
+                        valueAsString = rawValue.toString();
+                    }
+                    break;
+                default:
+                    valueAsString = rawValue.toString();
+                    break;
+            }
+        }
+        return  "Field{" +
+                "name='" + name + "'" +
+                ", type=" + type +
+                ", rawValue=" + valueAsString +
+                '}';
     }
 
     @Override

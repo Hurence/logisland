@@ -22,7 +22,7 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.redis.RedisType;
 import com.hurence.logisland.util.string.StringUtils;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.Configuration;
 import com.hurence.logisland.validator.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -376,12 +376,12 @@ public class RedisUtils {
         return poolConfig;
     }
 
-    public static List<ValidationResult> validate(ValidationContext validationContext) {
+    public static List<ValidationResult> validate(Configuration configuration) {
         final List<ValidationResult> results = new ArrayList<>();
 
-        final String redisMode = validationContext.getPropertyValue(RedisUtils.REDIS_MODE).asString();
-        final String connectionString = validationContext.getPropertyValue(RedisUtils.CONNECTION_STRING).asString();
-        final Integer dbIndex = validationContext.getPropertyValue(RedisUtils.DATABASE).asInteger();
+        final String redisMode = configuration.getPropertyValue(RedisUtils.REDIS_MODE).asString();
+        final String connectionString = configuration.getPropertyValue(RedisUtils.CONNECTION_STRING).asString();
+        final Integer dbIndex = configuration.getPropertyValue(RedisUtils.DATABASE).asInteger();
 
         if (StringUtils.isBlank(connectionString)) {
             results.add(new ValidationResult.Builder()
@@ -422,7 +422,7 @@ public class RedisUtils {
         }
 
         if (RedisUtils.REDIS_MODE_SENTINEL.getValue().equals(redisMode)) {
-            final String sentinelMaster = validationContext.getPropertyValue(RedisUtils.SENTINEL_MASTER).asString();
+            final String sentinelMaster = configuration.getPropertyValue(RedisUtils.SENTINEL_MASTER).asString();
             if (StringUtils.isEmpty(sentinelMaster)) {
                 results.add(new ValidationResult.Builder()
                         .subject(RedisUtils.SENTINEL_MASTER.getDisplayName())

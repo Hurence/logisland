@@ -36,23 +36,23 @@ public class ProviderServiceAsReaderRunner {
 
     private static Logger logger = LoggerFactory.getLogger(ProviderServiceAsReaderRunner.class);
 
-    private final StructuredStreamProviderService provider;
+    private final StructuredStreamProviderServiceReader provider;
     private final MockControllerServiceLookup serviceLookup;
 
 
-    public ProviderServiceAsReaderRunner(StructuredStreamProviderService provider) {
+    public ProviderServiceAsReaderRunner(StructuredStreamProviderServiceReader provider) {
         this.provider = provider;
         this.serviceLookup = new MockControllerServiceLookup();
     }
 
     public void run() {
-        EngineContext engineContext = ComponentFactory.getEngineContext(getEngineConfiguration()).get();
+        EngineContext engineContext = ComponentFactory.buildAndSetUpEngineContext(getEngineConfiguration()).get();
         Assert.assertTrue(engineContext.isValid());
         try {
             engineContext.getEngine().start(engineContext);
             engineContext.getEngine().awaitTermination(engineContext);
         } catch (Exception ex) {
-            engineContext.getEngine().shutdown(engineContext);
+            engineContext.getEngine().stop(engineContext);
         }
     }
 
@@ -62,10 +62,8 @@ public class ProviderServiceAsReaderRunner {
         engineConfiguration.setDocumentation("Plain java engine");
         engineConfiguration.setComponent(KafkaStreamProcessingEngine.class.getCanonicalName());
         Map<String, String> props = new HashMap<>();
-        props.put(StreamProperties.READ_TOPICS_SERIALIZER().getName(), "none");
-        props.put(StreamProperties.READ_STREAM_SERVICE_PROVIDER().getName(), "local_file_service");
-        props.put(StreamProperties.WRITE_TOPICS_SERIALIZER().getName(), StreamProperties.JSON_SERIALIZER().getValue());
-        props.put(StreamProperties.WRITE_STREAM_SERVICE_PROVIDER().getName(), "console_service");
+        props.put(StructuredStream.READ_STREAM_SERVICE_PROVIDER().getName(), "local_file_service");
+        props.put(StructuredStream.WRITE_STREAM_SERVICE_PROVIDER().getName(), "console_service");
         StreamConfiguration streamConfiguration = testStructuredStreamStream(props);
 //        streamConfiguration.addProcessorConfiguration(debugProcessorConfiguration(Collections.emptyMap()));
         engineConfiguration.addPipelineConfigurations(streamConfiguration);
