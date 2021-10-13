@@ -15,13 +15,13 @@ Be sure `HubFlow git extension <https://github.com/datasift/gitflow>`_ is instal
 
 .. code-block:: sh
 
-    git hf release start v1.3.0
+    git hf release start v1.4.0
 
 Update the version with the bump_version.sh script. Usage: bump_version.sh <old_version> <new_version>. You should double escape dots (in the old version only) so it is correctly parsed, otherwise it will be considered as the any character
 
 .. code-block:: sh
 
-    bump_version.sh 1\.2\.0 1.3.0
+    bump_version.sh 1\.2\.0 1.4.0
 
 Build the code, run the unit tests as well as integration tests
 ---------------------------------------------------------------
@@ -96,7 +96,7 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.3.0/assets?name=logisland-1.3.0-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.4.0/assets?name=logisland-full-bin.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-full-bin.tar.gz --user oalam -H 'Content-Type: application/gzip'
 
 Publish Docker image
 --------------------
@@ -127,6 +127,6 @@ Merge back changes from the release into master and close release branch
 
 .. code-block:: sh
 
-    git hf release finish v1.3.0
+    git hf release finish v1.4.0
 
 TBD: does this also generate the release tag?
