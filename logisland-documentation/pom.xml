@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.1</version>
     </parent>
     <artifactId>logisland-documentation</artifactId>
 
@@ -101,14 +101,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-elasticsearch_6_6_2-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-            <classifier>repackaged</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-elasticsearch_7_x-client</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -144,13 +136,6 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
             <classifier>repackaged</classifier>
         </dependency>
 
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-solr_6_6_2-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-            <classifier>repackaged</classifier>
-        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-solr_8-client</artifactId>

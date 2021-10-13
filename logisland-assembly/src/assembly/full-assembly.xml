@@ -36,12 +36,7 @@
                 <!--                SERVICES          -->
                 <include>com.hurence.logisland:logisland-service-inmemory-cache</include>
                 <include>com.hurence.logisland:logisland-service-ip-to-geo-maxmind</include>
-                <include>com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client</include>
-                <include>com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client</include>
-                <include>com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client</include>
                 <include>com.hurence.logisland:logisland-service-elasticsearch_7_x-client</include>
-                <include>com.hurence.logisland:logisland-service-solr_5_5_5-client</include>
-                <include>com.hurence.logisland:logisland-service-solr_6_6_2-client</include>
                 <include>com.hurence.logisland:logisland-service-solr_8-client</include>
                 <include>com.hurence.logisland:logisland-service-mongodb-client</include>
                 <include>com.hurence.logisland:logisland-service-cassandra-client</include>
