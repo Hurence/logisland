@@ -2453,13 +2453,15 @@ public class IncrementalWebSessionIT {
      * S1#3 => T4, T5
      * S1#4 => T6, T7
      *
+     * WARNING: This behaviour is only guaranteed in slow mode !!!!!
      * @throws Exception
      */
      @Test
     public void testNotOrderedIncomingEventsOneByOneWithConfFutureSessionEqual2() throws Exception {
-         //TODO SLOW
+         //Works only in slow mode
         Map<String, String> customConf = new HashMap<>();
         customConf.put(IncrementalWebSession.NUMBER_OF_FUTURE_SESSION.getName(), "2");
+        customConf.put(IncrementalWebSession.PROCESSING_MODE.getName(), IncrementalWebSession.ProcessingMode.SLOW.getName());
         final TestRunner testRunner = newTestRunner(container, customConf);
         testRunner.assertValid();
         //first run
