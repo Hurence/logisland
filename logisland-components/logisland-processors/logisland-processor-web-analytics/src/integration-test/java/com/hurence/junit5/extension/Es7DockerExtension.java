@@ -16,10 +16,8 @@
 package com.hurence.junit5.extension;
 
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.transport.TransportClient;
 import org.junit.jupiter.api.extension.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +25,6 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
-import java.net.InetSocketAddress;
 import java.util.HashSet;
 
 /**
@@ -70,8 +67,9 @@ public class Es7DockerExtension implements BeforeAllCallback, AfterAllCallback, 
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
+        String dockerCompsoePath = getClass().getResource("/docker-compose-es-test.yml").getFile();
         this.dockerComposeContainer = new DockerComposeContainer(
-                new File(getClass().getResource("/docker-compose-es-test.yml").getFile())
+                new File(dockerCompsoePath)
         )
                 .withExposedService(ES_SERVICE_NAME, ES_PORT_HTTP, Wait.forListeningPort())
                 .withExposedService(ES_SERVICE_NAME, ES_PORT_TCP, Wait.forListeningPort());
