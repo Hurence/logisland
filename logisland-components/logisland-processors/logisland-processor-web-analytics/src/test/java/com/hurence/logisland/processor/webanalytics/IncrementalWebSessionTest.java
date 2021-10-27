@@ -153,8 +153,8 @@ public class IncrementalWebSessionTest {
         runner.assertNotValid();
     }
 
-    // TODO fix that test
-  //  @Test
+    // IncrementalWebSessionTest.testChoosingTheZoneId:186 expected: <openanalytics_webevents.2019.12.01 01:00:00 +0100> but was: <openanalytics_webevents.2019.12.01 00:00:00 +0000>
+    @Test
     public void testChoosingTheZoneId() {
         //        1575158400000    1/12/2019 à 0:00:00   "1/12/2019 à 1:00:00 +0100"  in LOCAL english
         //        1577836799000    31/12/2019 à 23:59:59 "1/1/2020 à 0:59:59 +0100"  in LOCAL english
@@ -180,7 +180,7 @@ public class IncrementalWebSessionTest {
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, EVENT_TYPE);
         runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
-        runner.setProperty(IncrementalWebSession.ZONEID_CONF, "GMT");
+        runner.setProperty(IncrementalWebSession.ZONEID_CONF, "UTC+1");
         runner.assertValid();
         runner.run();
         // 1/12/2019 à 1:00:00 +0100

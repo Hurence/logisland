@@ -31,7 +31,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <test.containers>1.16.0</test.containers>
+        <test.containers>1.16.2</test.containers>
     </properties>
 
     <dependencies>

@@ -143,7 +143,7 @@ public class IncrementalWebSessionIT {
 
 
     /**
-     *  T2 is one second later than T1
+     *  O2 is one second later than T1
      *
      * events :                   T1--T2--T3
      * changement de session:     ----------
@@ -1859,12 +1859,17 @@ public class IncrementalWebSessionIT {
      *		S1#2 => T2, T3
      *      S1#3 => T4, T5
      *      S1#4 => T6, T7
+     *
+     *      WARNING: This behaviour is only guaranteed in slow mode !!!!!
      * @throws Exception
      */
-    // TODO fix that test
-    // @Test
+    @Test
     public void testNotOrderedIncomingEvents2() throws Exception {
-        final TestRunner testRunner = newTestRunner(container);
+        //Works only in slow mode
+        Map<String, String> customConf = new HashMap<>();
+        customConf.put(IncrementalWebSession.PROCESSING_MODE.getName(), IncrementalWebSession.ProcessingMode.SLOW.getName());
+        final TestRunner testRunner = newTestRunner(container, customConf);
+//        final TestRunner testRunner = newTestRunner(container);
         testRunner.assertValid();
         //first run
         final long time1 = 1601629314416L;
@@ -1951,7 +1956,7 @@ public class IncrementalWebSessionIT {
         testRunner.enqueue(event2, event6);
         testRunner.run();
         testRunner.assertOutputErrorCount(0);//TODO random failure here...
-        testRunner.assertOutputRecordsCount(5 + 4);//7 events et 4 sessions
+        testRunner.assertOutputRecordsCount(7 + 4);//7 events et 4 sessions OU PARFOIS 7 events et 4 sessions
 
         getFirstRecordWithId(buildId(time1, SESSION1), testRunner.getOutputRecords())
                 .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSION1);
@@ -2090,13 +2095,16 @@ public class IncrementalWebSessionIT {
      * S1#2 => T2, T3
      * S1#3 => T4, T5
      * S1#4 => T6, T7
+     * WARNING: This behaviour is only guaranteed in slow mode !!!!!
      *
      * @throws Exception
      */
-    // TODO FIX that test
-    //  @Test
+    @Test
     public void testNotOrderedIncomingEventsOneByOneWithConfSessionPlus1() throws Exception {
-        final TestRunner testRunner = newTestRunner(container);
+        //Works only in slow mode
+        Map<String, String> customConf = new HashMap<>();
+        customConf.put(IncrementalWebSession.PROCESSING_MODE.getName(), IncrementalWebSession.ProcessingMode.SLOW.getName());
+        final TestRunner testRunner = newTestRunner(container, customConf);
         testRunner.assertValid();
         //first run
         final long time1 = 1601629314416L;
@@ -2192,7 +2200,7 @@ public class IncrementalWebSessionIT {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(2 + 2);//session + event
+        testRunner.assertOutputRecordsCount(1 + 2);//session + event
         injectOutputIntoEsWithoutRefreshing(testRunner.getOutputRecords());
         //T1------T2------T3---T4-------------T5---T6-------T7
         //--------X------------X-------------------X----------
@@ -2445,13 +2453,15 @@ public class IncrementalWebSessionIT {
      * S1#3 => T4, T5
      * S1#4 => T6, T7
      *
+     * WARNING: This behaviour is only guaranteed in slow mode !!!!!
      * @throws Exception
      */
-    // @Test
-
+     @Test
     public void testNotOrderedIncomingEventsOneByOneWithConfFutureSessionEqual2() throws Exception {
+         //Works only in slow mode
         Map<String, String> customConf = new HashMap<>();
         customConf.put(IncrementalWebSession.NUMBER_OF_FUTURE_SESSION.getName(), "2");
+        customConf.put(IncrementalWebSession.PROCESSING_MODE.getName(), IncrementalWebSession.ProcessingMode.SLOW.getName());
         final TestRunner testRunner = newTestRunner(container, customConf);
         testRunner.assertValid();
         //first run
@@ -2548,7 +2558,7 @@ public class IncrementalWebSessionIT {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
-        testRunner.assertOutputRecordsCount(2 + 2);//session + event
+        testRunner.assertOutputRecordsCount(2 + 3);//session + event
         injectOutputIntoEsWithoutRefreshing(testRunner.getOutputRecords());
         //T1------T2------T3---T4-------------T5---T6-------T7
         //--------X------------X-------------------X----------
