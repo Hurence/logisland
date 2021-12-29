@@ -68,6 +68,7 @@ value = "This processor creates web-sessions based on incoming web-events.\n" +
         "\n" +
         "WebSession information are:\n" +
         "- first and last visited page\n" +
+        "- number of (not necessarily distinct) visited pages \n" +
         "- first and last timestamp of processed event \n" +
         "- total number of processed events\n" +
         "- the userId\n" +
@@ -239,6 +240,15 @@ public class CalculWebSession
                     .defaultValue("lastVisitedPage")
                     .build();
 
+    public static final PropertyDescriptor PAGEVIEWS_COUNTER_FIELD =
+            new PropertyDescriptor.Builder()
+                    .name("pageviewsCounter.out.field")
+                    .description("the name of the field containing the pageviews count => will override default value if set")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue("pageviewsCounter")
+                    .build();
+
     public static final PropertyDescriptor IS_SESSION_ACTIVE_FIELD =
             new PropertyDescriptor.Builder()
                     .name("isSessionActive.out.field")
@@ -278,7 +288,7 @@ public class CalculWebSession
     public static final PropertyDescriptor EVENTS_COUNTER_FIELD =
             new PropertyDescriptor.Builder()
                     .name("eventsCounter.out.field")
-                    .description("the name of the field containing the session duration => will override default value if set")
+                    .description("the name of the field containing the events count => will override default value if set")
                     .required(false)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .defaultValue("eventsCounter")
@@ -434,6 +444,7 @@ public class CalculWebSession
                 FIELDS_TO_RETURN,
                 FIRST_VISITED_PAGE_FIELD,
                 LAST_VISITED_PAGE_FIELD,
+                PAGEVIEWS_COUNTER_FIELD,
                 IS_SINGLE_PAGE_VISIT_FIELD,
                 IS_SESSION_ACTIVE_FIELD,
                 SESSION_DURATION_FIELD,
@@ -476,6 +487,7 @@ public class CalculWebSession
         final String _USERID_FIELD = context.getPropertyValue(USER_ID_FIELD).asString();
         final String _FIRST_VISITED_PAGE_FIELD = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
         final String _LAST_VISITED_PAGE_FIELD = context.getPropertyValue(LAST_VISITED_PAGE_FIELD).asString();
+        final String _PAGEVIEWS_COUNTER_FIELD = context.getPropertyValue(PAGEVIEWS_COUNTER_FIELD).asString();
         String _IS_SINGLE_PAGE_VISIT = context.getPropertyValue(IS_SINGLE_PAGE_VISIT_FIELD).asString();
         String _IS_SESSION_ACTIVE_FIELD = context.getPropertyValue(IS_SESSION_ACTIVE_FIELD).asString();
         String _SESSION_DURATION_FIELD = context.getPropertyValue(SESSION_DURATION_FIELD).asString();
@@ -544,6 +556,7 @@ public class CalculWebSession
                 .setLastEventDateTimeField(_LAST_EVENT_DATETIME_FIELD)
                 .setLastEventEpochSecondsField(_LAST_EVENT_EPOCH_SECONDS_FIELD)
                 .setLastVisitedPageField(_LAST_VISITED_PAGE_FIELD)
+                .setPageviewsCounterField(_PAGEVIEWS_COUNTER_FIELD)
                 .setTransactionIdsField(_TRANSACTION_IDS)
                 .setUserIdField(_USERID_FIELD)
                 .setIsSinglePageVisit(_IS_SINGLE_PAGE_VISIT);

@@ -119,6 +119,7 @@ public class WebSession
                     record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
                 } else if (fieldsNames.getSessionDurationField().equals(key)
                         || fieldsNames.getEventsCounterField().equals(key)
+                        || fieldsNames.getPageviewsCounterField().equals(key)
                         || fieldsNames.getTimestampField().equals(key)
                         || fieldsNames.getSessionInactivityDurationField().equals(key)
                         || fieldsNames.getFirstEventEpochSecondsField().equals(key)
@@ -235,6 +236,7 @@ public class WebSession
         private String eventsCounterField;
         private String firstVisitedPageField;
         private String lastVisitedPageField;
+        private String pageviewsCounterField;
         private String firstEventDateTimeField;
         private String lastEventDateTimeField;
 
@@ -339,6 +341,15 @@ public class WebSession
 
         public InternalFields setLastVisitedPageField(String lastVisitedPageField) {
             this.lastVisitedPageField = lastVisitedPageField;
+            return this;
+        }
+
+        public String getPageviewsCounterField() {
+            return pageviewsCounterField;
+        }
+
+        public InternalFields setPageviewsCounterField(String pageviewsCounterField) {
+            this.pageviewsCounterField = pageviewsCounterField;
             return this;
         }
 

@@ -23,6 +23,8 @@ import com.hurence.logisland.record.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -273,6 +275,15 @@ public class SessionsCalculator {
             sessionInternalRecord.setField(webSessionInternalFields.getFirstVisitedPageField(), FieldType.STRING, visitedPage.asString());
         }
 
+        // PAGEVIEWS_COUNTER
+        field = sessionInternalRecord.getField(webSessionInternalFields.getPageviewsCounterField());
+        long pageviewsCounter = field == null ? 1 : field.asLong();
+        Field lastVisitedPageField = sessionInternalRecord.getField(webSessionInternalFields.getLastVisitedPageField());
+        if (isFieldAssigned(visitedPage) && isFieldAssigned(lastVisitedPageField) && areDifferentPages(visitedPage.asString(), lastVisitedPageField.asString())) {
+            pageviewsCounter++;
+        }
+        sessionInternalRecord.setField(webSessionInternalFields.getPageviewsCounterField(), FieldType.LONG, pageviewsCounter);
+
         // LAST_VISITED_PAGE
         if (isFieldAssigned(visitedPage)) {
             sessionInternalRecord.setField(webSessionInternalFields.getLastVisitedPageField(), FieldType.STRING, visitedPage.asString());
@@ -349,6 +360,23 @@ public class SessionsCalculator {
                 final Field f = entry.getValue();
                 logger.debug("INVALID field {} type={}, class={}", f.getName(), f.getType(), f.getRawValue().getClass());
             });
+        }
+    }
+
+    static boolean areDifferentPages(String urlStr1, String urlStr2) {
+        try {
+            URI uri1 = new URI(urlStr1);
+            URI uri2 = new URI(urlStr2);
+            // we are dropping the query and fragment parts from URIs
+            return !(new URI(uri1.getScheme(),
+                    uri1.getAuthority(),
+                    uri1.getPath(), null,
+                    null).equals(new URI(uri2.getScheme(),
+                    uri2.getAuthority(),
+                    uri2.getPath(), null,
+                    null)));
+        } catch (URISyntaxException e) {
+            return true;
         }
     }
 
