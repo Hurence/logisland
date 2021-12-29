@@ -309,6 +309,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY1)
                 .lastVisitedPage(URL)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -325,6 +326,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY2)
                 .lastVisitedPage(URL2)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -382,6 +384,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY1)
                 .lastVisitedPage(URL1)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -424,6 +427,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY1)
                 .lastVisitedPage(URL1)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -464,6 +468,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(3)
                 .lastEventDateTime(DAY1+2000L)
                 .lastVisitedPage(URL3)
+                .pageviewsCounter(3)
                 .sessionDuration(2L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -509,97 +514,97 @@ public class IncrementalWebSessionTest {
                         "location" , "https://www.zitec-shop.com/en/",
                         "sessionId" , SESSIONID // "0:jmw62hh3:ef5kWpbpKDNBG5IyGBARUQLemW3JP0PP"
                 }, new Object[]{
-                "h2kTimestamp" , 1538753689109L,
-                "location" , "https://www.zitec-shop.com/en/",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538753753964L,
-                "location" , "https://www.zitec-shop.com/en/",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538753768489L,
-                "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538756201154L, // timeout
-                "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538756215043L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=rotex%2Cgg%2C48",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538756216242L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=rotex%2Cgg%2C48",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538756232483L,
-                "location" , "https://www.zitec-shop.com/en/rotex-48-gg/p-G1184000392",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538756400671L,
-                "location" , "https://www.zitec-shop.com/en/rotex-48-gg/p-G1184000392",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538756417237L,
-                "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538767062429L, // timeout
-                "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538767070188L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=nah25",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538767073907L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=nah25",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538767077273L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=nah",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780539746L, // timeout
-                "location" , "https://www.zitec-shop.com/en/search/?text=nah",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780546243L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=hj234",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780578259L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=hj234",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780595932L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=hj+234",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780666747L,
-                "location" , "https://www.zitec-shop.com/en/search/?text=hj+234",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780680777L,
-                "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780684232L,
-                "location" , "https://www.zitec-shop.com/en/login",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780691752L,
-                "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780748044L,
-                "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
-                "sessionId" , SESSIONID
-        }, new Object[]{
-                "h2kTimestamp" , 1538780763016L,
-                "location" , "https://www.zitec-shop.com/en/roller-bearing-spherical-radial-multi-row/p-G1321019550",
-                "sessionId" , SESSIONID}};
+                        "h2kTimestamp" , 1538753689109L,
+                        "location" , "https://www.zitec-shop.com/en/",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538753753964L,
+                        "location" , "https://www.zitec-shop.com/en/",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538753768489L,
+                        "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538756201154L, // timeout
+                        "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538756215043L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=rotex%2Cgg%2C48",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538756216242L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=rotex%2Cgg%2C48",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538756232483L,
+                        "location" , "https://www.zitec-shop.com/en/rotex-48-gg/p-G1184000392",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538756400671L,
+                        "location" , "https://www.zitec-shop.com/en/rotex-48-gg/p-G1184000392",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538756417237L,
+                        "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538767062429L, // timeout
+                        "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538767070188L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=nah25",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538767073907L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=nah25",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538767077273L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=nah",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780539746L, // timeout
+                        "location" , "https://www.zitec-shop.com/en/search/?text=nah",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780546243L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=hj234",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780578259L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=hj234",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780595932L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=hj+234",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780666747L,
+                        "location" , "https://www.zitec-shop.com/en/search/?text=hj+234",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780680777L,
+                        "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780684232L,
+                        "location" , "https://www.zitec-shop.com/en/login",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780691752L,
+                        "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780748044L,
+                        "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
+                        "sessionId" , SESSIONID
+                }, new Object[]{
+                        "h2kTimestamp" , 1538780763016L,
+                        "location" , "https://www.zitec-shop.com/en/roller-bearing-spherical-radial-multi-row/p-G1321019550",
+                        "sessionId" , SESSIONID}};
 
         TestRunner testRunner = newTestRunner();
         testRunner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, "1800");
@@ -639,6 +644,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(4)
                 .lastEventDateTime(1538753768489L)
                 .lastVisitedPage("https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137")
+                .pageviewsCounter(2)
                 .sessionDuration(429L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(1800L);
@@ -653,6 +659,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(6)
                 .lastEventDateTime(1538756417237L)
                 .lastVisitedPage("https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584")
+                .pageviewsCounter(4)
                 .sessionDuration(216L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(1800L);
@@ -667,6 +674,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(4)
                 .lastEventDateTime(1538767077273L)
                 .lastVisitedPage("https://www.zitec-shop.com/en/search/?text=nah")
+                .pageviewsCounter(2)
                 .sessionDuration(14L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(1800L);
@@ -681,6 +689,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(10)
                 .lastEventDateTime(1538780763016L)
                 .lastVisitedPage("https://www.zitec-shop.com/en/roller-bearing-spherical-radial-multi-row/p-G1321019550")
+                .pageviewsCounter(5)
                 .sessionDuration(223L)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(1800L);
@@ -747,6 +756,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(3)
                 .lastEventDateTime(lastEvent.getField(TIMESTAMP).asLong())
                 .lastVisitedPage(lastEvent.getField(VISITED_PAGE).getRawValue())
+                .pageviewsCounter(1)
                 .sessionDuration((lastEvent.getField(TIMESTAMP).asLong() // lastEvent.getField(TIMESTAMP)
                         -firstEvent.getField(TIMESTAMP).asLong())/1000)
                 .is_sessionActive((Instant.now().toEpochMilli()
@@ -779,6 +789,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY1)
                 .lastVisitedPage(URL1)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -793,6 +804,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY2)
                 .lastVisitedPage(URL2)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -823,6 +835,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(now)
                 .lastVisitedPage(URL1)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(true)
                 .sessionInactivityDuration(null);
@@ -852,6 +865,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY1)
                 .lastVisitedPage(URL1)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -883,6 +897,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY1)
                 .lastVisitedPage(URL1)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
@@ -897,27 +912,29 @@ public class IncrementalWebSessionTest {
         final long DAY1 = 1531492035025L;
         final long TIME2 = 1531494495026L;
         final String URL1 = "https://orexad.preprod.group-iph.com/fr/cart";
-        final String URL2 = "https://orexad.preprod.group-iph.com/fr/checkout/single/summary";
+        final String URL2 = "https://orexad.preprod.group-iph.com/fr/search/?text=Vis";
+        final String URL3 = "https://orexad.preprod.group-iph.com/fr/vis-traction-complete-p-kit-k300/p-G1296007152?l=G1296007152";
+        final String URL4 = "https://orexad.preprod.group-iph.com/fr/checkout/single/summary";
         final long SESSION_TIMEOUT = 1800;
         final Collection<Record> events = Arrays.asList(
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, DAY1,
                         URL1),
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531492435034L,
-                        "https://orexad.preprod.group-iph.com/fr/cart"),
+                        URL1),
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493380029L,
-                        "https://orexad.preprod.group-iph.com/fr/search/?text=Vis"),
+                        URL2),
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493805028L,
-                        "https://orexad.preprod.group-iph.com/fr/search/?text=Vis"),
+                        URL2),
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531493810026L,
-                        "https://orexad.preprod.group-iph.com/fr/vis-traction-complete-p-kit-k300/p-G1296007152?l=G1296007152"),
+                        URL3),
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494175027L,
-                        "https://orexad.preprod.group-iph.com/fr/cart"),
+                        URL1),
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494180026L,
-                        "https://orexad.preprod.group-iph.com/fr/cart"),
+                        URL1),
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, 1531494480026L,
-                        "https://orexad.preprod.group-iph.com/fr/cart"),
+                        URL1),
                 new WebEvent(String.valueOf(eventCount++), SESSION1, USER1, TIME2,
-                        URL2));
+                        URL4));
 
         TestRunner testRunner = newTestRunner();
         testRunner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT));
@@ -940,7 +957,8 @@ public class IncrementalWebSessionTest {
                 .firstVisitedPage(URL1)
                 .eventsCounter(events.size())
                 .lastEventDateTime(TIME2)
-                .lastVisitedPage(URL2)
+                .lastVisitedPage(URL4)
+                .pageviewsCounter(5)
                 .sessionDuration((TIME2-DAY1)/1000)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
@@ -970,6 +988,7 @@ public class IncrementalWebSessionTest {
                 .eventsCounter(1)
                 .lastEventDateTime(DAY1)
                 .lastVisitedPage(URL1)
+                .pageviewsCounter(1)
                 .sessionDuration(null)
                 .is_sessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS)
@@ -1013,6 +1032,7 @@ public class IncrementalWebSessionTest {
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD_CONF, "sessionId");
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD_CONF, "h2kTimestamp");
         runner.setProperty(IncrementalWebSession.VISITED_PAGE_FIELD, "VISITED_PAGE");
+        runner.setProperty(IncrementalWebSession.PAGEVIEWS_COUNTER_FIELD, "pageviewsCounter");
         runner.setProperty(IncrementalWebSession.USER_ID_FIELD, "Userid");
         runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT_SECONDS));
         runner.setProperty(IncrementalWebSession.FIELDS_TO_RETURN, FIELDS_TO_RETURN);

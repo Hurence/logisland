@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SessionCalculatorTest {
 
@@ -186,5 +186,26 @@ public class SessionCalculatorTest {
                 .assertFieldExists(TestMappings.sessionInternalFields.getIsSinglePageVisit())
                 .assertFieldEquals(TestMappings.sessionInternalFields.getIsSinglePageVisit(), "false");
         events.clear();
+    }
+
+    @Test
+    public void testAreDifferentPages() {
+        String url1 = "http://domain.a/page1?key=value#paragraphA";
+        String url2 = "http://domain.a/page1?key=value#paragraphB";
+        String url3 = "http://domain.a/page1?key=value";
+        String url4 = "http://domain.a/page1?key=sgbg";
+        String url5 = "http://domain.a/page1";
+        String url6 = "http://domain.a/page2";
+        String url7 = "http://domain.b/page1";
+        String url8 = "https://domain.a/page1";
+
+        assertFalse(SessionsCalculator.areDifferentPages(url1, url2));
+        assertFalse(SessionsCalculator.areDifferentPages(url1, url3));
+        assertFalse(SessionsCalculator.areDifferentPages(url1, url4));
+        assertFalse(SessionsCalculator.areDifferentPages(url1, url5));
+
+        assertTrue(SessionsCalculator.areDifferentPages(url1, url6));
+        assertTrue(SessionsCalculator.areDifferentPages(url1, url7));
+        assertTrue(SessionsCalculator.areDifferentPages(url1, url8));
     }
 }
