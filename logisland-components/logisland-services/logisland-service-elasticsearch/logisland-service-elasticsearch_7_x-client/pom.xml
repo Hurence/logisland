@@ -18,6 +18,7 @@
         <!-- Versions -->
         <elasticsearch.version>7.1.1</elasticsearch.version>
         <testcontainers.version>1.16.0</testcontainers.version>
+        <log4j.version>2.17.1</log4j.version>
     </properties>
 
     <dependencies>
@@ -104,13 +105,13 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.11.1</version>
+            <version>${log4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.11.1</version>
+            <version>${log4j.version}</version>
         </dependency>
 
         <!--log dependencies-->
