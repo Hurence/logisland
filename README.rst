@@ -267,6 +267,8 @@ And then continue with `components documentation <http://logisland.readthedocs.i
 Contributing
 ------------
 
+To contribute please follow git hubflow : https://datasift.github.io/gitflow/TheHubFlowTools.html
+
 Please review the `Contribution to Logisland guide <http://logisland.readthedocs.io/en/latest/developer.html>`_ for information on how to get started contributing to the project.
 
 
