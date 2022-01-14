@@ -15,6 +15,9 @@
  */
 package com.hurence.logisland.processor.webanalytics.util;
 
+import com.hurence.logisland.processor.webanalytics.MockCacheService;
+import com.hurence.logisland.processor.webanalytics.MockElasticsearchClientService;
+import com.hurence.logisland.processor.webanalytics.MockFirstUserVisitTimestampManager;
 import com.hurence.logisland.processor.webanalytics.modele.*;
 import com.hurence.logisland.util.runner.MockRecord;
 
@@ -44,8 +47,12 @@ public class SessionCalculatorTest {
                 TestMappings.sessionInternalFields,
                 TestMappings.eventsInternalFields,
                 Collections.emptyList(),
-                SESSIONS_ID
-        );
+                SESSIONS_ID,
+                new FirstUserVisitTimestampManagerImpl(
+                        new MockElasticsearchClientService(),
+                        "openanalytics-websessions",
+                        new MockCacheService<>(),
+                        new HashMap<>()));
         Events events = new Events(Collections.emptyList());
         Event event0 = new Event(
                 new WebEvent("0", SESSIONS_ID, USER_ID, 0L, URL),
@@ -74,7 +81,6 @@ public class SessionCalculatorTest {
         new MockRecord(event2.getRecord())
                 .assertFieldEquals(TestMappings.eventsInternalFields.getOriginalSessionIdField(), SESSIONS_ID)
                 .assertFieldEquals(TestMappings.eventsInternalFields.getSessionIdField(), SESSIONS_ID + "#3");
-
     }
 
 
@@ -92,8 +98,8 @@ public class SessionCalculatorTest {
                 TestMappings.sessionInternalFields,
                 TestMappings.eventsInternalFields,
                 Collections.emptyList(),
-                SESSIONS_ID
-        );
+                SESSIONS_ID,
+                new MockFirstUserVisitTimestampManager());
         Events events = new Events(Collections.emptyList());
         Event event0 = new Event(
                 new WebEvent("0", SESSIONS_ID, USER_ID, 0L, URL),
@@ -132,8 +138,12 @@ public class SessionCalculatorTest {
                 TestMappings.sessionInternalFields,
                 TestMappings.eventsInternalFields,
                 Collections.emptyList(),
-                SESSIONS_ID
-        );
+                SESSIONS_ID,
+                new FirstUserVisitTimestampManagerImpl(
+                        new MockElasticsearchClientService(),
+                        "openanalytics-websessions",
+                        new MockCacheService<>(),
+                        new HashMap<>()));
         Events events = new Events(Collections.emptyList());
         Event event0 = new Event(
                 new WebEvent("0", SESSIONS_ID, USER_ID, 0L, URL),

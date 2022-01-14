@@ -35,7 +35,7 @@ public class WebSession
         implements Comparable<WebSession> {
 
 
-    private final InternalFields fieldsNames;
+    private final InternalFields fieldNames;
     /**
      * Creates a new instance of this class with:
      * - the session identifier set from the web event's session identifier
@@ -107,23 +107,24 @@ public class WebSession
      * @param recordRepresentingSession the embedded record.
      */
     public WebSession(final Record recordRepresentingSession,
-                      InternalFields fieldsNames) {
+                      InternalFields fieldNames) {
         super(recordRepresentingSession);
-        this.fieldsNames = fieldsNames;
+        this.fieldNames = fieldNames;
         record.getAllFields().forEach(field -> {
             String key = field.getName();
             String value = field.asString();
             if (value != null) {
-                if (fieldsNames.getIsSessionActiveField().equals(key)
-                 || fieldsNames.getIsSinglePageVisit().equals(key)) {
+                if (fieldNames.getIsSessionActiveField().equals(key)
+                        || fieldNames.getIsSinglePageVisit().equals(key)) {
                     record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
-                } else if (fieldsNames.getSessionDurationField().equals(key)
-                        || fieldsNames.getEventsCounterField().equals(key)
-                        || fieldsNames.getPageviewsCounterField().equals(key)
-                        || fieldsNames.getTimestampField().equals(key)
-                        || fieldsNames.getSessionInactivityDurationField().equals(key)
-                        || fieldsNames.getFirstEventEpochSecondsField().equals(key)
-                        || fieldsNames.getLastEventEpochSecondsField().equals(key)
+                } else if (fieldNames.getSessionDurationField().equals(key)
+                        || fieldNames.getEventsCounterField().equals(key)
+                        || fieldNames.getPageviewsCounterField().equals(key)
+                        || fieldNames.getTimestampField().equals(key)
+                        || fieldNames.getSessionInactivityDurationField().equals(key)
+                        || fieldNames.getFirstEventEpochSecondsField().equals(key)
+                        || fieldNames.getLastEventEpochSecondsField().equals(key)
+                        || fieldNames.getFirstUserVisitEpochSecondsField().equals(key)
                         || FieldDictionary.RECORD_TIME.equals(key)) {
                     record.setField(key, FieldType.LONG, Long.valueOf(value));
                 } else {
@@ -134,7 +135,7 @@ public class WebSession
     }
 
     public String getSessionId() {
-        return this.getStringValue(fieldsNames.sessionIdField);
+        return this.getStringValue(fieldNames.sessionIdField);
     }
 
     public String getOriginalSessionId() {
@@ -175,10 +176,10 @@ public class WebSession
     }
 
     public long getFirstEventEpochSeconds() {
-        final Field field = record.getField(fieldsNames.firstEventEpochSecondsField);
+        final Field field = record.getField(fieldNames.firstEventEpochSecondsField);
         if (field == null) {
             // Fallback by parsing the equivalent human readable field.
-            return DateUtils.toEpochSecond(record.getField(fieldsNames.firstEventDateTimeField).asString());
+            return DateUtils.toEpochSecond(record.getField(fieldNames.firstEventDateTimeField).asString());
         }
         return field.asLong();
     }
@@ -188,68 +189,77 @@ public class WebSession
     }
 
     public long getLastEventEpochSeconds() {
-        final Field field = record.getField(fieldsNames.lastEventEpochSecondsField);
+        final Field field = record.getField(fieldNames.lastEventEpochSecondsField);
         if (field == null) {
             // Fallback by parsing the equivalent human readable field.
-            return DateUtils.toEpochSecond(record.getField(fieldsNames.lastEventDateTimeField).asString());
+            return DateUtils.toEpochSecond(record.getField(fieldNames.lastEventDateTimeField).asString());
         }
         return field.asLong();
     }
 
     public String getSourceOfTraffic() {
-        return concatFieldsOfTraffic((String) this.getValue(fieldsNames.sourceOffTrafficSourceField),
-                (String) this.getValue(fieldsNames.sourceOffTrafficMediumField),
-                (String) this.getValue(fieldsNames.sourceOffTrafficCampaignField),
-                (String) this.getValue(fieldsNames.sourceOffTrafficKeyWordField),
-                (String) this.getValue(fieldsNames.sourceOffTrafficContentField));
+        return concatFieldsOfTraffic((String) this.getValue(fieldNames.sourceOfTrafficSourceField),
+                (String) this.getValue(fieldNames.sourceOfTrafficMediumField),
+                (String) this.getValue(fieldNames.sourceOfTrafficCampaignField),
+                (String) this.getValue(fieldNames.sourceOfTrafficKeyWordField),
+                (String) this.getValue(fieldNames.sourceOfTrafficContentField));
     }
 
     @Override
     public String toString() {
-        return "WebSession{" + record.getField(fieldsNames.firstEventDateTimeField).asString() +
-                "-" + record.getField(fieldsNames.lastEventDateTimeField).asString() + "}";
+        return "WebSession{" + record.getField(fieldNames.firstEventDateTimeField).asString() +
+                "-" + record.getField(fieldNames.lastEventDateTimeField).asString() + "}";
     }
 
     public void setFirstEvent(final long eventTimestamp) {
-        this.record.setField(fieldsNames.firstEventDateTimeField, FieldType.STRING, DateUtils.toFormattedDate(eventTimestamp));
-        this.record.setField(fieldsNames.firstEventEpochSecondsField, FieldType.LONG, eventTimestamp / 1000);
+        this.setDateTimeFieldAndTimestampField(eventTimestamp, fieldNames.firstEventDateTimeField, fieldNames.firstEventEpochSecondsField);
     }
 
     public void setLastEvent(final long eventTimestamp) {
-        this.record.setField(fieldsNames.lastEventDateTimeField, FieldType.STRING, DateUtils.toFormattedDate(eventTimestamp));
-        this.record.setField(fieldsNames.lastEventEpochSecondsField, FieldType.LONG, eventTimestamp / 1000);
+        this.setDateTimeFieldAndTimestampField(eventTimestamp, fieldNames.lastEventDateTimeField, fieldNames.lastEventEpochSecondsField);
+    }
+
+    public void setFirstUserVisitTimestamp(final long timestamp) {
+        this.setDateTimeFieldAndTimestampField(timestamp, fieldNames.firstUserVisitDateTimeField, fieldNames.firstUserVisitEpochSecondsField);
+    }
+
+    public void setDateTimeFieldAndTimestampField(final long timestamp, final String dateTimeField, final String timestampField) {
+        this.record.setField(dateTimeField, FieldType.STRING, DateUtils.toFormattedDate(timestamp));
+        this.record.setField(timestampField, FieldType.LONG, timestamp / 1000);
     }
 
     public void setIsSinglePageVisit(final Boolean isSinglePageVisit) {
-        this.record.setField(fieldsNames.isSinglePageVisit, FieldType.BOOLEAN, isSinglePageVisit);
+        this.record.setField(fieldNames.isSinglePageVisit, FieldType.BOOLEAN, isSinglePageVisit);
     }
 
     public static class InternalFields {
         private String timestampField;
         private String sessionIdField;
-        private String sourceOffTrafficSourceField;
-        private String sourceOffTrafficMediumField;
-        private String sourceOffTrafficCampaignField;
-        private String sourceOffTrafficKeyWordField;
-        private String sourceOffTrafficContentField;
+        private String sourceOfTrafficSourceField;
+        private String sourceOfTrafficMediumField;
+        private String sourceOfTrafficCampaignField;
+        private String sourceOfTrafficKeyWordField;
+        private String sourceOfTrafficContentField;
 
         private String eventsCounterField;
+
         private String firstVisitedPageField;
         private String lastVisitedPageField;
         private String pageviewsCounterField;
         private String firstEventDateTimeField;
         private String lastEventDateTimeField;
-
         private String firstEventEpochSecondsField;
         private String lastEventEpochSecondsField;
 
         private String userIdField;
 
+        private String firstUserVisitDateTimeField;
+        private String firstUserVisitEpochSecondsField;
         private String isSinglePageVisit;
+
         private String isSessionActiveField;
         private String sessionInactivityDurationField;
         private String sessionDurationField;
-
         private String transactionIdsField;
 
         public InternalFields() { }
@@ -272,48 +282,48 @@ public class WebSession
             return this;
         }
 
-        public String getSourceOffTrafficSourceField() {
-            return sourceOffTrafficSourceField;
+        public String getSourceOfTrafficSourceField() {
+            return sourceOfTrafficSourceField;
         }
 
-        public WebSession.InternalFields setSourceOffTrafficSourceField(String sourceOffTrafficSourceField) {
-            this.sourceOffTrafficSourceField = sourceOffTrafficSourceField;
+        public WebSession.InternalFields setSourceOfTrafficSourceField(String sourceOfTrafficSourceField) {
+            this.sourceOfTrafficSourceField = sourceOfTrafficSourceField;
             return this;
         }
 
-        public String getSourceOffTrafficMediumField() {
-            return sourceOffTrafficMediumField;
+        public String getSourceOfTrafficMediumField() {
+            return sourceOfTrafficMediumField;
         }
 
-        public WebSession.InternalFields setSourceOffTrafficMediumField(String sourceOffTrafficMediumField) {
-            this.sourceOffTrafficMediumField = sourceOffTrafficMediumField;
+        public WebSession.InternalFields setSourceOfTrafficMediumField(String sourceOfTrafficMediumField) {
+            this.sourceOfTrafficMediumField = sourceOfTrafficMediumField;
             return this;
         }
 
-        public String getSourceOffTrafficCampaignField() {
-            return sourceOffTrafficCampaignField;
+        public String getSourceOfTrafficCampaignField() {
+            return sourceOfTrafficCampaignField;
         }
 
-        public WebSession.InternalFields setSourceOffTrafficCampaignField(String sourceOffTrafficCampaignField) {
-            this.sourceOffTrafficCampaignField = sourceOffTrafficCampaignField;
+        public WebSession.InternalFields setSourceOfTrafficCampaignField(String sourceOfTrafficCampaignField) {
+            this.sourceOfTrafficCampaignField = sourceOfTrafficCampaignField;
             return this;
         }
 
-        public String getSourceOffTrafficKeyWordField() {
-            return sourceOffTrafficKeyWordField;
+        public String getSourceOfTrafficKeyWordField() {
+            return sourceOfTrafficKeyWordField;
         }
 
-        public WebSession.InternalFields setSourceOffTrafficKeyWordField(String sourceOffTrafficKeyWordField) {
-            this.sourceOffTrafficKeyWordField = sourceOffTrafficKeyWordField;
+        public WebSession.InternalFields setSourceOfTrafficKeyWordField(String sourceOfTrafficKeyWordField) {
+            this.sourceOfTrafficKeyWordField = sourceOfTrafficKeyWordField;
             return this;
         }
 
-        public String getSourceOffTrafficContentField() {
-            return sourceOffTrafficContentField;
+        public String getSourceOfTrafficContentField() {
+            return sourceOfTrafficContentField;
         }
 
-        public WebSession.InternalFields setSourceOffTrafficContentField(String sourceOffTrafficContentField) {
-            this.sourceOffTrafficContentField = sourceOffTrafficContentField;
+        public WebSession.InternalFields setSourceOfTrafficContentField(String sourceOfTrafficContentField) {
+            this.sourceOfTrafficContentField = sourceOfTrafficContentField;
             return this;
         }
 
@@ -377,6 +387,24 @@ public class WebSession
 
         public InternalFields setUserIdField(String userIdField) {
             this.userIdField = userIdField;
+            return this;
+        }
+
+        public String getFirstUserVisitDateTimeField() {
+            return firstUserVisitDateTimeField;
+        }
+
+        public InternalFields setFirstUserVisitDateTimeField(String firstUserVisitDateTimeField) {
+            this.firstUserVisitDateTimeField = firstUserVisitDateTimeField;
+            return this;
+        }
+
+        public String getFirstUserVisitEpochSecondsField() {
+            return firstUserVisitEpochSecondsField;
+        }
+
+        public InternalFields setFirstUserVisitEpochSecondsField(String firstUserVisitEpochSecondsField) {
+            this.firstUserVisitEpochSecondsField = firstUserVisitEpochSecondsField;
             return this;
         }
 

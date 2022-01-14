@@ -52,7 +52,7 @@ public class SplittedEvents {
     }
 
     public boolean isThereEventsFromPast() {
-        return  !getEventsfromPast().isEmpty();
+        return !getEventsfromPast().isEmpty();
     }
 
     public Set<String> getDivolteSessionsWithEventsFromPast() {

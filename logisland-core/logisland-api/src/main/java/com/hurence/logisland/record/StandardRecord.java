@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * Encapsulation of an Event a map of Fields
+ * Encapsulation of an Event as a map of Fields
  *
  * @author Tom Bailet
  */
@@ -65,22 +65,22 @@ public class StandardRecord implements Record {
     }
 
     @Override
-    public String toString(int deepness, String indentationString) {
-        if (deepness < 0) throw new IllegalArgumentException("deepness must be grater than 0 ! [" + deepness + "]");
-        String deepnessStr = String.join("", Collections.nCopies(deepness, indentationString));
-        String deepnessStrMinus1 = "";
-        if (deepness > 0) {
-            deepnessStrMinus1 = String.join("", Collections.nCopies(deepness - 1, indentationString));
+    public String toString(int depth, String indentationString) {
+        if (depth < 0) throw new IllegalArgumentException("depth must be greater than 0 ! [" + depth + "]");
+        String depthStr = String.join("", Collections.nCopies(depth, indentationString));
+        String depthStrMinus1 = "";
+        if (depth > 0) {
+            depthStrMinus1 = String.join("", Collections.nCopies(depth - 1, indentationString));
         }
         String fieldAsString = fields.keySet().stream()
-                .map(key -> fields.get(key).toString(deepness + 1))
-                .collect(Collectors.joining(",\n" + deepnessStr, deepnessStr, "\n" + deepnessStrMinus1));
+                .map(key -> fields.get(key).toString(depth + 1))
+                .collect(Collectors.joining(",\n" + depthStr, depthStr, "\n" + depthStrMinus1));
         return "Record{\n" + fieldAsString + "}";
     }
 
     @Override
-    public String toString(int deepness) {
-        return toString(deepness, "  ");
+    public String toString(int depth) {
+        return toString(depth, "  ");
     }
 
     @Override
@@ -390,25 +390,22 @@ public class StandardRecord implements Record {
 
     @Override
     public boolean isValid() {
+        boolean isValid = true;
         for (final Field field : getAllFields()) {
-            boolean isValid = true;
             try {
                 if (field.isSet()) {
                     try {
                         CheckedField.checkType(field.getType(), field.getRawValue());
                     } catch (FieldTypeException ex) {
+                        logger.info("field {} is not an instance of type {}", field.getName(), field.getType());
                         isValid = false;
                     }
                 }
             } catch (Throwable ex) {
                 return false;
             }
-            if (!isValid) {
-                logger.info("field {} is not an instance of type {}", field.getName(), field.getType());
-                return false;
-            }
         }
-        return true;
+        return isValid;
     }
 
     /**

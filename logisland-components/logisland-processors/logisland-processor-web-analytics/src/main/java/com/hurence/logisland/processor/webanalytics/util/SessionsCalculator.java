@@ -29,19 +29,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static com.hurence.logisland.processor.webanalytics.util.Utils.isFieldAssigned;
 
 /**
- * This class represents one or more sessions resulting of the processing of web events.
+ * This class is responsible for the computation of one or more sessions resulting of the processing of web events.
  */
 public class SessionsCalculator {
 
     private static Logger logger = LoggerFactory.getLogger(SessionsCalculator.class);
+
+    private final FirstUserVisitTimestampManager firstUserVisitTimestampManager;
 
     private final String divolteSessionId;
 //    private final WebSession lastSessionBeforeProcessing;
@@ -57,6 +56,9 @@ public class SessionsCalculator {
     private final long sessionInactivityTimeoutInSeconds;
     private final Collection<String> fieldsToCopyFromEventsToSessions;
 
+    // used for undefined userId
+    private static final String UNDEFINED = "undefined";
+
 
     public static String extractOrignalSessionsId(String sessionId) {
         final String[] splittedSessionId = sessionId.split(IncrementalWebSession.EXTRA_SESSION_DELIMITER);
@@ -68,7 +70,8 @@ public class SessionsCalculator {
                               WebSession.InternalFields webSessionInternalFields,
                               Event.InternalFields eventInternalFields,
                               Collection<String> fieldsToCopyFromEventsToSessions,
-                              String divolteSessionId) {
+                              String divolteSessionId,
+                              FirstUserVisitTimestampManager firstUserVisitTimestampManager) {
 
         this.checkers = checkers;
         this.sessionInactivityTimeoutInSeconds = sessionInactivityTimeoutInSeconds;
@@ -76,6 +79,11 @@ public class SessionsCalculator {
         this.eventInternalFields = eventInternalFields;
         this.fieldsToCopyFromEventsToSessions = fieldsToCopyFromEventsToSessions;
         this.divolteSessionId = divolteSessionId;
+        this.firstUserVisitTimestampManager = firstUserVisitTimestampManager;
+    }
+
+    public Sessions getSessions() {
+        return new Sessions(this.divolteSessionId, this.calculatedSessions);
     }
 
     /**
@@ -121,7 +129,7 @@ public class SessionsCalculator {
      * @param events the events to process.
      * @return this object for convenience.
      */
-    public SessionsCalculator processEventsKnowingLastSession(final Events events, final WebSession currentWebSession) {
+    public Sessions processEventsKnowingLastSession(final Events events, final WebSession currentWebSession) {
         logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
         if (currentWebSession != null) {
             events.forEach(event -> event.setSessionId(currentWebSession.getSessionId()));
@@ -130,10 +138,10 @@ public class SessionsCalculator {
             events.forEach(event -> event.setSessionId(divolteSessionId));
         }
         this.processEvents(currentWebSession, events);
-        return this;
+        return this.getSessions();
     }
 
-    public SessionsCalculator processEvents(final Events events, final String currentSessionId) {
+    public Sessions processEvents(final Events events, final String currentSessionId) {
         logger.debug("Applying {} events to session '{}'", events.size(), events.getOriginalSessionId());
         if (currentSessionId != null) {
             events.forEach(event -> event.setSessionId(currentSessionId));
@@ -142,8 +150,9 @@ public class SessionsCalculator {
             events.forEach(event -> event.setSessionId(divolteSessionId));
         }
         this.processEvents(null, events);
-        return this;
+        return this.getSessions();
     }
+
     /**
      * Returns {@code true} if the specified web-event checked against the provided web-session is valid;
      * {@code false} otherwise.
@@ -163,7 +172,6 @@ public class SessionsCalculator {
                 break;
             }
         }
-
         return result;
     }
 
@@ -301,12 +309,23 @@ public class SessionsCalculator {
 
         // USERID
         // Add the userid sessionInternalRecord if available
-        final Field userIdField = sessionInternalRecord.getField(webSessionInternalFields.getUserIdField());
-        if ((!isFieldAssigned(userIdField) || "undefined".equalsIgnoreCase(userIdField.asString()))
+        Field userIdField = sessionInternalRecord.getField(webSessionInternalFields.getUserIdField());
+        if ((!isFieldAssigned(userIdField) || UNDEFINED.equalsIgnoreCase(userIdField.asString()))
                 && isFieldAssigned(event.getRecord().getField(eventInternalFields.getUserIdField()))) {
             final String userId = event.getRecord().getField(eventInternalFields.getUserIdField()).asString();
             if (userId != null) {
                 sessionInternalRecord.setField(webSessionInternalFields.getUserIdField(), FieldType.STRING, userId);
+            }
+        }
+
+        // USER_ID_CREATION_TIMESTAMP
+        userIdField = sessionInternalRecord.getField(webSessionInternalFields.getUserIdField());
+        final Field firstUserVisitDateTimeField = sessionInternalRecord.getField(webSessionInternalFields.getFirstUserVisitDateTimeField());
+        if (!isFieldAssigned(firstUserVisitDateTimeField) && isFieldAssigned(userIdField) && !UNDEFINED.equalsIgnoreCase(userIdField.asString())) {
+            FirstUserVisitCompositeKey firstUserVisitCompositeKey = new FirstUserVisitCompositeKey(userIdField.asString(), getAdditionalAttributeMap(sessionInternalRecord, this.firstUserVisitTimestampManager.getAdditionalFieldMapForFirstUserVisitKey()));
+            final Long firstUserVisitTimestamp = this.firstUserVisitTimestampManager.getFirstUserVisitTimestamp(firstUserVisitCompositeKey);
+            if (firstUserVisitTimestamp != null) {
+                session.setFirstUserVisitTimestamp(firstUserVisitTimestamp);
             }
         }
 
@@ -341,7 +360,7 @@ public class SessionsCalculator {
         // Extra
         final Field transactionIdField = event.getRecord().getField(eventInternalFields.getTransactionIdField());
         if (isFieldAssigned(transactionIdField)
-                && (!"undefined".equalsIgnoreCase(transactionIdField.asString()))
+                && (!UNDEFINED.equalsIgnoreCase(transactionIdField.asString()))
                 && (!transactionIdField.asString().isEmpty())) {
             final Field transactionIdsField = sessionInternalRecord.getField(eventInternalFields.getTransactionIdsField());
             Collection<String> transactionIds;
@@ -355,12 +374,19 @@ public class SessionsCalculator {
         }
 
         if (!sessionInternalRecord.isValid()) {
-            sessionInternalRecord.getFieldsEntrySet().forEach(entry ->
-            {
-                final Field f = entry.getValue();
-                logger.debug("INVALID field {} type={}, class={}", f.getName(), f.getType(), f.getRawValue().getClass());
-            });
+            logger.debug("Some fields have invalid types.");
         }
+    }
+
+    private Map<String, String> getAdditionalAttributeMap(Record sessionInternalRecord, Map<String, String> additionalFieldsForFirstUserVisitKey) {
+        Map<String, String> map = new HashMap<>();
+        additionalFieldsForFirstUserVisitKey.entrySet().forEach(fieldEntry -> {
+            if (!sessionInternalRecord.hasField(fieldEntry.getKey())) {
+                throw new IllegalArgumentException("Could not find required field for first user visit composite key " + fieldEntry.getKey());
+            }
+            map.put(fieldEntry.getKey(), sessionInternalRecord.getField(fieldEntry.getKey()).asString());
+        });
+        return map;
     }
 
     static boolean areDifferentPages(String urlStr1, String urlStr2) {
@@ -379,5 +405,4 @@ public class SessionsCalculator {
             return true;
         }
     }
-
 }

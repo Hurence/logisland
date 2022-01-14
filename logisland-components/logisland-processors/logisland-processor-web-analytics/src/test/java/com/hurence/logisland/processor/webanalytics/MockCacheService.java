@@ -27,6 +27,7 @@ import java.util.Map;
 public class MockCacheService<S, T> extends AbstractControllerService implements CacheService<S, T> {
 
     private Map<S, T> map = Collections.synchronizedMap(new HashMap<>());
+    private int getMethodCallCount = 0;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -35,11 +36,16 @@ public class MockCacheService<S, T> extends AbstractControllerService implements
 
     @Override
     public T get(S o) {
+        getMethodCallCount++;
         return map.get(o);
     }
 
     @Override
     public void set(S o, T o2) {
         map.put(o, o2);
+    }
+
+    public int getGetMethodCallCount() {
+        return this.getMethodCallCount;
     }
 }
