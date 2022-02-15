@@ -61,5 +61,6 @@ public class TestMappings {
             .setUserIdField("userId")
             .setFirstUserVisitDateTimeField("firstUserVisitDateTime")
             .setFirstUserVisitEpochSecondsField("firstUserVisitEpochSeconds")
+            .setIsFirstSessionOfUserField("isFirstSessionOfUser")
             .setIsSinglePageVisit("isSinglePageVisit");
 }

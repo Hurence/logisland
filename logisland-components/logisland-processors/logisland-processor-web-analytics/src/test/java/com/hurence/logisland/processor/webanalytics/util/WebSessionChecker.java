@@ -55,6 +55,7 @@ public class WebSessionChecker
     public WebSessionChecker currentCart(final Object value) { return check(CURRENT_CART, value); }
     public WebSessionChecker firstEventDateTime(final long value) { return check(sessionInternalFields.getFirstEventDateTimeField(), new Date(value).toString()); }
     public WebSessionChecker firstEventEpochSeconds(final long value) { return check(sessionInternalFields.getFirstEventEpochSecondsField(), value); }
+    public WebSessionChecker isFirstSessionOfUser(final boolean value) { return check(sessionInternalFields.getIsFirstSessionOfUserField(), value); }
     public WebSessionChecker h2kTimestamp(final long value) { return check(sessionInternalFields.getTimestampField(), value); }
     public WebSessionChecker firstVisitedPage(final Object value) { return check(sessionInternalFields.getFirstVisitedPageField(), value); }
     public WebSessionChecker eventsCounter(final long value) { return check(sessionInternalFields.getEventsCounterField(), value); }

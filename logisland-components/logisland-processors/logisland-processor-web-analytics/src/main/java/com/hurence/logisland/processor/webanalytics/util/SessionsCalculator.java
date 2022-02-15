@@ -318,7 +318,7 @@ public class SessionsCalculator {
             }
         }
 
-        // USER_ID_CREATION_TIMESTAMP
+        // FIRST_USER_VISIT_TIMESTAMP
         userIdField = sessionInternalRecord.getField(webSessionInternalFields.getUserIdField());
         final Field firstUserVisitDateTimeField = sessionInternalRecord.getField(webSessionInternalFields.getFirstUserVisitDateTimeField());
         if (!isFieldAssigned(firstUserVisitDateTimeField) && isFieldAssigned(userIdField) && !UNDEFINED.equalsIgnoreCase(userIdField.asString())) {
@@ -328,6 +328,13 @@ public class SessionsCalculator {
                 session.setFirstUserVisitTimestamp(firstUserVisitTimestamp);
             }
         }
+
+        //  IS_FIRST_SESSION_OF_USER true <=> firstEventEpochSeconds and firstUserVisitEpochSeconds are equal (and defined)
+        final Field firstUserVisitEpochSecondsField = sessionInternalRecord.getField(webSessionInternalFields.getFirstUserVisitEpochSecondsField());
+        final Field firstEventEpochSecondsField = sessionInternalRecord.getField(webSessionInternalFields.getFirstEventEpochSecondsField());
+        // default value is false if any of the fields is unassigned
+        boolean isFirstSessionOfUser = isFieldAssigned(firstUserVisitEpochSecondsField) && isFieldAssigned(firstEventEpochSecondsField) && firstUserVisitEpochSecondsField.asLong().equals(firstEventEpochSecondsField.asLong());
+        sessionInternalRecord.setField(webSessionInternalFields.getIsFirstSessionOfUserField(), FieldType.BOOLEAN, isFirstSessionOfUser);
 
         // IS_SINGLE_PAGE
         final Boolean currentIsSinglePageVisit = sessionInternalRecord.getField(webSessionInternalFields.getIsSinglePageVisit()).asBoolean();

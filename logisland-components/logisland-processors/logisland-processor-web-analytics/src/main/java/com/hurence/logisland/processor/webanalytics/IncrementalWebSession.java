@@ -241,6 +241,15 @@ public class IncrementalWebSession
                     .defaultValue("firstUserVisitDateTime")
                     .build();
 
+    public static final PropertyDescriptor IS_FIRST_SESSION_OF_USER_FIELD =
+            new PropertyDescriptor.Builder()
+                    .name("isFirstSessionOfUser.field")
+                    .description("the name of the field whose boolean value defines whether the session is the first session ever of this user => will override default value if set")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue("isFirstSessionOfUser")
+                    .build();
+
     public static final PropertyDescriptor FIELDS_TO_RETURN =
             new PropertyDescriptor.Builder()
                     .name("fields.to.return")
@@ -574,6 +583,7 @@ public class IncrementalWebSession
                 VISITED_PAGE_FIELD,
                 USER_ID_FIELD,
                 FIRST_USER_VISIT_DATETIME_FIELD,
+                IS_FIRST_SESSION_OF_USER_FIELD,
                 FIELDS_TO_RETURN,
                 FIRST_VISITED_PAGE_FIELD,
                 LAST_VISITED_PAGE_FIELD,
@@ -643,6 +653,7 @@ public class IncrementalWebSession
 
         final String _USERID_FIELD = context.getPropertyValue(USER_ID_FIELD).asString();
         final String _FIRST_USER_VISIT_DATETIME_FIELD = context.getPropertyValue(FIRST_USER_VISIT_DATETIME_FIELD).asString();
+        final String _IS_FIRST_SESSION_OF_USER_FIELD = context.getPropertyValue(IS_FIRST_SESSION_OF_USER_FIELD).asString();
         final String _FIRST_VISITED_PAGE_FIELD = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
         final String _LAST_VISITED_PAGE_FIELD = context.getPropertyValue(LAST_VISITED_PAGE_FIELD).asString();
         final String _PAGEVIEWS_COUNTER_FIELD = context.getPropertyValue(PAGEVIEWS_COUNTER_FIELD).asString();
@@ -727,6 +738,7 @@ public class IncrementalWebSession
                 .setUserIdField(_USERID_FIELD)
                 .setFirstUserVisitDateTimeField(_FIRST_USER_VISIT_DATETIME_FIELD)
                 .setFirstUserVisitEpochSecondsField(_FIRST_USER_VISIT_EPOCH_SECONDS_FIELD)
+                .setIsFirstSessionOfUserField(_IS_FIRST_SESSION_OF_USER_FIELD)
                 .setIsSinglePageVisit(_IS_SINGLE_PAGE_VISIT);
 
         this.zoneIdToUse = ZoneId.systemDefault();

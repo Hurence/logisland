@@ -115,6 +115,7 @@ public class WebSession
             String value = field.asString();
             if (value != null) {
                 if (fieldNames.getIsSessionActiveField().equals(key)
+                        || fieldNames.getIsFirstSessionOfUserField().equals(key)
                         || fieldNames.getIsSinglePageVisit().equals(key)) {
                     record.setField(key, FieldType.BOOLEAN, Boolean.valueOf(value));
                 } else if (fieldNames.getSessionDurationField().equals(key)
@@ -255,6 +256,7 @@ public class WebSession
 
         private String firstUserVisitDateTimeField;
         private String firstUserVisitEpochSecondsField;
+        private String isFirstSessionOfUserField;
         private String isSinglePageVisit;
 
         private String isSessionActiveField;
@@ -405,6 +407,15 @@ public class WebSession
 
         public InternalFields setFirstUserVisitEpochSecondsField(String firstUserVisitEpochSecondsField) {
             this.firstUserVisitEpochSecondsField = firstUserVisitEpochSecondsField;
+            return this;
+        }
+
+        public String getIsFirstSessionOfUserField() {
+            return isFirstSessionOfUserField;
+        }
+
+        public InternalFields setIsFirstSessionOfUserField(String isFirstSessionOfUserField) {
+            this.isFirstSessionOfUserField = isFirstSessionOfUserField;
             return this;
         }
 
