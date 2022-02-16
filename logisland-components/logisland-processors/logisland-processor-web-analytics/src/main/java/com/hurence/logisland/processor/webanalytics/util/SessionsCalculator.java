@@ -337,9 +337,14 @@ public class SessionsCalculator {
         sessionInternalRecord.setField(webSessionInternalFields.getIsFirstSessionOfUserField(), FieldType.BOOLEAN, isFirstSessionOfUser);
 
         // IS_SINGLE_PAGE
-        final Boolean currentIsSinglePageVisit = sessionInternalRecord.getField(webSessionInternalFields.getIsSinglePageVisit()).asBoolean();
         final String sessionFirstVisitedPage = sessionInternalRecord.getField(webSessionInternalFields.getFirstVisitedPageField()).asString();
-        session.setIsSinglePageVisit(currentIsSinglePageVisit && sessionFirstVisitedPage.equals(visitedPage.asString()));
+        final Field isSinglePageVisitField = sessionInternalRecord.getField(webSessionInternalFields.getIsSinglePageVisit());
+        if (isFieldAssigned(isSinglePageVisitField)) {
+            final Boolean currentIsSinglePageVisit = isSinglePageVisitField.asBoolean();
+            session.setIsSinglePageVisit(currentIsSinglePageVisit && sessionFirstVisitedPage.equals(visitedPage.asString()));
+        } else {
+            session.setIsSinglePageVisit(sessionFirstVisitedPage.equals(visitedPage.asString()));
+        }
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime eventLocalDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(eventTimestamp),
