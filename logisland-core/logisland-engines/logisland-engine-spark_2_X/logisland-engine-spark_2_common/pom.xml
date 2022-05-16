@@ -22,7 +22,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <spark.version>2.3.3</spark.version>
         <kafka.version>0.10.2.1</kafka.version>
         <scala.version>2.11.8</scala.version>
-        <jackson.version>2.6.6</jackson.version>
+        <jackson.version>2.12.6.1</jackson.version>
         <eventhubs.version>2.3.14.1</eventhubs.version>
         <hadoop-azure.version>2.7.0</hadoop-azure.version>
         <hadoop-common.version>2.7.0</hadoop-common.version>
