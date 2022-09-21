@@ -13,7 +13,7 @@ public interface FirstUserVisitTimestampManager {
      * @param key the user composite key (userId and optional additional attributes)
      * @return the timestamp
      */
-    Long getFirstUserVisitTimestamp(FirstUserVisitCompositeKey key);
+    Long getFirstUserVisitTimestamp(FirstUserVisitCompositeKey key, Long candidateFirstUserVisitTimestamp);
 
     Map<String, String> getAdditionalFieldMapForFirstUserVisitKey();
 }

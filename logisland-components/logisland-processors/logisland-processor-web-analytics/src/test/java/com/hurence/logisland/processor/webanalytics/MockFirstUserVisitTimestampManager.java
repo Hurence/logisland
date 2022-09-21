@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class MockFirstUserVisitTimestampManager implements FirstUserVisitTimestampManager {
     @Override
-    public Long getFirstUserVisitTimestamp(FirstUserVisitCompositeKey key) {
+    public Long getFirstUserVisitTimestamp(FirstUserVisitCompositeKey key, Long candidateFirstUserVisitTimestamp) {
         return 1641548905L;
     }
 

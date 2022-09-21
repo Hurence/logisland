@@ -36,16 +36,19 @@ public class FirstUserVisitTimestampManagerImpl implements FirstUserVisitTimesta
     }
 
     @Override
-    public Long getFirstUserVisitTimestamp(FirstUserVisitCompositeKey key) {
-        Long firstUserVisitTimestamp = firstUserVisitCacheService.get(key);
-        if (firstUserVisitTimestamp != null) {
-            return firstUserVisitTimestamp;
+    public Long getFirstUserVisitTimestamp(FirstUserVisitCompositeKey key, Long candidateFirstUserVisitTimestamp) {
+        Long cacheFirstUserVisitTimestamp = firstUserVisitCacheService.get(key);
+        if (cacheFirstUserVisitTimestamp == null) { // nothing in the cache so we check in ES
+            cacheFirstUserVisitTimestamp = this.getFirstUserVisitTimestampFromEs(key);
         }
-        firstUserVisitTimestamp = this.getFirstUserVisitTimestampFromEs(key);
-        if (firstUserVisitTimestamp != null) {
-            firstUserVisitCacheService.set(key, firstUserVisitTimestamp);
+        if (candidateFirstUserVisitTimestamp != null && (cacheFirstUserVisitTimestamp == null || cacheFirstUserVisitTimestamp > candidateFirstUserVisitTimestamp)) {
+            firstUserVisitCacheService.set(key, candidateFirstUserVisitTimestamp);
+            return candidateFirstUserVisitTimestamp;
         }
-        return firstUserVisitTimestamp;
+        if (cacheFirstUserVisitTimestamp != null) {
+            firstUserVisitCacheService.set(key, cacheFirstUserVisitTimestamp);
+        }
+        return cacheFirstUserVisitTimestamp;
     }
 
     @Override

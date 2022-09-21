@@ -71,12 +71,12 @@ public class FirstUserVisitTimestampManagerImplTest {
         additionalAttributeMap.put("someFieldB", "someFieldValueB");
         assertEquals(0, cacheService.getGetMethodCallCount());
         assertEquals(0, elasticsearchClientService.getQueryGetMethodCallCount());
-        Long timestamp = firstUserVisitTimestampManager.getFirstUserVisitTimestamp(new FirstUserVisitCompositeKey("userA", additionalAttributeMap));
+        Long timestamp = firstUserVisitTimestampManager.getFirstUserVisitTimestamp(new FirstUserVisitCompositeKey("userA", additionalAttributeMap), null);
         assertEquals(1641548905000L, timestamp);
         assertEquals(1, cacheService.getGetMethodCallCount());
         assertEquals(1, elasticsearchClientService.getQueryGetMethodCallCount());
-        timestamp = firstUserVisitTimestampManager.getFirstUserVisitTimestamp(new FirstUserVisitCompositeKey("userA", additionalAttributeMap));
-        assertEquals(1641548905000L, timestamp);
+        timestamp = firstUserVisitTimestampManager.getFirstUserVisitTimestamp(new FirstUserVisitCompositeKey("userA", additionalAttributeMap), 1541548905000L);
+        assertEquals(1541548905000L, timestamp);
         assertEquals(2, cacheService.getGetMethodCallCount());
         assertEquals(1, elasticsearchClientService.getQueryGetMethodCallCount());
     }

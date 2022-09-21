@@ -323,7 +323,7 @@ public class SessionsCalculator {
         final Field firstUserVisitDateTimeField = sessionInternalRecord.getField(webSessionInternalFields.getFirstUserVisitDateTimeField());
         if (!isFieldAssigned(firstUserVisitDateTimeField) && isFieldAssigned(userIdField) && !UNDEFINED.equalsIgnoreCase(userIdField.asString())) {
             FirstUserVisitCompositeKey firstUserVisitCompositeKey = new FirstUserVisitCompositeKey(userIdField.asString(), getAdditionalAttributeMap(sessionInternalRecord, this.firstUserVisitTimestampManager.getAdditionalFieldMapForFirstUserVisitKey()));
-            final Long firstUserVisitTimestamp = this.firstUserVisitTimestampManager.getFirstUserVisitTimestamp(firstUserVisitCompositeKey);
+            final Long firstUserVisitTimestamp = this.firstUserVisitTimestampManager.getFirstUserVisitTimestamp(firstUserVisitCompositeKey, eventTimestamp);
             if (firstUserVisitTimestamp != null) {
                 session.setFirstUserVisitTimestamp(firstUserVisitTimestamp);
             }

@@ -476,7 +476,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             ParsedMin parsedMin = (ParsedMin) aggregation;
             getLogger().debug("Min agg result : \n" + parsedMin.getValue() + "\n" + parsedMin.getValueAsString());
             if (Double.isInfinite(parsedMin.getValue())) {
-                return new MinAggregationResponseRecord(aggName, aggType, null);
+                return new MinAggregationResponseRecord(aggName, aggType, Long.MAX_VALUE);
             }
             long min = (long) parsedMin.getValue(); // this is a timestamp
             return new MinAggregationResponseRecord(aggName, aggType, min);
