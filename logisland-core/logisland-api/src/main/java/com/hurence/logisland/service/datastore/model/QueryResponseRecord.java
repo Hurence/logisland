@@ -15,18 +15,26 @@
  */
 package com.hurence.logisland.service.datastore.model;
 
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class QueryResponseRecord {
 
     private final long totalMatched;
     private final List<ResponseRecord> docs;
+    private final List<AggregationResponseRecord> aggregations;
 
 
     public QueryResponseRecord(long totalMatched, List<ResponseRecord> docs) {
         this.totalMatched = totalMatched;
         this.docs = docs;
+        this.aggregations = new ArrayList<>();
+    }
+
+    public QueryResponseRecord(long totalMatched, List<ResponseRecord> docs, List<AggregationResponseRecord> aggregations) {
+        this.totalMatched = totalMatched;
+        this.docs = docs;
+        this.aggregations = aggregations;
     }
 
     public long getTotalMatched() {
@@ -35,6 +43,10 @@ public class QueryResponseRecord {
 
     public List<ResponseRecord> getDocs() {
         return docs;
+    }
+
+    public List<AggregationResponseRecord> getAggregations() {
+        return aggregations;
     }
 
     @Override

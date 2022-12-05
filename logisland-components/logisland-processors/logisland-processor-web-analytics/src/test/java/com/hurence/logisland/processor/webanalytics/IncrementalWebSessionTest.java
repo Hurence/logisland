@@ -69,6 +69,7 @@ public class IncrementalWebSessionTest {
     private static final String PARTY_ID1 = "partyId1";
 
     private static final Long DAY1 = 1493197966584L;  // Wed Apr 26 11:12:46 CEST 2017
+    private static final Long DAY1_SECONDS = 1493197966L;  // Wed Apr 26 11:12:46 CEST 2017
     private static final Long DAY2 = 1493297966584L;  // Thu Apr 27 14:59:26 CEST 2017
 
     private static final String PARTY_ID = "partyId";
@@ -96,7 +97,8 @@ public class IncrementalWebSessionTest {
         runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF, "yyyy.MM.dd");
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME_CONF, "sessions");
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, "event");
-        runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
+        runner.setProperty(IncrementalWebSession.CONFIG_SESSION_CACHE_SERVICE, "lruCache");
+        runner.setProperty(IncrementalWebSession.CONFIG_FIRST_USER_VISIT_TIMESTAMP_CACHE_SERVICE, "lruCache");
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
         runner.assertValid();
 
@@ -118,9 +120,9 @@ public class IncrementalWebSessionTest {
         runner.removeProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF);
         runner.assertNotValid();
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, "event");
-        runner.removeProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE);
+        runner.removeProperty(IncrementalWebSession.CONFIG_SESSION_CACHE_SERVICE);
         runner.assertNotValid();
-        runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
+        runner.setProperty(IncrementalWebSession.CONFIG_SESSION_CACHE_SERVICE, "lruCache");
         runner.removeProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF);
         runner.assertNotValid();
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
@@ -178,7 +180,8 @@ public class IncrementalWebSessionTest {
         runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_SUFFIX_FORMATTER_CONF, "yyyy.MM.dd HH:mm:ss Z");
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME_CONF, SESSION_TYPE);
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME_CONF, EVENT_TYPE);
-        runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
+        runner.setProperty(IncrementalWebSession.CONFIG_SESSION_CACHE_SERVICE, "lruCache");
+        runner.setProperty(IncrementalWebSession.CONFIG_FIRST_USER_VISIT_TIMESTAMP_CACHE_SERVICE, "lruCache");
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
         runner.setProperty(IncrementalWebSession.ZONEID_CONF, "UTC+1");
         runner.assertValid();
@@ -300,9 +303,11 @@ public class IncrementalWebSessionTest {
         session1.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
         session1.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, SESSION_TYPE);
         new WebSessionChecker(session1).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(true)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .firstVisitedPage(URL)
@@ -311,15 +316,17 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
         MockRecord session2 = getFirstRecordWithId(SESSION1+"#2", outputRecords);
         session2.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY2);
         session2.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, SESSION_TYPE);
         new WebSessionChecker(session2).sessionId(SESSION1+"#2")
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1+"#2")
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(false)
+                .recordType("consolidate-session")
+                .recordId(SESSION1+"#2")
                 .firstEventDateTime(DAY2)
                 .h2kTimestamp(DAY2)
                 .firstVisitedPage(URL2)
@@ -328,7 +335,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL2)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
 
 
@@ -374,9 +381,11 @@ public class IncrementalWebSessionTest {
         session.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
         session.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, SESSION_TYPE);
         new WebSessionChecker(session).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(true)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .currentCart(null)
@@ -386,7 +395,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL1)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
 
         MockRecord event1Output = getFirstRecordWithId("1", testRunner.getOutputRecords());
@@ -418,9 +427,11 @@ public class IncrementalWebSessionTest {
         session.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsIndex, INDEX_SESSION_DAY1);
         session.assertFieldEquals(IncrementalWebSession.defaultOutputFieldNameForEsType, SESSION_TYPE);
         new WebSessionChecker(session).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(true)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .firstVisitedPage(URL1)
@@ -429,7 +440,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL1)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
 
         MockRecord event1Output = getFirstRecordWithId("1", testRunner.getOutputRecords());
@@ -459,9 +470,11 @@ public class IncrementalWebSessionTest {
         testRunner.assertOutputRecordsCount(4);
         final MockRecord doc = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
         new WebSessionChecker(doc).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(true)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .firstVisitedPage(URL1)
@@ -470,7 +483,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL3)
                 .pageviewsCounter(3)
                 .sessionDuration(2L)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
 
         MockRecord event1Output = getFirstRecordWithId("1", testRunner.getOutputRecords());
@@ -635,9 +648,11 @@ public class IncrementalWebSessionTest {
 
         final MockRecord session1 = getFirstRecordWithId(SESSIONID, testRunner.getOutputRecords());
         new WebSessionChecker(session1).sessionId(SESSIONID)
-                .Userid(null)
-                .record_type("consolidate-session")
-                .record_id(SESSIONID)
+                .userId(null)
+                .firstUserVisitEpochSeconds(null)
+                .isFirstSessionOfUser(false)
+                .recordType("consolidate-session")
+                .recordId(SESSIONID)
                 .firstEventDateTime(1538753339113L)
                 .h2kTimestamp(1538753339113L)
                 .firstVisitedPage("https://www.zitec-shop.com/en/")
@@ -646,13 +661,15 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage("https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137")
                 .pageviewsCounter(2)
                 .sessionDuration(429L)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(1800L);
         final MockRecord session2 = getFirstRecordWithId(SESSIONID+ "#2", testRunner.getOutputRecords());
         new WebSessionChecker(session2).sessionId(SESSIONID + "#2")
-                .Userid(null)
-                .record_type("consolidate-session")
-                .record_id(SESSIONID + "#2")
+                .userId(null)
+                .firstUserVisitEpochSeconds(null)
+                .isFirstSessionOfUser(false)
+                .recordType("consolidate-session")
+                .recordId(SESSIONID + "#2")
                 .firstEventDateTime(1538756201154L)
                 .h2kTimestamp(1538756201154L)
                 .firstVisitedPage("https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137")
@@ -661,13 +678,15 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage("https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584")
                 .pageviewsCounter(4)
                 .sessionDuration(216L)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(1800L);
         final MockRecord session3 = getFirstRecordWithId(SESSIONID+ "#3", testRunner.getOutputRecords());
         new WebSessionChecker(session3).sessionId(SESSIONID + "#3")
-                .Userid(null)
-                .record_type("consolidate-session")
-                .record_id(SESSIONID + "#3")
+                .userId(null)
+                .firstUserVisitEpochSeconds(null)
+                .isFirstSessionOfUser(false)
+                .recordType("consolidate-session")
+                .recordId(SESSIONID + "#3")
                 .firstEventDateTime(1538767062429L)
                 .h2kTimestamp(1538767062429L)
                 .firstVisitedPage("https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584")
@@ -676,13 +695,15 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage("https://www.zitec-shop.com/en/search/?text=nah")
                 .pageviewsCounter(2)
                 .sessionDuration(14L)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(1800L);
         final MockRecord session4 = getFirstRecordWithId(SESSIONID+ "#4", testRunner.getOutputRecords());
         new WebSessionChecker(session4).sessionId(SESSIONID + "#4")
-                .Userid(null)
-                .record_type("consolidate-session")
-                .record_id(SESSIONID + "#4")
+                .userId(null)
+                .firstUserVisitEpochSeconds(null)
+                .isFirstSessionOfUser(false)
+                .recordType("consolidate-session")
+                .recordId(SESSIONID + "#4")
                 .firstEventDateTime(1538780539746L)
                 .h2kTimestamp(1538780539746L)
                 .firstVisitedPage("https://www.zitec-shop.com/en/search/?text=nah")
@@ -691,7 +712,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage("https://www.zitec-shop.com/en/roller-bearing-spherical-radial-multi-row/p-G1321019550")
                 .pageviewsCounter(5)
                 .sessionDuration(223L)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(1800L);
     }
 
@@ -747,9 +768,11 @@ public class IncrementalWebSessionTest {
 
         final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
         new WebSessionChecker(session).sessionId(firstEvent.getField(SESSION_ID).getRawValue())
-                .Userid(null)
-                .record_type("consolidate-session")
-                .record_id(firstEvent.getField(SESSION_ID).getRawValue())
+                .userId(null)
+                .firstUserVisitEpochSeconds(null)
+                .isFirstSessionOfUser(false)
+                .recordType("consolidate-session")
+                .recordId(firstEvent.getField(SESSION_ID).getRawValue())
                 .firstEventDateTime(firstEvent.getField(TIMESTAMP).asLong())
                 .h2kTimestamp((Long)firstEvent.getField(TIMESTAMP).getRawValue())
                 .firstVisitedPage(firstEvent.getField(VISITED_PAGE).getRawValue())
@@ -759,7 +782,7 @@ public class IncrementalWebSessionTest {
                 .pageviewsCounter(1)
                 .sessionDuration((lastEvent.getField(TIMESTAMP).asLong() // lastEvent.getField(TIMESTAMP)
                         -firstEvent.getField(TIMESTAMP).asLong())/1000)
-                .is_sessionActive((Instant.now().toEpochMilli()
+                .isSessionActive((Instant.now().toEpochMilli()
                         -lastEvent.getField(TIMESTAMP).asLong())/1000< SESSION_TIMEOUT_SECONDS)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
     }
@@ -771,7 +794,7 @@ public class IncrementalWebSessionTest {
         TestRunner testRunner = newTestRunner();
         testRunner.assertValid();
         testRunner.enqueue(Arrays.asList(new WebEvent("1", SESSION1, USER1, DAY1, URL1),
-                new WebEvent("2", SESSION2, USER2, DAY2, URL2)));
+                new WebEvent("2", SESSION2, USER1, DAY2, URL2)));
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputErrorCount(0);
@@ -780,9 +803,11 @@ public class IncrementalWebSessionTest {
 
         final MockRecord session1 = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
         new WebSessionChecker(session1).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(true)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .firstVisitedPage(URL1)
@@ -791,13 +816,15 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL1)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
         final MockRecord session2 = getFirstRecordWithId(SESSION2, testRunner.getOutputRecords());
         new WebSessionChecker(session2).sessionId(SESSION2)
-                .Userid(USER2)
-                .record_type("consolidate-session")
-                .record_id(SESSION2)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(false)
+                .recordType("consolidate-session")
+                .recordId(SESSION2)
                 .firstEventDateTime(DAY2)
                 .h2kTimestamp(DAY2)
                 .firstVisitedPage(URL2)
@@ -806,7 +833,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL2)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
     }
 
@@ -826,9 +853,11 @@ public class IncrementalWebSessionTest {
         testRunner.assertOutputRecordsCount(2);
         final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
         new WebSessionChecker(session).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(false)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(now)
                 .h2kTimestamp(now)
                 .firstVisitedPage(URL1)
@@ -837,7 +866,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL1)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(true)
+                .isSessionActive(true)
                 .sessionInactivityDuration(null);
     }
 
@@ -856,9 +885,11 @@ public class IncrementalWebSessionTest {
         testRunner.assertOutputRecordsCount(2);
         final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
         new WebSessionChecker(session).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(true)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .firstVisitedPage(URL1)
@@ -867,7 +898,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL1)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
 
     }
@@ -888,9 +919,11 @@ public class IncrementalWebSessionTest {
         testRunner.assertOutputRecordsCount(2);
         final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
         new WebSessionChecker(session).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(true)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .firstVisitedPage(URL1)
@@ -899,7 +932,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL1)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS);
 
     }
@@ -949,9 +982,10 @@ public class IncrementalWebSessionTest {
         testRunner.assertOutputRecordsCount(events.size() + 1);
         final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
         new WebSessionChecker(session).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .firstVisitedPage(URL1)
@@ -960,7 +994,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL4)
                 .pageviewsCounter(5)
                 .sessionDuration((TIME2-DAY1)/1000)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT);
     }
 
@@ -979,9 +1013,11 @@ public class IncrementalWebSessionTest {
         testRunner.assertOutputRecordsCount(2);
         final MockRecord session = getFirstRecordWithId(SESSION1, testRunner.getOutputRecords());
         new WebSessionChecker(session).sessionId(SESSION1)
-                .Userid(USER1)
-                .record_type("consolidate-session")
-                .record_id(SESSION1)
+                .userId(USER1)
+                .firstUserVisitEpochSeconds(DAY1_SECONDS)
+                .isFirstSessionOfUser(true)
+                .recordType("consolidate-session")
+                .recordId(SESSION1)
                 .firstEventDateTime(DAY1)
                 .h2kTimestamp(DAY1)
                 .firstVisitedPage(URL1)
@@ -990,7 +1026,7 @@ public class IncrementalWebSessionTest {
                 .lastVisitedPage(URL1)
                 .pageviewsCounter(1)
                 .sessionDuration(null)
-                .is_sessionActive(false)
+                .isSessionActive(false)
                 .sessionInactivityDuration(SESSION_TIMEOUT_SECONDS)
                 .check(PARTY_ID, PARTY_ID1)
                 .check(B2BUNIT, null);
@@ -1021,7 +1057,8 @@ public class IncrementalWebSessionTest {
 //        fields.to.return: partyId,Company,remoteHost,tagOrigin,sourceOrigin,spamOrigin,referer,userAgentString,utm_source,utm_campaign,utm_medium,utm_content,utm_term,alert_match_name,alert_match_query,referer_hostname,DeviceClass,AgentName,ImportanceCode,B2BUnit,libelle_zone,Userid,customer_category,source_of_traffic_source,source_of_traffic_medium,source_of_traffic_keyword,source_of_traffic_campaign,source_of_traffic_organic_search,source_of_traffic_content,source_of_traffic_referral_path,websessionIndex
         configureElasticsearchClientService(runner);
         configureCacheService(runner);
-        runner.setProperty(IncrementalWebSession.CONFIG_CACHE_SERVICE, "lruCache");
+        runner.setProperty(IncrementalWebSession.CONFIG_SESSION_CACHE_SERVICE, "lruCache");
+        runner.setProperty(IncrementalWebSession.CONFIG_FIRST_USER_VISIT_TIMESTAMP_CACHE_SERVICE, "lruCache");
         runner.setProperty(IncrementalWebSession.ELASTICSEARCH_CLIENT_SERVICE_CONF, "elasticsearchClient");
         runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_PREFIX_CONF, SESSION_INDEX_PREFIX);
         runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_SUFFIX_FORMATTER_CONF, SESSION_SUFFIX_FORMATTER_STRING);
@@ -1033,7 +1070,9 @@ public class IncrementalWebSessionTest {
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD_CONF, "h2kTimestamp");
         runner.setProperty(IncrementalWebSession.VISITED_PAGE_FIELD, "VISITED_PAGE");
         runner.setProperty(IncrementalWebSession.PAGEVIEWS_COUNTER_FIELD, "pageviewsCounter");
-        runner.setProperty(IncrementalWebSession.USER_ID_FIELD, "Userid");
+        runner.setProperty(IncrementalWebSession.USER_ID_FIELD, "userId");
+        runner.setProperty(IncrementalWebSession.FIRST_USER_VISIT_DATETIME_FIELD, "firstUserVisitTimestamp");
+        runner.setProperty(IncrementalWebSession.IS_FIRST_SESSION_OF_USER_FIELD, "isFirstSessionOfUser");
         runner.setProperty(IncrementalWebSession.SESSION_INACTIVITY_TIMEOUT_CONF, String.valueOf(SESSION_TIMEOUT_SECONDS));
         runner.setProperty(IncrementalWebSession.FIELDS_TO_RETURN, FIELDS_TO_RETURN);
         runner.setProperty(IncrementalWebSession.IS_SINGLE_PAGE_VISIT_FIELD, "is_single_page_visit");
@@ -1080,7 +1119,12 @@ public class IncrementalWebSessionTest {
 
         @Override
         public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
-            return new QueryResponseRecord(0, Collections.emptyList());
+            if (queryRecord.getAggregationQueries().isEmpty()) {
+                return new QueryResponseRecord(0, Collections.emptyList());
+            } else {
+                AggregationResponseRecord aggregationResponseRecord = new MinAggregationResponseRecord("minAgg", "min", DAY1);
+                return new QueryResponseRecord(0, Collections.emptyList(), Collections.singletonList(aggregationResponseRecord));
+            }
         }
 
         @Override

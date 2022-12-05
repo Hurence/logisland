@@ -78,6 +78,9 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.ReindexRequest;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.*;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.FieldSortBuilder;
@@ -275,7 +278,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
                 getLogger().debug("Executed bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
                 if (bulkResponse.hasFailures()) {
-                    getLogger().error("There was failures while executing bulk [id:{}]," +
+                    getLogger().error("There were failures while executing bulk [id:{}]," +
                                     " done bulk request in {} ms with failure = {}",
                             new Object[]{l, bulkResponse.getTook().getMillis(), bulkResponse.buildFailureMessage()});
                     // For each failed doc retrieve the doc we tried to send and display original content
@@ -396,7 +399,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         if (queryRecord.getSize() >= 0) {
             request.setSize(queryRecord.getSize());
         }
-        //TODO supporting sort, usefull only when using size. Well not needed at the moment
+        //TODO supporting sort, useful only when using size. Well not needed at the moment
         request.setRefresh(queryRecord.getRefresh());
         try {
             BulkByScrollResponse bulkResponse =
@@ -414,6 +417,9 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     @Override
     public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
         final SearchRequest searchRequest = buildSearchRequest(queryRecord);
+        getLogger().info("Elasticsearch queryGet:");
+        getLogger().info(searchRequest.toString());
+        getLogger().info(searchRequest.getDescription());
         try {
             SearchResponse searchRsp = esClient.search(searchRequest, RequestOptions.DEFAULT);
             return buildQueryResponseRecord(searchRsp);
@@ -428,24 +434,56 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         if (getLogger().isTraceEnabled()) {
             getLogger().trace("response was {}", new Object[]{searchRsp});
         }
+        long totalMatched = -1;
+        List<ResponseRecord> docs = new ArrayList<>();
         if (searchRsp.getHits() != null &&
                 searchRsp.getHits().getHits() != null &&
                 searchRsp.getHits().getTotalHits() != null) {
-            long totalMatched = searchRsp.getHits().getTotalHits().value;
+            totalMatched = searchRsp.getHits().getTotalHits().value;
             long totalReturned = searchRsp.getHits().getHits().length;
             getLogger().info("Number of documents returned is {}, Total number of documents that matched is {}.",
                     new Object[]{
                             totalReturned,
                             totalMatched
                     });
-            List<ResponseRecord> docs = new ArrayList<>();
             for (SearchHit hit : searchRsp.getHits().getHits()) {
                 Map<String,Object> responseMap = hit.getSourceAsMap();
                 docs.add(new ResponseRecord(hit.getIndex(), hit.getType(), hit.getId(), responseMap));
             }
-            return new QueryResponseRecord(totalMatched, docs);
         }
-        return new QueryResponseRecord(-1, Collections.emptyList());
+        List<AggregationResponseRecord> aggregationResponseRecords = new ArrayList<>();
+        Aggregations aggregations = searchRsp.getAggregations();
+        if (aggregations != null && !aggregations.asList().isEmpty()) {
+            aggregations.asList().forEach(aggregation -> aggregationResponseRecords.add(buildAggregationResponseRecord(aggregation)));
+        }
+        return new QueryResponseRecord(totalMatched, docs, aggregationResponseRecords);
+    }
+
+    AggregationResponseRecord buildAggregationResponseRecord(Aggregation aggregation) {
+        String aggName = aggregation.getName();
+        String aggType = aggregation.getType();
+        if (aggregation.getMetaData() == null) {
+            getLogger().debug("aggregation metadata: null");
+        } else {
+            getLogger().debug("aggregation metadata:");
+            for (Map.Entry<String, Object> metadataEntry : aggregation.getMetaData().entrySet()) {
+                if (metadataEntry != null) {
+                    getLogger().debug(metadataEntry.getKey() + " = " + metadataEntry.getValue());
+                }
+            }
+        }
+        if (aggregation instanceof ParsedMin) {
+            ParsedMin parsedMin = (ParsedMin) aggregation;
+            getLogger().debug("Min agg result : \n" + parsedMin.getValue() + "\n" + parsedMin.getValueAsString());
+            if (Double.isInfinite(parsedMin.getValue())) {
+                return new MinAggregationResponseRecord(aggName, aggType, Long.MAX_VALUE);
+            }
+            long min = (long) parsedMin.getValue(); // this is a timestamp
+            return new MinAggregationResponseRecord(aggName, aggType, min);
+        } else {
+            throw new NotImplementedException("Unsupported aggregation class " + aggregation.getClass().getName());
+        }
+
     }
 
     public SearchRequest buildSearchRequest(QueryRecord queryRecord) {
@@ -456,6 +494,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         if (queryRecord.getSize() >= 0) {
             searchSourceBuilder.size(queryRecord.getSize());
         }
+        queryRecord.getAggregationQueries().forEach(aggregationRecord -> searchSourceBuilder.aggregation(toAggregationBuilder(aggregationRecord)));
         List<SortBuilder<?>> sortBuilders = toSortBuilders(queryRecord);
         sortBuilders.forEach(searchSourceBuilder::sort);
         //build SearchRequest
@@ -524,6 +563,22 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         return toQueryBuilder(queryRecord.getBoolQuery());
     }
 
+    private static AggregationBuilder toAggregationBuilder(AggregationRecord aggregationRecord) {
+        AggregationBuilder aggregationBuilder = null;
+        String aggName = aggregationRecord.getAggregationName();
+        String aggField = aggregationRecord.getFieldName();
+        if (aggregationRecord instanceof MinAggregationRecord) {
+            aggregationBuilder = AggregationBuilders.min(aggName).field(aggField);
+        } else {
+            throw new NotImplementedException("Unsupported AggregationRecord subclass " + aggregationRecord.getClass().getName());
+        }
+        return aggregationBuilder;
+    }
+
+    private static List<AggregationBuilder> toAggregationBuilder(QueryRecord queryRecord) {
+        List<AggregationBuilder> aggregationBuildersList = new ArrayList<>();
+        return queryRecord.getAggregationQueries().stream().map(Elasticsearch_7_x_ClientService::toAggregationBuilder).collect(Collectors.toList());
+    }
 
     /**
      * Wait until specified collection is ready to be used.

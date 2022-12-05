@@ -23,9 +23,10 @@ import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.webanalytics.modele.*;
+import com.hurence.logisland.processor.webanalytics.util.FirstUserVisitExtraFieldsParser;
 import com.hurence.logisland.processor.webanalytics.util.SessionsCalculator;
+import com.hurence.logisland.processor.webanalytics.util.FirstUserVisitTimestampManagerImpl;
 import com.hurence.logisland.processor.webanalytics.util.Utils;
-import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.model.*;
@@ -117,6 +118,7 @@ public class IncrementalWebSession
      */
     public static final String _FIRST_EVENT_EPOCH_SECONDS_FIELD = "firstEventEpochSeconds";
     public static final String _LAST_EVENT_EPOCH_SECONDS_FIELD = "lastEventEpochSeconds";
+    public static final String _FIRST_USER_VISIT_EPOCH_SECONDS_FIELD = "firstUserVisitEpochSeconds";
 
     public static final PropertyDescriptor ELASTICSEARCH_CLIENT_SERVICE_CONF =
             new PropertyDescriptor.Builder()
@@ -228,6 +230,24 @@ public class IncrementalWebSession
                     .required(false)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .defaultValue("userId")
+                    .build();
+
+    public static final PropertyDescriptor FIRST_USER_VISIT_DATETIME_FIELD =
+            new PropertyDescriptor.Builder()
+                    .name("firstUserVisitDateTime.field")
+                    .description("the name of the field containing the date of the first user visit => will override default value if set")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue("firstUserVisitDateTime")
+                    .build();
+
+    public static final PropertyDescriptor IS_FIRST_SESSION_OF_USER_FIELD =
+            new PropertyDescriptor.Builder()
+                    .name("isFirstSessionOfUser.field")
+                    .description("the name of the field whose boolean value defines whether the session is the first session ever of this user => will override default value if set")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue("isFirstSessionOfUser")
                     .build();
 
     public static final PropertyDescriptor FIELDS_TO_RETURN =
@@ -346,14 +366,30 @@ public class IncrementalWebSession
                     .defaultValue("transactionIds")
                     .build();
 
-    protected static final String PROP_CACHE_SERVICE = "cache.service";
+    protected static final String PROP_SESSION_CACHE_SERVICE = "session.cache.service";
 
-    public static final PropertyDescriptor CONFIG_CACHE_SERVICE = new PropertyDescriptor.Builder()
-            .name(PROP_CACHE_SERVICE)
-            .description("The name of the cache service to use.")
+    public static final PropertyDescriptor CONFIG_SESSION_CACHE_SERVICE = new PropertyDescriptor.Builder()
+            .name(PROP_SESSION_CACHE_SERVICE)
+            .description("The name of the cache service to use for sessions per session ID.")
             .required(true)
             .identifiesControllerService(CacheService.class)
             .build();
+
+    public static final PropertyDescriptor CONFIG_FIRST_USER_VISIT_TIMESTAMP_CACHE_SERVICE = new PropertyDescriptor.Builder()
+            .name("firstUserVisit.cache.service")
+            .description("The name of the cache service to use for storing first user visit timestamp per userId.")
+            .required(true)
+            .identifiesControllerService(CacheService.class)
+            .build();
+
+    public static final PropertyDescriptor CONFIG_FIELDS_KEY_FIRST_USER_VISIT = new PropertyDescriptor.Builder()
+            .name("firstUserVisit.key.fields")
+            .description("The comma-separated list of fields (each optionally with the name used for Elasticsearch queries) used in the composite " +
+                    "key along with userId to compute the first user visit. Format is fieldName[:fieldNameEsQuery],fieldName[:fieldNameEsQuery],...")
+            .required(false)
+            .defaultValue("") // no additional field: using only userId as key
+            .build();
+
     /**
      * The source identified for the web session
      */
@@ -395,7 +431,7 @@ public class IncrementalWebSession
     public static final PropertyDescriptor ZONEID_CONF =
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_INDEX_SUFFIX_TIMEZONE)
-                    .description("The timezone to use to aprse timestamp into string date (for index names). See " +
+                    .description("The timezone to use to parse timestamp into string date (for index names). See " +
                             PROP_ES_EVENT_INDEX_SUFFIX_FORMATTER + " and " + PROP_ES_SESSION_INDEX_SUFFIX_FORMATTER +
                             ". By default the system timezone is used. Supported by current system is : " + ZoneId.getAvailableZoneIds())
                     .required(false)
@@ -483,7 +519,8 @@ public class IncrementalWebSession
 
     //services
     private ElasticsearchClientService elasticsearchClientService;
-    private CacheService<String/*sessionId*/, WebSession> cacheService;
+    private CacheService<String/*sessionId*/, WebSession> sessionCacheService;
+    private CacheService<FirstUserVisitCompositeKey, Long> firstUserVisitTimestampCacheService;
     //sessions calcul
     private long _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS;
     private Collection<String> _FIELDS_TO_RETURN;
@@ -505,6 +542,8 @@ public class IncrementalWebSession
     private String outputFieldNameForEsType;
     private int numberOfFuturSessionToFetchWhenReceivingPastEvents;
 
+    private Map<String, String> additionalFieldMapForFirstUserVisitKey;
+
     /**
      * If fastMode is true the processor will not do refresh on es indices which will improve performance but
      * The result may be unexact as we are not sure to query the event up to date.
@@ -525,6 +564,10 @@ public class IncrementalWebSession
         rewindCounter = 0L;
     }
 
+    public ElasticsearchClientService getElasticsearchClientService() {
+        return this.elasticsearchClientService;
+    }
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return Collections.unmodifiableList(Arrays.asList(
@@ -539,6 +582,8 @@ public class IncrementalWebSession
                 TIMESTAMP_FIELD_CONF,
                 VISITED_PAGE_FIELD,
                 USER_ID_FIELD,
+                FIRST_USER_VISIT_DATETIME_FIELD,
+                IS_FIRST_SESSION_OF_USER_FIELD,
                 FIELDS_TO_RETURN,
                 FIRST_VISITED_PAGE_FIELD,
                 LAST_VISITED_PAGE_FIELD,
@@ -556,7 +601,9 @@ public class IncrementalWebSession
                 SOURCE_OF_TRAFFIC_PREFIX_FIELD,
                 // Service
                 ELASTICSEARCH_CLIENT_SERVICE_CONF,
-                CONFIG_CACHE_SERVICE,
+                CONFIG_SESSION_CACHE_SERVICE,
+                CONFIG_FIRST_USER_VISIT_TIMESTAMP_CACHE_SERVICE,
+                CONFIG_FIELDS_KEY_FIRST_USER_VISIT,
                 ZONEID_CONF,
                 OUTPUT_FIELD_NAME_FOR_ES_INDEX,
                 OUTPUT_FIELD_NAME_FOR_ES_TYPE,
@@ -583,9 +630,13 @@ public class IncrementalWebSession
         {
             getLogger().error("Elasticsearch client service is not initialized!");
         }
-        cacheService = PluginProxy.rewrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService());
-        if (cacheService == null) {
-            getLogger().error("Cache service is not initialized!");
+        sessionCacheService = PluginProxy.rewrap(context.getPropertyValue(CONFIG_SESSION_CACHE_SERVICE).asControllerService());
+        if (sessionCacheService == null) {
+            getLogger().error("Session cache service is not initialized!");
+        }
+        firstUserVisitTimestampCacheService = PluginProxy.rewrap(context.getPropertyValue(CONFIG_FIRST_USER_VISIT_TIMESTAMP_CACHE_SERVICE).asControllerService());
+        if (firstUserVisitTimestampCacheService == null) {
+            getLogger().error("First user visit timestamp cache service is not initialized!");
         }
         this._SESSION_INACTIVITY_TIMEOUT_IN_SECONDS = context.getPropertyValue(SESSION_INACTIVITY_TIMEOUT_CONF).asLong();
         String _SESSION_ID_FIELD = context.getPropertyValue(SESSION_ID_FIELD_CONF).asString();
@@ -598,8 +649,11 @@ public class IncrementalWebSession
         } else {
             this._FIELDS_TO_RETURN = Collections.emptyList();
         }
+        this.additionalFieldMapForFirstUserVisitKey = new FirstUserVisitExtraFieldsParser().parseFields(context.getPropertyValue(CONFIG_FIELDS_KEY_FIRST_USER_VISIT).asString());
 
         final String _USERID_FIELD = context.getPropertyValue(USER_ID_FIELD).asString();
+        final String _FIRST_USER_VISIT_DATETIME_FIELD = context.getPropertyValue(FIRST_USER_VISIT_DATETIME_FIELD).asString();
+        final String _IS_FIRST_SESSION_OF_USER_FIELD = context.getPropertyValue(IS_FIRST_SESSION_OF_USER_FIELD).asString();
         final String _FIRST_VISITED_PAGE_FIELD = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
         final String _LAST_VISITED_PAGE_FIELD = context.getPropertyValue(LAST_VISITED_PAGE_FIELD).asString();
         final String _PAGEVIEWS_COUNTER_FIELD = context.getPropertyValue(PAGEVIEWS_COUNTER_FIELD).asString();
@@ -650,11 +704,11 @@ public class IncrementalWebSession
                 .setSessionIdField(_SESSION_ID_FIELD)
                 .setTimestampField(_TIMESTAMP_FIELD)
                 .setVisitedPageField(_VISITED_PAGE_FIELD)
-                .setSourceOffTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
-                .setSourceOffTrafficContentField(_SOT_CONTENT_FIELD)
-                .setSourceOffTrafficKeyWordField(_SOT_KEYWORD_FIELD)
-                .setSourceOffTrafficMediumField(_SOT_MEDIUM_FIELD)
-                .setSourceOffTrafficSourceField(_SOT_SOURCE_FIELD)
+                .setSourceOfTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
+                .setSourceOfTrafficContentField(_SOT_CONTENT_FIELD)
+                .setSourceOfTrafficKeyWordField(_SOT_KEYWORD_FIELD)
+                .setSourceOfTrafficMediumField(_SOT_MEDIUM_FIELD)
+                .setSourceOfTrafficSourceField(_SOT_SOURCE_FIELD)
                 .setNewSessionReasonField(_NEW_SESSION_REASON_FIELD)
                 .setUserIdField(_USERID_FIELD)
                 .setOriginalSessionIdField("originalSessionId")
@@ -664,11 +718,11 @@ public class IncrementalWebSession
         this.sessionInternalFields = new WebSession.InternalFields()
                 .setSessionIdField(_SESSION_ID_FIELD)
                 .setTimestampField(_TIMESTAMP_FIELD)
-                .setSourceOffTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
-                .setSourceOffTrafficContentField(_SOT_CONTENT_FIELD)
-                .setSourceOffTrafficKeyWordField(_SOT_KEYWORD_FIELD)
-                .setSourceOffTrafficMediumField(_SOT_MEDIUM_FIELD)
-                .setSourceOffTrafficSourceField(_SOT_SOURCE_FIELD)
+                .setSourceOfTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
+                .setSourceOfTrafficContentField(_SOT_CONTENT_FIELD)
+                .setSourceOfTrafficKeyWordField(_SOT_KEYWORD_FIELD)
+                .setSourceOfTrafficMediumField(_SOT_MEDIUM_FIELD)
+                .setSourceOfTrafficSourceField(_SOT_SOURCE_FIELD)
                 .setIsSessionActiveField(_IS_SESSION_ACTIVE_FIELD)
                 .setSessionDurationField(_SESSION_DURATION_FIELD)
                 .setSessionInactivityDurationField(_SESSION_INACTIVITY_DURATION_FIELD)
@@ -682,6 +736,9 @@ public class IncrementalWebSession
                 .setPageviewsCounterField(_PAGEVIEWS_COUNTER_FIELD)
                 .setTransactionIdsField(_TRANSACTION_IDS)
                 .setUserIdField(_USERID_FIELD)
+                .setFirstUserVisitDateTimeField(_FIRST_USER_VISIT_DATETIME_FIELD)
+                .setFirstUserVisitEpochSecondsField(_FIRST_USER_VISIT_EPOCH_SECONDS_FIELD)
+                .setIsFirstSessionOfUserField(_IS_FIRST_SESSION_OF_USER_FIELD)
                 .setIsSinglePageVisit(_IS_SINGLE_PAGE_VISIT);
 
         this.zoneIdToUse = ZoneId.systemDefault();
@@ -771,36 +828,30 @@ public class IncrementalWebSession
         SplittedEvents splittedEvents = handleRewindAndGetAllNeededEvents(groupOfEvents, lastSessionMapping);
 
         final Collection<Events> allEvents = splittedEvents.getAllEvents().collect(Collectors.toList());
-        final Collection<SessionsCalculator> calculatedSessions = computeSessions(lastSessionMapping, splittedEvents, allEvents);
+        final Collection<Sessions> calculatedSessions = computeSessions(lastSessionMapping, splittedEvents, allEvents);
 
         updateCacheWithLastSessions(calculatedSessions);
         return addEsIndexInfoAndConcatOutput(allEvents, calculatedSessions);
     }
 
-    public Collection<SessionsCalculator> computeSessions(Map<String, Optional<WebSession>> lastSessionMapping, SplittedEvents splittedEvents, Collection<Events> allEvents) {
-        final Collection<SessionsCalculator> calculatedSessions;
-        if (splittedEvents.isThereEventsFromPast()) {
-            Set<String> sessionsInRewind = splittedEvents.getDivolteSessionsWithEventsFromPast();
-            calculatedSessions = this.processEvents(allEvents, lastSessionMapping, sessionsInRewind);
-        } else {
-            calculatedSessions = this.processEvents(allEvents, lastSessionMapping);
-        }
-        return calculatedSessions;
+    public Collection<Sessions> computeSessions(Map<String, Optional<WebSession>> lastSessionMapping, SplittedEvents splittedEvents, Collection<Events> allEvents) {
+        final Set<String> sessionsInRewind = splittedEvents.getDivolteSessionsWithEventsFromPast(); // may be empty
+        return this.processEvents(allEvents, lastSessionMapping, sessionsInRewind);
     }
 
-    public void updateCacheWithLastSessions(Collection<SessionsCalculator> calculatedSessions) {
+    public void updateCacheWithLastSessions(Collection<Sessions> calculatedSessions) {
         calculatedSessions
-                .forEach(sessionsCalculator -> {
-                    String divolteSession = sessionsCalculator.getDivolteSessionId();
-                    WebSession lastSession = sessionsCalculator.getCalculatedSessions().stream()
-                            .filter(session -> session.getSessionId().equals(sessionsCalculator.getLastSessionId()))
+                .forEach(sessions -> {
+                    String divolteSession = sessions.getDivolteSessionId();
+                    WebSession lastSession = sessions.getCalculatedSessions().stream()
+                            .filter(session -> session.getSessionId().equals(sessions.getLastSessionId()))
                             .findFirst().get();
-                    cacheService.set(divolteSession, lastSession);
+                    sessionCacheService.set(divolteSession, lastSession);
                 });
     }
 
     private List<Record> addEsIndexInfoAndConcatOutput(Collection<Events> allEvents,
-                                                Collection<SessionsCalculator> calculatedSessions) {
+                                                Collection<Sessions> calculatedSessions) {
         List<Record> outputEvents = allEvents
                 .stream()
                 .flatMap(events -> events.getAll().stream())
@@ -813,7 +864,7 @@ public class IncrementalWebSession
                 .collect(Collectors.toList());
 
         final Collection<WebSession> flattenedSessions = calculatedSessions.stream()
-                .flatMap(sessionsCalculator -> sessionsCalculator.getCalculatedSessions().stream())
+                .flatMap(sessions -> sessions.getCalculatedSessions().stream())
                 .collect(Collectors.toList());
         debug("Processing done. Outcoming records size=%d ", flattenedSessions.size());
         List<Record> outputSessions = flattenedSessions.stream()
@@ -868,11 +919,11 @@ public class IncrementalWebSession
             C'est à dire requêter tous les events de la sessionId et timestamp <= firstEventTs(input events)
             Il faut aussi récupérer tous les events de la sessionId et timestamp >= lastEventTs(input events) Attention tout les events pas que du passé
         */
-        //TODO in order to this to work we need to get all events in es from Tmin to Tmax plus eventSessionTimin eventSessionTmax
+        //TODO in order for this to work we need to get all events in es from Tmin to Tmax plus eventSessionTimin eventSessionTmax
         //la on merge seulement dans events from past
         //get all events but only for events containing elements from the past
         final Collection<Events> allEvents = splittedEvents.getAllEventsThatContainsEventsFromPast().collect(Collectors.toList());
-        final Set<String> divoltSessionIds = allEvents.stream().map(Events::getOriginalSessionId).collect(Collectors.toSet());
+        final Set<String> divolteSessionIds = allEvents.stream().map(Events::getOriginalSessionId).collect(Collectors.toSet());
         switch (processingMode) {
             case FAST:
                 break;
@@ -887,14 +938,14 @@ public class IncrementalWebSession
                 this.elasticsearchClientService.waitUntilCollectionIsReadyAndRefreshIfAnyPendingTasks(_ES_SESSION_INDEX_PREFIX + "*", refreshTimeoutMs);
         }
         final Map<String/*divolteSession*/, Optional<WebSession>> sessionsOfFirstEvents = requestCurrentSessionsToEs(allEvents);
-        divoltSessionIds.forEach(divoltSessionId -> {
-            if (!sessionsOfFirstEvents.containsKey(divoltSessionId)) {
+        divolteSessionIds.forEach(divolteSessionId -> {
+            if (!sessionsOfFirstEvents.containsKey(divolteSessionId)) {
                 //Sinon l'event est avant tout les autres events dans ES donc on recommence à la première session...
-                sessionsOfFirstEvents.put(divoltSessionId, Optional.empty());
+                sessionsOfFirstEvents.put(divolteSessionId, Optional.empty());
             }
         });
         final Map<String/*divolteSession*/, Set<WebSession>> sessionsOfLastEvents = requestSessionsOfLastEventToEs(allEvents);
-        divoltSessionIds.forEach(divoltSessionId -> {
+        divolteSessionIds.forEach(divoltSessionId -> {
             if (!sessionsOfLastEvents.containsKey(divoltSessionId)) {
                 //Sinon l'event est après tout les autres events dans ES donc on va de toute manière tous les récupérer...
                 sessionsOfLastEvents.put(divoltSessionId, Collections.emptySet());
@@ -978,7 +1029,7 @@ public class IncrementalWebSession
     }
 
     private void resetCacheWithSessions(Map<String, Optional<WebSession>> currentSessionsOfEvents) {
-        currentSessionsOfEvents.forEach((divolteSessions, session) -> this.cacheService.set(divolteSessions, session.orElse(null)));
+        currentSessionsOfEvents.forEach((divolteSessions, session) -> this.sessionCacheService.set(divolteSessions, session.orElse(null)));
     }
 
 
@@ -1145,7 +1196,7 @@ public class IncrementalWebSession
     private Map<String, Optional<WebSession>> checkAndTransformToCurrentSessionMap(MultiQueryResponseRecord sessionEsRsp) {
         final Map<String, Optional<WebSession>> sessionMap = new HashMap<>();
         for (QueryResponseRecord rsp : sessionEsRsp.getResponses()) {
-            if (rsp.getTotalMatched() >= 1) {
+            if (!rsp.getDocs().isEmpty()) {
                 WebSession currentSession = mapToSession(rsp.getDocs().get(0).getRetrievedFields());
                 sessionMap.put(currentSession.getOriginalSessionId(), Optional.of(currentSession));
             }
@@ -1156,11 +1207,11 @@ public class IncrementalWebSession
     private Map<String, Set<WebSession>> checkAndTransformToLastSessionMap(MultiQueryResponseRecord sessionEsRsp) {
         final Map<String, Set<WebSession>> sessionMap = new HashMap<>();
         for (QueryResponseRecord rsp : sessionEsRsp.getResponses()) {
-            if (rsp.getTotalMatched() >= 1) {
-                Set<WebSession> sessions = rsp.getDocs().stream()
-                        .map(ResponseRecord::getRetrievedFields)
-                        .map(this::mapToSession)
-                        .collect(Collectors.toSet());
+            Set<WebSession> sessions = rsp.getDocs().stream()
+                    .map(ResponseRecord::getRetrievedFields)
+                    .map(this::mapToSession)
+                    .collect(Collectors.toSet());
+            if (!sessions.isEmpty()) {
                 sessionMap.put(sessions.stream().findFirst().get().getOriginalSessionId(), sessions);
             }
         }
@@ -1375,7 +1426,7 @@ public class IncrementalWebSession
      * @param webEvents the web events from a same session to process.
      * @return web sessions resulting of the processing of the web events.
      */
-    private Collection<SessionsCalculator> processEvents(final Collection<Events> webEvents,
+    private Collection<Sessions> processEvents(final Collection<Events> webEvents,
                                                          final Map<String, Optional<WebSession>> lastSessionMapping,
                                                          final Set<String> sessionsInRewind) {
         // Applies all events to session documents and collect results.
@@ -1387,7 +1438,8 @@ public class IncrementalWebSession
                             sessionInternalFields,
                             eventsInternalFields,
                             _FIELDS_TO_RETURN,
-                            divolteSession);
+                            divolteSession,
+                            new FirstUserVisitTimestampManagerImpl(elasticsearchClientService, _ES_SESSION_INDEX_PREFIX, firstUserVisitTimestampCacheService, this.additionalFieldMapForFirstUserVisitKey));
                     if (lastSessionMapping.get(divolteSession).isPresent()) {
                         boolean isRewind = sessionsInRewind.contains(divolteSession);
                         if (isRewind) {//only keep sessionId but not counters etc because we will recompute the whole session
@@ -1398,35 +1450,6 @@ public class IncrementalWebSession
                     } else {
                         return sessionCalc.processEventsKnowingLastSession(events, null);
                     }
-                })
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Processes the provided events and returns their resulting sessions.
-     * All sessions are retrieved from the cache or elasticsearch and then updated with the specified web events.
-     * One serie of events may result into multiple sessions.
-     *
-     * @param webEvents the web events from a same session to process.
-     * @return web sessions resulting of the processing of the web events.
-     */
-    private Collection<SessionsCalculator> processEvents(final Collection<Events> webEvents,
-                                                         final Map<String, Optional<WebSession>> lastSessionMapping) {
-        // Applies all events to session documents and collect results.
-        return webEvents.stream()
-                .map(events -> {
-                    String divolteSession = events.getOriginalSessionId();
-                    SessionsCalculator sessionsCalculator = new SessionsCalculator(checkers,
-                            _SESSION_INACTIVITY_TIMEOUT_IN_SECONDS,
-                            sessionInternalFields,
-                            eventsInternalFields,
-                            _FIELDS_TO_RETURN,
-                            divolteSession);
-//                    if (lastSessionMapping.get(divolteSession).isPresent()) {
-                        return sessionsCalculator.processEventsKnowingLastSession(events, lastSessionMapping.get(events.getOriginalSessionId()).orElse(null));
-//                    } else {
-//                        return sessionsCalculator.processEventsKnowingLastSession(events, null);
-//                    }
                 })
                 .collect(Collectors.toList());
     }
@@ -1450,27 +1473,27 @@ public class IncrementalWebSession
 //    "size": 1
 //}
     /**
-     * query all last hurence session for each divolte session in ES if it is not already present in cache.
-     * THen fill up cache with new data, finally return the <code>mapping[divolte_session,last_hurence_session]</code>
+     * query all last Logisland session for each divolte session in ES if it is not already present in cache.
+     * THen fill up cache with new data, finally return the <code>mapping[divolte_session,last_logisland_session]</code>
      *
-     * if a last session is found it is filled with [divolte_session,last_hurence_session]
+     * if a last session is found it is filled with [divolte_session,last_logisland_session]
      * If there is no session found it is filled with [divolte_session,Optional.empty]
      * @param divolteSessions
      * @return
      */
-    private Map<String/*divolteSession*/, Optional<WebSession>/*lastHurenceSession*/> getMapping(final Collection<String> divolteSessions) {
+    private Map<String/*divolteSession*/, Optional<WebSession>/*lastLogislandSession*/> getMapping(final Collection<String> divolteSessions) {
         final Map<String, Optional<WebSession>> mappingToReturn = new HashMap<>();
         final List<QueryRecord> sessionsRequests = new ArrayList<>();
-        divolteSessions.forEach(divoltSession -> {
-            WebSession cachedSession = cacheService.get(divoltSession);
+        divolteSessions.forEach(divolteSession -> {
+            WebSession cachedSession = sessionCacheService.get(divolteSession);
             if (cachedSession != null) {
-                mappingToReturn.put(divoltSession, Optional.of(cachedSession));
+                mappingToReturn.put(divolteSession, Optional.of(cachedSession));
             } else {
                 QueryRecord request = new QueryRecord()
                         .addCollection(_ES_SESSION_INDEX_PREFIX + "*")
                         .addType(_ES_SESSION_TYPE_NAME)
                         .addBoolQuery(
-                                new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divoltSession + "*"),
+                                new WildCardQueryRecord(sessionInternalFields.getSessionIdField() + ".raw", divolteSession + "*"),
                                 BoolCondition.MUST
                         )
                         .addSortQuery(new SortQueryRecord(sessionInternalFields.getTimestampField(), SortOrder.DESC))
@@ -1491,14 +1514,14 @@ public class IncrementalWebSession
         );
         Map<String, WebSession> sessionsFromEs = transformIntoWebSessions(multiQueryResponses);
 
-        divolteSessions.forEach(divoltSession -> {
-            if (!mappingToReturn.containsKey(divoltSession)) {
-                if (!sessionsFromEs.containsKey(divoltSession)) {
-                    mappingToReturn.put(divoltSession, Optional.empty());
+        divolteSessions.forEach(divolteSession -> {
+            if (!mappingToReturn.containsKey(divolteSession)) {
+                if (!sessionsFromEs.containsKey(divolteSession)) {
+                    mappingToReturn.put(divolteSession, Optional.empty());
                 } else {
-                    WebSession lastSessionInEs = sessionsFromEs.get(divoltSession);
-                    cacheService.set(divoltSession, lastSessionInEs);
-                    mappingToReturn.put(divoltSession, Optional.of(lastSessionInEs));
+                    WebSession lastSessionInEs = sessionsFromEs.get(divolteSession);
+                    sessionCacheService.set(divolteSession, lastSessionInEs);
+                    mappingToReturn.put(divolteSession, Optional.of(lastSessionInEs));
                 }
             }
         });

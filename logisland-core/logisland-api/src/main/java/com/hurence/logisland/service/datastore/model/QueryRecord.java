@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.service.datastore.model;
 
-
 import com.hurence.logisland.service.datastore.model.bool.BoolCondition;
 import com.hurence.logisland.service.datastore.model.bool.BoolQueryRecord;
 import com.hurence.logisland.service.datastore.model.bool.BoolQueryRecordRoot;
@@ -30,11 +29,13 @@ public class QueryRecord {
     private final List<String> collections;
     private final List<String> types;
     private final BoolQueryRecordRoot boolQuery;
+    private final List<AggregationRecord> aggregationQueries;
     private final List<SortQueryRecord> sortQueries;
 
     public QueryRecord() {
         this.collections = new ArrayList<>();
         this.boolQuery = new BoolQueryRecordRoot();
+        this.aggregationQueries = new ArrayList<>();
         this.sortQueries = new ArrayList<>();
         this.types = new ArrayList<>();
     }
@@ -46,6 +47,11 @@ public class QueryRecord {
 
     public QueryRecord addSortQuery(SortQueryRecord sortQuery) {
         this.sortQueries.add(sortQuery);
+        return this;
+    }
+
+    public QueryRecord addAggregationQuery(AggregationRecord aggregationRecord) {
+        this.aggregationQueries.add(aggregationRecord);
         return this;
     }
 
@@ -90,6 +96,9 @@ public class QueryRecord {
         return types;
     }
 
+    public List<AggregationRecord> getAggregationQueries() {
+        return aggregationQueries;
+    }
     public List<SortQueryRecord> getSortQueries() {
         return sortQueries;
     }

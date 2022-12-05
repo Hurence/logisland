@@ -117,7 +117,12 @@ public class MockElasticsearchClientService extends AbstractControllerService im
 
     @Override
     public QueryResponseRecord queryGet(QueryRecord queryRecord) throws DatastoreClientServiceException {
-        return null;
+        if (queryRecord.getAggregationQueries().isEmpty()) {
+            return new QueryResponseRecord(0, Collections.emptyList());
+        } else {
+            AggregationResponseRecord aggregationResponseRecord = new MinAggregationResponseRecord("min", "min", 1641548905000L);
+            return new QueryResponseRecord(0, Collections.emptyList(), Collections.singletonList(aggregationResponseRecord));
+        }
     }
 
     @Override

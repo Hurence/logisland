@@ -55,20 +55,20 @@ public class Event
      * The timestamp to sort web event from.
      */
     private final ZonedDateTime timestamp;
-    private final InternalFields fieldsNames;
+    private final InternalFields fieldNames;
 
-    public Event(final Record record, InternalFields fieldsNames) {
+    public Event(final Record record, InternalFields fieldNames) {
         super(record);
-        this.fieldsNames = fieldsNames;
+        this.fieldNames = fieldNames;
         this.timestamp = this.fromEpochMilli(getEpochTimeStampMilli());
     }
 
     public long getEpochTimeStampMilli() {
-        return record.getField(fieldsNames.getTimestampField()).asLong();
+        return record.getField(fieldNames.getTimestampField()).asLong();
     }
 
     public long getEpochTimeStampSeconds() {
-        return record.getField(fieldsNames.getTimestampField()).asLong() / 1000L;
+        return record.getField(fieldNames.getTimestampField()).asLong() / 1000L;
     }
 
     @Override
@@ -110,14 +110,14 @@ public class Event
     }
 
     public String getVisitedPage() {
-        return this.getStringValue(fieldsNames.visitedPageField);
+        return this.getStringValue(fieldNames.visitedPageField);
     }
 
     public void setSessionId(final String sessionId) {
         if (getSessionId().equals(sessionId)) return;//do nothing if not changing
         logger.debug("change sessionId of event " + this.record.getId() + " from " + getSessionId() + " to " + sessionId);
-        this.record.setField(fieldsNames.originalSessionIdField, FieldType.STRING, calculOriginalSessionId(sessionId));
-        this.record.setField(fieldsNames.sessionIdField, FieldType.STRING, sessionId);
+        this.record.setField(fieldNames.originalSessionIdField, FieldType.STRING, calculOriginalSessionId(sessionId));
+        this.record.setField(fieldNames.sessionIdField, FieldType.STRING, sessionId);
     }
 
     private String calculOriginalSessionId(String sessionId) {
@@ -126,7 +126,7 @@ public class Event
     }
 
     public String getSessionId() {
-        return this.getStringValue(fieldsNames.sessionIdField);
+        return this.getStringValue(fieldNames.sessionIdField);
     }
 
     /**
@@ -134,7 +134,7 @@ public class Event
      * @return
      */
     public String getOriginalSessionId() {
-        return this.getStringValue(fieldsNames.originalSessionIdField);
+        return this.getStringValue(fieldNames.originalSessionIdField);
     }
 
     public String getOriginalSessionIdOrSessionId() {
@@ -145,11 +145,11 @@ public class Event
 
 
     public String getSourceOfTraffic() {
-        return concatFieldsOfTraffic(this.getStringValue(fieldsNames.sourceOffTrafficSourceField),
-                this.getStringValue(fieldsNames.sourceOffTrafficMediumField),
-                this.getStringValue(fieldsNames.sourceOffTrafficCampaignField),
-                this.getStringValue(fieldsNames.sourceOffTrafficKeyWordField),
-                this.getStringValue(fieldsNames.sourceOffTrafficContentField));
+        return concatFieldsOfTraffic(this.getStringValue(fieldNames.sourceOfTrafficSourceField),
+                this.getStringValue(fieldNames.sourceOfTrafficMediumField),
+                this.getStringValue(fieldNames.sourceOfTrafficCampaignField),
+                this.getStringValue(fieldNames.sourceOfTrafficKeyWordField),
+                this.getStringValue(fieldNames.sourceOfTrafficContentField));
     }
 
     /**
@@ -171,11 +171,11 @@ public class Event
         private String visitedPageField;
         private String sessionIdField;
         private String originalSessionIdField;
-        private String sourceOffTrafficSourceField;
-        private String sourceOffTrafficMediumField;
-        private String sourceOffTrafficCampaignField;
-        private String sourceOffTrafficKeyWordField;
-        private String sourceOffTrafficContentField;
+        private String sourceOfTrafficSourceField;
+        private String sourceOfTrafficMediumField;
+        private String sourceOfTrafficCampaignField;
+        private String sourceOfTrafficKeyWordField;
+        private String sourceOfTrafficContentField;
         private String newSessionReasonField;
         private String userIdField;
         private String transactionIdField;
@@ -212,47 +212,47 @@ public class Event
         }
 
         public String getSourceOffTrafficSourceField() {
-            return sourceOffTrafficSourceField;
+            return sourceOfTrafficSourceField;
         }
 
-        public InternalFields setSourceOffTrafficSourceField(String sourceOffTrafficSourceField) {
-            this.sourceOffTrafficSourceField = sourceOffTrafficSourceField;
+        public InternalFields setSourceOfTrafficSourceField(String sourceOfTrafficSourceField) {
+            this.sourceOfTrafficSourceField = sourceOfTrafficSourceField;
             return this;
         }
 
         public String getSourceOffTrafficMediumField() {
-            return sourceOffTrafficMediumField;
+            return sourceOfTrafficMediumField;
         }
 
-        public InternalFields setSourceOffTrafficMediumField(String sourceOffTrafficMediumField) {
-            this.sourceOffTrafficMediumField = sourceOffTrafficMediumField;
+        public InternalFields setSourceOfTrafficMediumField(String sourceOfTrafficMediumField) {
+            this.sourceOfTrafficMediumField = sourceOfTrafficMediumField;
             return this;
         }
 
         public String getSourceOffTrafficCampaignField() {
-            return sourceOffTrafficCampaignField;
+            return sourceOfTrafficCampaignField;
         }
 
-        public InternalFields setSourceOffTrafficCampaignField(String sourceOffTrafficCampaignField) {
-            this.sourceOffTrafficCampaignField = sourceOffTrafficCampaignField;
+        public InternalFields setSourceOfTrafficCampaignField(String sourceOfTrafficCampaignField) {
+            this.sourceOfTrafficCampaignField = sourceOfTrafficCampaignField;
             return this;
         }
 
         public String getSourceOffTrafficKeyWordField() {
-            return sourceOffTrafficKeyWordField;
+            return sourceOfTrafficKeyWordField;
         }
 
-        public InternalFields setSourceOffTrafficKeyWordField(String sourceOffTrafficKeyWordField) {
-            this.sourceOffTrafficKeyWordField = sourceOffTrafficKeyWordField;
+        public InternalFields setSourceOfTrafficKeyWordField(String sourceOfTrafficKeyWordField) {
+            this.sourceOfTrafficKeyWordField = sourceOfTrafficKeyWordField;
             return this;
         }
 
         public String getSourceOffTrafficContentField() {
-            return sourceOffTrafficContentField;
+            return sourceOfTrafficContentField;
         }
 
-        public InternalFields setSourceOffTrafficContentField(String sourceOffTrafficContentField) {
-            this.sourceOffTrafficContentField = sourceOffTrafficContentField;
+        public InternalFields setSourceOfTrafficContentField(String sourceOfTrafficContentField) {
+            this.sourceOfTrafficContentField = sourceOfTrafficContentField;
             return this;
         }
 

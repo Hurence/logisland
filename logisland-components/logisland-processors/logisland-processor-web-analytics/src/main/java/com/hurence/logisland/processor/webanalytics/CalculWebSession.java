@@ -25,8 +25,6 @@ import com.hurence.logisland.processor.webanalytics.modele.*;
 import com.hurence.logisland.processor.webanalytics.util.SimpleSessionsCalculator;
 import com.hurence.logisland.processor.webanalytics.util.Utils;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.time.Duration;
@@ -527,11 +525,11 @@ public class CalculWebSession
                 .setSessionIdField(_SESSION_ID_FIELD)
                 .setTimestampField(_TIMESTAMP_FIELD)
                 .setVisitedPageField(_VISITED_PAGE_FIELD)
-                .setSourceOffTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
-                .setSourceOffTrafficContentField(_SOT_CONTENT_FIELD)
-                .setSourceOffTrafficKeyWordField(_SOT_KEYWORD_FIELD)
-                .setSourceOffTrafficMediumField(_SOT_MEDIUM_FIELD)
-                .setSourceOffTrafficSourceField(_SOT_SOURCE_FIELD)
+                .setSourceOfTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
+                .setSourceOfTrafficContentField(_SOT_CONTENT_FIELD)
+                .setSourceOfTrafficKeyWordField(_SOT_KEYWORD_FIELD)
+                .setSourceOfTrafficMediumField(_SOT_MEDIUM_FIELD)
+                .setSourceOfTrafficSourceField(_SOT_SOURCE_FIELD)
                 .setNewSessionReasonField(_NEW_SESSION_REASON_FIELD)
                 .setUserIdField(_USERID_FIELD)
                 .setOriginalSessionIdField("originalSessionId")
@@ -541,11 +539,11 @@ public class CalculWebSession
         this.sessionInternalFields = new WebSession.InternalFields()
                 .setSessionIdField(_SESSION_ID_FIELD)
                 .setTimestampField(_TIMESTAMP_FIELD)
-                .setSourceOffTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
-                .setSourceOffTrafficContentField(_SOT_CONTENT_FIELD)
-                .setSourceOffTrafficKeyWordField(_SOT_KEYWORD_FIELD)
-                .setSourceOffTrafficMediumField(_SOT_MEDIUM_FIELD)
-                .setSourceOffTrafficSourceField(_SOT_SOURCE_FIELD)
+                .setSourceOfTrafficCampaignField(_SOT_CAMPAIGN_FIELD)
+                .setSourceOfTrafficContentField(_SOT_CONTENT_FIELD)
+                .setSourceOfTrafficKeyWordField(_SOT_KEYWORD_FIELD)
+                .setSourceOfTrafficMediumField(_SOT_MEDIUM_FIELD)
+                .setSourceOfTrafficSourceField(_SOT_SOURCE_FIELD)
                 .setIsSessionActiveField(_IS_SESSION_ACTIVE_FIELD)
                 .setSessionDurationField(_SESSION_DURATION_FIELD)
                 .setSessionInactivityDurationField(_SESSION_INACTIVITY_DURATION_FIELD)
