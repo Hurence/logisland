@@ -69,7 +69,9 @@ public class FirstUserVisitTimestampManagerImpl implements FirstUserVisitTimesta
         }
         QueryResponseRecord queryResponseRecord = elasticsearchClientService.queryGet(queryRecord);
         List<AggregationResponseRecord> aggregationResponseRecords = queryResponseRecord.getAggregations();
-        if (aggregationResponseRecords.size() != 1) {
+        if (aggregationResponseRecords.size() == 0) {
+            return null;
+        } else if (aggregationResponseRecords.size() > 1) {
             throw new IllegalStateException("Expected one aggregation, but found " + aggregationResponseRecords.size());
         }
         AggregationResponseRecord aggregationResponseRecord = aggregationResponseRecords.get(0);
