@@ -39,7 +39,9 @@ import java.util.stream.Collectors;
 
 @Category(ComponentCategory.UTILS)
 @Tags({"record", "debug"})
-@CapabilityDescription("This is a processor that logs incoming records")
+@CapabilityDescription("This is a processor that logs incoming records." +
+                       " All records are printed out by default unless a filter is set (see debug.filter)." +
+                       " Also all fields are printed out by default unless a selection is set (see debug.selection).")
 @ExtraDetailFile("./details/common-processors/DebugStream-Detail.rst")
 public class DebugStream extends AbstractProcessor {
 
@@ -78,14 +80,14 @@ public class DebugStream extends AbstractProcessor {
             .name("debug.filter")
             .description("A filter that will look for the provided key with the specified value: <key>:<regexp>. Eg")
             .required(false)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.FILTER_REGEXP_VALIDATOR)
             .build();
 
     static final PropertyDescriptor DEBUG_FILTER_SELECTION = new PropertyDescriptor.Builder()
             .name("debug.selection")
-            .description("A comma separated fieldnames to narrow the number of fields printed out.")
+            .description("A comma separated fieldnames to narrow the number of fields printed out. Note that fieldnames are trimmed.")
             .required(false)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .build();
 
     @Override
@@ -138,20 +140,27 @@ public class DebugStream extends AbstractProcessor {
                 final String regexp = filter.substring(index+1);
                 this.filter = Pattern.compile(regexp);
 
-                if (context.getPropertyValue(DEBUG_FILTER_SELECTION).isSet()) {
-                    this.selection = Arrays.stream(context.getPropertyValue(DEBUG_FILTER_SELECTION).asString()
-                                           .split(","))
-                                           .map(String::trim)
-                                           .collect(Collectors.toList());
-                }
-
                 if ( getLogger().isTraceEnabled() ) {
-                    getLogger().trace("Successfully setup filter for DebugStream with => key='" + this.key + "' and regexp='" + regexp + "'" +
-                                      (this.selection == null ? "" : ", selection=" + this.selection));
+                    getLogger().trace("Successfully setup filter for DebugStream with => key='" + this.key + "' and regexp='" + regexp + "'");
                 }
             }
             catch (final Exception e) {
                 throw new RuntimeException("Invalid filter for '"+filter+"'. Was expecting 'key:<regexp>'", e);
+            }
+        }
+        if (context.getPropertyValue(DEBUG_FILTER_SELECTION).isSet()) {
+            final String selection = context.getPropertyValue(DEBUG_FILTER_SELECTION).asString();
+            try {
+                this.selection = Arrays.stream(selection.split(","))
+                                       .map(String::trim)
+                                       .collect(Collectors.toList());
+
+                if ( getLogger().isTraceEnabled() ) {
+                    getLogger().trace("Successfully setup filter for DebugStream with => selection=" + this.selection);
+                }
+            }
+            catch (final Exception e) {
+                throw new RuntimeException("Invalid selection for '"+selection+"'. Was expecting '<field>[,<field>]'", e);
             }
         }
     }
@@ -165,7 +174,7 @@ public class DebugStream extends AbstractProcessor {
             //Do not use serialization ! It is pointless as at this point the object is already deserialized into a Record !
             //Moreover trying to serialize the record may fail for a lot of reason (if record contains some objects without appropriate bean pattern.
             for(Record record: collection) {
-                boolean log = true; // log by default.
+                boolean log = true; // log by default if no filter. If a filter is defined then log if the key matches the regular expression.
                 if ( this.filter!=null ) {
                     // If a filter is defined check if the field to check is present in the record.
                     final Field field = record.getField(this.key);
@@ -174,20 +183,18 @@ public class DebugStream extends AbstractProcessor {
                         if ( value!=null ) {
                             // Check if the fields matches the regexp.
                             log = this.filter.matcher(value).find();
-                            if ( log ) {
-                                if ( this.selection!=null ) {
-                                    // Prints out only select fields.
-                                    final Map<String, Field> fields = record.getAllFields().stream()
-                                                                            .filter(f -> this.selection.contains(f.getName()))
-                                                                            .collect(Collectors.toMap(Field::getName,Function.identity()));
-                                    record = new StandardRecord();
-                                    record.addFields(fields);
-                                }
-                            }
                         }
                     }
                 }
                 if ( log ) {
+                    if ( this.selection!=null ) {
+                        // Prints out only select fields.
+                        final Map<String, Field> fields = record.getAllFields().stream()
+                                                                .filter(f -> this.selection.contains(f.getName()))
+                                                                .collect(Collectors.toMap(Field::getName,Function.identity()));
+                        record = new StandardRecord();
+                        record.addFields(fields);
+                    }
                     getLogger().info(record.toString(1));
                 }
             }

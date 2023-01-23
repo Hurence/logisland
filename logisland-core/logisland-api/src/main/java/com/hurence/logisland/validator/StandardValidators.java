@@ -731,4 +731,32 @@ public class StandardValidators {
             return builder.build();
         }
     }
+
+    /**
+     * A validator that ensures that the value has the format 'key:&lt;regexp&gt;' and the regular expression can be
+     * parsed successfully.
+     */
+    public static final Validator FILTER_REGEXP_VALIDATOR = (subject, value) ->
+    {
+        ValidationResult.Builder builder = new ValidationResult.Builder().subject(subject).input(value);
+        try {
+            final int index = value.indexOf(':');
+            if ( index==-1 ) {
+                builder.explanation("Unable to find ':' symbol. Expecting 'key:<regexp>'.").valid(false);
+            }
+            else if (index+1==value.length()) {
+                builder.explanation("The regular expression is empty. Expecting 'key:<regexp>'.").valid(false);
+            }
+            else {
+                value.substring(0, index);
+                Pattern.compile(value.substring(index+1));
+                builder.valid(true);
+            }
+        }
+        catch (final Exception e) {
+            builder.explanation(e.getLocalizedMessage()).valid(false);
+        }
+
+        return builder.build();
+    };
 }

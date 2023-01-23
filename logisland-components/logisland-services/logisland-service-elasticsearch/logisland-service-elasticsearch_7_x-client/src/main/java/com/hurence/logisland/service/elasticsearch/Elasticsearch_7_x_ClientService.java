@@ -655,7 +655,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         return new MultiQueryResponseRecord(searchResponses);
     }
 
-    private Collection<QueryResponseRecord> _multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException{
+    Collection<QueryResponseRecord> _multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException{
         final MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
         List<SearchRequest> searchRequests = buildSearchRequests(queryRecords);
         searchRequests.forEach(multiSearchRequest::add);

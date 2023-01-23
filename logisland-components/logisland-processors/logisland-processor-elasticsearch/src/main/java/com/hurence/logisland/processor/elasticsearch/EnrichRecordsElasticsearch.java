@@ -113,7 +113,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             .name("debug.filter")
             .description("A filter that will look for the provided key with the specified value: <key>:<regexp>")
             .required(false)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.FILTER_REGEXP_VALIDATOR)
             .build();
 
     private static final String ATTRIBUTE_MAPPING_SEPARATOR = ":";
@@ -140,8 +140,8 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         return Collections.unmodifiableList(props);
     }
 
-    private volatile String key;
-    private volatile Pattern filter;
+    private String key;
+    private Pattern filter;
 
     @Override
     public void init(final ProcessContext context) throws InitializationException {
