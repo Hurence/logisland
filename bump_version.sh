@@ -26,8 +26,9 @@ function bump_files() {
 function bump() {
 	echo -n "Updating $1..."
 	tmp_file=$(mktemp)
-	rm -f "$tmp_file"
-	sed -i "s/$2/$3/1w $tmp_file" $1
+	echo "$tmp_file $1 $2 $3"
+#	rm -f "$tmp_file"
+	sed -i '' "s/$2/$3/g" $1
 	if [ -s "$tmp_file" ]; then
 		echo "Done"
 	else

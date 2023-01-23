@@ -133,7 +133,7 @@ On logisland side, the following will happen:
   In any case the stream is never stopped.
 
 
-Type: :ref:`Versioned <d_bcefda54d79a3bedfa83231aed8d38b1>` extended :ref:`inline <i_ae1.4.015667b75409cb3251ba13c032>`
+Type: :ref:`Versioned <d_bcefda54d79a3bedfa83231aed8d38b1>` extended :ref:`inline <i_ae1.4.115667b75409cb3251ba13c032>`
 
 **Example:**
 
@@ -364,9 +364,9 @@ Body
 
 A streaming pipeline.
 
-:ref:`Versioned <d_bcefda54d79a3bedfa83231aed8d38b1>` extended :ref:`inline <i_ae1.4.015667b75409cb3251ba13c032>`
+:ref:`Versioned <d_bcefda54d79a3bedfa83231aed8d38b1>` extended :ref:`inline <i_ae1.4.115667b75409cb3251ba13c032>`
 
-.. _i_ae1.4.015667b75409cb3251ba13c032:
+.. _i_ae1.4.115667b75409cb3251ba13c032:
 
 **Inline schema:**
 
@@ -577,9 +577,9 @@ DataFlow Model Structure
 
 A streaming pipeline.
 
-:ref:`Versioned <d_bcefda54d79a3bedfa83231aed8d38b1>` extended :ref:`inline <i_ae1.4.015667b75409cb3251ba13c032>`
+:ref:`Versioned <d_bcefda54d79a3bedfa83231aed8d38b1>` extended :ref:`inline <i_ae1.4.115667b75409cb3251ba13c032>`
 
-.. _i_ae1.4.015667b75409cb3251ba13c032:
+.. _i_ae1.4.115667b75409cb3251ba13c032:
 
 **Inline schema:**
 
@@ -594,7 +594,7 @@ A streaming pipeline.
             services | No | array of :ref:`Component <d_3c2b4cd64485b5f73be7a1facba6ed8c>` |  |  | The service controllers.
         streams | No | array of :ref:`Component <d_3c2b4cd64485b5f73be7a1facba6ed8c>` extended :ref:`inline <i_09545770fbf157c057309e15e402b2f4>` |  |  | The engine properties.
 
-.. _d_0752e439d11.4.0d4f6b437e63ea7248:
+.. _d_0752e439d11.4.1d4f6b437e63ea7248:
 
 Pipeline Model Structure
 ------------------------

@@ -677,7 +677,7 @@ In the response, you should see a notice event like this:
         "src" : "172.16.238.1",
         "sub" : "Sampled servers:  172.16.238.136, 172.16.238.136, 172.16.238.136, 172.16.238.136, 172.16.238.136",
         "suppress_for" : 3600.0,
-        "ts" : 1.4.0435875879278E9
+        "ts" : 1.4.1435875879278E9
       }
     }
     
