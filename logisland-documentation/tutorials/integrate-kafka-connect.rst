@@ -239,7 +239,7 @@ Since we put a *DebugStream* processor, messages produced by our source connecto
  18/04/06 11:17:06 INFO DebugStream: {
   "id" : "9b17a9ac-97c4-44ef-9168-d298e8c53d42",
   "type" : "kafka_connect",
-  "creationDate" : 1.4.006216376,
+  "creationDate" : 1.4.106216376,
   "fields" : {
     "record_id" : "9b17a9ac-97c4-44ef-9168-d298e8c53d42",
     "firstName" : "London",
@@ -250,7 +250,7 @@ Since we put a *DebugStream* processor, messages produced by our source connecto
     },
     "middleName" : "Anna",
     "dateOfBirth" : 836179200000,
-    "record_time" : 1.4.006216376,
+    "record_time" : 1.4.106216376,
     "record_type" : "kafka_connect",
     "email" : "londonmarks@fake.com"
   }

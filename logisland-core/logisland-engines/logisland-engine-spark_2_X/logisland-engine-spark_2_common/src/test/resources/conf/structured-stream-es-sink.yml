@@ -1,4 +1,4 @@
-version: 1.4.0
+version: 1.4.1
 documentation: Test job
 # Manual test for ES structured stream sink. Read some records from files on the
 # local filesystem and inject them in a local ES (docker/system install...)

@@ -257,5 +257,17 @@ public class StandardValidatorsTest {
         Assert.assertTrue("english tag should be validated as a language tag", result.isValid());
     }
 
+    @Test
+    public void filterRegexpValidator() throws IOException {
+        Validator boolV = StandardValidators.FILTER_REGEXP_VALIDATOR;
+        ValidationResult result = boolV.validate(null, "nofield");
+        Assert.assertFalse("'nofield' does not has the form 'key:<regexp>'", result.isValid());
+        result = boolV.validate(null, "nofield:");
+        Assert.assertFalse("'nofield:' does not has the form 'key:<regexp>'", result.isValid());
+        result = boolV.validate(null, "nofield:\\d{f");
+        Assert.assertFalse("'nofield:\\d{f' invalid regular expression", result.isValid());
+        result = boolV.validate(null, "nofield:\\d+");
+        Assert.assertTrue("'nofield:'\\d+' is compliant with the form 'key:<regexp>'", result.isValid());
+    }
 
 }

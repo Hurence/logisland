@@ -4,7 +4,7 @@ LogIsland docker files
 This repository contains a Docker file to build the official logisland Docker image with :
 
 - Spark 2.4.0
-- Logisland 1.4.0
+- Logisland 1.4.1
 
 Getting the docker image from repository
 ----------------------------------------
@@ -24,7 +24,7 @@ Building the image
 
     # build logisland
     mvn clean package
-    cp logisland-assembly/target/logisland-1.4.0-full-bin.tar.gz logisland-docker/full-container
+    cp logisland-assembly/target/logisland-1.4.1-full-bin.tar.gz logisland-docker/full-container
 
 Once the full logisland archive is copied in the logisland docker image directory, directory you can now issue:
 
@@ -32,7 +32,7 @@ Once the full logisland archive is copied in the logisland docker image director
 
     cd logisland-docker/full-container/
     docker build --rm -t hurence/logisland .
-    docker tag hurence/logisland:latest hurence/logisland:1.4.0
+    docker tag hurence/logisland:latest hurence/logisland:1.4.1
 
 Running the image
 -----------------
@@ -50,13 +50,13 @@ Running the image
         -p 4040-4060:4040-4060 \
         --name logisland \
         -h sandbox \
-        hurence/logisland:1.4.0 bash
+        hurence/logisland:1.4.1 bash
 
 or
 
 .. code-block::
 
-    docker run -d hurence/logisland:1.4.0 -d
+    docker run -d hurence/logisland:1.4.1 -d
 
 if you want to mount a directory from your host, add the following option :
 

@@ -88,7 +88,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.beans.Transient;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -109,6 +108,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     private volatile String authToken;
     protected volatile transient BulkProcessor bulkProcessor;
     private String geolocationFieldLabel;
+    private int multiGet_maxQueries;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -131,6 +131,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         props.add(PROP_SSL_CONTEXT_SERVICE);
         props.add(CHARSET);
         props.add(GEOLOCATION_FIELD_LABEL);
+        props.add(MULTIGET_MAXQUERIES);
 
         return Collections.unmodifiableList(props);
     }
@@ -165,6 +166,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             final String hosts = context.getPropertyValue(HOSTS).asString();
             final boolean enableSsl = context.getPropertyValue(ENABLE_SSL).asBoolean();
             geolocationFieldLabel = context.getPropertyValue(GEOLOCATION_FIELD_LABEL).asString();
+            this.multiGet_maxQueries = context.getPropertyValue(MULTIGET_MAXQUERIES).asInteger();
 
             esHosts = getEsHosts(hosts, enableSsl);
 
@@ -578,6 +580,9 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
 
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("multiGet request "+multiGetQueryRecords);
+        }
         List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
 
         MultiGetRequest multiGetRequest = new MultiGetRequest();
@@ -615,9 +620,14 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
                     Map<String,Object> responseMap = response.getSourceAsMap();
                     Map<String,String> retrievedFields = new HashMap<>();
                     responseMap.forEach((k,v) -> {if (v!=null) retrievedFields.put(k, v.toString());});
+                    getLogger().trace("multiGet response responseMap="+responseMap+" retrievedFields="+retrievedFields);
                     multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
                 }
             }
+        }
+
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("multiGet response "+multiGetResponseRecords);
         }
 
         return multiGetResponseRecords;
@@ -625,6 +635,27 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public MultiQueryResponseRecord multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException{
+        final List<QueryRecord> queries = queryRecords.getQueries();
+        final int queryCount = queries.size();
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("Performing multiQueryGet for "+queryCount+" queries split by chunks of "+this.multiGet_maxQueries+" queries.");
+        }
+
+        final List<QueryResponseRecord> searchResponses = new ArrayList<>(queryCount);
+
+        int processed = 0;
+        while(processed<queryCount){
+            final int range = Math.min(queryCount-processed, this.multiGet_maxQueries);
+            searchResponses.addAll(this._multiQueryGet(new MultiQueryRecord(queries.subList(processed, processed+range))));
+            processed = processed+range;
+        }
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("multiQueryGet returned "+searchResponses.size()+" responses.");
+        }
+        return new MultiQueryResponseRecord(searchResponses);
+    }
+
+    Collection<QueryResponseRecord> _multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException{
         final MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
         List<SearchRequest> searchRequests = buildSearchRequests(queryRecords);
         searchRequests.forEach(multiSearchRequest::add);
@@ -649,7 +680,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
                 }
             }
 
-            return new MultiQueryResponseRecord(searchResponses);
+            return searchResponses;
         } catch (IOException e) {
             getLogger().error("error while queryGet", e);
             throw new DatastoreClientServiceException(e);

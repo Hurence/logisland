@@ -273,7 +273,7 @@ public class IncrementalWebSession
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .defaultValue("is_single_page_visit")
                     .build();
-        
+
     public static final PropertyDescriptor IS_SESSION_ACTIVE_FIELD =
             new PropertyDescriptor.Builder()
                     .name("isSessionActive.out.field")
@@ -438,7 +438,7 @@ public class IncrementalWebSession
                             "The result may be not exact as we are not sure to query the events up to date.")
                     .expressionLanguageSupported(false)
                     .required(true)
-                    .addValidator(new StandardValidators.EnumValidator(ProcessingMode.class))
+                    .addValidator(new StandardValidators.EnumValidator<>(ProcessingMode.class))
                     .allowableValues(ProcessingMode.values())
                     .defaultValue(ProcessingMode.FAST.getName())
                     .build();
@@ -706,7 +706,7 @@ public class IncrementalWebSession
 
                     if (_DEBUG && !isValid) {
                         debug("Invalid Session Check: 'Day overlap' isValid=" + isValid + " session-id=" + session.getSessionId() +
-                                " firstEvent=" + firstEvent.format(DateTimeFormatter.ISO_ORDINAL_DATE) + 
+                                " firstEvent=" + firstEvent.format(DateTimeFormatter.ISO_ORDINAL_DATE) +
                                 " event=" + timestamp.format(DateTimeFormatter.ISO_ORDINAL_DATE) +
                                 " lastEvent=" + lastEvent.format(DateTimeFormatter.ISO_ORDINAL_DATE));
                     }
@@ -764,7 +764,7 @@ public class IncrementalWebSession
         final Collection<Events> groupOfEvents = toWebEvents(records);
         final Collection<String> inputDivolteSessions = groupOfEvents.stream()
                 .map(Events::getOriginalSessionId)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         final Map<String/*sessionId*/, Optional<WebSession>> lastSessionMapping = getMapping(inputDivolteSessions);
 
         //This method may update lastSessionMapping to current session (only the name will be used) when rewind is detected !

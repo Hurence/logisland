@@ -17,9 +17,17 @@ package com.hurence.logisland.service.elasticsearch;
 
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
+import com.hurence.logisland.service.datastore.model.MultiQueryRecord;
+import com.hurence.logisland.service.datastore.model.MultiQueryResponseRecord;
+import com.hurence.logisland.service.datastore.model.QueryRecord;
+import com.hurence.logisland.service.datastore.model.QueryResponseRecord;
+import com.hurence.logisland.service.datastore.model.bool.BoolCondition;
+import com.hurence.logisland.service.datastore.model.bool.WildCardQueryRecord;
 import com.hurence.logisland.service.datastore.model.exception.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.datastore.model.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.model.MultiGetResponseRecord;
@@ -40,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.hurence.logisland.service.elasticsearch.ElasticsearchClientService.*;
 
@@ -93,8 +102,15 @@ public class ElasticsearchOpenDistro_7_x_ClientServiceIT {
         }
     }
 
-    private ElasticsearchClientService configureElasticsearchOpenDistroClientService(final TestRunner runner) throws InitializationException {
-        final Elasticsearch_7_x_ClientService elasticsearchClientService = new Elasticsearch_7_x_ClientService();
+    private static ElasticsearchClientService configureElasticsearchOpenDistroClientService(final TestRunner runner,
+                                                                                            final Map<PropertyDescriptor, String>... extraProperties) throws InitializationException {
+        // Use default implementation of service.
+        return configureElasticsearchOpenDistroClientService(new Elasticsearch_7_x_ClientService(), runner, extraProperties);
+    }
+
+    private static ElasticsearchClientService configureElasticsearchOpenDistroClientService(final Elasticsearch_7_x_ClientService elasticsearchClientService,
+                                                                                            final TestRunner runner,
+                                                                                            final Map<PropertyDescriptor, String>... extraProperties) throws InitializationException {
 
         runner.addControllerService("elasticsearchClient", elasticsearchClientService);
         runner.setProperty(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
@@ -102,6 +118,8 @@ public class ElasticsearchOpenDistro_7_x_ClientServiceIT {
         runner.setProperty(elasticsearchClientService, USERNAME, OPENDISTRO_USERNAME);
         runner.setProperty(elasticsearchClientService, PASSWORD, OPENDISTRO_PASSWORD);
         runner.setProperty(elasticsearchClientService, ENABLE_SSL, "true");
+        // Set extra properties
+        Arrays.stream(extraProperties).forEach(map->map.forEach((key,value)->runner.setProperty(elasticsearchClientService, key, value)));
         runner.enableControllerService(elasticsearchClientService);
 
         // TODO : is this necessary ?
@@ -484,6 +502,45 @@ public class ElasticsearchOpenDistro_7_x_ClientServiceIT {
                 Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document3 from index2, verify that 3 fields has been retrieved
         });
 
+    }
+
+    @Test
+    public void testMultiQueryGet() throws InitializationException, InterruptedException {
+
+        final String index = "index";
+        final int numDocs = 55;
+        final int chunkSize = 10;
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
+
+        // create the controller service and link it to the test processor :
+        final AtomicInteger call_num = new AtomicInteger();
+        final Elasticsearch_7_x_ClientService es = new Elasticsearch_7_x_ClientService() {
+            // Override default implementation to track the number of actual calls.
+            @Override
+            Collection<QueryResponseRecord> _multiQueryGet(MultiQueryRecord queryRecords) throws DatastoreClientServiceException {
+                call_num.incrementAndGet();
+                return super._multiQueryGet(queryRecords);
+            }
+        };
+        final ElasticsearchClientService elasticsearchClientService =
+            configureElasticsearchOpenDistroClientService(es, runner, Collections.singletonMap(MULTIGET_MAXQUERIES, String.valueOf(chunkSize)));
+        // Create docs and one query per doc.
+        final List<QueryRecord> queries = new ArrayList<>();
+        for(int i=0;i<numDocs;i++) {
+            elasticsearchClientService.bulkPut(index, null, Collections.singletonMap("field", String.valueOf(i)), Optional.of("docId"+i));
+            queries.add(new QueryRecord().addCollection("*")
+                                         .addBoolQuery(new WildCardQueryRecord("field", String.valueOf(i)),
+                                                       BoolCondition.MUST));
+        }
+        // Flush the bulk processor :
+        elasticsearchClientService.bulkFlush();
+        Thread.sleep(2000);
+        // Refresh the indexes :
+        elasticsearchClientService.refreshCollection(index);
+        // Perform actual test.
+        elasticsearchClientService.multiQueryGet(new MultiQueryRecord(queries));
+        // Check the number of expected calls.
+        Assert.assertEquals(numDocs/chunkSize+(numDocs%chunkSize==0?0:1), call_num.get());
     }
 
     @Test

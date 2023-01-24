@@ -211,6 +211,14 @@ public interface ElasticsearchClientService extends DatastoreClientService {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    PropertyDescriptor MULTIGET_MAXQUERIES = new PropertyDescriptor.Builder()
+            .name("multiqueryget.maxqueries")
+            .description("The maximum number of queries per multiqueryget call.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .defaultValue("50")
+            .build();
+
     /**
      * Put a given document in elasticsearch bulk processor.
      *
