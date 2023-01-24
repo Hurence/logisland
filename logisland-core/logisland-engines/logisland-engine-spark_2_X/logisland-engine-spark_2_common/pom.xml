@@ -25,7 +25,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <jackson.version>2.6.6</jackson.version>
         <eventhubs.version>2.3.14.1</eventhubs.version>
         <hadoop-azure.version>2.7.0</hadoop-azure.version>
-        <hadoop-common.version>2.7.0</hadoop-common.version>
+        <hadoop-common.version>3.2.3</hadoop-common.version>
         <elasticsearch.version>7.14.1</elasticsearch.version>
         <spark-avro.version>4.0.0</spark-avro.version>
     </properties>
