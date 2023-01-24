@@ -20,7 +20,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <swagger-async-httpclient-version>0.3.5</swagger-async-httpclient-version>
         <scala.binary.version>2.11</scala.binary.version>
         <spark.version>2.3.3</spark.version>
-        <kafka.version>0.10.2.1</kafka.version>
+        <kafka.version>0.10.2.2</kafka.version>
         <scala.version>2.11.8</scala.version>
         <jackson.version>2.6.6</jackson.version>
         <eventhubs.version>2.3.14.1</eventhubs.version>
