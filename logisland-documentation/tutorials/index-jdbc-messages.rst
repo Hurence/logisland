@@ -162,7 +162,7 @@ it should be something like the following
     18/09/04 12:47:33 INFO DebugStream: {
       "id" : "f7690b71-f339-4a84-8bd9-a0beb9ba5f92",
       "type" : "kafka_connect",
-      "creationDate" : 1.4.065253831,
+      "creationDate" : 1.4.165253831,
       "fields" : {
         "record_id" : "f7690b71-f339-4a84-8bd9-a0beb9ba5f92",
         "RECORD_TIME" : 0,
@@ -172,7 +172,7 @@ it should be something like the following
         "HTTP_QUERY" : "/images/KSC-logosmall.gif",
         "HTTP_VERSION" : "HTTP/1.0 ",
         "USER" : "-",
-        "record_time" : 1.4.065253831,
+        "record_time" : 1.4.165253831,
         "record_type" : "kafka_connect",
         "HTTP_METHOD" : "GET",
         "BYTES_OUT" : 1204

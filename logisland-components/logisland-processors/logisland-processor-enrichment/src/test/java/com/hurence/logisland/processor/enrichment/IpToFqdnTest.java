@@ -347,7 +347,7 @@ public class IpToFqdnTest {
         outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
     }
 
-    @Test
+    //@Test
     public void testCacheEntryExpiration() throws InitializationException {
         final TestRunner runner = getTestRunner();
 

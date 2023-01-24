@@ -300,7 +300,8 @@ public class SessionsCalculator {
         }
 
         // IS_SINGLE_PAGE
-        final Boolean currentIsSinglePageVisit = sessionInternalRecord.getField(webSessionInternalFields.getIsSinglePageVisit()).asBoolean();
+        final Field currentIsSinglePageVisitField = sessionInternalRecord.getField(webSessionInternalFields.getIsSinglePageVisit());
+        final boolean currentIsSinglePageVisit = currentIsSinglePageVisitField!=null && currentIsSinglePageVisitField.asBoolean();
         final String sessionFirstVisitedPage = sessionInternalRecord.getField(webSessionInternalFields.getFirstVisitedPageField()).asString();
         session.setIsSinglePageVisit(currentIsSinglePageVisit && sessionFirstVisitedPage.equals(visitedPage.asString()));
 

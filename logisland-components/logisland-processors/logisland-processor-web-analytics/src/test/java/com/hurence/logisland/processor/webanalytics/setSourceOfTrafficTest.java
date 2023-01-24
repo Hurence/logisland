@@ -206,9 +206,17 @@ public class setSourceOfTrafficTest {
 
     @Test
     public void testAdwords() throws InitializationException {
+        this.testAdwords("https://www.xyz_website.com/fr/index.html?gclid=XXX");
+    }
+    @Test
+    public void testAdwordsWithPipes() throws InitializationException {
+        // Check that pipes in URL do not break campaign assignment.
+        this.testAdwords("https://www.xyz_website.com/fr/index.html?gclid=XXX&q=||relevance||manufacturerNameFacet");
+    }
+    public void testAdwords(final String url) throws InitializationException {
         // Test the adword case with presence of gclid parameter.
         Record record1 = new StandardRecord();
-        record1.setField("firstVisitedPage", FieldType.STRING, "https://www.xyz_website.com/fr/index.html?gclid=XXX");
+        record1.setField("firstVisitedPage", FieldType.STRING, url);
 
         TestRunner testRunner = getTestRunner();
 

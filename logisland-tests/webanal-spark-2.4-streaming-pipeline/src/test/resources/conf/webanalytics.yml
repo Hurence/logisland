@@ -3,7 +3,7 @@
 # Receive web events from eventhubs, treat them then push events and sessions into opendistro cluster
 #########################################################################################################
 
-version: 1.4.0
+version: 1.4.1
 documentation: Logisland Rubix Webanalytics
 
 engine:

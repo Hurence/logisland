@@ -346,18 +346,25 @@ public class SetSourceOfTraffic extends AbstractProcessor {
             sourceOfTraffic.setKeyword(adwords ? ADWORDS : DOUBLECLICK);
 
             try {
-                String[] params = new URI(location).getQuery().split("&");
-                for(String param: params) {
-                    String[] token = param.split("campaign=");
-                    if ( token.length==2) {
-                        sourceOfTraffic.setCampaign(token[1]);
-                    }
-                }
+                setAdwordsCampaign(new URI(location).getQuery().split("&"), sourceOfTraffic);
             } catch (URISyntaxException e) {
-                getLogger().error("URISyntaxException", e);
+                // Symbol `|` generates exception in URI but not in URL.
+                try {
+                    setAdwordsCampaign(new URL(location).getQuery().split("&"), sourceOfTraffic);
+                } catch (final MalformedURLException e2) {
+                    getLogger().error("URISyntaxException", e);
+                }
             }
         }
         return processed;
+    }
+    private void setAdwordsCampaign(final String[] params, final SourceOfTrafficMap sourceOfTraffic) {
+        for(String param: params) {
+            String[] token = param.split("campaign=");
+            if ( token.length==2) {
+                sourceOfTraffic.setCampaign(token[1]);
+            }
+        }
     }
 
     public void processSession(ProcessContext context, Record record) {

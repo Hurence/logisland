@@ -24,6 +24,7 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
@@ -99,11 +100,28 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             .identifiesControllerService(CacheService.class)
             .build();
 
+    // Prevent this processor to log warnings when the docid is a field that is not mandatory in the record.
+    public static final PropertyDescriptor OPTIONAL_ENRICHMENT = new PropertyDescriptor.Builder()
+            .name("enrich.optional")
+            .description("If 'true' then avoid this processor to log warnings when the id of the document to fetch is missing")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("false")
+            .build();
+
+    static final PropertyDescriptor DEBUG_FILTER = new PropertyDescriptor.Builder()
+            .name("debug.filter")
+            .description("A filter that will look for the provided key with the specified value: <key>:<regexp>")
+            .required(false)
+            .addValidator(StandardValidators.FILTER_REGEXP_VALIDATOR)
+            .build();
+
     private static final String ATTRIBUTE_MAPPING_SEPARATOR = ":";
     private static final String ATTRIBUTE_MAPPING_SEPARATOR_REGEXP = "\\s*"+ATTRIBUTE_MAPPING_SEPARATOR+"\\s*";
 
     private String[] excludesArray = null;
     private CacheService<String, MultiGetResponseRecord> cacheService = null;
+    private boolean optionalEnrichment;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -116,9 +134,14 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         props.add(ES_INCLUDES_FIELD);
         props.add(ES_EXCLUDES_FIELD);
         props.add(CACHE_SERVICE);
+        props.add(OPTIONAL_ENRICHMENT);
+        props.add(DEBUG_FILTER);
 
         return Collections.unmodifiableList(props);
     }
+
+    private String key;
+    private Pattern filter;
 
     @Override
     public void init(final ProcessContext context) throws InitializationException {
@@ -129,6 +152,21 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         }
 
         cacheService = PluginProxy.rewrap(context.getPropertyValue(CACHE_SERVICE).asControllerService());
+
+        this.optionalEnrichment = context.getPropertyValue(OPTIONAL_ENRICHMENT).asBoolean();
+
+        if (context.getPropertyValue(DEBUG_FILTER).isSet()) {
+            final String filter = context.getPropertyValue(DEBUG_FILTER).asString();
+            try {
+                final int index = filter.indexOf(':');
+                this.key = filter.substring(0, index);
+                final String regexp = filter.substring(index+1);
+                this.filter = Pattern.compile(regexp);
+            }
+            catch (final Exception e) {
+                throw new RuntimeException("Invalid filter for '"+filter+"'. Was expecting 'key:<regexp>'", e);
+            }
+        }
     }
 
     /**
@@ -171,7 +209,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             }
             IncludeFields includeFields = new IncludeFields(includesArray);
 
-            if (recordKeyName != null && indexName != null && typeName != null) {
+            if (recordKeyName != null && !recordKeyName.trim().isEmpty() && indexName != null && typeName != null) {
 
                 // Compute unique key for the ES entry to get ans also stored in the cache
                 String esKey = asUniqueKey(indexName, typeName, recordKeyName);
@@ -187,15 +225,19 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
                     esInfoFromCache.put(asUniqueKey(multiGetResponseRecord), multiGetResponseRecord);
                 } else {
                     // Info is not yet in the cache, add it to the list of info to fetch from ES
+                    this.debugRecord(record, "Requesting "+indexName+"/"+typeName+"/"+recordKeyName);
                     mgqrBuilder.add(indexName, typeName, includeFields.getAttrsToIncludeArray(), recordKeyName);
                 }
 
                 // All records are anyway to be enriched
-                recordsToEnrich.add(new ImmutableTriple(record, esKey, includeFields));
+                recordsToEnrich.add(new ImmutableTriple<>(record, esKey, includeFields));
             } else {
-                getLogger().warn("Can not request ElasticSearch with " +
-                        "index: {}, type: {}, recordKey: {}, record id is :\n{}",
-                        new Object[]{ indexName, typeName, recordKeyName, record.getId() });
+                if ( !this.optionalEnrichment )
+                {
+                    getLogger().warn("Can not request ElasticSearch as one of the following field is 'null' with " +
+                                     "index='{}', type='{}', recordKey='{}', record_id='{}'",
+                                     new Object[]{ indexName, typeName, recordKeyName, record.getId() });
+                }
             }
         }
 
@@ -244,9 +286,11 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
                         if (includeFields.hasMappingFor(fieldName)){
                             String mappedAttributeName = includeFields.getAttributeToMap(fieldName);
                             // Replace the attribute name
+                            this.debugRecord(outputRecord, "Enriching record "+key+": "+mappedAttributeName+"="+v);
                             outputRecord.setStringField(mappedAttributeName, v);
                         }
                         else {
+                            this.debugRecord(outputRecord, "Enriching record "+key+": "+fieldName+"="+v);
                             outputRecord.setStringField(fieldName, v);
                         }
                     }
@@ -255,6 +299,29 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         });
 
         return records;
+    }
+
+    /**
+     * Logs the specified log only if the provided record matches the debug filter.
+     * Eg. if the filter is
+     *     debug.filter: Userid:8822736715780
+     * then the log entry will be logged only is the record owns the field 'Userid' and its value is '8822736715780'.
+     *
+     * @param record the record to apply the filter on.
+     * @param log the log entry to print out.
+     */
+    private void debugRecord(final Record record, final String log) {
+        if ( this.filter!=null ) {
+            final Field field = record.getField(this.key);
+            if ( field != null ) {
+                final String value = field.asString();
+                if ( value != null ) {
+                    if ( this.filter.matcher(value).find() ) {
+                        getLogger().info("EnrichRecord ("+this.key+"="+value+"): " + log);
+                    }
+                }
+            }
+        }
     }
 
     private String evaluatePropAsString(Record record, ProcessContext context, PropertyDescriptor descriptor) {

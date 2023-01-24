@@ -22,7 +22,7 @@
     <parent>
         <artifactId>logisland-engines</artifactId>
         <groupId>com.hurence.logisland</groupId>
-        <version>1.4.0</version>
+        <version>1.4.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

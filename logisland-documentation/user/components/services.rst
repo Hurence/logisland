@@ -17,7 +17,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -59,7 +59,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -101,7 +101,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 2.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.4.1
 
 Class
 _____
@@ -151,7 +151,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 5.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.4.1
 
 Class
 _____
@@ -201,7 +201,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -250,7 +250,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -299,7 +299,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -350,7 +350,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -396,7 +396,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -431,7 +431,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -469,7 +469,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -512,7 +512,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -566,7 +566,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -608,7 +608,7 @@ Implementation of ChronixClientService for Solr 6 4 2
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_chronix_6_4_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_chronix_6_4_2-client:1.4.1
 
 Class
 _____
@@ -648,7 +648,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -690,7 +690,7 @@ Implementation of ChronixClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_chronix_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_chronix_8-client:1.4.1
 
 Class
 _____
@@ -730,7 +730,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -768,7 +768,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -810,7 +810,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -852,7 +852,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -901,7 +901,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -952,7 +952,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -998,7 +998,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -1033,7 +1033,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -1076,7 +1076,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -1130,7 +1130,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -1172,7 +1172,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -1221,7 +1221,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -1263,7 +1263,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -1301,7 +1301,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -1343,7 +1343,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -1385,7 +1385,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -1434,7 +1434,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -1485,7 +1485,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -1531,7 +1531,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -1566,7 +1566,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -1609,7 +1609,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -1663,7 +1663,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -1705,7 +1705,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -1754,7 +1754,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -1796,7 +1796,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -1834,7 +1834,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -1876,7 +1876,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -1918,7 +1918,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -1967,7 +1967,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -2018,7 +2018,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -2064,7 +2064,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -2099,7 +2099,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -2142,7 +2142,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -2196,7 +2196,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -2238,7 +2238,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -2287,7 +2287,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -2329,7 +2329,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -2367,7 +2367,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -2409,7 +2409,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -2451,7 +2451,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -2500,7 +2500,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -2551,7 +2551,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -2597,7 +2597,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -2632,7 +2632,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -2675,7 +2675,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -2729,7 +2729,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -2771,7 +2771,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -2820,7 +2820,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -2862,7 +2862,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -2900,7 +2900,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -2942,7 +2942,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -2984,7 +2984,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -3033,7 +3033,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -3084,7 +3084,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -3130,7 +3130,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -3165,7 +3165,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -3208,7 +3208,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -3262,7 +3262,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -3304,7 +3304,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -3353,7 +3353,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -3395,7 +3395,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -3433,7 +3433,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -3475,7 +3475,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -3517,7 +3517,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -3566,7 +3566,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -3617,7 +3617,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -3663,7 +3663,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -3698,7 +3698,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -3741,7 +3741,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -3795,7 +3795,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -3837,7 +3837,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -3886,7 +3886,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -3928,7 +3928,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -3966,7 +3966,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -4008,7 +4008,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -4050,7 +4050,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -4099,7 +4099,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -4150,7 +4150,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -4196,7 +4196,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -4231,7 +4231,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -4274,7 +4274,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -4328,7 +4328,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -4370,7 +4370,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -4419,7 +4419,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -4461,7 +4461,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -4499,7 +4499,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -4541,7 +4541,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -4583,7 +4583,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -4632,7 +4632,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -4683,7 +4683,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -4729,7 +4729,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -4764,7 +4764,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -4807,7 +4807,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -4861,7 +4861,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -4903,7 +4903,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -4952,7 +4952,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -4994,7 +4994,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -5032,7 +5032,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -5074,7 +5074,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -5116,7 +5116,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -5165,7 +5165,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -5216,7 +5216,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -5262,7 +5262,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -5297,7 +5297,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -5340,7 +5340,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -5394,7 +5394,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -5436,7 +5436,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -5485,7 +5485,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -5527,7 +5527,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -5565,7 +5565,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -5607,7 +5607,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -5649,7 +5649,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -5698,7 +5698,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -5749,7 +5749,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -5795,7 +5795,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -5830,7 +5830,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -5873,7 +5873,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -5927,7 +5927,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -5969,7 +5969,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -6018,7 +6018,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -6060,7 +6060,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -6098,7 +6098,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -6140,7 +6140,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -6182,7 +6182,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -6231,7 +6231,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -6282,7 +6282,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -6328,7 +6328,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -6363,7 +6363,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -6406,7 +6406,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -6460,7 +6460,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -6502,7 +6502,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -6552,7 +6552,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -6594,7 +6594,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -6632,7 +6632,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -6674,7 +6674,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -6716,7 +6716,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -6765,7 +6765,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -6816,7 +6816,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -6862,7 +6862,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -6897,7 +6897,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -6940,7 +6940,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -6994,7 +6994,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -7036,7 +7036,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -7086,7 +7086,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -7128,7 +7128,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -7166,7 +7166,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -7208,7 +7208,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -7250,7 +7250,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -7299,7 +7299,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -7350,7 +7350,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -7396,7 +7396,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -7431,7 +7431,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -7474,7 +7474,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -7528,7 +7528,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -7570,7 +7570,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -7620,7 +7620,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -7662,7 +7662,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -7700,7 +7700,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -7742,7 +7742,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -7784,7 +7784,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -7833,7 +7833,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -7884,7 +7884,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -7930,7 +7930,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -7965,7 +7965,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -8008,7 +8008,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -8062,7 +8062,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -8104,7 +8104,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -8154,7 +8154,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -8196,7 +8196,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -8234,7 +8234,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -8276,7 +8276,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -8318,7 +8318,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -8367,7 +8367,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -8418,7 +8418,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -8464,7 +8464,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -8499,7 +8499,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -8542,7 +8542,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -8596,7 +8596,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -8638,7 +8638,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -8688,7 +8688,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -8730,7 +8730,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -8768,7 +8768,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -8810,7 +8810,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -8852,7 +8852,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -8901,7 +8901,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -8952,7 +8952,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -8998,7 +8998,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -9033,7 +9033,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -9076,7 +9076,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -9130,7 +9130,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -9172,7 +9172,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -9222,7 +9222,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -9264,7 +9264,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -9302,7 +9302,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -9344,7 +9344,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -9386,7 +9386,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -9435,7 +9435,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -9486,7 +9486,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -9532,7 +9532,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -9567,7 +9567,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -9610,7 +9610,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -9664,7 +9664,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -9706,7 +9706,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -9756,7 +9756,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -9798,7 +9798,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -9836,7 +9836,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -9878,7 +9878,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -9920,7 +9920,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -9969,7 +9969,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -10020,7 +10020,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -10066,7 +10066,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -10101,7 +10101,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -10144,7 +10144,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -10198,7 +10198,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -10240,7 +10240,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -10290,7 +10290,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -10332,7 +10332,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -10370,7 +10370,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -10412,7 +10412,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -10454,7 +10454,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -10503,7 +10503,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -10554,7 +10554,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -10600,7 +10600,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -10635,7 +10635,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -10678,7 +10678,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -10732,7 +10732,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -10774,7 +10774,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -10824,7 +10824,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -10866,7 +10866,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -10904,7 +10904,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -10946,7 +10946,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -10988,7 +10988,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -11037,7 +11037,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -11088,7 +11088,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -11134,7 +11134,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -11169,7 +11169,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -11212,7 +11212,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -11266,7 +11266,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -11308,7 +11308,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -11358,7 +11358,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -11400,7 +11400,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -11438,7 +11438,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -11480,7 +11480,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -11522,7 +11522,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -11571,7 +11571,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -11622,7 +11622,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -11668,7 +11668,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -11703,7 +11703,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -11746,7 +11746,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -11800,7 +11800,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -11842,7 +11842,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -11892,7 +11892,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -12467,7 +12467,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -12505,7 +12505,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -12547,7 +12547,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -12589,7 +12589,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -12638,7 +12638,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -12689,7 +12689,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -12735,7 +12735,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -12770,7 +12770,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -12813,7 +12813,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -12867,7 +12867,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -12909,7 +12909,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -12959,7 +12959,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -13001,7 +13001,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -13039,7 +13039,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -13081,7 +13081,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -13123,7 +13123,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -13172,7 +13172,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -13223,7 +13223,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -13269,7 +13269,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -13304,7 +13304,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -13347,7 +13347,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -13401,7 +13401,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -13443,7 +13443,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -13493,7 +13493,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -13535,7 +13535,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -13573,7 +13573,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -13615,7 +13615,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -13657,7 +13657,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -13706,7 +13706,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -13757,7 +13757,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -13803,7 +13803,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -13838,7 +13838,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -13881,7 +13881,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -13935,7 +13935,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -13977,7 +13977,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -14027,7 +14027,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -14069,7 +14069,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -14107,7 +14107,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -14149,7 +14149,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -14191,7 +14191,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -14240,7 +14240,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -14291,7 +14291,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -14337,7 +14337,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -14372,7 +14372,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -14415,7 +14415,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -14469,7 +14469,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -14511,7 +14511,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -14561,7 +14561,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -14603,7 +14603,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -14641,7 +14641,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -14683,7 +14683,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -14725,7 +14725,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -14774,7 +14774,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -14825,7 +14825,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -14871,7 +14871,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -14906,7 +14906,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -14949,7 +14949,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -15003,7 +15003,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -15045,7 +15045,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -15095,7 +15095,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -15137,7 +15137,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -15175,7 +15175,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -15217,7 +15217,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -15259,7 +15259,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -15308,7 +15308,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -15359,7 +15359,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -15405,7 +15405,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -15440,7 +15440,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -15483,7 +15483,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -15537,7 +15537,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -15579,7 +15579,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -15629,7 +15629,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -15671,7 +15671,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -15709,7 +15709,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -15751,7 +15751,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -15793,7 +15793,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -15842,7 +15842,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -15893,7 +15893,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -15939,7 +15939,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -15974,7 +15974,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -16017,7 +16017,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -16071,7 +16071,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -16113,7 +16113,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -16163,7 +16163,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -16205,7 +16205,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -16243,7 +16243,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -16285,7 +16285,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -16327,7 +16327,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -16376,7 +16376,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -16427,7 +16427,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -16473,7 +16473,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -16508,7 +16508,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -16551,7 +16551,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -16605,7 +16605,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -16647,7 +16647,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -16697,7 +16697,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -16739,7 +16739,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -16777,7 +16777,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -16819,7 +16819,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -16861,7 +16861,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -16910,7 +16910,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -16961,7 +16961,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -17007,7 +17007,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -17042,7 +17042,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -17085,7 +17085,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -17139,7 +17139,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -17181,7 +17181,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -17231,7 +17231,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -17273,7 +17273,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -17311,7 +17311,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -17353,7 +17353,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -17395,7 +17395,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -17444,7 +17444,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -17495,7 +17495,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -17541,7 +17541,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -17576,7 +17576,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -17619,7 +17619,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -17673,7 +17673,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -17715,7 +17715,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -17765,7 +17765,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -17807,7 +17807,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -17845,7 +17845,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -17887,7 +17887,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -17929,7 +17929,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -17978,7 +17978,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -18029,7 +18029,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -18075,7 +18075,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -18110,7 +18110,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -18153,7 +18153,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -18207,7 +18207,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -18249,7 +18249,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -18299,7 +18299,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -18341,7 +18341,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -18379,7 +18379,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -18421,7 +18421,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -18463,7 +18463,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -18512,7 +18512,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -18563,7 +18563,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -18609,7 +18609,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -18644,7 +18644,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -18687,7 +18687,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -18741,7 +18741,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -18783,7 +18783,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -18833,7 +18833,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -18875,7 +18875,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -18913,7 +18913,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -18955,7 +18955,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -18997,7 +18997,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -19046,7 +19046,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -19097,7 +19097,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -19143,7 +19143,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -19178,7 +19178,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -19221,7 +19221,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -19275,7 +19275,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -19317,7 +19317,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -19367,7 +19367,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -19409,7 +19409,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -19447,7 +19447,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -19489,7 +19489,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -19531,7 +19531,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -19580,7 +19580,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -19631,7 +19631,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -19677,7 +19677,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -19712,7 +19712,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -19755,7 +19755,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -19809,7 +19809,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -19851,7 +19851,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -19901,7 +19901,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -19943,7 +19943,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -19981,7 +19981,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -20023,7 +20023,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -20065,7 +20065,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -20114,7 +20114,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -20165,7 +20165,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -20211,7 +20211,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -20246,7 +20246,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -20289,7 +20289,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -20343,7 +20343,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -20385,7 +20385,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -20435,7 +20435,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -20477,7 +20477,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -20515,7 +20515,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -20557,7 +20557,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -20599,7 +20599,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -20648,7 +20648,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -20699,7 +20699,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -20745,7 +20745,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -20780,7 +20780,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -20823,7 +20823,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -20877,7 +20877,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -20919,7 +20919,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -20969,7 +20969,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -21011,7 +21011,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -21049,7 +21049,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -21091,7 +21091,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -21133,7 +21133,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -21182,7 +21182,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -21233,7 +21233,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -21279,7 +21279,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -21314,7 +21314,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -21357,7 +21357,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -21411,7 +21411,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -21453,7 +21453,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -21503,7 +21503,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -21545,7 +21545,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -21583,7 +21583,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -21625,7 +21625,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -21667,7 +21667,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -21716,7 +21716,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -21767,7 +21767,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -21813,7 +21813,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -21848,7 +21848,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -21891,7 +21891,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -21945,7 +21945,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -21987,7 +21987,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -22037,7 +22037,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -22079,7 +22079,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -22117,7 +22117,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -22159,7 +22159,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -22201,7 +22201,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -22250,7 +22250,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -22301,7 +22301,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -22347,7 +22347,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -22382,7 +22382,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -22425,7 +22425,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -22479,7 +22479,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -22521,7 +22521,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -22571,7 +22571,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -22613,7 +22613,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -22651,7 +22651,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -22693,7 +22693,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -22735,7 +22735,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -22784,7 +22784,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -22835,7 +22835,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -22881,7 +22881,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -22916,7 +22916,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -22959,7 +22959,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -23013,7 +23013,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -23055,7 +23055,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -23105,7 +23105,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -23147,7 +23147,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -23185,7 +23185,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -23227,7 +23227,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -23269,7 +23269,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -23318,7 +23318,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -23369,7 +23369,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -23415,7 +23415,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -23450,7 +23450,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -23493,7 +23493,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -23547,7 +23547,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -23589,7 +23589,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -23639,7 +23639,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -23681,7 +23681,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -23719,7 +23719,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -23761,7 +23761,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -23803,7 +23803,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -23852,7 +23852,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -23903,7 +23903,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -23949,7 +23949,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -23984,7 +23984,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -24027,7 +24027,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -24081,7 +24081,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -24123,7 +24123,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -24173,7 +24173,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -24215,7 +24215,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -24253,7 +24253,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -24295,7 +24295,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -24337,7 +24337,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -24386,7 +24386,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -24437,7 +24437,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -24483,7 +24483,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -24518,7 +24518,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -24561,7 +24561,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -24615,7 +24615,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -24657,7 +24657,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -24707,7 +24707,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -24749,7 +24749,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -24787,7 +24787,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -24829,7 +24829,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -24871,7 +24871,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -24920,7 +24920,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -24971,7 +24971,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -25017,7 +25017,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -25052,7 +25052,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -25095,7 +25095,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -25149,7 +25149,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -25191,7 +25191,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -25241,7 +25241,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -25283,7 +25283,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -25321,7 +25321,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -25363,7 +25363,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -25405,7 +25405,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -25454,7 +25454,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -25505,7 +25505,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -25551,7 +25551,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -25586,7 +25586,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -25629,7 +25629,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -25683,7 +25683,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -25725,7 +25725,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -25775,7 +25775,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -25817,7 +25817,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -25855,7 +25855,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -25897,7 +25897,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -25939,7 +25939,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -25988,7 +25988,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -26039,7 +26039,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -26085,7 +26085,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -26120,7 +26120,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -26163,7 +26163,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -26217,7 +26217,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -26259,7 +26259,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -26309,7 +26309,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -26351,7 +26351,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -26389,7 +26389,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -26431,7 +26431,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -26473,7 +26473,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -26522,7 +26522,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -26573,7 +26573,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -26619,7 +26619,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -26654,7 +26654,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -26697,7 +26697,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -26751,7 +26751,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -26793,7 +26793,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -26843,7 +26843,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -26885,7 +26885,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -26923,7 +26923,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -26965,7 +26965,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -27007,7 +27007,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -27056,7 +27056,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -27107,7 +27107,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -27153,7 +27153,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -27188,7 +27188,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -27231,7 +27231,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -27285,7 +27285,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -27327,7 +27327,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -27377,7 +27377,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -27419,7 +27419,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -27457,7 +27457,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -27499,7 +27499,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -27541,7 +27541,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -27590,7 +27590,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -27641,7 +27641,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -27687,7 +27687,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -27722,7 +27722,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -27765,7 +27765,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -27819,7 +27819,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -27861,7 +27861,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -27911,7 +27911,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -27953,7 +27953,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -27991,7 +27991,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -28033,7 +28033,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -28075,7 +28075,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -28124,7 +28124,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -28175,7 +28175,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -28221,7 +28221,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -28256,7 +28256,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -28299,7 +28299,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -28353,7 +28353,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -28395,7 +28395,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -28445,7 +28445,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -28487,7 +28487,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -28525,7 +28525,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -28567,7 +28567,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -28609,7 +28609,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -28658,7 +28658,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -28709,7 +28709,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -28755,7 +28755,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -28790,7 +28790,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -28833,7 +28833,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -28887,7 +28887,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -28929,7 +28929,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -28979,7 +28979,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -29021,7 +29021,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -29059,7 +29059,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -29101,7 +29101,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -29143,7 +29143,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -29192,7 +29192,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -29243,7 +29243,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -29289,7 +29289,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -29324,7 +29324,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -29367,7 +29367,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -29421,7 +29421,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -29463,7 +29463,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -29513,7 +29513,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -29555,7 +29555,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -29593,7 +29593,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -29635,7 +29635,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -29677,7 +29677,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -29726,7 +29726,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -29777,7 +29777,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -29823,7 +29823,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -29858,7 +29858,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -29901,7 +29901,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -29955,7 +29955,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -29997,7 +29997,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -30048,7 +30048,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -30090,7 +30090,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -30128,7 +30128,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -30170,7 +30170,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -30212,7 +30212,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -30261,7 +30261,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.4.1
 
 Class
 _____
@@ -30312,7 +30312,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -30358,7 +30358,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -30393,7 +30393,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -30436,7 +30436,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -30490,7 +30490,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -30532,7 +30532,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -30583,7 +30583,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -30625,7 +30625,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -30663,7 +30663,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -30705,7 +30705,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -30747,7 +30747,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -30796,7 +30796,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -30842,7 +30842,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -30877,7 +30877,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -30920,7 +30920,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -30974,7 +30974,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -31016,7 +31016,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -31067,7 +31067,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -31109,7 +31109,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -31147,7 +31147,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -31189,7 +31189,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -31231,7 +31231,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -31280,7 +31280,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -31326,7 +31326,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -31361,7 +31361,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -31404,7 +31404,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -31458,7 +31458,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -31500,7 +31500,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -31551,7 +31551,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____
@@ -31593,7 +31593,7 @@ Implementation of the IP 2 GEO Service using maxmind lite db file
 
 Module
 ______
-com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.0
+com.hurence.logisland:logisland-service-ip-to-geo-maxmind:1.4.1
 
 Class
 _____
@@ -31631,7 +31631,7 @@ A cache that store csv lines as records loaded from a file
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -31673,7 +31673,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.4.0
+com.hurence.logisland:logisland-service-cassandra-client:1.4.1
 
 Class
 _____
@@ -31715,7 +31715,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.4.1
 
 Class
 _____
@@ -31764,7 +31764,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-influxdb-client:1.4.0
+com.hurence.logisland:logisland-service-influxdb-client:1.4.1
 
 Class
 _____
@@ -31810,7 +31810,7 @@ A controller service for caching data by key value pair with LRU (last recently 
 
 Module
 ______
-com.hurence.logisland:logisland-service-inmemory-cache:1.4.0
+com.hurence.logisland:logisland-service-inmemory-cache:1.4.1
 
 Class
 _____
@@ -31845,7 +31845,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.4.0
+com.hurence.logisland:logisland-service-mongodb-client:1.4.1
 
 Class
 _____
@@ -31888,7 +31888,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.4.0
+com.hurence.logisland:logisland-service-redis:1.4.1
 
 Class
 _____
@@ -31942,7 +31942,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.4.1
 
 Class
 _____
@@ -31984,7 +31984,7 @@ Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that al
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.0
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.4.1
 
 Class
 _____
@@ -32035,7 +32035,7 @@ Implementation of SolrClientService for Solr 8
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_8-client:1.4.0
+com.hurence.logisland:logisland-service-solr_8-client:1.4.1
 
 Class
 _____

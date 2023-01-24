@@ -149,6 +149,9 @@ class ElasticsearchRecordConverter {
                     }
                 } catch (Throwable ex) {
                     logger.error("unable to process field '{}' in record : {}, {}", fieldName, record, ex.toString());
+                    if ( logger.isDebugEnabled() ) {
+                        ex.printStackTrace();
+                    }
                 }
             });
 

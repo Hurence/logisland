@@ -2,7 +2,7 @@
 # Logisland configuration script template
 #########################################################################################################
 
-version: 1.4.0
+version: 1.4.1
 documentation: This tutorial job sends apache logs to an HBase table
 
 #########################################################################################################
