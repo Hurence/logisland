@@ -239,6 +239,37 @@ public class setSourceOfTrafficTest {
     }
 
     @Test
+    public void testGoogleAdNPEFix() throws InitializationException {
+        // The '?' is missing in the Url before the parameters. This was raising NPE.
+        final Record record1 = new StandardRecord();
+        record1.setField("firstVisitedPage", FieldType.STRING, "https://www.xyz_website.com/fr/index.htmlfake&gclid=XXX");
+        final Record record2 = new StandardRecord();
+        record2.setField("firstVisitedPage", FieldType.STRING, "https://www.xyz_website.com/fr/index.htmlfake&gclsrc=XXX");
+
+        final TestRunner testRunner = getTestRunner();
+
+        testRunner.assertValid();
+        testRunner.setProperty("cache.size", "5");
+        testRunner.setProperty("debug", "true");
+        testRunner.setProperty("source.out.field", "source_of_traffic");
+        testRunner.setProperty("source_of_traffic.hierarchical", "false");
+        testRunner.enqueue(record1, record2);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(2);
+
+        final MockRecord out1 = testRunner.getOutputRecords().get(0);
+        out1.assertFieldEquals("source_of_traffic_source", "direct");
+        out1.assertFieldEquals("source_of_traffic_medium", "");
+        out1.assertFieldEquals("source_of_traffic_campaign", "direct");
+
+        final MockRecord out2 = testRunner.getOutputRecords().get(0);
+        out2.assertFieldEquals("source_of_traffic_source", "direct");
+        out2.assertFieldEquals("source_of_traffic_medium", "");
+        out2.assertFieldEquals("source_of_traffic_campaign", "direct");
+    }
+
+    @Test
     public void testDoubleClick() throws InitializationException {
         // Test the DoubleClick case with presence of gclsrc parameter.
         Record record1 = new StandardRecord();

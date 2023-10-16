@@ -336,8 +336,9 @@ public class SetSourceOfTraffic extends AbstractProcessor {
     private boolean adwords(final String location, final SourceOfTrafficMap sourceOfTraffic) {
         boolean processed = false;
 
-        final boolean adwords = location!=null && ADWORDS_RE.matcher(location).matches();
-        if (adwords || (location!=null && DOUBLECLICK_RE.matcher(location).matches())) {
+        final boolean hasQuery = location!=null && location.contains("?");
+        final boolean adwords = hasQuery && ADWORDS_RE.matcher(location).matches();
+        if (adwords || (hasQuery && DOUBLECLICK_RE.matcher(location).matches())) {
             processed = true;
             sourceOfTraffic.setSource(GOOGLE);
             sourceOfTraffic.setMedium(CPC);
@@ -346,11 +347,17 @@ public class SetSourceOfTraffic extends AbstractProcessor {
             sourceOfTraffic.setKeyword(adwords ? ADWORDS : DOUBLECLICK);
 
             try {
-                setAdwordsCampaign(new URI(location).getQuery().split("&"), sourceOfTraffic);
+                final String query = new URI(location).getQuery();
+                if ( query!=null ) {
+                    setAdwordsCampaign(query.split("&"), sourceOfTraffic);
+                }
             } catch (URISyntaxException e) {
                 // Symbol `|` generates exception in URI but not in URL.
                 try {
-                    setAdwordsCampaign(new URL(location).getQuery().split("&"), sourceOfTraffic);
+                    final String query = new URL(location).getQuery();
+                    if ( query!=null ) {
+                        setAdwordsCampaign(query.split("&"), sourceOfTraffic);
+                    }
                 } catch (final MalformedURLException e2) {
                     getLogger().error("URISyntaxException", e);
                 }
